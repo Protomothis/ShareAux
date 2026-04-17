@@ -110,4 +110,4 @@ ShareAux는 실시간 오디오 스트리밍, WebSocket 통신, MSE(Media Source
 
 ## 라이선스
 
-MIT License. [LICENSE](LICENSE) 파일을 참고하세요.
+AGPL-3.0. [LICENSE](LICENSE) 파일을 참고하세요.
