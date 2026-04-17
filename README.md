@@ -2,23 +2,11 @@
 
 셀프호스팅 실시간 음악 공유 플랫폼. 방을 만들고, 음악을 검색하고, 모든 참여자에게 동시에 스트리밍합니다.
 
-<!-- TODO: 스크린샷 추가 -->
-<!-- 아래 경로에 이미지를 넣고 주석을 해제하세요 -->
-
-<!-- 권장 스크린샷 목록:
-  1. docs/images/room.png       — 방 메인 화면 (플레이어 + 큐 + 채팅이 보이는 전체 뷰)
-  2. docs/images/lyrics.png     — 가사 싱크 화면 (카라오케 하이라이트 + 번역)
-  3. docs/images/search.png     — 곡 검색 모달 (검색 결과 + 추천)
-  4. docs/images/rooms.png      — 방 목록 페이지 (카드 그리드)
-  5. docs/images/admin.png      — 관리자 대시보드 (차트 + 통계)
-  6. docs/images/mobile.png     — 모바일 뷰 (반응형 레이아웃)
--->
-
-<!--
-![방 메인 화면](docs/images/room.png)
-![가사 싱크](docs/images/lyrics.png)
-![곡 검색](docs/images/search.png)
--->
+<p align="center">
+  <img src="docs/images/login-mobile.png" alt="로그인 화면" width="280" />
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="docs/images/room-mobile.png" alt="방 플레이어 화면" width="280" />
+</p>
 
 ## 주요 기능
 
