@@ -1,0 +1,47 @@
+# GHCR 이미지 기반 배포용
+# 사용법:
+#   1. server/.env 파일 생성 (server/.env.example 참고)
+#   2. docker compose -f docker-compose.ghcr.yml up -d
+
+services:
+  db:
+    image: postgres:16
+    container_name: shareaux-db
+    environment:
+      POSTGRES_DB: spotiparty
+      POSTGRES_USER: spotiparty
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-spotiparty123}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U spotiparty']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  server:
+    image: ghcr.io/protomothis/shareaux-server:latest
+    container_name: shareaux-server
+    environment:
+      DATABASE_URL: postgres://spotiparty:${DB_PASSWORD:-spotiparty123}@db:5432/spotiparty
+      CLIENT_URL: ${CLIENT_URL:-http://localhost:3001}
+    env_file: ./server/.env
+    ports:
+      - '3000:3000'
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  client:
+    image: ghcr.io/protomothis/shareaux-client:latest
+    container_name: shareaux-client
+    ports:
+      - '3001:3001'
+    depends_on:
+      - server
+    restart: unless-stopped
+
+volumes:
+  pgdata:

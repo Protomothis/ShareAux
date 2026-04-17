@@ -1,0 +1,198 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
+import { SHOWCASE_CACHE_TTL_MS } from '../constants.js';
+import { RoomPlayback } from '../entities/room-playback.entity.js';
+import { Track } from '../entities/track.entity.js';
+import { TrackStats } from '../entities/track-stats.entity.js';
+import { UserTrackHistory } from '../entities/user-track-history.entity.js';
+import { type YtdlpSearchResult, YtdlpService } from '../services/ytdlp.service.js';
+import { fetchMusicCredits } from '../services/innertube-parser.js';
+
+@Injectable()
+export class SearchService {
+  private readonly logger = new Logger(SearchService.name);
+  private readonly playlistCache = new Map<string, { tracks: Track[]; fetchedAt: number }>();
+
+  constructor(
+    private readonly ytdlp: YtdlpService,
+    @InjectRepository(Track) private readonly trackRepo: Repository<Track>,
+    @InjectRepository(RoomPlayback) private readonly playbackRepo: Repository<RoomPlayback>,
+    @InjectRepository(TrackStats) private readonly statsRepo: Repository<TrackStats>,
+    @InjectRepository(UserTrackHistory) private readonly userHistoryRepo: Repository<UserTrackHistory>,
+  ) {}
+
+  async suggest(q: string): Promise<{ suggestions: string[] }> {
+    try {
+      const url = `https://suggestqueries-clients6.youtube.com/complete/search?client=youtube&ds=yt&q=${encodeURIComponent(q)}`;
+      const res = await fetch(url);
+      const text = await res.text();
+      const json = JSON.parse(text.slice(text.indexOf('(') + 1, -1)) as [string, string[][]];
+      return { suggestions: json[1].map((s) => s[0]) };
+    } catch (e) {
+      this.logger.warn('Suggest failed', e instanceof Error ? e.message : e);
+      return { suggestions: [] };
+    }
+  }
+
+  async searchWithContinuation(query: string, continuation?: string) {
+    if (continuation) {
+      const { results, continuation: nextToken } = await this.ytdlp.searchInnertube(query, continuation);
+      const tracks = await Promise.all(
+        results.map(async (r) => {
+          const track = await this.upsertTrack(r);
+          return { ...track, isOfficial: r.isOfficial ?? false, views: r.views ?? 0 };
+        }),
+      );
+      return { tracks, playlists: [], continuation: nextToken };
+    }
+
+    const [videoResult, playlistResults] = await Promise.all([
+      this.ytdlp.searchInnertube(query),
+      this.ytdlp.searchPlaylists(query),
+    ]);
+
+    const tracks = await Promise.all(
+      videoResult.results.map(async (r) => {
+        const track = await this.upsertTrack(r);
+        return { ...track, isOfficial: r.isOfficial ?? false, views: r.views ?? 0 };
+      }),
+    );
+    return { tracks, playlists: playlistResults, continuation: videoResult.continuation };
+  }
+
+  async getPlaylistTracks(playlistId: string, page: number, limit: number) {
+    const cached = this.playlistCache.get(playlistId);
+    let allTracks: Track[];
+
+    if (cached && Date.now() - cached.fetchedAt < SHOWCASE_CACHE_TTL_MS) {
+      allTracks = cached.tracks;
+    } else {
+      const results = await this.ytdlp.getPlaylistTracks(playlistId);
+      allTracks = await Promise.all(results.map((r) => this.upsertTrack(r)));
+      this.playlistCache.set(playlistId, { tracks: allTracks, fetchedAt: Date.now() });
+    }
+
+    const start = (page - 1) * limit;
+    return {
+      tracks: allTracks.slice(start, start + limit),
+      total: allTracks.length,
+      page,
+      limit,
+    };
+  }
+
+  async search(query: string, limit = 10): Promise<Track[]> {
+    const results = await this.ytdlp.search(query, limit);
+    return Promise.all(results.map((r) => this.upsertTrack(r)));
+  }
+
+  async getShowcase(roomId: string, userId: string) {
+    const [popular, recent, myHistory] = await Promise.all([
+      this.getPopularTracks(),
+      this.getRecentTracks(),
+      this.getMyTracks(userId),
+    ]);
+    return { popular, recent, myHistory };
+  }
+
+  async getRecommendedTracks(roomId: string) {
+    const recommended = await this.getRecommended(roomId);
+    return { recommended };
+  }
+
+  private async getPopularTracks(limit = 10): Promise<Track[]> {
+    const stats = await this.statsRepo.find({
+      order: { score: 'DESC' },
+      take: limit,
+      relations: ['track'],
+    });
+    return stats.map((s) => s.track).filter(Boolean);
+  }
+
+  private async getRecentTracks(limit = 10): Promise<Track[]> {
+    const stats = await this.statsRepo.find({
+      order: { lastPlayedAt: 'DESC' },
+      take: limit,
+      relations: ['track'],
+    });
+    return stats.map((s) => s.track).filter(Boolean);
+  }
+
+  private async getMyTracks(userId: string, limit = 10): Promise<Track[]> {
+    const histories = await this.userHistoryRepo.find({
+      where: { userId },
+      order: { lastPlayedAt: 'DESC' },
+      take: limit,
+      relations: ['track'],
+    });
+    return histories.map((h) => h.track).filter(Boolean);
+  }
+
+  private async getRecommended(roomId: string, limit = 10): Promise<Track[]> {
+    try {
+      // 1. 현재 재생 중인 곡
+      const playback = await this.playbackRepo.findOne({ where: { roomId }, relations: ['track'] });
+      let videoId = playback?.track?.youtubeId;
+      // 2. 이 방의 최근 큐 기록
+      if (!videoId) {
+        const recent = await this.trackRepo
+          .createQueryBuilder('t')
+          .innerJoin('room_queues', 'q', 'q.track_id = t.id')
+          .where('q.room_id = :roomId', { roomId })
+          .orderBy('q.added_at', 'DESC')
+          .getOne();
+        videoId = recent?.youtubeId;
+      }
+      // 3. 글로벌 최근 재생
+      if (!videoId) {
+        const [top] = await this.statsRepo.find({ order: { lastPlayedAt: 'DESC' }, take: 1, relations: ['track'] });
+        videoId = top?.track?.youtubeId;
+      }
+      if (!videoId) return [];
+      // 넉넉히 가져와서 셔플 → 매번 다른 추천
+      const related = await this.ytdlp.getRelated(videoId, limit * 3);
+      const shuffled = related.sort(() => Math.random() - 0.5).slice(0, limit);
+      return Promise.all(shuffled.map((r) => this.upsertTrack(r)));
+    } catch (e) {
+      this.logger.warn('getRecommended failed', e instanceof Error ? e.message : e);
+      return [];
+    }
+  }
+
+  private async upsertTrack(r: YtdlpSearchResult): Promise<Track> {
+    const existing = await this.trackRepo.findOneBy({ youtubeId: r.id });
+    if (existing) return existing;
+
+    return this.trackRepo.save(
+      this.trackRepo.create({
+        youtubeId: r.id,
+        name: r.title,
+        artist: r.artist,
+        thumbnail: r.thumbnail,
+        durationMs: r.duration * 1000,
+        fetchedAt: new Date(),
+      }),
+    );
+  }
+
+  /** 큐 추가 시 Content ID 메타데이터 fetch + DB 업데이트 */
+  async enrichTrackCredits(trackId: string, youtubeId: string): Promise<void> {
+    this.logger.log(`[enrich] fetching credits for ${youtubeId}`);
+    const credits = await fetchMusicCredits(youtubeId).catch((e: unknown) => {
+      this.logger.warn(`[enrich] fetchMusicCredits error for ${youtubeId}: ${e instanceof Error ? e.message : e}`);
+      return null;
+    });
+    const update: Partial<Track> = { metaStatus: 'done' as const };
+    if (credits?.songTitle) {
+      update.songTitle = credits.songTitle;
+      update.songArtist = credits.songArtist;
+      update.songAlbum = credits.songAlbum;
+      this.logger.log(`[enrich] ${youtubeId} → "${credits.songTitle}" by ${credits.songArtist}`);
+    } else {
+      this.logger.log(`[enrich] ${youtubeId} → no credits found`);
+    }
+    await this.trackRepo.update(trackId, update);
+  }
+}

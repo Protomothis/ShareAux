@@ -1,0 +1,351 @@
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { LessThan, Repository } from 'typeorm';
+
+import { SKIP_MIN_PLAY_MS, VOTE_SKIP_DIVISOR, VOTE_SKIP_MIN_REQUIRED } from '../constants.js';
+import { RoomPlayback } from '../entities/room-playback.entity.js';
+import { RoomQueue } from '../entities/room-queue.entity.js';
+import { Track } from '../entities/track.entity.js';
+import { TrackStats } from '../entities/track-stats.entity.js';
+import { UserTrackHistory } from '../entities/user-track-history.entity.js';
+import { AudioService } from '../services/audio.service.js';
+import { PreloadService } from '../services/preload.service.js';
+import { YtdlpService } from '../services/ytdlp.service.js';
+import type { StreamState } from '../types/index.js';
+
+@Injectable()
+export class PlayerService {
+  private readonly logger = new Logger(PlayerService.name);
+  private skipVotes = new Map<string, Set<string>>();
+  private streamState = new Map<string, StreamState>();
+  private onTrackChangeCallback?: (roomId: string) => void;
+  private onPlayFailCallback?: (roomId: string, trackTitle: string) => void;
+  /** 현재 재생 중인 곡의 신청자 (completed 추적용) */
+  private currentAddedBy = new Map<string, string>();
+  /** skip으로 종료된 건지 구분 */
+  private skippedRooms = new Set<string>();
+
+  constructor(
+    private readonly audio: AudioService,
+    private readonly ytdlp: YtdlpService,
+    private readonly preload: PreloadService,
+    @InjectRepository(Track) private readonly trackRepo: Repository<Track>,
+    @InjectRepository(RoomPlayback) private readonly playbackRepo: Repository<RoomPlayback>,
+    @InjectRepository(RoomQueue) private readonly queueRepo: Repository<RoomQueue>,
+    @InjectRepository(TrackStats) private readonly statsRepo: Repository<TrackStats>,
+    @InjectRepository(UserTrackHistory) private readonly userHistoryRepo: Repository<UserTrackHistory>,
+  ) {}
+
+  // --- Playback ---
+
+  async play(roomId: string, trackId: string): Promise<RoomPlayback> {
+    const track = await this.trackRepo.findOneBy({ id: trackId });
+    if (!track) throw new NotFoundException('Track not found');
+
+    // 신청자 정보 조회 (stats용)
+    const queueItem = await this.queueRepo.findOne({
+      where: { room: { id: roomId }, track: { id: trackId } },
+      relations: ['addedBy'],
+    });
+    const addedByUserId = queueItem?.addedBy?.id;
+    if (addedByUserId) this.currentAddedBy.set(roomId, addedByUserId);
+
+    await this.queueRepo.update({ room: { id: roomId }, track: { id: trackId }, played: false }, { played: true });
+
+    this.clearVotes(roomId);
+    this.skippedRooms.delete(roomId);
+    this.streamState.set(roomId, 'preparing');
+
+    const pb = await this.playbackRepo.save(
+      this.playbackRepo.create({ roomId, track, isPlaying: true, startedAt: new Date(), positionMs: 0 }),
+    );
+
+    // preparing 상태 즉시 broadcast (클라이언트가 트랙 정보 + 준비 중 상태를 받음)
+    this.onTrackChangeCallback?.(roomId);
+
+    // 글로벌 stats/history UPSERT (fire-and-forget)
+    this.recordPlay(trackId, addedByUserId).catch((e) =>
+      this.logger.warn('recordPlay failed', e instanceof Error ? e.message : e),
+    );
+
+    const audioBuffer = this.preload.getBuffer(trackId);
+    let url = '';
+    if (!audioBuffer) {
+      try {
+        url = await this.ytdlp.getAudioUrl(track.youtubeId);
+      } catch {
+        // URL도 못 받으면 재생 불가 → 스킵
+        this.logger.warn(`[${roomId}] Play failed: cannot get audio for ${track.youtubeId}`);
+        this.preload.release(trackId);
+        this.streamState.set(roomId, 'idle');
+        this.onPlayFailCallback?.(roomId, track.name);
+        // 자동으로 다음 곡 시도
+        void this.onTrackEnd(roomId);
+        return pb;
+      }
+    }
+    this.preload.release(trackId);
+
+    await this.audio.startStream(
+      roomId,
+      url,
+      () => this.onTrackEnd(roomId),
+      () => this.ytdlp.getAudioUrl(track.youtubeId),
+      async () => {
+        this.streamState.set(roomId, 'streaming');
+        await this.playbackRepo.update(roomId, { startedAt: new Date() });
+        this.onTrackChangeCallback?.(roomId);
+      },
+      audioBuffer ?? undefined,
+      track.bitrateKbps || undefined,
+    );
+
+    this.preload.triggerPreload(roomId);
+
+    return pb;
+  }
+
+  async pause(roomId: string): Promise<void> {
+    this.audio.pauseStream(roomId);
+    await this.playbackRepo.update(roomId, { isPlaying: false });
+  }
+
+  async resume(roomId: string): Promise<void> {
+    this.audio.resumeStream(roomId);
+    await this.playbackRepo.update(roomId, { isPlaying: true });
+  }
+
+  private assertNotTransitioning(roomId: string): void {
+    const state = this.streamState.get(roomId);
+    if (state === 'preparing' || state === 'skipping') {
+      throw new BadRequestException('곡 전환 중입니다');
+    }
+  }
+
+  async skip(roomId: string): Promise<void> {
+    this.assertNotTransitioning(roomId);
+    await this.assertMinPlayTime(roomId);
+    await this.assertNextTrackExists(roomId);
+    this.doSkip(roomId);
+  }
+
+  async previous(roomId: string): Promise<void> {
+    this.assertNotTransitioning(roomId);
+    await this.assertMinPlayTime(roomId);
+
+    const pb = await this.playbackRepo.findOne({ where: { roomId }, relations: ['track'] });
+    if (!pb?.track) return;
+
+    // 현재 곡의 큐 아이템
+    const currentQueue = await this.queueRepo.findOne({
+      where: { room: { id: roomId }, track: { id: pb.track.id }, played: true },
+      order: { position: 'DESC' },
+    });
+    if (!currentQueue) return;
+
+    // 현재 position보다 앞에 있는 played 곡
+    const prev = await this.queueRepo.findOne({
+      where: { room: { id: roomId }, played: true, position: LessThan(currentQueue.position) },
+      order: { position: 'DESC' },
+      relations: ['track'],
+    });
+    if (!prev) throw new BadRequestException('이전 곡이 없습니다');
+
+    // 현재 곡 → 미재생으로 되돌리고 이전 곡 재생
+    await this.queueRepo.update(currentQueue.id, { played: false });
+    await this.queueRepo.update(prev.id, { played: false });
+    this.audio.stopStream(roomId);
+    await this.play(roomId, prev.track.id);
+    this.onTrackChangeCallback?.(roomId);
+  }
+
+  // --- Vote skip ---
+
+  async voteSkip(roomId: string, userId: string, totalMembers: number) {
+    this.assertNotTransitioning(roomId);
+    await this.assertMinPlayTime(roomId);
+    await this.assertNextTrackExists(roomId);
+    if (!this.skipVotes.has(roomId)) this.skipVotes.set(roomId, new Set());
+    const votes = this.skipVotes.get(roomId)!;
+    votes.add(userId);
+    const required = Math.max(VOTE_SKIP_MIN_REQUIRED, Math.ceil(totalMembers / VOTE_SKIP_DIVISOR));
+    const skipped = votes.size >= required;
+    if (skipped) this.doSkip(roomId);
+    return { voted: true, currentVotes: votes.size, required, skipped };
+  }
+
+  clearVotes(roomId: string): void {
+    this.skipVotes.delete(roomId);
+  }
+
+  getVoteStatus(roomId: string) {
+    const votes = this.skipVotes.get(roomId);
+    return { currentVotes: votes?.size ?? 0, voters: [...(votes ?? [])] };
+  }
+
+  // --- Status ---
+
+  async getStatus(roomId: string) {
+    const pb = await this.playbackRepo.findOne({ where: { roomId }, relations: ['track'] });
+    if (!pb) return null;
+    const state = this.streamState.get(roomId) ?? 'idle';
+    const isIdle = state === 'idle' && !pb.isPlaying;
+    const elapsedMs =
+      state === 'streaming' && pb.isPlaying && pb.startedAt ? Date.now() - new Date(pb.startedAt).getTime() : 0;
+    return Object.assign(pb, {
+      track: isIdle ? null : pb.track,
+      elapsedMs,
+      streamCodec: 'aac',
+      streamBitrate: pb.track?.bitrateKbps ?? 0,
+      streamState: state,
+    });
+  }
+
+  // --- Callbacks ---
+
+  onTrackChange(cb: (roomId: string) => void): void {
+    this.onTrackChangeCallback = cb;
+  }
+
+  onPlayFail(cb: (roomId: string, trackTitle: string) => void): void {
+    this.onPlayFailCallback = cb;
+  }
+
+  triggerPreload(roomId: string): void {
+    this.preload.triggerPreload(roomId);
+  }
+
+  // --- Guards ---
+
+  private async assertMinPlayTime(roomId: string): Promise<void> {
+    const pb = await this.playbackRepo.findOneBy({ roomId });
+    if (pb?.startedAt && Date.now() - new Date(pb.startedAt).getTime() < SKIP_MIN_PLAY_MS) {
+      throw new BadRequestException('재생 시작 후 잠시 뒤에 가능합니다');
+    }
+  }
+
+  private async assertNextTrackExists(roomId: string): Promise<void> {
+    const next = await this.queueRepo.findOne({
+      where: { room: { id: roomId }, played: false },
+      order: { position: 'ASC' },
+    });
+    if (!next) throw new BadRequestException('다음 곡이 없습니다');
+  }
+
+  private doSkip(roomId: string): void {
+    this.clearVotes(roomId);
+    this.skippedRooms.add(roomId);
+    this.audio.stopStream(roomId);
+    this.streamState.set(roomId, 'skipping');
+    void this.onTrackEnd(roomId);
+  }
+
+  // --- Internal ---
+
+  private async onTrackEnd(roomId: string): Promise<void> {
+    // 이미 preparing 중이면 무시 (중복 호출 방어)
+    const currentState = this.streamState.get(roomId);
+    if (currentState === 'preparing') return;
+
+    // completed 추적: skip이 아닌 자연 종료 시
+    const wasSkipped = this.skippedRooms.has(roomId);
+    this.skippedRooms.delete(roomId);
+    if (!wasSkipped) {
+      const pb = await this.playbackRepo.findOne({ where: { roomId }, relations: ['track'] });
+      const userId = this.currentAddedBy.get(roomId);
+      if (pb?.track) {
+        this.recordCompleted(pb.track.id, userId).catch((e) =>
+          this.logger.warn('recordCompleted failed', e instanceof Error ? e.message : e),
+        );
+      }
+    }
+    this.currentAddedBy.delete(roomId);
+
+    this.clearVotes(roomId);
+    this.streamState.set(roomId, 'idle');
+
+    // 이전 트랙 정보 클리어 → 클라이언트에 즉시 idle 상태 전달
+    await this.playbackRepo.update(roomId, { isPlaying: false });
+    this.onTrackChangeCallback?.(roomId);
+
+    const next = await this.queueRepo.findOne({
+      where: { room: { id: roomId }, played: false },
+      order: { position: 'ASC' },
+      relations: ['track'],
+    });
+    if (next) {
+      await this.queueRepo.update(next.id, { played: true });
+      await this.play(roomId, next.track.id);
+    }
+  }
+
+  private async recordPlay(trackId: string, userId?: string): Promise<void> {
+    // TrackStats UPSERT
+    const existing = await this.statsRepo.findOneBy({ trackId });
+    if (existing) {
+      existing.totalPlays++;
+      existing.lastPlayedAt = new Date();
+      // uniqueUsers는 user_track_history 기반으로 갱신
+      if (userId) {
+        const isNew = !(await this.userHistoryRepo.findOneBy({ trackId, userId }));
+        if (isNew) existing.uniqueUsers++;
+      }
+      existing.score = this.calcScore(existing);
+      await this.statsRepo.save(existing);
+    } else {
+      const stats = this.statsRepo.create({
+        trackId,
+        totalPlays: 1,
+        uniqueUsers: userId ? 1 : 0,
+        score: 1,
+      });
+      await this.statsRepo.save(stats);
+    }
+
+    // UserTrackHistory UPSERT
+    if (userId) {
+      const hist = await this.userHistoryRepo.findOneBy({ trackId, userId });
+      if (hist) {
+        hist.playCount++;
+        hist.lastPlayedAt = new Date();
+        await this.userHistoryRepo.save(hist);
+      } else {
+        await this.userHistoryRepo.save(this.userHistoryRepo.create({ trackId, userId, playCount: 1 }));
+      }
+    }
+  }
+
+  private async recordCompleted(trackId: string, userId?: string): Promise<void> {
+    await this.statsRepo.increment({ trackId }, 'completedCount', 1);
+    // score 재계산
+    const stats = await this.statsRepo.findOneBy({ trackId });
+    if (stats) {
+      stats.score = this.calcScore(stats);
+      await this.statsRepo.save(stats);
+    }
+    if (userId) {
+      await this.userHistoryRepo.increment({ trackId, userId }, 'completedCount', 1);
+    }
+  }
+
+  private calcScore(stats: TrackStats): number {
+    const days = (Date.now() - stats.lastPlayedAt.getTime()) / 86400000;
+    const decay = Math.pow(0.95, days);
+    const completedRatio = stats.totalPlays > 0 ? stats.completedCount / stats.totalPlays : 0;
+    return (
+      (stats.totalPlays + stats.likes * 3 - stats.dislikes * 2 + stats.uniqueUsers * 2 + completedRatio * 5) * decay
+    );
+  }
+
+  updateCodecInfo(track: Track): void {
+    if (track.codec) return;
+    void this.ytdlp
+      .getAudioInfo(track.youtubeId)
+      .then(async (info) => {
+        track.codec = info.codec;
+        track.bitrateKbps = info.bitrateKbps;
+        await this.trackRepo.update(track.id, { codec: info.codec, bitrateKbps: info.bitrateKbps });
+      })
+      .catch(() => {});
+  }
+}

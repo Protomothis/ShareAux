@@ -1,0 +1,19 @@
+node_modules
+dist
+.next
+.env
+.env.*
+!.env.example
+*.log
+.log/
+.DS_Store
+pgdata
+/tmp
+*.tsbuildinfo
+.idea/
+
+# AI 에이전트 도구 설정 (개인 환경)
+.kiro/
+.claude/
+.cursor/
+.copilot/

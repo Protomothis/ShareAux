@@ -1,0 +1,5 @@
+/** ms를 m:ss 포맷으로 변환 */
+export function formatDuration(ms: number): string {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
