@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import NumberStepper from '@/components/ui/number-stepper';
 import { Switch } from '@/components/ui/switch';
 import { useCreateInviteCode } from '@/hooks/admin/useAdminInviteCodes';
-import { GUEST_PERM_OPTIONS } from '@/lib/constants';
+import { usePermissionMeta } from '@/hooks/usePermissionMeta';
 
 interface CreateInviteCodeModalProps {
   open: boolean;
@@ -28,6 +28,12 @@ export function CreateInviteCodeModal({ open, onOpenChange }: CreateInviteCodeMo
   const [allowRegistration, setAllowRegistration] = useState(true);
 
   const createCode = useCreateInviteCode();
+  const { data: permMeta } = usePermissionMeta();
+  const permOptions = (permMeta ?? []).map((m) => ({
+    key: m.key,
+    label: `${m.emoji} ${m.label}`,
+    disabled: m.key === 'listen',
+  }));
 
   const resetForm = () => {
     setCode('');
@@ -87,7 +93,7 @@ export function CreateInviteCodeModal({ open, onOpenChange }: CreateInviteCodeMo
               <DatePicker value={expiresAt} onChange={setExpiresAt} placeholder="무기한" />
             </FormField>
           </div>
-          <CheckboxGroup label="계정 권한" options={GUEST_PERM_OPTIONS} selected={permissions} onChange={togglePerm} />
+          <CheckboxGroup label="계정 권한" options={permOptions} selected={permissions} onChange={togglePerm} />
           <p className="text-[11px] text-sa-text-muted">게스트 및 이 코드로 회원가입한 유저 모두에게 적용됩니다</p>
           <div className="flex items-center justify-between">
             <div>

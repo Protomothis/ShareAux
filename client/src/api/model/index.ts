@@ -62,6 +62,7 @@ export * from './paginatedInviteCodesResponse';
 export * from './paginatedReportsResponse';
 export * from './paginatedRoomsResponse';
 export * from './paginatedUsersResponse';
+export * from './permissionMeta';
 export * from './playbackStatus';
 export * from './playbackStatusStreamState';
 export * from './playbackStatusTrack';
