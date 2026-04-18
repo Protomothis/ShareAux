@@ -1,7 +1,7 @@
 import type { MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -12,6 +12,7 @@ import { HealthController, SetupController } from './app.controller.js';
 import { AuthModule } from './auth/auth.module.js';
 import { CaptchaModule } from './captcha/captcha.module.js';
 import { User } from './entities/user.entity.js';
+import { GlobalExceptionFilter } from './filters/http-exception.filter.js';
 import { IpBanMiddleware } from './middleware/ip-ban.middleware.js';
 import { PlayerModule } from './player/player.module.js';
 import { QueueModule } from './queue/queue.module.js';
@@ -46,7 +47,10 @@ import { TracksModule } from './tracks/tracks.module.js';
     TypeOrmModule.forFeature([User]),
   ],
   controllers: [HealthController, SetupController],
-  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
+  providers: [
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_FILTER, useClass: GlobalExceptionFilter },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {

@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Controller,
   DefaultValuePipe,
   Get,
@@ -14,8 +13,10 @@ import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@ne
 import { Throttle } from '@nestjs/throttler';
 
 import { THROTTLE_LIMIT_SEARCH, THROTTLE_LIMIT_SUGGEST, THROTTLE_TTL_MS } from '../constants.js';
+import { AppException } from '../exceptions/app.exception.js';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard.js';
 import type { AuthenticatedRequest } from '../types/auth.types.js';
+import { ErrorCode } from '../types/error-code.enum.js';
 import {
   PlaylistTracksResponse,
   RecommendedResponse,
@@ -47,7 +48,7 @@ export class SearchController {
   @ApiQuery({ name: 'continuation', required: false })
   @ApiResponse({ status: 200, type: SearchResponse })
   async search(@Query('q') q?: string, @Query('continuation') continuation?: string) {
-    if (!q && !continuation) throw new BadRequestException('q or continuation is required');
+    if (!q && !continuation) throw new AppException(ErrorCode.SEARCH_001);
     return this.searchService.searchWithContinuation(q ?? '', continuation);
   }
 

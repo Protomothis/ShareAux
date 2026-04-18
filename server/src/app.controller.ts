@@ -3,8 +3,9 @@ import { ApiOkResponse, ApiOperation, ApiProperty, ApiResponse, ApiTags } from '
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { PERMISSION_META, PermissionMeta } from './constants.js';
+import { ERROR_META, PERMISSION_META, PermissionMeta } from './constants.js';
 import { User } from './entities/user.entity.js';
+import type { ErrorMeta } from './constants.js';
 
 @ApiTags('Health')
 @Controller()
@@ -21,6 +22,13 @@ export class HealthController {
   @ApiOkResponse({ type: [PermissionMeta] })
   permissionsMeta() {
     return PERMISSION_META;
+  }
+
+  @Get('errors/meta')
+  @ApiOperation({ summary: '에러 코드 메타 정보' })
+  @ApiOkResponse()
+  errorsMeta(): ErrorMeta[] {
+    return Object.values(ERROR_META);
   }
 }
 

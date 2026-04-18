@@ -1,8 +1,10 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
 
 import { SKIP_MIN_PLAY_MS, VOTE_SKIP_DIVISOR, VOTE_SKIP_MIN_REQUIRED } from '../constants.js';
+import { AppException } from '../exceptions/app.exception.js';
+import { ErrorCode } from '../types/error-code.enum.js';
 import { RoomPlayback } from '../entities/room-playback.entity.js';
 import { RoomPlayHistory } from '../entities/room-play-history.entity.js';
 import { RoomQueue } from '../entities/room-queue.entity.js';
@@ -44,7 +46,7 @@ export class PlayerService {
 
   async play(roomId: string, trackId: string): Promise<RoomPlayback> {
     const track = await this.trackRepo.findOneBy({ id: trackId });
-    if (!track) throw new NotFoundException('Track not found');
+    if (!track) throw new AppException(ErrorCode.COMMON_002);
 
     // 신청자 정보 조회 (stats용)
     const queueItem = await this.queueRepo.findOne({
@@ -122,7 +124,7 @@ export class PlayerService {
   private assertNotTransitioning(roomId: string): void {
     const state = this.streamState.get(roomId);
     if (state === 'preparing' || state === 'skipping') {
-      throw new BadRequestException('곡 전환 중입니다');
+      throw new AppException(ErrorCode.PLAYER_004);
     }
   }
 
@@ -153,7 +155,7 @@ export class PlayerService {
       order: { position: 'DESC' },
       relations: ['track'],
     });
-    if (!prev) throw new BadRequestException('이전 곡이 없습니다');
+    if (!prev) throw new AppException(ErrorCode.PLAYER_003);
 
     // 현재 곡 → 미재생으로 되돌리고 이전 곡 재생
     await this.queueRepo.update(currentQueue.id, { played: false });
@@ -224,7 +226,7 @@ export class PlayerService {
   private async assertMinPlayTime(roomId: string): Promise<void> {
     const pb = await this.playbackRepo.findOneBy({ roomId });
     if (pb?.startedAt && Date.now() - new Date(pb.startedAt).getTime() < SKIP_MIN_PLAY_MS) {
-      throw new BadRequestException('재생 시작 후 잠시 뒤에 가능합니다');
+      throw new AppException(ErrorCode.PLAYER_005);
     }
   }
 
@@ -233,7 +235,7 @@ export class PlayerService {
       where: { room: { id: roomId }, played: false },
       order: { position: 'ASC' },
     });
-    if (!next) throw new BadRequestException('다음 곡이 없습니다');
+    if (!next) throw new AppException(ErrorCode.PLAYER_002);
   }
 
   private doSkip(roomId: string): void {

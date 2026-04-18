@@ -1,16 +1,13 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
-  ForbiddenException,
   Get,
   Inject,
   Post,
   Put,
   Req,
   Res,
-  UnauthorizedException,
   UseFilters,
   UseGuards,
   forwardRef,
@@ -22,12 +19,14 @@ import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 
 import { AUTH_COOKIE_REFRESH, AUTH_LOGIN_RATE_LIMIT, THROTTLE_TTL_MS, WS_CLOSE_ACCOUNT_DELETED } from '../constants.js';
+import { AppException } from '../exceptions/app.exception.js';
 import { CaptchaService } from '../captcha/captcha.module.js';
 import { User } from '../entities/user.entity.js';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard.js';
 import { RoomsGateway } from '../rooms/rooms.gateway.js';
 import { TranslationService } from '../services/translation.service.js';
 import type { AuthenticatedRequest } from '../types/index.js';
+import { ErrorCode } from '../types/index.js';
 import { OAuthExceptionFilter } from './oauth-exception.filter.js';
 import { AuthService } from './auth.service.js';
 import { clearAuthCookies, setAuthCookies } from './cookie.util.js';
@@ -69,23 +68,22 @@ export class AuthController {
 
   private verifyCaptcha(dto: { captchaId?: string; captchaAnswer?: string }) {
     if (!this.captcha.isEnabled()) return;
-    if (!dto.captchaId || !dto.captchaAnswer) throw new BadRequestException('CAPTCHA 인증이 필요합니다');
-    if (!this.captcha.validate(dto.captchaId, dto.captchaAnswer))
-      throw new BadRequestException('CAPTCHA 인증에 실패했습니다');
+    if (!dto.captchaId || !dto.captchaAnswer) throw new AppException(ErrorCode.CAPTCHA_001);
+    if (!this.captcha.validate(dto.captchaId, dto.captchaAnswer)) throw new AppException(ErrorCode.CAPTCHA_002);
   }
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
   @ApiOperation({ summary: 'Google OAuth 로그인 시작' })
   googleLogin() {
-    if (!this.isGoogleEnabled) throw new ForbiddenException('Google OAuth is not configured');
+    if (!this.isGoogleEnabled) throw new AppException(ErrorCode.AUTH_015);
   }
 
   @Get('link-google')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Google 계정 연동 시작' })
   startLinkGoogle(@Req() req: AuthenticatedRequest, @Res() res: Response) {
-    if (!this.isGoogleEnabled) throw new ForbiddenException('Google OAuth is not configured');
+    if (!this.isGoogleEnabled) throw new AppException(ErrorCode.AUTH_015);
     const clientId = this.config.get<string>('GOOGLE_CLIENT_ID', '');
     const callbackUrl =
       this.config.get<string>('GOOGLE_CALLBACK_URL', '') || 'http://localhost:3000/api/auth/google/callback';
@@ -235,7 +233,7 @@ export class AuthController {
     @Body() dto: DeleteAccountDto,
   ) {
     const valid = await this.authService.verifyPassword(req.user.userId, dto.password);
-    if (!valid) throw new UnauthorizedException('비밀번호가 올바르지 않습니다');
+    if (!valid) throw new AppException(ErrorCode.AUTH_019);
 
     this.gateway.disconnectUser(req.user.userId, WS_CLOSE_ACCOUNT_DELETED);
     await this.authService.deleteAccount(req.user.userId);
