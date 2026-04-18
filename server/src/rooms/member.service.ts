@@ -88,7 +88,6 @@ export class MemberService {
     if (room.hostId !== hostId) throw new ForbiddenException('Only DJ can transfer');
     const target = await this.memberRepo.findOne({ where: { roomId, userId: targetUserId }, relations: ['user'] });
     if (!target) throw new NotFoundException('Member not found');
-    if (target.user?.role === UserRole.Guest) throw new ForbiddenException('게스트에게 DJ를 위임할 수 없습니다');
     const targetPerm = await this.permRepo.findOneBy({ roomId, userId: targetUserId });
     if (!targetPerm?.permissions.includes(Permission.Host)) {
       throw new ForbiddenException('호스트 권한이 없는 멤버에게 위임할 수 없습니다');

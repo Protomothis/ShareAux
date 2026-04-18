@@ -10,13 +10,14 @@ import {
   Length,
   Max,
   Min,
+  ValidateIf,
 } from 'class-validator';
 
 import { Permission } from '../../types/index.js';
 
 export class CreateInviteCodeDto {
   @ApiProperty({ required: false, minLength: 6, maxLength: 12 })
-  @IsOptional()
+  @ValidateIf((o: CreateInviteCodeDto) => !!o.code)
   @IsString()
   @Length(6, 12)
   code?: string;

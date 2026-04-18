@@ -83,7 +83,14 @@ export function CreateInviteCodeModal({ open, onOpenChange }: CreateInviteCodeMo
         </Modal.Header>
         <Modal.Body className="space-y-4">
           <FormField label="코드 (비우면 자동 생성)">
-            <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="PARTY2026" maxLength={12} />
+            <Input
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="PARTY2026"
+              minLength={6}
+              maxLength={12}
+            />
+            {code.length > 0 && code.length < 6 && <p className="mt-1 text-xs text-red-400">6자 이상 입력해주세요</p>}
           </FormField>
           <div className="grid grid-cols-2 gap-4">
             <FormField label="최대 사용 횟수">
@@ -104,7 +111,11 @@ export function CreateInviteCodeModal({ open, onOpenChange }: CreateInviteCodeMo
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button type="submit" variant="accent" disabled={createCode.isPending}>
+          <Button
+            type="submit"
+            variant="accent"
+            disabled={createCode.isPending || (code.length > 0 && code.length < 6)}
+          >
             {createCode.isPending ? '생성 중...' : '생성'}
           </Button>
         </Modal.Footer>
