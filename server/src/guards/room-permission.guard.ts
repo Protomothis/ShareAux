@@ -45,8 +45,7 @@ export class RoomPermissionGuard implements CanActivate {
       const labels: Partial<Record<Permission, string>> = {
         search: '검색이 금지되었습니다',
         addQueue: '곡 신청이 금지되었습니다',
-        reorder: '순서 변경이 금지되었습니다',
-        kick: '추방 권한이 없습니다',
+        host: '호스트 권한이 필요합니다',
         chat: '채팅이 금지되었습니다',
       };
       throw new ForbiddenException(labels[perm] || 'Permission denied');

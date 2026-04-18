@@ -57,21 +57,13 @@ export const PROVIDER_LABELS: Record<string, { label: string; variant: 'accent' 
   invite: { label: '초대', variant: 'muted' },
 };
 
-export const ACCOUNT_PERM_OPTIONS: { key: string; label: string; disabled?: boolean }[] = [
-  { key: 'listen', label: '🎵 음악 듣기', disabled: true },
-  { key: 'chat', label: '💬 채팅' },
-  { key: 'reaction', label: '🎉 리액션' },
-  { key: 'search', label: '🔍 검색' },
-  { key: 'addQueue', label: '📋 큐 추가' },
-  { key: 'reorder', label: '🔀 순서 변경' },
-  { key: 'voteSkip', label: '⏭️ 투표 스킵' },
-  { key: 'kick', label: '👢 강퇴' },
-  { key: 'createRoom', label: '🚪 방 만들기' },
-];
-
-/** 권한 key → 이모지 매핑 (카드 등 간략 표시용) */
-export const PERM_EMOJI: Record<string, string> = Object.fromEntries(
-  ACCOUNT_PERM_OPTIONS.map((o) => [o.key, o.label.split(' ')[0]]),
-);
-
-export const GUEST_PERM_OPTIONS = ACCOUNT_PERM_OPTIONS.filter((o) => !['search', 'kick'].includes(o.key));
+/** @deprecated 서버 /permissions/meta API 사용 권장 — usePermissionMeta() 훅 참조 */
+export const PERM_FALLBACK: Record<string, { label: string; emoji: string }> = {
+  listen: { label: '음악 듣기', emoji: '🎵' },
+  chat: { label: '채팅', emoji: '💬' },
+  reaction: { label: '리액션', emoji: '🎉' },
+  search: { label: '검색', emoji: '🔍' },
+  addQueue: { label: '큐 추가', emoji: '📋' },
+  voteSkip: { label: '투표 스킵', emoji: '⏭️' },
+  host: { label: '호스트', emoji: '🏠' },
+};

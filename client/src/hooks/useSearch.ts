@@ -15,6 +15,7 @@ export function useSearch(isOpen: boolean) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [highlightIdx, setHighlightIdx] = useState(-1);
   const suggestTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const suggestAbortRef = useRef<AbortController>(undefined);
   const searchCache = useRef(
     new Map<string, { tracks: Track[]; playlists: PlaylistResult[]; continuation?: string }>(),
   );
@@ -50,8 +51,12 @@ export function useSearch(isOpen: boolean) {
     clearTimeout(suggestTimer.current);
     if (query.trim() === debouncedQuery) return;
     suggestTimer.current = setTimeout(() => {
+      suggestAbortRef.current?.abort();
+      const ac = new AbortController();
+      suggestAbortRef.current = ac;
       searchControllerSuggest({ q: query.trim() })
         .then((r) => {
+          if (ac.signal.aborted) return;
           setSuggestions(r.suggestions);
           setShowSuggestions(true);
           setHighlightIdx(-1);
@@ -112,6 +117,7 @@ export function useSearch(isOpen: boolean) {
     const trimmed = q.trim();
     if (!trimmed) return;
     clearTimeout(suggestTimer.current);
+    suggestAbortRef.current?.abort();
     setDebouncedQuery(trimmed);
     setShowSuggestions(false);
     setHighlightIdx(-1);

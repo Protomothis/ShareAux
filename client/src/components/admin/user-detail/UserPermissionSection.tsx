@@ -6,7 +6,8 @@ import { toast } from 'sonner';
 
 import type { UpdatePermissionsBodyPermissionsItem, UserDetailResponse } from '@/api/model';
 import { UpdateRoleDtoRole } from '@/api/model';
-import { ACCOUNT_PERM_OPTIONS, ROLE_LABELS } from '@/lib/constants';
+import { ROLE_LABELS } from '@/lib/constants';
+import { usePermissionMeta } from '@/hooks/usePermissionMeta';
 import { CheckboxGroup } from '@/components/admin/CheckboxGroup';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { Button } from '@/components/ui/button';
@@ -26,19 +27,25 @@ export function UserPermissionSection({ user }: UserPermissionSectionProps) {
 
   const updateRole = useUpdateUserDetailRole(user.id);
   const updatePermissions = useUpdateUserPermissions(user.id);
+  const { data: permMeta } = usePermissionMeta();
+  const baseOptions = (permMeta ?? []).map((m) => ({
+    key: m.key,
+    label: `${m.emoji} ${m.label}`,
+    disabled: m.key === 'listen',
+  }));
 
   const isSuperAdmin = role === 'superAdmin';
   const isAdmin = role === 'admin' || isSuperAdmin;
   const saving = updateRole.isPending || updatePermissions.isPending;
 
   const effectiveOptions = useMemo(
-    () => ACCOUNT_PERM_OPTIONS.map((opt) => ({ ...opt, disabled: opt.disabled || isAdmin })),
-    [isAdmin],
+    () => baseOptions.map((opt) => ({ ...opt, disabled: opt.disabled || isAdmin })),
+    [baseOptions, isAdmin],
   );
 
   const effectivePermissions = useMemo(
-    () => (isAdmin ? new Set(ACCOUNT_PERM_OPTIONS.map((o) => o.key)) : permissions),
-    [isAdmin, permissions],
+    () => (isAdmin ? new Set(baseOptions.map((o) => o.key)) : permissions),
+    [isAdmin, baseOptions, permissions],
   );
 
   const togglePerm = useCallback((key: string) => {

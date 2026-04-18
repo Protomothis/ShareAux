@@ -202,6 +202,9 @@ export class RoomsService implements OnModuleInit {
     if (wasHost) {
       const newHost = await this.transferHost(roomId);
       if (newHost) return { hostChanged: newHost };
+      // 호스트 권한 가진 멤버 없음 → 방 폭파
+      await this.deactivateRoom(roomId);
+      return { roomClosed: true };
     }
     return {};
   }

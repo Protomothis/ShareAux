@@ -4,10 +4,8 @@ export enum Permission {
   Reaction = 'reaction',
   Search = 'search',
   AddQueue = 'addQueue',
-  Reorder = 'reorder',
   VoteSkip = 'voteSkip',
-  Kick = 'kick',
-  CreateRoom = 'createRoom',
+  Host = 'host',
 }
 
 /** 일반 유저(Google) 기본 권한 — 전부 허용 */

@@ -303,6 +303,18 @@
     background-position: -200% center;
   }
 }
+@keyframes shimmer-opacity {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.animate-shimmer-opacity {
+  animation: shimmer-opacity 2s ease-in-out infinite;
+}
 @keyframes glow-btn {
   0%,
   100% {
@@ -465,21 +477,39 @@
 }
 
 @keyframes vote-pop {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.4); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.4);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 .animate-vote-pop {
   animation: vote-pop 0.3s ease-out;
 }
 
 @keyframes vote-float-up {
-  0% { opacity: 1; transform: translateY(0) scale(1); }
-  100% { opacity: 0; transform: translateY(-28px) scale(0.6); }
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-28px) scale(0.6);
+  }
 }
 @keyframes vote-float-down {
-  0% { opacity: 1; transform: translateY(0) scale(1); }
-  100% { opacity: 0; transform: translateY(28px) scale(0.6); }
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(28px) scale(0.6);
+  }
 }
 .animate-vote-float-up {
   animation: vote-float-up 0.8s ease-out forwards;
@@ -489,9 +519,17 @@
 }
 
 @keyframes queue-shimmer {
-  0% { background-position: -100% 0; opacity: 1; }
-  80% { opacity: 1; }
-  100% { background-position: 200% 0; opacity: 0; }
+  0% {
+    background-position: -100% 0;
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    background-position: 200% 0;
+    opacity: 0;
+  }
 }
 .animate-queue-shimmer {
   position: relative;
@@ -514,5 +552,9 @@
   pointer-events: none;
   border-radius: inherit;
 }
-.shimmer-accent { --shimmer-color: var(--sa-accent); }
-.shimmer-white { --shimmer-color: rgba(255, 255, 255, 0.6); }
+.shimmer-accent {
+  --shimmer-color: var(--sa-accent);
+}
+.shimmer-white {
+  --shimmer-color: rgba(255, 255, 255, 0.6);
+}

@@ -1,5 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+export class TableSizeItem {
+  @ApiProperty() name!: string;
+  @ApiProperty() sizeMB!: number;
+}
+
 export class CleanupSummaryResponse {
   @ApiProperty() totalTracks!: number;
   @ApiProperty() totalPlayHistories!: number;
@@ -12,9 +17,9 @@ export class CleanupSummaryResponse {
   @ApiProperty() unplayedTracks!: number;
   @ApiProperty() staleTracksCount!: number;
   @ApiProperty() oldHistories30d!: number;
-  @ApiProperty() oldHistories90d!: number;
   @ApiProperty() inactiveRooms7d!: number;
   @ApiProperty() emptyInactiveRooms!: number;
   @ApiProperty() expiredGuests!: number;
   @ApiProperty() inactiveGuests30d!: number;
+  @ApiProperty({ type: [TableSizeItem] }) tableSizes!: TableSizeItem[];
 }

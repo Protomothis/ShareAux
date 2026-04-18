@@ -14,6 +14,14 @@ interface TrackState {
   elapsedMs: number;
 }
 
+/** 서버 track 객체에서 lyricsStatus 파싱 */
+function parseLyricsStatus(track: Track | undefined): LyricsStatus {
+  const ls = (track as Record<string, unknown> | undefined)?.lyricsStatus as string | undefined;
+  if (ls === 'found') return LyricsStatus.Found;
+  if (ls === 'not_found') return LyricsStatus.NotFound;
+  return LyricsStatus.Searching;
+}
+
 export function useRoomEvents(
   roomId: string,
   listeningRef: React.MutableRefObject<boolean>,
@@ -105,12 +113,10 @@ export function useRoomEvents(
 
         const trackChanged = d.track?.id !== _trackRef.current?.id;
 
-        // 곡 변경 시에만 가사/스킵 리셋
+        const trackLyricsStatus = d.track?.lyricsStatus;
+
+        // 곡 변경 시 가사/스킵 리셋
         if (trackChanged) {
-          // track.lyricsStatus가 이미 found면 바로 반영 (중간 입장자)
-          const trackLyricsStatus = (d.track as Record<string, unknown> | undefined)?.lyricsStatus as
-            | string
-            | undefined;
           setLyricsStatus(
             trackLyricsStatus === 'found'
               ? LyricsStatus.Found
@@ -121,6 +127,9 @@ export function useRoomEvents(
           setLyricsEnhanced(false);
           setSkipVotes(0);
           setStreamState('preparing');
+        } else if (trackLyricsStatus === 'found') {
+          // 같은 곡이지만 가사가 이미 found면 반영 (중간 입장자)
+          setLyricsStatus(LyricsStatus.Found);
         }
 
         if (d.isPlaying) {
@@ -282,6 +291,7 @@ export function useRoomEvents(
     goneRef,
     autoDjStatus,
     streamState,
+    setStreamState,
     markGone,
     mutedUntil,
   };

@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
 import type { InviteCode } from '@/api/model';
-import { PERM_EMOJI } from '@/lib/constants';
+import { buildPermLookup, usePermissionMeta } from '@/hooks/usePermissionMeta';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminPagination } from '@/components/admin/AdminPagination';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
@@ -27,6 +27,8 @@ export default function AdminInviteCodesPage() {
   const [actionTarget, setActionTarget] = useState<ActionTarget | null>(null);
 
   const { data, isLoading } = useAdminInviteCodes({ page, limit: LIMIT });
+  const { data: permMeta } = usePermissionMeta();
+  const perm = buildPermLookup(permMeta);
   const deactivate = useDeactivateInviteCode();
   const deleteCode = useDeleteInviteCode();
   const [deleting, setDeleting] = useState(false);
@@ -90,6 +92,7 @@ export default function AdminInviteCodesPage() {
             <InviteCodeCard
               key={item.id}
               item={item}
+              permLabel={perm.full}
               onCopy={copyLink}
               onDeactivate={() => setActionTarget({ id: item.id, type: 'deactivate' })}
               onDelete={() => setActionTarget({ id: item.id, type: 'delete' })}
@@ -120,13 +123,19 @@ export default function AdminInviteCodesPage() {
 
 interface InviteCodeCardProps {
   item: InviteCode;
+  permLabel: (key: string) => string;
   onCopy: (code: string) => void;
   onDeactivate: () => void;
   onDelete: () => void;
 }
 
-function InviteCodeCard({ item, onCopy, onDeactivate, onDelete }: InviteCodeCardProps) {
+function InviteCodeCard({ item, permLabel, onCopy, onDeactivate, onDelete }: InviteCodeCardProps) {
   const pct = Math.round((item.usedCount / item.maxUses) * 100);
+  const expiresLabel = item.expiresAt
+    ? new Date(item.expiresAt) < new Date()
+      ? '만료됨'
+      : new Date(item.expiresAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }) + ' 까지'
+    : '무기한';
 
   return (
     <div className="rounded-xl border border-white/5 bg-white/[0.03] p-3 sm:p-4">
@@ -157,18 +166,22 @@ function InviteCodeCard({ item, onCopy, onDeactivate, onDelete }: InviteCodeCard
         </div>
       </div>
 
-      <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-sa-text-muted">
+      {/* 권한 태그 */}
+      <div className="mt-2.5 flex flex-wrap gap-1.5">
+        {item.permissions.map((p) => (
+          <span key={p} className="rounded-md bg-white/5 px-1.5 py-0.5 text-[11px] text-sa-text-muted">
+            {permLabel(p)}
+          </span>
+        ))}
+      </div>
+
+      {/* 메타 정보 */}
+      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-sa-text-muted">
         <span>
           사용 <span className="font-medium text-white">{item.usedCount}</span>/{item.maxUses}
         </span>
         <span>회원가입 {item.allowRegistration ? '✓' : '✕'}</span>
-        <span className="flex gap-0.5">
-          {item.permissions.map((p) => (
-            <span key={p} title={p}>
-              {PERM_EMOJI[p] ?? p}
-            </span>
-          ))}
-        </span>
+        <span>{expiresLabel}</span>
       </div>
 
       <div className="mt-2 h-1 rounded-full bg-white/5">

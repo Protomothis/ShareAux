@@ -67,14 +67,19 @@ export class MemberService {
   }
 
   async transferHost(roomId: string): Promise<TransferHostResult | null> {
-    const next = await this.memberRepo.findOne({
-      where: { roomId },
-      order: { joinedAt: 'ASC' },
-      relations: ['user'],
-    });
-    if (!next) return null;
-    await this.roomRepo.update(roomId, { hostId: next.userId });
-    return { id: next.userId, nickname: next.user?.nickname ?? 'Unknown' };
+    // Host 권한이 있는 멤버 중 가장 먼저 입장한 사람 (1쿼리)
+    const candidate = await this.memberRepo
+      .createQueryBuilder('m')
+      .innerJoin(RoomPermission, 'rp', 'rp.room_id = m.room_id AND rp.user_id = m.user_id')
+      .leftJoinAndSelect('m.user', 'u')
+      .where('m.room_id = :roomId', { roomId })
+      .andWhere(`rp.permissions @> '"host"'`)
+      .orderBy('m.joined_at', 'ASC')
+      .getOne();
+    if (!candidate) return null;
+    await this.roomRepo.update(roomId, { hostId: candidate.userId });
+    await this.memberRepo.update({ roomId, userId: candidate.userId }, { role: 'host' });
+    return { id: candidate.userId, nickname: candidate.user?.nickname ?? 'Unknown' };
   }
 
   async transferHostTo(roomId: string, hostId: string, targetUserId: string): Promise<{ nickname: string }> {
@@ -83,12 +88,15 @@ export class MemberService {
     if (room.hostId !== hostId) throw new ForbiddenException('Only DJ can transfer');
     const target = await this.memberRepo.findOne({ where: { roomId, userId: targetUserId }, relations: ['user'] });
     if (!target) throw new NotFoundException('Member not found');
-    if (target.user?.role === UserRole.Guest) throw new ForbiddenException('게스트에게 DJ를 위임할 수 없습니다');
+    const targetPerm = await this.permRepo.findOneBy({ roomId, userId: targetUserId });
+    if (!targetPerm?.permissions.includes(Permission.Host)) {
+      throw new ForbiddenException('호스트 권한이 없는 멤버에게 위임할 수 없습니다');
+    }
     await this.roomRepo.update(roomId, { hostId: targetUserId });
     await this.memberRepo.update({ roomId, userId: targetUserId }, { role: 'host' });
     await this.memberRepo.update({ roomId, userId: hostId }, { role: 'member' });
 
-    // 새 호스트에게 전체 권한 부여, 이전 호스트에서 reorder 제거
+    // 새 호스트에게 전체 권한 부여, 이전 호스트에서 host 권한 제거
     const allPerms = Object.values(Permission);
     const newHostPerm = await this.permRepo.findOneBy({ roomId, userId: targetUserId });
     if (newHostPerm) {
@@ -96,8 +104,8 @@ export class MemberService {
       await this.permRepo.save(newHostPerm);
     }
     const oldHostPerm = await this.permRepo.findOneBy({ roomId, userId: hostId });
-    if (oldHostPerm && oldHostPerm.permissions.includes(Permission.Reorder)) {
-      oldHostPerm.permissions = oldHostPerm.permissions.filter((p) => p !== Permission.Reorder);
+    if (oldHostPerm && oldHostPerm.permissions.includes(Permission.Host)) {
+      oldHostPerm.permissions = oldHostPerm.permissions.filter((p) => p !== Permission.Host);
       await this.permRepo.save(oldHostPerm);
     }
     return { nickname: target.user?.nickname ?? 'Unknown' };
