@@ -23,6 +23,7 @@ import PasswordModal from '@/components/room/PasswordModal';
 import RoomNav from '@/components/room/RoomNav';
 import RoomSettingsModal from '@/components/room/RoomSettingsModal';
 import { MinLoading } from '@/components/common/MinLoading';
+import { WsDisconnectBanner } from '@/components/common/WsDisconnectBanner';
 import RoomSkeleton from '@/components/room/RoomSkeleton';
 import { Button } from '@/components/ui/button';
 import { useMyPermissions } from '@/hooks/useMyPermissions';
@@ -106,8 +107,13 @@ export default function RoomClient({ id }: { id: string }) {
   } = events;
 
   // --- Audio ---
-  const roomAudio = useRoomAudio(audioLoadingRef, setAudioLoading);
+  const roomAudio = useRoomAudio(audioLoadingRef, setAudioLoading, () => wsActionsRef.current?.sendResync());
   const { audio, listening, volume, onAudio, handleListenToggle, handleVolumeChange } = roomAudio;
+  useEffect(() => {
+    if (streamState === 'skipping' || streamState === 'preparing') {
+      void audio.prepareResync();
+    }
+  }, [streamState, audio]);
   useEffect(() => {
     listeningRef.current = listening;
   }, [listening, listeningRef]);
@@ -139,7 +145,7 @@ export default function RoomClient({ id }: { id: string }) {
   const wsReady = !!userId;
   const wsActionsRef = useRef<{ sendListening: (v: boolean) => void; sendResync: () => void }>(null!);
 
-  const { sendChat, sendListening, sendReaction, sendResync, getOneWay } = useWebSocket({
+  const { sendChat, sendListening, sendReaction, sendResync, getOneWay, wsConnected } = useWebSocket({
     url: `${getWsUrl()}?roomId=${id}`,
     enabled: wsReady,
     onAudio,
@@ -333,6 +339,8 @@ export default function RoomClient({ id }: { id: string }) {
         onSettings={() => setShowSettings(true)}
         onLeave={() => setShowLeaveConfirm(true)}
       />
+
+      <WsDisconnectBanner connected={wsConnected} />
 
       {/* Mobile Player */}
       <div className="shrink-0 border-b border-white/[0.06] lg:hidden">

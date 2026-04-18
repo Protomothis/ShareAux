@@ -292,7 +292,7 @@ export function useRoomEvents(
 
   // listening 중일 때 audio.currentTime 기반으로 elapsedBase 갱신
   useEffect(() => {
-    if (!isPlaying) return;
+    if (!isPlaying || streamState !== 'streaming') return;
     const id = setInterval(() => {
       if (!listeningRef.current || !getCurrentTimeRef?.current) return;
       const audioMs = getCurrentTimeRef.current();
@@ -302,7 +302,7 @@ export function useRoomEvents(
       }
     }, 250);
     return () => clearInterval(id);
-  }, [isPlaying, listeningRef, getCurrentTimeRef]);
+  }, [isPlaying, streamState, listeningRef, getCurrentTimeRef]);
 
   return {
     messages,

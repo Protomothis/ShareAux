@@ -24,7 +24,7 @@ import {
  * - audio.load() 절대 호출 안 함 → autoplay 정책 안 걸림
  * - 모든 프레임은 queue에 쌓고 flush로 순차 append
  */
-export function useAudio(onPlaying?: () => void) {
+export function useAudio(onPlaying?: () => void, onStall?: () => void) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const msRef = useRef<ManagedMediaSourceLike | null>(null);
   const sbRef = useRef<SourceBuffer | null>(null);
@@ -37,9 +37,11 @@ export function useAudio(onPlaying?: () => void) {
   const resettingRef = useRef(false);
 
   const onPlayingRef = useRef(onPlaying);
+  const onStallRef = useRef(onStall);
   useEffect(() => {
     onPlayingRef.current = onPlaying;
-  }, [onPlaying]);
+    onStallRef.current = onStall;
+  }, [onPlaying, onStall]);
 
   // --- flush: queue에서 하나씩 SourceBuffer에 append ---
   const flush = useCallback(() => {
@@ -57,6 +59,7 @@ export function useAudio(onPlaying?: () => void) {
   }, []);
 
   const needsFirstPlayRef = useRef(true);
+  const stallTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // --- clearBuffer: SourceBuffer 데이터만 클리어 (MSE/Audio 유지) ---
   const clearBuffer = useCallback((): Promise<void> => {
@@ -78,7 +81,6 @@ export function useAudio(onPlaying?: () => void) {
 
       const finish = () => {
         resettingRef.current = false;
-        if (audioRef.current) audioRef.current.currentTime = 0;
         resolve();
       };
 
@@ -169,6 +171,7 @@ export function useAudio(onPlaying?: () => void) {
     audio.addEventListener('timeupdate', () => {
       if (needsFirstPlayRef.current) {
         needsFirstPlayRef.current = false;
+        clearTimeout(stallTimerRef.current);
         onPlayingRef.current?.();
       }
     });
@@ -263,8 +266,17 @@ export function useAudio(onPlaying?: () => void) {
           debug('[audio] track change, clearing buffer');
           void clearBuffer().then(() => {
             gotInitRef.current = true;
+            if (audioRef.current) audioRef.current.currentTime = 0;
             queueRef.current.push(copyToArrayBuffer(data));
             flush();
+            // 5초 내 재생 안 시작되면 stall 콜백
+            clearTimeout(stallTimerRef.current);
+            stallTimerRef.current = setTimeout(() => {
+              if (needsFirstPlayRef.current) {
+                debug('[audio] stall detected, requesting resync');
+                onStallRef.current?.();
+              }
+            }, 3000);
           });
           return;
         }
@@ -301,10 +313,18 @@ export function useAudio(onPlaying?: () => void) {
   /** 현재 오디오 재생 위치 (ms) */
   const getCurrentTime = useCallback(() => (audioRef.current?.currentTime ?? 0) * 1000, []);
 
+  // resync/곡 전환 준비 — 버퍼 클리어 + 다음 init을 첫 init으로 인식
+  const prepareResync = useCallback(() => {
+    gotInitRef.current = false;
+    clearTimeout(stallTimerRef.current);
+    return clearBuffer();
+  }, [clearBuffer]);
+
   return {
     init,
     pause,
     pushFrame,
+    prepareResync,
     setVolume,
     setMuted,
     getAnalyser,

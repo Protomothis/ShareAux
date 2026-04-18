@@ -18,13 +18,12 @@ export function useAudioControl({ elapsedBase, syncTime, isPlaying, volume, onVo
       setElapsed(0);
       return;
     }
+    // elapsedBase/syncTime 변경 시 즉시 반영 (interval 기다리지 않음)
+    const now = Math.max(0, elapsedBase + (Date.now() - syncTime));
+    setElapsed(now);
     const tick = () => setElapsed(Math.max(0, elapsedBase + (Date.now() - syncTime)));
-    const initial = setTimeout(tick, 0);
     const id = setInterval(tick, 500);
-    return () => {
-      clearTimeout(initial);
-      clearInterval(id);
-    };
+    return () => clearInterval(id);
   }, [elapsedBase, syncTime, isPlaying]);
 
   const displayElapsed = isPlaying ? elapsed : 0;
