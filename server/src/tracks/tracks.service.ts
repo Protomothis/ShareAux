@@ -1,9 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { AppException } from '../exceptions/app.exception.js';
 import { TrackStats } from '../entities/track-stats.entity.js';
 import { TrackVote } from '../entities/track-vote.entity.js';
+import { ErrorCode } from '../types/error-code.enum.js';
 
 @Injectable()
 export class TracksService {
@@ -35,7 +37,7 @@ export class TracksService {
 
   async removeVote(trackId: string, userId: string) {
     const existing = await this.voteRepo.findOneBy({ trackId, userId });
-    if (!existing) throw new NotFoundException('투표 기록이 없습니다');
+    if (!existing) throw new AppException(ErrorCode.COMMON_003);
     await this.voteRepo.remove(existing);
     const counts = await this.syncVoteCounts(trackId);
     return { vote: 0, ...counts };

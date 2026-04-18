@@ -159,7 +159,6 @@ export default function RoomSettingsModal({
       toast.success('설정이 저장되었습니다');
       onClose();
     } catch {
-      toast.error('설정 저장 실패');
     } finally {
       setSaving(false);
     }
@@ -172,7 +171,6 @@ export default function RoomSettingsModal({
       await roomsControllerResetEnqueueCounts(roomId);
       toast.success('신청 횟수가 초기화되었습니다');
     } catch {
-      toast.error('초기화 실패');
     } finally {
       setResettingEnqueue(false);
     }
@@ -187,7 +185,6 @@ export default function RoomSettingsModal({
       setBans([]);
       setMutes([]);
     } catch {
-      toast.error('초기화 실패');
     } finally {
       setResettingBans(false);
     }
@@ -201,7 +198,6 @@ export default function RoomSettingsModal({
       setBans((prev) => prev.filter((b) => b.userId !== userId));
       toast.success('추방이 해제되었습니다');
     } catch {
-      toast.error('해제 실패');
     } finally {
       setUnbanningId(null);
     }
@@ -215,7 +211,6 @@ export default function RoomSettingsModal({
       setMutes((prev) => prev.filter((m) => m.userId !== userId));
       toast.success('채팅 제한이 해제되었습니다');
     } catch {
-      toast.error('해제 실패');
     } finally {
       setUnmutingId(null);
     }
@@ -231,74 +226,82 @@ export default function RoomSettingsModal({
         <RoomSettingsForm mode="edit" values={values} onChange={set} errors={errors} onClearError={clearError} />
 
         {/* 곡 신청 횟수 초기화 */}
-        <Button variant="outline" size="sm" className="w-full" onClick={handleResetEnqueue} disabled={resettingEnqueue}>
-          {resettingEnqueue ? <Loader2 size={14} className="animate-spin" /> : '신청 횟수 초기화'}
-        </Button>
+        <div className="mt-4 border-t border-white/10 pt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={handleResetEnqueue}
+            disabled={resettingEnqueue}
+          >
+            {resettingEnqueue ? <Loader2 size={14} className="animate-spin" /> : '신청 횟수 초기화'}
+          </Button>
+        </div>
 
         {/* 제재 관리 */}
-        <FormSection title="제재 관리">
-          <div className="flex items-center justify-between">
-            {(bans.length > 0 || mutes.length > 0) && (
-              <Button
-                variant="link"
-                size="sm"
-                className="h-auto p-0 text-destructive"
-                onClick={handleResetBans}
-                disabled={resettingBans}
-              >
-                {resettingBans ? <Loader2 size={12} className="animate-spin" /> : '전체 해제'}
-              </Button>
+        <div className="mt-4 border-t border-white/10 pt-4">
+          <FormSection title="제재 관리">
+            {bans.length === 0 && mutes.length === 0 ? (
+              <p className="py-2 text-center text-xs text-muted-foreground">제재된 멤버가 없습니다</p>
+            ) : (
+              <>
+                <div className="max-h-36 space-y-1 overflow-y-auto">
+                  {mutes.map((m) => (
+                    <div
+                      key={`mute-${m.userId}`}
+                      className="flex items-center justify-between rounded-md bg-muted px-2.5 py-1.5"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <span className="truncate text-sm">{m.nickname}</span>
+                        <span className="ml-1.5 text-xs text-muted-foreground">
+                          🔇 채팅 제한 ({Math.ceil(m.remainingSec / 60)}분 남음)
+                        </span>
+                      </div>
+                      <Button
+                        variant="link"
+                        size="sm"
+                        className="h-auto shrink-0 p-0"
+                        onClick={() => handleUnmute(m.userId)}
+                        disabled={unmutingId === m.userId}
+                      >
+                        {unmutingId === m.userId ? <Loader2 size={12} className="animate-spin" /> : '해제'}
+                      </Button>
+                    </div>
+                  ))}
+                  {bans.map((b) => (
+                    <div
+                      key={`ban-${b.userId}`}
+                      className="flex items-center justify-between rounded-md bg-muted px-2.5 py-1.5"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <span className="truncate text-sm">{b.nickname}</span>
+                        <span className="ml-1.5 text-xs text-muted-foreground">🚫 추방됨</span>
+                      </div>
+                      <Button
+                        variant="link"
+                        size="sm"
+                        className="h-auto shrink-0 p-0"
+                        onClick={() => handleUnban(b.userId)}
+                        disabled={unbanningId === b.userId}
+                      >
+                        {unbanningId === b.userId ? <Loader2 size={12} className="animate-spin" /> : '해제'}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+                <Button
+                  variant="link"
+                  size="sm"
+                  className="mt-1 h-auto p-0 text-xs text-destructive"
+                  onClick={handleResetBans}
+                  disabled={resettingBans}
+                >
+                  {resettingBans ? <Loader2 size={12} className="animate-spin" /> : '전체 해제'}
+                </Button>
+              </>
             )}
-          </div>
-          {bans.length === 0 && mutes.length === 0 ? (
-            <p className="text-xs text-muted-foreground">제재된 멤버가 없습니다</p>
-          ) : (
-            <div className="max-h-36 space-y-1 overflow-y-auto">
-              {mutes.map((m) => (
-                <div
-                  key={`mute-${m.userId}`}
-                  className="flex items-center justify-between rounded-md bg-muted px-2.5 py-1.5"
-                >
-                  <div className="min-w-0 flex-1">
-                    <span className="truncate text-sm">{m.nickname}</span>
-                    <span className="ml-1.5 text-xs text-muted-foreground">
-                      🔇 채팅 제한 ({Math.ceil(m.remainingSec / 60)}분 남음)
-                    </span>
-                  </div>
-                  <Button
-                    variant="link"
-                    size="sm"
-                    className="h-auto shrink-0 p-0"
-                    onClick={() => handleUnmute(m.userId)}
-                    disabled={unmutingId === m.userId}
-                  >
-                    {unmutingId === m.userId ? <Loader2 size={12} className="animate-spin" /> : '해제'}
-                  </Button>
-                </div>
-              ))}
-              {bans.map((b) => (
-                <div
-                  key={`ban-${b.userId}`}
-                  className="flex items-center justify-between rounded-md bg-muted px-2.5 py-1.5"
-                >
-                  <div className="min-w-0 flex-1">
-                    <span className="truncate text-sm">{b.nickname}</span>
-                    <span className="ml-1.5 text-xs text-muted-foreground">🚫 추방됨</span>
-                  </div>
-                  <Button
-                    variant="link"
-                    size="sm"
-                    className="h-auto shrink-0 p-0"
-                    onClick={() => handleUnban(b.userId)}
-                    disabled={unbanningId === b.userId}
-                  >
-                    {unbanningId === b.userId ? <Loader2 size={12} className="animate-spin" /> : '해제'}
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-        </FormSection>
+          </FormSection>
+        </div>
       </Modal.Body>
 
       <Modal.Footer>

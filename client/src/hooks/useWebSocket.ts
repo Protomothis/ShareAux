@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { WsCloseCode, WsOpCode, WS_MAX_DELAY, WS_MAX_RETRIES } from '@/lib/constants';
 import { debug } from '@/lib/debug';
@@ -42,6 +42,9 @@ export function useWebSocket({
     ws.send(buf);
   }, []);
 
+  const [wsConnected, setWsConnected] = useState(true);
+  const wasConnectedRef = useRef(false);
+
   const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN || wsRef.current?.readyState === WebSocket.CONNECTING) return;
 
@@ -53,6 +56,8 @@ export function useWebSocket({
 
     ws.onopen = () => {
       debug('[WS] connected');
+      setWsConnected(true);
+      wasConnectedRef.current = true;
       const wasReconnect = hasConnectedRef.current;
       hasConnectedRef.current = true;
       retriesRef.current = 0;
@@ -103,6 +108,7 @@ export function useWebSocket({
 
     ws.onclose = (e) => {
       debug('[WS] closed, code:', e.code, 'retry:', retriesRef.current);
+      if (wasConnectedRef.current) setWsConnected(false);
       clearInterval(heartbeatRef.current);
       if (e.code === WsCloseCode.Kicked) {
         callbacksRef.current.onSystem?.({ event: 'kicked', detail: '방에서 추방되었습니다' });
@@ -213,5 +219,5 @@ export function useWebSocket({
 
   const getOneWay = useCallback(() => oneWayRef.current, []);
 
-  return { sendChat, sendResync, sendListening, sendReaction, getOneWay };
+  return { sendChat, sendResync, sendListening, sendReaction, getOneWay, wsConnected };
 }

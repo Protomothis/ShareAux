@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { nanoid } from 'nanoid';
@@ -10,6 +10,9 @@ import {
   QUEUE_PLAYED_RETENTION_DAYS,
   TRACK_UNUSED_DAYS,
 } from '../constants.js';
+
+import { AppException } from '../exceptions/app.exception.js';
+import { ErrorCode } from '../types/error-code.enum.js';
 
 import { InviteCode } from '../entities/invite-code.entity.js';
 import { Report } from '../entities/report.entity.js';
@@ -89,22 +92,22 @@ export class AdminService {
 
   async updateUserRole(userId: string, role: UserRole) {
     const user = await this.userRepo.findOneBy({ id: userId });
-    if (!user) throw new NotFoundException('User not found');
-    if (user.role === UserRole.SuperAdmin) throw new ForbiddenException('superAdmin 역할은 변경할 수 없습니다');
+    if (!user) throw new AppException(ErrorCode.ADMIN_002);
+    if (user.role === UserRole.SuperAdmin) throw new AppException(ErrorCode.ADMIN_005);
     user.role = role;
     return this.userRepo.save(user);
   }
 
   async updateAccountPermissions(userId: string, permissions: Permission[]): Promise<void> {
     const user = await this.userRepo.findOneBy({ id: userId });
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) throw new AppException(ErrorCode.ADMIN_002);
     await this.userRepo.update(userId, { accountPermissions: permissions });
   }
 
   async banUser(userId: string): Promise<void> {
     const user = await this.userRepo.findOneBy({ id: userId });
-    if (!user) throw new NotFoundException('User not found');
-    if (user.role === UserRole.SuperAdmin) throw new ForbiddenException('SuperAdmin은 밴할 수 없습니다');
+    if (!user) throw new AppException(ErrorCode.ADMIN_002);
+    if (user.role === UserRole.SuperAdmin) throw new AppException(ErrorCode.ADMIN_006);
     await this.userRepo.update(userId, { bannedAt: new Date() });
   }
 
@@ -141,7 +144,7 @@ export class AdminService {
 
   async deleteRoom(roomId: string) {
     const room = await this.roomRepo.findOneBy({ id: roomId });
-    if (!room) throw new NotFoundException('Room not found');
+    if (!room) throw new AppException(ErrorCode.ROOM_001);
     await this.roomRepo.remove(room);
     return { deleted: true };
   }
@@ -174,14 +177,14 @@ export class AdminService {
 
   async deactivateInviteCode(id: string) {
     const code = await this.inviteCodeRepo.findOneBy({ id });
-    if (!code) throw new NotFoundException('Invite code not found');
+    if (!code) throw new AppException(ErrorCode.ADMIN_003);
     code.isActive = false;
     return this.inviteCodeRepo.save(code);
   }
 
   async deleteInviteCode(id: string) {
     const code = await this.inviteCodeRepo.findOneBy({ id });
-    if (!code) throw new NotFoundException('Invite code not found');
+    if (!code) throw new AppException(ErrorCode.ADMIN_003);
     await this.inviteCodeRepo.remove(code);
     return { success: true };
   }
@@ -244,7 +247,7 @@ export class AdminService {
 
   async getUserDetail(userId: string) {
     const user = await this.userRepo.findOneBy({ id: userId });
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) throw new AppException(ErrorCode.ADMIN_002);
 
     const [roomCount, trackHistory, totalPlays] = await Promise.all([
       this.memberRepo.count({ where: { user: { id: userId } } }),
@@ -317,7 +320,7 @@ export class AdminService {
 
   async getRoomLiveDetail(roomId: string) {
     const room = await this.roomRepo.findOne({ where: { id: roomId }, relations: ['host'] });
-    if (!room) throw new NotFoundException('Room not found');
+    if (!room) throw new AppException(ErrorCode.ROOM_001);
 
     const [playback, members, queueItems] = await Promise.all([
       this.playbackRepo.findOne({ where: { roomId }, relations: ['track'] }),
@@ -547,7 +550,7 @@ export class AdminService {
 
   async resolveReport(reportId: string, resolvedByUserId: string, status: string) {
     const report = await this.reportRepo.findOneBy({ id: reportId });
-    if (!report) throw new NotFoundException('Report not found');
+    if (!report) throw new AppException(ErrorCode.ADMIN_004);
     report.status = status;
     report.resolvedBy = resolvedByUserId;
     report.resolvedAt = new Date();

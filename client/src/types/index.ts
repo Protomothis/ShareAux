@@ -1,4 +1,5 @@
 export type { TokenPayload } from './auth.types';
+export type { ServerErrorBody } from './error.types';
 export type { ChatMessage, FloatingReaction, SystemMessage } from './chat.types';
 export { LyricsStatus } from './player.types';
 export type {

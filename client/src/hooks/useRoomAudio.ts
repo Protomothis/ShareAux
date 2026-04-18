@@ -1,19 +1,31 @@
 'use client';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { debug } from '@/lib/debug';
 
 import { useAudio } from './useAudio';
 
-export function useRoomAudio(audioLoadingRef: React.MutableRefObject<boolean>, setAudioLoading: (v: boolean) => void) {
-  const audio = useAudio(() => {
-    if (audioLoadingRef.current) {
-      debug('[roomAudio] audio ready, clearing loading state');
-      audioLoadingRef.current = false;
-      setAudioLoading(false);
-    }
-  });
+export function useRoomAudio(
+  audioLoadingRef: React.MutableRefObject<boolean>,
+  setAudioLoading: (v: boolean) => void,
+  onStall?: () => void,
+) {
+  const onStallRef = useRef(onStall);
+  useEffect(() => {
+    onStallRef.current = onStall;
+  }, [onStall]);
+
+  const audio = useAudio(
+    () => {
+      if (audioLoadingRef.current) {
+        debug('[roomAudio] audio ready, clearing loading state');
+        audioLoadingRef.current = false;
+        setAudioLoading(false);
+      }
+    },
+    () => onStallRef.current?.(),
+  );
 
   const [listening, setListening] = useState(false);
   const listeningRef = useRef(false);
@@ -54,7 +66,7 @@ export function useRoomAudio(audioLoadingRef: React.MutableRefObject<boolean>, s
         setListening(true);
         sendListening(true);
         // clearBuffer 완료 후 다음 마이크로태스크에서 resync
-        setTimeout(() => sendResync?.(), 0);
+        void audio.prepareResync().then(() => sendResync?.());
       } else {
         audio.pause();
         setListening(false);

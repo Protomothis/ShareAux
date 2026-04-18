@@ -69,9 +69,7 @@ export default function MemberPermissionModal({
       await roomsControllerUpdatePermissions(roomId, member.userId, { permissions: updated });
       invalidate.room(roomId);
       toast.success('권한이 변경되었습니다');
-    } catch {
-      toast.error('변경 실패');
-    }
+    } catch {}
     setSaving(false);
   };
 
@@ -81,9 +79,7 @@ export default function MemberPermissionModal({
       toast.success('DJ가 위임되었습니다');
       invalidate.room(roomId);
       onClose();
-    } catch {
-      toast.error('위임 실패');
-    }
+    } catch {}
   };
 
   const handleKick = async () => {
@@ -92,9 +88,7 @@ export default function MemberPermissionModal({
       toast.success('추방되었습니다');
       invalidate.room(roomId);
       onClose();
-    } catch {
-      toast.error('추방 실패');
-    }
+    } catch {}
   };
 
   /** 권한 상태 판별 */

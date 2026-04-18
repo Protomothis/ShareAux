@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- YouTube innertube API has no types */
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 
 import { YTDLP_FORMAT, YTDLP_PLAYLIST_MAX_BUFFER, YTDLP_PLAYLIST_TIMEOUT_MS, YTDLP_TIMEOUT_MS } from '../constants.js';
+import { AppException } from '../exceptions/app.exception.js';
 import type { AudioInfo } from '../types/index.js';
+import { ErrorCode } from '../types/error-code.enum.js';
 
 import * as innertube from './innertube-parser.js';
 
@@ -127,7 +129,7 @@ export class YtdlpService {
       return stdout.trim();
     } catch (e) {
       this.logger.warn(`Failed to get audio URL for ${videoId}`, e instanceof Error ? e.message : e);
-      throw new NotFoundException(`Audio URL not found for ${videoId}`);
+      throw new AppException(ErrorCode.PLAYER_008);
     }
   }
 
@@ -145,7 +147,7 @@ export class YtdlpService {
       };
     } catch (e) {
       this.logger.warn(`Failed to get audio info for ${videoId}`, e instanceof Error ? e.message : e);
-      throw new NotFoundException(`Audio info not found for ${videoId}`);
+      throw new AppException(ErrorCode.PLAYER_007);
     }
   }
 

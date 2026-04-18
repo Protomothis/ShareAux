@@ -303,6 +303,46 @@
     background-position: -200% center;
   }
 }
+@keyframes thumbnail-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+.animate-thumbnail-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.animate-thumbnail-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.4) 50%, transparent 70%);
+  animation: thumbnail-shimmer 1s ease-in-out infinite;
+}
+@keyframes text-shimmer {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+.animate-text-shimmer {
+  background: linear-gradient(
+    110deg,
+    rgba(255, 255, 255, 0.4) 30%,
+    rgba(255, 255, 255, 0.9) 50%,
+    rgba(255, 255, 255, 0.4) 70%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: text-shimmer 1.5s linear infinite;
+}
 @keyframes shimmer-opacity {
   0%,
   100% {

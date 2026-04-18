@@ -1,9 +1,11 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { AppException } from '../exceptions/app.exception.js';
 import { Room } from '../entities/room.entity.js';
 import { Permission } from '../types/permission.enum.js';
+import { ErrorCode } from '../types/error-code.enum.js';
 import { RoomPermission } from '../entities/room-permission.entity.js';
 import { RoomQueue } from '../entities/room-queue.entity.js';
 import { Track } from '../entities/track.entity.js';
@@ -78,10 +80,10 @@ export class QueueService {
 
   async addTrack(roomId: string, trackId: string, userId: string) {
     const dup = await this.queueRepo.findOneBy({ room: { id: roomId }, track: { id: trackId }, played: false });
-    if (dup) throw new ConflictException('Track already in queue');
+    if (dup) throw new AppException(ErrorCode.QUEUE_002);
 
     const total = await this.queueRepo.countBy({ room: { id: roomId }, played: false });
-    if (total >= 50) throw new BadRequestException('Queue limit reached (50)');
+    if (total >= 50) throw new AppException(ErrorCode.QUEUE_004);
 
     const room = await this.roomRepo.findOneBy({ id: roomId });
     const isPrivileged = room?.hostId === userId;
@@ -95,14 +97,12 @@ export class QueueService {
         .andWhere('q.added_at >= :since', { since })
         .getCount();
       if (recentCount >= room.enqueueLimitPerWindow) {
-        throw new BadRequestException(
-          `${room.enqueueWindowMin}분 동안 ${room.enqueueLimitPerWindow}곡까지 신청 가능합니다`,
-        );
+        throw new AppException(ErrorCode.QUEUE_005);
       }
     }
 
     const userCount = await this.queueRepo.countBy({ room: { id: roomId }, addedBy: { id: userId }, played: false });
-    if (userCount >= 10) throw new BadRequestException('Per-user limit reached (10)');
+    if (userCount >= 10) throw new AppException(ErrorCode.QUEUE_005);
 
     const max = await this.queueRepo
       .createQueryBuilder('q')
@@ -122,14 +122,14 @@ export class QueueService {
 
   async addTracks(roomId: string, trackIds: string[], userId: string) {
     const total = await this.queueRepo.countBy({ room: { id: roomId }, played: false });
-    if (total + trackIds.length > 50) throw new BadRequestException('Queue limit reached (50)');
+    if (total + trackIds.length > 50) throw new AppException(ErrorCode.QUEUE_004);
 
     const room = await this.roomRepo.findOneBy({ id: roomId });
     const isPrivileged = room?.hostId === userId;
 
     // 호스트가 아니면 maxSelectPerAdd 제한 적용
     if (!isPrivileged && room && trackIds.length > room.maxSelectPerAdd) {
-      throw new BadRequestException(`한 번에 ${room.maxSelectPerAdd}곡까지 추가할 수 있습니다`);
+      throw new AppException(ErrorCode.QUEUE_007);
     }
 
     // 중복 제거
@@ -140,7 +140,7 @@ export class QueueService {
     });
     const existingIds = new Set(existing.map((q) => q.track.id));
     const unique = trackIds.filter((id) => !existingIds.has(id));
-    if (!unique.length) throw new ConflictException('All tracks already in queue');
+    if (!unique.length) throw new AppException(ErrorCode.QUEUE_003);
 
     if (!isPrivileged && room) {
       const since = new Date(Date.now() - room.enqueueWindowMin * 60_000);
@@ -151,9 +151,7 @@ export class QueueService {
         .andWhere('q.added_at >= :since', { since })
         .getCount();
       if (recentCount + unique.length > room.enqueueLimitPerWindow) {
-        throw new BadRequestException(
-          `${room.enqueueWindowMin}분 동안 ${room.enqueueLimitPerWindow}곡까지 신청 가능합니다`,
-        );
+        throw new AppException(ErrorCode.QUEUE_005);
       }
     }
 
@@ -180,11 +178,11 @@ export class QueueService {
       where: { id: queueId, room: { id: roomId } },
       relations: ['addedBy'],
     });
-    if (!entry) throw new BadRequestException('Queue entry not found');
+    if (!entry) throw new AppException(ErrorCode.QUEUE_001);
 
     const room = await this.roomRepo.findOneBy({ id: roomId });
     if (entry.addedBy?.id !== userId && room?.hostId !== userId) {
-      throw new ForbiddenException('Not allowed');
+      throw new AppException(ErrorCode.COMMON_001);
     }
 
     await this.queueRepo.remove(entry);
@@ -193,7 +191,7 @@ export class QueueService {
   async reorder(roomId: string, queueId: string, newPosition: number, version: number) {
     return this.queueRepo.manager.transaction(async (em) => {
       const item = await em.findOne(RoomQueue, { where: { id: queueId, room: { id: roomId }, version } });
-      if (!item) throw new ConflictException('Version conflict');
+      if (!item) throw new AppException(ErrorCode.QUEUE_006);
       const oldPos = item.position;
       if (oldPos === newPosition) return;
 
