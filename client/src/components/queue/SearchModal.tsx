@@ -242,7 +242,7 @@ export default function SearchModal({
         </div>
       </Modal.Body>
 
-      <Modal.Footer className="border-0 px-5 py-3">
+      <Modal.Footer className="border-0 px-5 py-3 sm:flex-col sm:items-stretch">
         <SearchSelectedBar
           selected={selected}
           adding={adding}

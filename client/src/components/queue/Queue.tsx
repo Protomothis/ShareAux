@@ -22,8 +22,7 @@ import QueueTrackItem from './QueueTrackItem';
 import SearchModal from './SearchModal';
 import SortableItem from './SortableItem';
 
-// 모듈 스코프 — 리마운트되어도 shimmer 재생 이력 유지
-const shimmeredIds = new Set<string>();
+// Queue 컴포넌트
 
 function OverlayItem({ item }: { item: RoomQueue }) {
   return (
@@ -66,20 +65,21 @@ export default function Queue({
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
   // 이미 본 아이템 ID 추적 — shimmer/stagger는 처음 나타날 때만
-  const initializedRef = useRef(false);
-  if (!initializedRef.current) {
-    queue.forEach((q) => shimmeredIds.add(q.id));
-    initializedRef.current = true;
+  const seenIdsRef = useRef<Set<string>>(null);
+  if (!seenIdsRef.current) {
+    seenIdsRef.current = new Set(queue.map((q) => q.id));
   }
   const staggerMap = useMemo(() => {
+    const seen = seenIdsRef.current!;
     const stagger = new Map<string, number>();
     let idx = 0;
     for (const q of queue) {
-      if (!shimmeredIds.has(q.id)) {
+      if (!seen.has(q.id)) {
         stagger.set(q.id, idx++);
-        shimmeredIds.add(q.id);
       }
     }
+    // 등록은 useMemo 밖에서 — 다음 렌더에서 중복 방지
+    for (const id of stagger.keys()) seen.add(id);
     return stagger;
   }, [queue]);
 
@@ -156,7 +156,10 @@ export default function Queue({
             onDragCancel={dnd.handleDragCancel}
           >
             <SortableContext items={dnd.items.map((q) => q.id)} strategy={verticalListSortingStrategy}>
-              <div className={`min-h-0 flex-1 overflow-y-auto pb-1 ${busy ? 'pointer-events-none' : ''}`} role="list">
+              <div
+                className={`min-h-0 flex-1 overflow-x-hidden overflow-y-auto pb-1 ${busy ? 'pointer-events-none' : ''}`}
+                role="list"
+              >
                 <AnimatePresence initial={false}>
                   {dnd.items.map((item) => (
                     <SortableItem
