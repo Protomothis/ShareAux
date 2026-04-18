@@ -14,14 +14,6 @@ interface TrackState {
   elapsedMs: number;
 }
 
-/** 서버 track 객체에서 lyricsStatus 파싱 */
-function parseLyricsStatus(track: Track | undefined): LyricsStatus {
-  const ls = (track as Record<string, unknown> | undefined)?.lyricsStatus as string | undefined;
-  if (ls === 'found') return LyricsStatus.Found;
-  if (ls === 'not_found') return LyricsStatus.NotFound;
-  return LyricsStatus.Searching;
-}
-
 export function useRoomEvents(
   roomId: string,
   listeningRef: React.MutableRefObject<boolean>,
@@ -57,112 +49,152 @@ export function useRoomEvents(
     setMessages((prev) => prev.slice(-200).concat({ ...data, type: 'chat' }));
   }, []);
 
+  // ─── Navigation events (kick, close, duplicate) ───────
+  const handleNavigation = useCallback(
+    (event: string, detail: string) => {
+      if (goneRef.current) return true;
+      const nav: Record<string, { msg: string; level: 'info' | 'error' }> = {
+        [WsEvent.roomClosed]: { msg: '방이 종료되었습니다', level: 'info' },
+        kicked: { msg: '방에서 추방되었습니다', level: 'error' },
+        duplicateSession: { msg: '다른 기기에서 접속하여 연결이 종료되었습니다', level: 'info' },
+        joinedOtherRoom: { msg: '', level: 'info' },
+      };
+      const entry = nav[event];
+      if (!entry) return false;
+      goneRef.current = true;
+      if (entry.msg) toast[entry.level](entry.msg);
+      router.push('/rooms');
+      return true;
+    },
+    [router],
+  );
+
+  // ─── Playback: streamState-only update ────────────────
+  const handleStreamStateOnly = useCallback(
+    (ss: string) => {
+      if ((ss === 'preparing' || ss === 'skipping') && listeningRef.current) {
+        audioLoadingRef.current = true;
+        setAudioLoading(true);
+      }
+      if (ss === 'skipping' || ss === 'preparing') {
+        setStreamState(ss as StreamState);
+        setElapsedBase(0);
+        setSyncTime(0);
+      }
+    },
+    [listeningRef],
+  );
+
+  // ─── Playback: track change (lyrics/skip reset) ──────
+  const handleTrackChange = useCallback((track: Track | undefined) => {
+    const ls = track?.lyricsStatus;
+    setLyricsStatus(
+      ls === 'found' ? LyricsStatus.Found : ls === 'not_found' ? LyricsStatus.NotFound : LyricsStatus.Searching,
+    );
+    setLyricsEnhanced(false);
+    setSkipVotes(0);
+    setStreamState('preparing');
+  }, []);
+
+  // ─── Playback: time sync ──────────────────────────────
+  const handleTimeSync = useCallback(
+    (d: { elapsedMs?: number; streamState?: string }, trackChanged: boolean) => {
+      const ow = getOneWayRef?.current() ?? 0;
+      if (trackChanged) {
+        setElapsedBase((d.elapsedMs ?? 0) + ow);
+        setSyncTime(Date.now());
+      } else if (d.elapsedMs != null) {
+        if (d.streamState === 'streaming') {
+          // preparing→streaming 전환: 서버가 startedAt 리셋 → 무조건 동기화
+          setElapsedBase((d.elapsedMs ?? 0) + ow);
+          setSyncTime(Date.now());
+        } else {
+          // 같은 곡: drift 2초 이상이면 보정
+          setElapsedBase((prevBase) => {
+            setSyncTime((prevSync) => {
+              const clientElapsed = prevBase + (Date.now() - prevSync);
+              return Math.abs(clientElapsed - d.elapsedMs!) > 2000 ? Date.now() : prevSync;
+            });
+            const corrected = d.elapsedMs! + ow;
+            return Math.abs(corrected - prevBase) > 2000 ? corrected : prevBase;
+          });
+        }
+      }
+    },
+    [getOneWayRef],
+  );
+
+  // ─── Playback: stopped ────────────────────────────────
+  const handleStopped = useCallback(() => {
+    setTrack(null);
+    setElapsedBase(0);
+    setSyncTime(0);
+    setStreamState('idle');
+  }, []);
+
+  // ─── Playback: main handler ───────────────────────────
+  const handlePlayback = useCallback(
+    (d: { track?: Track; elapsedMs?: number; isPlaying?: boolean; streamState?: string }) => {
+      debug('[page] playback_updated', d.track?.name, 'state:', d.streamState);
+
+      // streamState만 온 경우
+      if (d.streamState && d.isPlaying === undefined) {
+        handleStreamStateOnly(d.streamState);
+        return;
+      }
+
+      const trackChanged = d.track?.id !== _trackRef.current?.id;
+
+      if (trackChanged) {
+        handleTrackChange(d.track);
+      } else if (d.track?.lyricsStatus === 'found') {
+        setLyricsStatus(LyricsStatus.Found);
+      }
+
+      if (d.isPlaying) {
+        setTrack(d.track ?? null);
+        handleTimeSync(d, trackChanged);
+        if (listeningRef.current && d.streamState === 'preparing') {
+          audioLoadingRef.current = true;
+          setAudioLoading(true);
+        }
+        if (d.streamState) setStreamState(d.streamState as StreamState);
+      } else {
+        handleStopped();
+      }
+      setPlaying(!!d.isPlaying);
+    },
+    [_trackRef, listeningRef, handleStreamStateOnly, handleTrackChange, handleTimeSync, handleStopped],
+  );
+
+  // ─── System event dispatcher ──────────────────────────
   const onSystem = useCallback(
     (data: { event: string; detail: string; data?: Record<string, unknown> }) => {
+      // 채팅 제한
       if (data.event === 'chatMuted') {
         const seconds = parseInt(data.detail.match(/\d+/)?.[0] ?? '30', 10);
         setMutedUntil(Date.now() + seconds * 1000);
         toast.error(data.detail);
         return;
       }
-      if (data.event === WsEvent.roomClosed) {
-        if (goneRef.current) return;
-        goneRef.current = true;
-        toast.info('방이 종료되었습니다');
-        router.push('/rooms');
-        return;
-      }
-      if (data.event === 'kicked') {
-        if (goneRef.current) return;
-        goneRef.current = true;
-        toast.error('방에서 추방되었습니다');
-        router.push('/rooms');
-        return;
-      }
-      if (data.event === 'duplicateSession') {
-        if (goneRef.current) return;
-        goneRef.current = true;
-        toast.info('다른 기기에서 접속하여 연결이 종료되었습니다');
-        router.push('/rooms');
-        return;
-      }
-      if (data.event === 'joinedOtherRoom') {
-        if (goneRef.current) return;
-        goneRef.current = true;
-        router.push('/rooms');
-        return;
-      }
+
+      // 네비게이션 (kick, close, duplicate 등)
+      if (handleNavigation(data.event, data.detail)) return;
+
+      // 권한 변경
       if (data.event === WsEvent.permissionChanged) {
         toast.info(data.detail);
         invalidate.permissions(roomId);
         return;
       }
+
+      // 재생 상태
       if (data.event === WsEvent.playbackUpdated && data.data) {
-        const d = data.data as { track?: Track; elapsedMs?: number; isPlaying?: boolean; streamState?: string };
-        debug('[page] playback_updated', d.track?.name, 'state:', d.streamState);
-
-        // streamState만 온 경우 (skip/previous preparing 등)
-        if (d.streamState && d.isPlaying === undefined) {
-          if ((d.streamState === 'preparing' || d.streamState === 'skipping') && listeningRef.current) {
-            audioLoadingRef.current = true;
-            setAudioLoading(true);
-          }
-          if (d.streamState === 'skipping') setStreamState('skipping');
-          return;
-        }
-
-        const trackChanged = d.track?.id !== _trackRef.current?.id;
-
-        const trackLyricsStatus = d.track?.lyricsStatus;
-
-        // 곡 변경 시 가사/스킵 리셋
-        if (trackChanged) {
-          setLyricsStatus(
-            trackLyricsStatus === 'found'
-              ? LyricsStatus.Found
-              : trackLyricsStatus === 'not_found'
-                ? LyricsStatus.NotFound
-                : LyricsStatus.Searching,
-          );
-          setLyricsEnhanced(false);
-          setSkipVotes(0);
-          setStreamState('preparing');
-        } else if (trackLyricsStatus === 'found') {
-          // 같은 곡이지만 가사가 이미 found면 반영 (중간 입장자)
-          setLyricsStatus(LyricsStatus.Found);
-        }
-
-        if (d.isPlaying) {
-          setTrack(d.track ?? null);
-          const ow = getOneWayRef?.current() ?? 0;
-          if (trackChanged) {
-            // 곡 변경: 무조건 리셋 (oneWay 보정: 이벤트는 ow ms 전에 발생)
-            setElapsedBase((d.elapsedMs ?? 0) + ow);
-            setSyncTime(Date.now());
-          } else if (d.elapsedMs != null) {
-            // 같은 곡: drift 2초 이상이면 보정
-            setElapsedBase((prevBase) => {
-              setSyncTime((prevSync) => {
-                const clientElapsed = prevBase + (Date.now() - prevSync);
-                return Math.abs(clientElapsed - d.elapsedMs!) > 2000 ? Date.now() : prevSync;
-              });
-              const corrected = d.elapsedMs! + ow;
-              return Math.abs(corrected - prevBase) > 2000 ? corrected : prevBase;
-            });
-          }
-          if (listeningRef.current && d.streamState === 'preparing') {
-            audioLoadingRef.current = true;
-            setAudioLoading(true);
-          }
-          if (d.streamState) setStreamState(d.streamState as StreamState);
-        } else {
-          setTrack(null);
-          setElapsedBase(0);
-          setSyncTime(0);
-        }
-        setPlaying(!!d.isPlaying);
+        handlePlayback(data.data as { track?: Track; elapsedMs?: number; isPlaying?: boolean; streamState?: string });
         return;
       }
+
+      // 가사
       if (data.event === WsEvent.lyricsResult && data.data) {
         const { status, enhanced } = data.data as { status: LyricsStatus; enhanced?: boolean };
         setLyricsStatus(status);
@@ -171,11 +203,11 @@ export function useRoomEvents(
       }
       if (data.event === WsEvent.lyricsUpdated && data.data) {
         const { trackId } = data.data as { trackId: string };
-        if (trackId === _trackRef.current?.id) {
-          setLyricsVersion((v) => v + 1);
-        }
+        if (trackId === _trackRef.current?.id) setLyricsVersion((v) => v + 1);
         return;
       }
+
+      // 메타데이터 갱신
       if (data.event === WsEvent.metadataUpdated && data.data) {
         const d = data.data as { artist?: string; title?: string };
         setTrack((prev: Track | null) =>
@@ -183,21 +215,25 @@ export function useRoomEvents(
         );
         return;
       }
+
+      // 큐/AutoDJ
       if (data.event === WsEvent.queueUpdated) {
         invalidate.queue(roomId);
         invalidate.history(roomId);
         return;
       }
       if (data.event === WsEvent.autoDjStatus && data.data) {
-        const d = data.data as { status: AutoDjStatus };
-        setAutoDjStatus(d.status);
+        setAutoDjStatus((data.data as { status: AutoDjStatus }).status);
         return;
       }
+
+      // 채팅 히스토리
       if (data.event === WsEvent.chatHistory && data.data?.messages) {
-        const d = data.data as { messages: ChatMessage[] };
-        setMessages(d.messages.map((m) => ({ ...m, type: 'chat' as const })));
+        setMessages((data.data as { messages: ChatMessage[] }).messages.map((m) => ({ ...m, type: 'chat' as const })));
         return;
       }
+
+      // 방 멤버/설정 변경
       if (
         data.event === WsEvent.userJoined ||
         data.event === WsEvent.userLeft ||
@@ -211,6 +247,8 @@ export function useRoomEvents(
           if (data.event === WsEvent.hostChanged) invalidate.permissions(roomId);
         }
       }
+
+      // 투표
       if (data.event === WsEvent.voteUpdated && data.data) {
         const d = data.data as { currentVotes: number; required: number };
         setSkipVotes(d.currentVotes);
@@ -222,10 +260,14 @@ export function useRoomEvents(
         setTrackVotes((prev) => new Map(prev).set(trackId, { likes, dislikes }));
         return;
       }
+
+      // 리스너 수
       if (data.event === WsEvent.listenerCount && data.data) {
         setListenerCount((data.data as { count: number }).count);
         return;
       }
+
+      // 기타 시스템 메시지
       if (!data.detail) return;
       setMessages((prev) =>
         prev.slice(-200).concat({
@@ -237,7 +279,7 @@ export function useRoomEvents(
         }),
       );
     },
-    [router, roomId, invalidate, listeningRef],
+    [router, roomId, invalidate, listeningRef, _trackRef, handleNavigation, handlePlayback],
   );
 
   const applyPendingTrack = useCallback((): boolean => {
@@ -250,7 +292,7 @@ export function useRoomEvents(
 
   // listening 중일 때 audio.currentTime 기반으로 elapsedBase 갱신
   useEffect(() => {
-    if (!isPlaying) return;
+    if (!isPlaying || streamState !== 'streaming') return;
     const id = setInterval(() => {
       if (!listeningRef.current || !getCurrentTimeRef?.current) return;
       const audioMs = getCurrentTimeRef.current();
@@ -260,7 +302,7 @@ export function useRoomEvents(
       }
     }, 250);
     return () => clearInterval(id);
-  }, [isPlaying, listeningRef, getCurrentTimeRef]);
+  }, [isPlaying, streamState, listeningRef, getCurrentTimeRef]);
 
   return {
     messages,

@@ -56,20 +56,20 @@ export default function PlayerInfo({
         transition={{ duration: 0.25, ease: 'easeOut' }}
         className="flex items-center gap-4 p-4 pb-3"
       >
-        <div className="relative shrink-0">
+        <div className="relative shrink-0 overflow-visible">
           {track?.thumbnail && track.thumbnail !== 'NA' ? (
             <Thumbnail
               src={track.thumbnail}
               size="md"
-              className={`size-14 rounded-xl shadow-lg shadow-black/40 ${isPlaying ? 'ring-2 ring-sa-accent/40' : ''}`}
+              className={`size-14 rounded-xl shadow-lg shadow-black/40 ${isPlaying ? 'ring-2 ring-sa-accent/40' : ''} ${track && streamState !== 'streaming' ? 'animate-thumbnail-shimmer' : ''}`}
             />
           ) : (
             <div className="flex size-14 items-center justify-center rounded-xl bg-white/5 text-xl shadow-lg shadow-black/40">
               🎵
             </div>
           )}
-          {isPlaying && track && (
-            <span className="absolute -bottom-1 -right-1 flex size-3">
+          {isPlaying && track && streamState === 'streaming' && (
+            <span className="absolute -bottom-1 -right-1 z-10 flex size-3">
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-sa-accent opacity-40" />
               <span className="relative inline-flex size-3 rounded-full bg-sa-accent" />
             </span>
@@ -80,7 +80,7 @@ export default function PlayerInfo({
           {track?.name ? (
             <MarqueeText
               text={statusText ?? track.songTitle ?? track.name}
-              className={`text-[15px] font-semibold leading-tight ${statusText ? 'text-white/50' : 'text-white'}`}
+              className={`text-[15px] font-semibold leading-tight ${statusText ? 'animate-text-shimmer' : 'text-white'}`}
             />
           ) : (
             <p className="text-[13px] text-white/30">곡을 신청하면 자동으로 재생됩니다</p>

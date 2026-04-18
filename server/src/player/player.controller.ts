@@ -1,17 +1,4 @@
-import {
-  Body,
-  Controller,
-  ForbiddenException,
-  Get,
-  Logger,
-  NotFoundException,
-  Param,
-  ParseUUIDPipe,
-  Post,
-  Put,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Logger, Param, ParseUUIDPipe, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -19,6 +6,7 @@ import { Repository } from 'typeorm';
 import { RoomMember } from '../entities/room-member.entity.js';
 import { RoomQueue } from '../entities/room-queue.entity.js';
 import { Track } from '../entities/track.entity.js';
+import { AppException } from '../exceptions/app.exception.js';
 import { ControllerGuard } from '../guards/controller.guard.js';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard.js';
 import { MemberService } from '../rooms/member.service.js';
@@ -27,6 +15,7 @@ import { RoomsGateway } from '../rooms/rooms.gateway.js';
 import { LyricsService } from '../services/lyrics.service.js';
 import { TranslationService } from '../services/translation.service.js';
 import type { AuthenticatedRequest } from '../types/index.js';
+import { ErrorCode } from '../types/error-code.enum.js';
 import { LyricsStatus, Permission, WsEvent } from '../types/index.js';
 import { LyricsResponse } from './dto/lyrics-response.dto.js';
 import { PlaybackStatus } from './dto/playback-status.dto.js';
@@ -233,7 +222,7 @@ export class PlayerController {
   @ApiResponse({ status: 201, type: VoteSkipResponse })
   async voteSkip(@Param('roomId', ParseUUIDPipe) roomId: string, @Req() req: AuthenticatedRequest) {
     const { permissions } = await this.memberService.getEffectivePermissions(roomId, req.user.userId);
-    if (!permissions.includes(Permission.VoteSkip)) throw new ForbiddenException('스킵 투표 권한이 없습니다');
+    if (!permissions.includes(Permission.VoteSkip)) throw new AppException(ErrorCode.PLAYER_006);
 
     const eligible = await this.memberService.getVoteSkipEligibleCount(roomId);
     const r = await this.playerService.voteSkip(roomId, req.user.userId, eligible);
@@ -263,7 +252,7 @@ export class PlayerController {
   @ApiResponse({ status: 200, type: LyricsResponse })
   async lyrics(@Param('roomId', ParseUUIDPipe) roomId: string): Promise<LyricsResponse> {
     const status = await this.playerService.getStatus(roomId);
-    if (!status?.track) throw new NotFoundException('No track playing');
+    if (!status?.track) throw new AppException(ErrorCode.PLAYER_001);
 
     const track = await this.queueRepo.manager
       .createQueryBuilder(Track, 't')

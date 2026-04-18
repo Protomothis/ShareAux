@@ -98,6 +98,10 @@ export default function AdminReportsPage() {
   return (
     <div>
       <AdminPageHeader title="🚨 신고 관리" />
+      <p className="mb-4 text-xs text-sa-text-muted">
+        신고 내용을 확인 후 필요 시 유저 상세에서 제재(밴/경고)를 진행하세요. &quot;처리&quot;는 조치 완료,
+        &quot;무시&quot;는 조치 불필요를 의미합니다.
+      </p>
 
       {/* 탭 필터 */}
       <div className="mb-4 flex gap-1 rounded-xl bg-white/5 p-1">
@@ -146,7 +150,9 @@ export default function AdminReportsPage() {
         onOpenChange={(open) => !open && setResolveTarget(null)}
         title={resolveTarget?.status === 'resolved' ? '신고 처리' : '신고 무시'}
         description={
-          resolveTarget?.status === 'resolved' ? '이 신고를 처리하시겠습니까?' : '이 신고를 무시하시겠습니까?'
+          resolveTarget?.status === 'resolved'
+            ? '이 신고를 확인하고 조치를 완료했음을 표시합니다.'
+            : '이 신고를 부당하거나 조치 불필요로 처리합니다.'
         }
         confirmLabel={resolveTarget?.status === 'resolved' ? '처리' : '무시'}
         variant={resolveTarget?.status === 'resolved' ? 'default' : 'destructive'}
