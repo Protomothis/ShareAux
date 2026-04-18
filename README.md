@@ -41,14 +41,17 @@
 git clone https://github.com/Protomothis/ShareAux.git
 cd ShareAux
 cp .env.example .env
-# .env 파일을 환경에 맞게 수정 (docs/deployment.md 참고)
+# .env 파일에서 JWT_SECRET을 반드시 변경하세요!
+# Google 로그인, 가사 번역 등은 선택 사항입니다.
 
-# 2. 실행
-docker compose up -d
+# 2. 실행 (GHCR 이미지 사용 — 빌드 불필요)
+docker compose -f docker-compose.ghcr.yml up -d
 
 # 3. 접속
-# http://localhost:3001
+# http://localhost:3001 → 첫 접속 시 관리자 계정 생성 화면이 나타납니다.
 ```
+
+> 💡 소스에서 직접 빌드하려면 `docker compose up -d`를 사용하세요.
 
 ### 소스에서 실행
 
