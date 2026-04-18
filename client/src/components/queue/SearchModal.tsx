@@ -94,7 +94,6 @@ export default function SearchModal({
       onTrackAdded?.();
       onClose();
     } catch {
-      toast.error('추가에 실패했습니다');
     } finally {
       setAdding(false);
     }

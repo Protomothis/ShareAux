@@ -26,7 +26,6 @@ export function UserBanSection({ user }: UserBanSectionProps) {
         { id: user.id },
         {
           onSuccess: () => toast.success('정지가 해제되었습니다'),
-          onError: () => toast.error('처리에 실패했습니다'),
         },
       );
     } else {
@@ -37,7 +36,6 @@ export function UserBanSection({ user }: UserBanSectionProps) {
             toast.success('계정이 정지되었습니다');
             setBanDialogOpen(false);
           },
-          onError: () => toast.error('처리에 실패했습니다'),
         },
       );
     }
