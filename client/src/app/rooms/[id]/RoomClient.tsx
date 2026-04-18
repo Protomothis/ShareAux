@@ -362,7 +362,7 @@ export default function RoomClient({ id }: { id: string }) {
             roomId={id}
             canSearch={can('addQueue')}
             canEnqueue={can('addQueue')}
-            canReorder={isHost || can('reorder')}
+            canReorder={isHost || can('host')}
             isHost={isHost}
             maxSelectPerAdd={room.maxSelectPerAdd}
             trackVotes={trackVotes}
@@ -387,7 +387,7 @@ export default function RoomClient({ id }: { id: string }) {
                 roomId={id}
                 canSearch={can('addQueue')}
                 canEnqueue={can('addQueue')}
-                canReorder={isHost || can('reorder')}
+                canReorder={isHost || can('host')}
                 isHost={isHost}
                 maxSelectPerAdd={room.maxSelectPerAdd}
                 trackVotes={trackVotes}

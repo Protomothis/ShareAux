@@ -124,7 +124,7 @@ export class QueueController {
   }
 
   @Put(':roomId/reorder')
-  @RequirePermission(Permission.Reorder)
+  @RequirePermission(Permission.Host)
   @UseGuards(JwtAuthGuard, RoomPermissionGuard)
   @ApiOperation({ summary: '대기열 순서 변경' })
   @ApiBearerAuth()
