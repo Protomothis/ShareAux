@@ -36,6 +36,7 @@ import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
 import { useAuthStore } from '@/stores/auth';
 import type { MobileTab } from '@/types';
 import { LyricsStatus } from '@/types';
+import type { StreamState } from '@/types';
 
 import { getWsUrl } from '@/lib/urls';
 
@@ -100,6 +101,7 @@ export default function RoomClient({ id }: { id: string }) {
     goneRef,
     autoDjStatus,
     streamState,
+    setStreamState,
     mutedUntil,
   } = events;
 
@@ -195,10 +197,11 @@ export default function RoomClient({ id }: { id: string }) {
     setTrack(playerData.track);
     setElapsedBase((playerData.elapsedMs ?? 0) + (getOneWayRef.current() ?? 0));
     setSyncTime(Date.now());
-    const ls = (playerData.track as unknown as Record<string, unknown>).lyricsStatus as string | undefined;
+    if (playerData.streamState) setStreamState(playerData.streamState as StreamState);
+    const ls = playerData.track.lyricsStatus;
     if (ls === 'found') setLyricsStatus(LyricsStatus.Found);
     else if (ls === 'not_found') setLyricsStatus(LyricsStatus.NotFound);
-  }, [playerData, id, setPlaying, setTrack, setElapsedBase, setSyncTime, setLyricsStatus]);
+  }, [playerData, id, setPlaying, setTrack, setElapsedBase, setSyncTime, setLyricsStatus, setStreamState]);
 
   // --- Media Session ---
   useEffect(() => {
