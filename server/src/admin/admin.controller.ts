@@ -346,9 +346,6 @@ export class AdminController {
       case 'old-histories-30d':
         deleted = await this.adminService.cleanupOldHistories(30);
         break;
-      case 'old-histories-90d':
-        deleted = await this.adminService.cleanupOldHistories(90);
-        break;
       case 'inactive-rooms-7d':
         deleted = await this.adminService.cleanupInactiveRooms(7);
         break;

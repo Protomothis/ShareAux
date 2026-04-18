@@ -5,6 +5,7 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
+import type { TableSizeItem } from './tableSizeItem';
 
 export interface CleanupSummaryResponse {
   totalTracks: number;
@@ -18,9 +19,9 @@ export interface CleanupSummaryResponse {
   unplayedTracks: number;
   staleTracksCount: number;
   oldHistories30d: number;
-  oldHistories90d: number;
   inactiveRooms7d: number;
   emptyInactiveRooms: number;
   expiredGuests: number;
   inactiveGuests30d: number;
+  tableSizes: TableSizeItem[];
 }

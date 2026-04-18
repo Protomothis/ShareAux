@@ -106,6 +106,7 @@ export * from './streamingMetricsResponse';
 export * from './suggestResponse';
 export * from './systemSettingItem';
 export * from './systemStatsResponse';
+export * from './tableSizeItem';
 export * from './track';
 export * from './trackLyricsStatus';
 export * from './trackMetaStatus';
