@@ -92,6 +92,7 @@ docker compose up db -d
 
 - [기능 상세](docs/features.md) — 방, 재생, 가사, 채팅, 권한, 관리자 기능 상세
 - [배포 가이드](docs/deployment.md) — Docker 설정, 환경 변수, 리버스 프록시
+- [자주 묻는 질문](docs/faq.md) — 재생 안 됨, iOS 이슈, 설정 방법 등
 - [개발 가이드](docs/development.md) — 로컬 개발 환경, 필수 도구, 프로젝트 구조
 - [아키텍처](docs/architecture.md) — 시스템 설계, 오디오 파이프라인, WebSocket 프로토콜
 - [AI 에이전트 규칙](AGENTS.md) — AI 코딩 어시스턴트 사용 시 참고 (Copilot, Cursor, Kiro 등)
