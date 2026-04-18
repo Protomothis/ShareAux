@@ -28,14 +28,7 @@ export function MemberActionMenu({ open, onClose, member, isHost, onPermissions,
       </Modal.Header>
       <Modal.Body className="flex flex-col gap-2 py-3">
         {isHost && (
-          <Button
-            variant="ghost"
-            className="justify-start gap-2"
-            onClick={() => {
-              onClose();
-              onPermissions();
-            }}
-          >
+          <Button variant="ghost" className="justify-start gap-2" onClick={() => onPermissions()}>
             <Settings2 className="size-4" />
             권한 관리
           </Button>
@@ -43,10 +36,7 @@ export function MemberActionMenu({ open, onClose, member, isHost, onPermissions,
         <Button
           variant="ghost"
           className="justify-start gap-2 text-destructive hover:text-destructive"
-          onClick={() => {
-            onClose();
-            onReport();
-          }}
+          onClick={() => onReport()}
         >
           <Flag className="size-4" />
           신고하기
