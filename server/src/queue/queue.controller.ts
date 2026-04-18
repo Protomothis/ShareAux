@@ -140,10 +140,7 @@ export class QueueController {
       const status = await this.player.getStatus(roomId);
       if (status?.isPlaying) return;
       await this.player.play(roomId, trackId).catch(() => {});
-      const newStatus = await this.player.getStatus(roomId);
-      this.gateway.broadcastSystem(roomId, WsEvent.PlaybackUpdated, '', newStatus);
-      const refreshedQueue = await this.queue.getQueue(roomId);
-      this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue: refreshedQueue });
+      // onTrackChange 콜백이 PlaybackUpdated + QueueUpdated를 broadcast하므로 여기서는 생략
     })();
   }
 }
