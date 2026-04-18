@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useCaptcha } from '@/hooks/useCaptcha';
+import { useAuthStore } from '@/stores/auth';
 import { cn } from '@/lib/utils';
 
 interface GuestLoginFormProps {
@@ -34,7 +35,10 @@ export function GuestLoginForm({ onSuccess, onBack, initialCode }: GuestLoginFor
     setLoading(true);
     try {
       const res = await authControllerGuestLogin({ code, nickname, ...captcha.getCaptchaBody() });
-      if (res) onSuccess();
+      if (res) {
+        useAuthStore.getState().init();
+        onSuccess();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : '입장에 실패했습니다');
       captcha.reset();
