@@ -10,7 +10,9 @@ import { GuestLoginForm } from '@/components/common/GuestLoginForm';
 import { LoginCard } from '@/components/common/LoginCard';
 import { LoginForm } from '@/components/common/LoginForm';
 import { RegisterForm } from '@/components/common/RegisterForm';
+import { ServerStatusScreen } from '@/components/common/ServerStatusScreen';
 import { ShareAuxLogo } from '@/components/common/ShareAuxLogo';
+import { useServerStatus } from '@/hooks/useServerStatus';
 import { getApiUrl } from '@/lib/urls';
 
 type Mode = 'select' | 'login' | 'register' | 'guest';
@@ -29,37 +31,19 @@ function LoginInner() {
   const codeParam = searchParams.get('code');
   const errorParam = searchParams.get('error');
   const [mode, setMode] = useState<Mode>(codeParam ? 'register' : 'select');
-  const [ready, setReady] = useState(false);
   const [inviteRoomName, setInviteRoomName] = useState<string | null>(null);
+  const { connState, retry } = useServerStatus();
 
   useEffect(() => {
-    const api = getApiUrl();
-
     const inviteRoomId = localStorage.getItem('inviteRoomId');
-    if (inviteRoomId) {
-      fetch(`${api}/rooms/${inviteRoomId}`)
-        .then((r) => (r.ok ? r.json() : null))
-        .then((data: { name?: string } | null) => {
-          if (data?.name) setInviteRoomName(data.name);
-        })
-        .catch(() => {});
-    }
-
-    fetch(`${api}/setup/status`)
-      .then((r) => r.json())
-      .then((data: { needsSetup: boolean }) => {
-        if (data.needsSetup) router.replace('/setup');
-        else setReady(true);
+    if (!inviteRoomId) return;
+    fetch(`${getApiUrl()}/rooms/${inviteRoomId}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { name?: string } | null) => {
+        if (data?.name) setInviteRoomName(data.name);
       })
-      .catch(() => setReady(true));
-
-    // bfcache 복원 시 강제 리렌더링
-    const onPageShow = (e: PageTransitionEvent) => {
-      if (e.persisted) setReady(true);
-    };
-    window.addEventListener('pageshow', onPageShow);
-    return () => window.removeEventListener('pageshow', onPageShow);
-  }, [router]);
+      .catch(() => {});
+  }, []);
 
   const handleSuccess = () => {
     const redirect = localStorage.getItem('redirectAfterLogin') || '/rooms';
@@ -68,15 +52,7 @@ function LoginInner() {
     router.push(redirect);
   };
 
-  if (!ready)
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-sa-bg-primary">
-        <div style={{ animation: 'shimmer-opacity 2s ease-in-out infinite' }}>
-          <ShareAuxLogo className="h-14 w-auto" />
-        </div>
-        <style>{`@keyframes shimmer-opacity { 0%, 100% { opacity: 0.3 } 50% { opacity: 1 } }`}</style>
-      </div>
-    );
+  if (connState !== 'connected') return <ServerStatusScreen connState={connState} onRetry={retry} />;
 
   return (
     <>
@@ -123,7 +99,7 @@ function LoginInner() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.25 }}
-              className="relative z-10 flex w-full max-w-xs sm:max-w-sm lg:max-w-md flex-col gap-3"
+              className="relative z-10 flex w-full max-w-xs flex-col gap-3 sm:max-w-sm lg:max-w-md"
             >
               <LoginCard
                 icon={LogIn}
@@ -151,7 +127,7 @@ function LoginInner() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.25 }}
-              className="relative z-10 flex w-full max-w-xs sm:max-w-sm lg:max-w-md items-center justify-center"
+              className="relative z-10 flex w-full max-w-xs items-center justify-center sm:max-w-sm lg:max-w-md"
             >
               {mode === 'login' && <LoginForm onSuccess={handleSuccess} onBack={() => setMode('select')} />}
               {mode === 'register' && (

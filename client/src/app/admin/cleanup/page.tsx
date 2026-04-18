@@ -42,13 +42,6 @@ const CLEANUP_SECTIONS: CleanupSection[] = [
     icon: '📜',
   },
   {
-    type: 'old-histories-90d',
-    label: '재생 이력 (90일)',
-    description: '90일 이전 재생 이력 삭제',
-    countKey: 'oldHistories90d',
-    icon: '📜',
-  },
-  {
     type: 'inactive-rooms-7d',
     label: '비활성 방 (7일)',
     description: '7일 이상 비활성 방 삭제',
@@ -78,6 +71,12 @@ const CLEANUP_SECTIONS: CleanupSection[] = [
   },
 ];
 
+function formatSize(mb: number): string {
+  if (mb >= 1024) return `${(mb / 1024).toFixed(1)} GB`;
+  if (mb >= 1) return `${mb.toFixed(1)} MB`;
+  return `${(mb * 1024).toFixed(0)} KB`;
+}
+
 export default function AdminCleanupPage() {
   const { data: summary, isLoading } = useCleanupSummary();
   const cleanup = useCleanup();
@@ -98,6 +97,8 @@ export default function AdminCleanupPage() {
     );
   }, [confirmType, cleanup]);
 
+  const totalDB = summary?.tableSizes?.reduce((sum, t) => sum + t.sizeMB, 0) ?? 0;
+
   return (
     <div>
       <AdminPageHeader title="🧹 DB 정리" />
@@ -113,6 +114,24 @@ export default function AdminCleanupPage() {
         <StatCard icon={Database} label="큐 아이템" value={summary?.totalQueueItems ?? null} />
         <StatCard icon={Music} label="가사 보유" value={summary?.lyricsFoundTracks ?? null} />
       </div>
+
+      {/* 테이블별 용량 */}
+      {summary?.tableSizes && summary.tableSizes.length > 0 && (
+        <div className="mb-6 rounded-xl border border-white/5 bg-white/[0.03] p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-medium text-white">테이블별 용량</h3>
+            <span className="text-xs text-sa-text-muted">전체 {formatSize(totalDB)}</span>
+          </div>
+          <div className="space-y-1.5">
+            {summary.tableSizes.map((t) => (
+              <div key={t.name} className="flex items-center justify-between text-xs">
+                <span className="font-mono text-sa-text-muted">{t.name}</span>
+                <span className="tabular-nums text-white">{formatSize(t.sizeMB)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 정리 섹션 */}
       <div className="space-y-3">
@@ -132,7 +151,7 @@ export default function AdminCleanupPage() {
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-sm font-medium tabular-nums text-sa-text-muted">
-                  {isLoading ? '...' : count.toLocaleString()}건
+                  {isLoading ? '...' : (count as number).toLocaleString()}건
                 </span>
                 <Button
                   variant="destructive"

@@ -16,8 +16,6 @@ export const CreateInviteCodeDtoPermissionsItem = {
   reaction: 'reaction',
   search: 'search',
   addQueue: 'addQueue',
-  reorder: 'reorder',
   voteSkip: 'voteSkip',
-  kick: 'kick',
-  createRoom: 'createRoom',
+  host: 'host',
 } as const;

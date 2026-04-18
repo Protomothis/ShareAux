@@ -4,5 +4,5 @@ export enum GuestPermission {
   Reaction = 'reaction',
   AddQueue = 'addQueue',
   VoteSkip = 'voteSkip',
-  CreateRoom = 'createRoom',
+  Host = 'host',
 }

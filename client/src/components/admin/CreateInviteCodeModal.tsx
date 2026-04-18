@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import NumberStepper from '@/components/ui/number-stepper';
 import { Switch } from '@/components/ui/switch';
 import { useCreateInviteCode } from '@/hooks/admin/useAdminInviteCodes';
-import { GUEST_PERM_OPTIONS } from '@/lib/constants';
+import { usePermissionMeta } from '@/hooks/usePermissionMeta';
 
 interface CreateInviteCodeModalProps {
   open: boolean;
@@ -28,6 +28,12 @@ export function CreateInviteCodeModal({ open, onOpenChange }: CreateInviteCodeMo
   const [allowRegistration, setAllowRegistration] = useState(true);
 
   const createCode = useCreateInviteCode();
+  const { data: permMeta } = usePermissionMeta();
+  const permOptions = (permMeta ?? []).map((m) => ({
+    key: m.key,
+    label: `${m.emoji} ${m.label}`,
+    disabled: m.key === 'listen',
+  }));
 
   const resetForm = () => {
     setCode('');
@@ -77,7 +83,14 @@ export function CreateInviteCodeModal({ open, onOpenChange }: CreateInviteCodeMo
         </Modal.Header>
         <Modal.Body className="space-y-4">
           <FormField label="코드 (비우면 자동 생성)">
-            <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="PARTY2026" maxLength={12} />
+            <Input
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="PARTY2026"
+              minLength={6}
+              maxLength={12}
+            />
+            {code.length > 0 && code.length < 6 && <p className="mt-1 text-xs text-red-400">6자 이상 입력해주세요</p>}
           </FormField>
           <div className="grid grid-cols-2 gap-4">
             <FormField label="최대 사용 횟수">
@@ -87,7 +100,7 @@ export function CreateInviteCodeModal({ open, onOpenChange }: CreateInviteCodeMo
               <DatePicker value={expiresAt} onChange={setExpiresAt} placeholder="무기한" />
             </FormField>
           </div>
-          <CheckboxGroup label="계정 권한" options={GUEST_PERM_OPTIONS} selected={permissions} onChange={togglePerm} />
+          <CheckboxGroup label="계정 권한" options={permOptions} selected={permissions} onChange={togglePerm} />
           <p className="text-[11px] text-sa-text-muted">게스트 및 이 코드로 회원가입한 유저 모두에게 적용됩니다</p>
           <div className="flex items-center justify-between">
             <div>
@@ -98,7 +111,11 @@ export function CreateInviteCodeModal({ open, onOpenChange }: CreateInviteCodeMo
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button type="submit" variant="accent" disabled={createCode.isPending}>
+          <Button
+            type="submit"
+            variant="accent"
+            disabled={createCode.isPending || (code.length > 0 && code.length < 6)}
+          >
             {createCode.isPending ? '생성 중...' : '생성'}
           </Button>
         </Modal.Footer>

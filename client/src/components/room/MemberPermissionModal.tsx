@@ -16,16 +16,11 @@ import Modal from '@/components/common/Modal';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { useInvalidate } from '@/hooks/useQueries';
+import { usePermissionMeta } from '@/hooks/usePermissionMeta';
 import { getAvatar } from '@/lib/avatar';
 
-const VISIBLE_PERMISSIONS: { key: RoomPermissionPermissionsItem; label: string; emoji: string }[] = [
-  { key: PermItem.listen, label: '듣기', emoji: '🎵' },
-  { key: PermItem.chat, label: '채팅', emoji: '💬' },
-  { key: PermItem.reaction, label: '리액션', emoji: '😄' },
-  { key: PermItem.addQueue, label: '곡 검색/신청', emoji: '🔍' },
-  { key: PermItem.reorder, label: '순서 변경', emoji: '↕️' },
-  { key: PermItem.voteSkip, label: '스킵 투표', emoji: '⏭️' },
-];
+/** 방 내 멤버에게 보여줄 권한 (host 제외 — 방 권한이 아닌 계정 권한) */
+const ROOM_VISIBLE_KEYS = new Set(['listen', 'chat', 'reaction', 'addQueue', 'voteSkip']);
 
 interface MemberPermissionModalProps {
   open: boolean;
@@ -54,6 +49,8 @@ export default function MemberPermissionModal({
 
   // 자기 자신일 때만 my-permissions API로 account/room 분리 정보 가져옴
   const { data: myPermsData } = useRoomsControllerGetMyPermissions(roomId, { query: { enabled: isSelf } });
+  const { data: permMeta } = usePermissionMeta();
+  const visiblePerms = (permMeta ?? []).filter((m) => ROOM_VISIBLE_KEYS.has(m.key));
 
   const togglePermission = async (perm: RoomPermissionPermissionsItem) => {
     if (!canEdit) return;
@@ -132,14 +129,15 @@ export default function MemberPermissionModal({
 
       <Modal.Body>
         <div className="space-y-0.5">
-          {VISIBLE_PERMISSIONS.map(({ key, label, emoji }) => {
+          {visiblePerms.map((meta) => {
+            const key = meta.key as RoomPermissionPermissionsItem;
             const status = getPermStatus(key);
             const effective = status === 'granted';
             return (
               <div key={key} className="flex items-center justify-between rounded-lg px-2 py-1.5">
                 <div className="flex items-center gap-2">
                   <span className={`text-sm ${effective ? '' : 'opacity-40'}`}>
-                    {emoji} {label}
+                    {meta.emoji} {meta.label}
                   </span>
                   {status === 'blocked-account' && (
                     <span className="rounded bg-yellow-500/20 px-1.5 py-0.5 text-[9px] text-yellow-400">계정 제한</span>

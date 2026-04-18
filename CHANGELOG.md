@@ -1,5 +1,33 @@
 # 변경 이력
 
+## 0.1.1 (2026-04-18)
+
+### 기능 추가
+
+- 권한 통합: Kick/CreateRoom/Reorder를 Host 하나로 병합 (9개 → 7개)
+- 권한 메타 서버 API (`GET /api/permissions/meta`) — 클라이언트 하드코딩 제거
+- 서버 연결 상태 표시: 로그인 페이지에서 서버 미연결 시 안내 + 자동 재시도
+- Next.js 시작 시 API 서버 health 체크 로그 (`instrumentation.ts`)
+- 초대코드 카드 UX 개선: 이모지+라벨 태그 칩, 만료일 표시
+
+### 버그 수정
+
+- RoomPlayHistory 저장 누락 수정
+- 호스트 위임/이관: Host 권한 없는 멤버에게 위임 차단, 호스트 퇴장 시 방 폭파 조건 추가
+- 중간 입장자 가사 미표시: streamState 초기화 누락 + lyricsStatus 반영 수정
+- 초대코드 생성: 빈 문자열 code validation 오류 수정 + 폼 minLength 안내
+- 게스트 호스트 위임 제한 제거 (Host 권한 체크로 대체)
+- 검색 자동완성: submit 후에도 리스트가 남는 race condition 수정
+
+### 개선
+
+- DB 정리 페이지: 90일 옵션 제거, 테이블별 용량 표시
+- 로그인 페이지 리팩토링: useServerStatus 훅 + ServerStatusScreen 컴포넌트 분리
+- shimmer-opacity keyframes globals.css 통합
+- lyricsStatus Record 캐스팅 제거 (orval Track 타입 직접 참조)
+- docker-compose: client에 INTERNAL_API_URL 환경변수 추가
+- AGENTS.md: UI 라벨/메타데이터 하드코딩 금지 규칙 추가
+
 ## 0.1.0 (2026-04-17)
 
 첫 공개 릴리스.

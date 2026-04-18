@@ -28,7 +28,7 @@ export class InviteCode {
   @Column({ name: 'used_count', default: 0 })
   usedCount!: number;
 
-  @ApiProperty({ enum: ['Listen', 'Chat', 'Reaction', 'AddQueue', 'VoteSkip', 'CreateRoom'], isArray: true })
+  @ApiProperty({ enum: ['listen', 'chat', 'reaction', 'search', 'addQueue', 'voteSkip', 'host'], isArray: true })
   @Column({ type: 'jsonb', default: ['listen'] })
   permissions!: Permission[];
 

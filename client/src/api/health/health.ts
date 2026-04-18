@@ -18,6 +18,8 @@ import type {
   UseQueryResult,
 } from '@tanstack/react-query';
 
+import type { PermissionMeta } from '.././model';
+
 import { customFetch } from '../../lib/api-client';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -113,6 +115,121 @@ export function useHealthControllerHealth<TData = Awaited<ReturnType<typeof heal
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
   const queryOptions = getHealthControllerHealthQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 권한 메타 정보
+ */
+export const getHealthControllerPermissionsMetaUrl = () => {
+  return `/api/permissions/meta`;
+};
+
+export const healthControllerPermissionsMeta = async (options?: RequestInit): Promise<PermissionMeta[]> => {
+  return customFetch<PermissionMeta[]>(getHealthControllerPermissionsMetaUrl(), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getHealthControllerPermissionsMetaQueryKey = () => {
+  return [`/api/permissions/meta`] as const;
+};
+
+export const getHealthControllerPermissionsMetaQueryOptions = <
+  TData = Awaited<ReturnType<typeof healthControllerPermissionsMeta>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof healthControllerPermissionsMeta>>, TError, TData>>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getHealthControllerPermissionsMetaQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof healthControllerPermissionsMeta>>> = ({ signal }) =>
+    healthControllerPermissionsMeta({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof healthControllerPermissionsMeta>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type HealthControllerPermissionsMetaQueryResult = NonNullable<
+  Awaited<ReturnType<typeof healthControllerPermissionsMeta>>
+>;
+export type HealthControllerPermissionsMetaQueryError = unknown;
+
+export function useHealthControllerPermissionsMeta<
+  TData = Awaited<ReturnType<typeof healthControllerPermissionsMeta>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof healthControllerPermissionsMeta>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof healthControllerPermissionsMeta>>,
+          TError,
+          Awaited<ReturnType<typeof healthControllerPermissionsMeta>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useHealthControllerPermissionsMeta<
+  TData = Awaited<ReturnType<typeof healthControllerPermissionsMeta>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof healthControllerPermissionsMeta>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof healthControllerPermissionsMeta>>,
+          TError,
+          Awaited<ReturnType<typeof healthControllerPermissionsMeta>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useHealthControllerPermissionsMeta<
+  TData = Awaited<ReturnType<typeof healthControllerPermissionsMeta>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof healthControllerPermissionsMeta>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 권한 메타 정보
+ */
+
+export function useHealthControllerPermissionsMeta<
+  TData = Awaited<ReturnType<typeof healthControllerPermissionsMeta>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof healthControllerPermissionsMeta>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getHealthControllerPermissionsMetaQueryOptions(options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>;

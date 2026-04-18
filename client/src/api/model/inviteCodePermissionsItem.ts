@@ -10,10 +10,11 @@ export type InviteCodePermissionsItem = (typeof InviteCodePermissionsItem)[keyof
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const InviteCodePermissionsItem = {
-  Listen: 'Listen',
-  Chat: 'Chat',
-  Reaction: 'Reaction',
-  AddQueue: 'AddQueue',
-  VoteSkip: 'VoteSkip',
-  CreateRoom: 'CreateRoom',
+  listen: 'listen',
+  chat: 'chat',
+  reaction: 'reaction',
+  search: 'search',
+  addQueue: 'addQueue',
+  voteSkip: 'voteSkip',
+  host: 'host',
 } as const;

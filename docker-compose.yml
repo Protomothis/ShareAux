@@ -37,6 +37,8 @@ services:
     build:
       context: ./client
     container_name: shareaux-client
+    environment:
+      INTERNAL_API_URL: http://server:3000/api
     ports:
       - '3001:3001'
     depends_on:

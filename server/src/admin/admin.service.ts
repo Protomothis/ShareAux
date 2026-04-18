@@ -365,7 +365,6 @@ export class AdminService {
   async getCleanupSummary(): Promise<CleanupSummaryResponse> {
     const now = Date.now();
     const d30 = new Date(now - 30 * 86_400_000);
-    const d90 = new Date(now - 90 * 86_400_000);
     const d7 = new Date(now - 7 * 86_400_000);
     const guestCutoff = new Date(now - ADMIN_INACTIVE_CUTOFF_MS);
 
@@ -381,11 +380,11 @@ export class AdminService {
       unplayedTracks,
       staleTracksCount,
       oldHistories30d,
-      oldHistories90d,
       inactiveRooms7d,
       emptyInactiveRooms,
       expiredGuests,
       inactiveGuests30d,
+      tableSizesRaw,
     ] = await Promise.all([
       this.trackRepo.count(),
       this.playHistoryRepo.count(),
@@ -405,7 +404,6 @@ export class AdminService {
         .where('ts.last_played_at < :d30', { d30 })
         .getCount(),
       this.playHistoryRepo.createQueryBuilder('h').where('h.played_at < :d30', { d30 }).getCount(),
-      this.playHistoryRepo.createQueryBuilder('h').where('h.played_at < :d90', { d90 }).getCount(),
       this.roomRepo.createQueryBuilder('r').where('r.is_active = false AND r.created_at < :d7', { d7 }).getCount(),
       this.roomRepo
         .createQueryBuilder('r')
@@ -414,6 +412,13 @@ export class AdminService {
         .getCount(),
       this.userRepo.count({ where: { role: UserRole.Guest, createdAt: LessThan(guestCutoff) } }),
       this.userRepo.count({ where: { role: UserRole.Guest, createdAt: LessThan(d30) } }),
+      this.playHistoryRepo.manager.query<Array<{ name: string; sizeMB: number }>>(
+        `SELECT relname AS name,
+                ROUND(pg_total_relation_size(c.oid) / 1048576.0, 2)::float AS "sizeMB"
+         FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+         WHERE n.nspname = 'public' AND c.relkind = 'r'
+         ORDER BY pg_total_relation_size(c.oid) DESC`,
+      ),
     ]);
 
     return {
@@ -428,11 +433,11 @@ export class AdminService {
       unplayedTracks,
       staleTracksCount,
       oldHistories30d,
-      oldHistories90d,
       inactiveRooms7d,
       emptyInactiveRooms,
       expiredGuests,
       inactiveGuests30d,
+      tableSizes: tableSizesRaw,
     };
   }
 

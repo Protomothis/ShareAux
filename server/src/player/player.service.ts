@@ -4,9 +4,12 @@ import { LessThan, Repository } from 'typeorm';
 
 import { SKIP_MIN_PLAY_MS, VOTE_SKIP_DIVISOR, VOTE_SKIP_MIN_REQUIRED } from '../constants.js';
 import { RoomPlayback } from '../entities/room-playback.entity.js';
+import { RoomPlayHistory } from '../entities/room-play-history.entity.js';
 import { RoomQueue } from '../entities/room-queue.entity.js';
+import { Room } from '../entities/room.entity.js';
 import { Track } from '../entities/track.entity.js';
 import { TrackStats } from '../entities/track-stats.entity.js';
+import { User } from '../entities/user.entity.js';
 import { UserTrackHistory } from '../entities/user-track-history.entity.js';
 import { AudioService } from '../services/audio.service.js';
 import { PreloadService } from '../services/preload.service.js';
@@ -34,6 +37,7 @@ export class PlayerService {
     @InjectRepository(RoomQueue) private readonly queueRepo: Repository<RoomQueue>,
     @InjectRepository(TrackStats) private readonly statsRepo: Repository<TrackStats>,
     @InjectRepository(UserTrackHistory) private readonly userHistoryRepo: Repository<UserTrackHistory>,
+    @InjectRepository(RoomPlayHistory) private readonly playHistoryRepo: Repository<RoomPlayHistory>,
   ) {}
 
   // --- Playback ---
@@ -64,7 +68,7 @@ export class PlayerService {
     this.onTrackChangeCallback?.(roomId);
 
     // 글로벌 stats/history UPSERT (fire-and-forget)
-    this.recordPlay(trackId, addedByUserId).catch((e) =>
+    this.recordPlay(roomId, trackId, addedByUserId).catch((e) =>
       this.logger.warn('recordPlay failed', e instanceof Error ? e.message : e),
     );
 
@@ -279,7 +283,7 @@ export class PlayerService {
     }
   }
 
-  private async recordPlay(trackId: string, userId?: string): Promise<void> {
+  private async recordPlay(roomId: string, trackId: string, userId?: string): Promise<void> {
     // TrackStats UPSERT
     const existing = await this.statsRepo.findOneBy({ trackId });
     if (existing) {
@@ -313,6 +317,13 @@ export class PlayerService {
         await this.userHistoryRepo.save(this.userHistoryRepo.create({ trackId, userId, playCount: 1 }));
       }
     }
+
+    // RoomPlayHistory 기록
+    const history = new RoomPlayHistory();
+    history.room = { id: roomId } as Room;
+    history.track = { id: trackId } as Track;
+    if (userId) history.playedBy = { id: userId } as User;
+    await this.playHistoryRepo.save(history);
   }
 
   private async recordCompleted(trackId: string, userId?: string): Promise<void> {
