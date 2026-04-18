@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   DefaultValuePipe,
@@ -19,6 +18,7 @@ import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { InviteCode } from '../entities/invite-code.entity.js';
 import { Room } from '../entities/room.entity.js';
 import { User } from '../entities/user.entity.js';
+import { AppException } from '../exceptions/app.exception.js';
 import { AdminGuard } from '../guards/admin.guard.js';
 import { AuditService } from '../services/audit.service.js';
 import { ErrorLogService } from '../services/error-log.service.js';
@@ -26,6 +26,7 @@ import { IpBanService } from '../services/ip-ban.service.js';
 import { MetricsService } from '../services/metrics.service.js';
 import { SettingsService } from '../services/settings.service.js';
 import type { AuthenticatedRequest } from '../types/index.js';
+import { ErrorCode } from '../types/error-code.enum.js';
 import { Permission } from '../types/index.js';
 import { THROTTLE_TTL_MS, WS_CLOSE_BANNED } from '../constants.js';
 import { RoomsGateway } from '../rooms/rooms.gateway.js';
@@ -359,7 +360,7 @@ export class AdminController {
         deleted = await this.adminService.cleanupInactiveGuests(30);
         break;
       default:
-        throw new BadRequestException(`Unknown cleanup type: ${type}`);
+        throw new AppException(ErrorCode.ADMIN_007);
     }
     await this.auditService.log(req.user.userId, 'cleanup', type, null, { deleted }, req.ip);
     return { deleted };
@@ -444,7 +445,7 @@ export class AdminController {
   @ApiOperation({ summary: '신고 처리' })
   async resolveReport(@Param('id') id: string, @Body('status') status: string, @Req() req: AuthenticatedRequest) {
     if (status !== 'resolved' && status !== 'dismissed') {
-      throw new BadRequestException('Status must be "resolved" or "dismissed"');
+      throw new AppException(ErrorCode.ADMIN_008);
     }
     const report = await this.adminService.resolveReport(id, req.user.userId, status);
     await this.auditService.log(req.user.userId, 'report_resolve', 'report', id, { status }, req.ip);

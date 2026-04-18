@@ -21,3 +21,4 @@ export type { PreloadEntry } from './preload.types.js';
 export { AutoDjMode } from './auto-dj.types.js';
 export type { AutoDjStatus } from './auto-dj.types.js';
 export { WsEvent } from './ws-event.enum.js';
+export { ErrorCode } from './error-code.enum.js';

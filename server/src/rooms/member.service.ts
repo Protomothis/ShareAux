@@ -1,14 +1,15 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Room } from '../entities/room.entity.js';
+import { AppException } from '../exceptions/app.exception.js';
 import { RoomBan } from '../entities/room-ban.entity.js';
 import { RoomMember } from '../entities/room-member.entity.js';
 import { RoomPermission } from '../entities/room-permission.entity.js';
 import { User } from '../entities/user.entity.js';
 import type { TransferHostResult } from '../types/index.js';
-import { DEFAULT_ROOM_PERMISSIONS, Permission, UserRole } from '../types/index.js';
+import { DEFAULT_ROOM_PERMISSIONS, ErrorCode, Permission, UserRole } from '../types/index.js';
 
 @Injectable()
 export class MemberService {
@@ -84,13 +85,13 @@ export class MemberService {
 
   async transferHostTo(roomId: string, hostId: string, targetUserId: string): Promise<{ nickname: string }> {
     const room = await this.roomRepo.findOneBy({ id: roomId, isActive: true });
-    if (!room) throw new NotFoundException('Room not found');
-    if (room.hostId !== hostId) throw new ForbiddenException('Only DJ can transfer');
+    if (!room) throw new AppException(ErrorCode.ROOM_001);
+    if (room.hostId !== hostId) throw new AppException(ErrorCode.ROOM_006);
     const target = await this.memberRepo.findOne({ where: { roomId, userId: targetUserId }, relations: ['user'] });
-    if (!target) throw new NotFoundException('Member not found');
+    if (!target) throw new AppException(ErrorCode.ROOM_013);
     const targetPerm = await this.permRepo.findOneBy({ roomId, userId: targetUserId });
     if (!targetPerm?.permissions.includes(Permission.Host)) {
-      throw new ForbiddenException('호스트 권한이 없는 멤버에게 위임할 수 없습니다');
+      throw new AppException(ErrorCode.ROOM_014);
     }
     await this.roomRepo.update(roomId, { hostId: targetUserId });
     await this.memberRepo.update({ roomId, userId: targetUserId }, { role: 'host' });
@@ -113,9 +114,9 @@ export class MemberService {
 
   async kick(roomId: string, hostId: string, targetUserId: string): Promise<void> {
     const room = await this.roomRepo.findOneBy({ id: roomId, isActive: true });
-    if (!room) throw new NotFoundException('Room not found');
-    if (room.hostId !== hostId) throw new ForbiddenException('Only DJ can kick');
-    if (targetUserId === hostId) throw new BadRequestException('Cannot kick yourself');
+    if (!room) throw new AppException(ErrorCode.ROOM_001);
+    if (room.hostId !== hostId) throw new AppException(ErrorCode.ROOM_007);
+    if (targetUserId === hostId) throw new AppException(ErrorCode.ROOM_012);
     await this.memberRepo.delete({ roomId, userId: targetUserId });
     await this.permRepo.delete({ roomId, userId: targetUserId });
     await this.banRepo.save({ roomId, userId: targetUserId });
@@ -128,8 +129,8 @@ export class MemberService {
     permissions: Permission[],
   ): Promise<RoomPermission> {
     const room = await this.roomRepo.findOneBy({ id: roomId });
-    if (!room) throw new NotFoundException('Room not found');
-    if (room.hostId !== hostId) throw new ForbiddenException('Only host can change permissions');
+    if (!room) throw new AppException(ErrorCode.ROOM_001);
+    if (room.hostId !== hostId) throw new AppException(ErrorCode.ROOM_005);
     const existing = await this.permRepo.findOneBy({ roomId, userId: targetUserId });
     if (existing) {
       existing.permissions = permissions;
@@ -160,8 +161,8 @@ export class MemberService {
 
   async resetBans(roomId: string, hostId: string): Promise<number> {
     const room = await this.roomRepo.findOneBy({ id: roomId, isActive: true });
-    if (!room) throw new NotFoundException('Room not found');
-    if (room.hostId !== hostId) throw new ForbiddenException('Only DJ can reset bans');
+    if (!room) throw new AppException(ErrorCode.ROOM_001);
+    if (room.hostId !== hostId) throw new AppException(ErrorCode.ROOM_008);
     const result = await this.banRepo.delete({ roomId });
     return result.affected ?? 0;
   }
@@ -177,8 +178,8 @@ export class MemberService {
 
   async unban(roomId: string, hostId: string, targetUserId: string): Promise<void> {
     const room = await this.roomRepo.findOneBy({ id: roomId, isActive: true });
-    if (!room) throw new NotFoundException('Room not found');
-    if (room.hostId !== hostId) throw new ForbiddenException('Only DJ can unban');
+    if (!room) throw new AppException(ErrorCode.ROOM_001);
+    if (room.hostId !== hostId) throw new AppException(ErrorCode.ROOM_009);
     await this.banRepo.delete({ roomId, userId: targetUserId });
   }
 }

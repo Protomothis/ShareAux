@@ -4,6 +4,7 @@ export class ApiError extends Error {
   constructor(
     public readonly status: number,
     message: string,
+    public readonly code?: string,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -20,7 +21,9 @@ async function tryRefresh(): Promise<boolean> {
   refreshPromiseRef = fetch(`${BASE_URL}/auth/refresh`, { method: 'POST', credentials: 'include' })
     .then((r) => r.ok)
     .catch(() => false)
-    .finally(() => { refreshPromiseRef = null; });
+    .finally(() => {
+      refreshPromiseRef = null;
+    });
   return refreshPromiseRef;
 }
 
@@ -50,8 +53,20 @@ export const customFetch = async <T>(url: string, options?: RequestInit): Promis
   }
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new ApiError(res.status, (body as Record<string, string>).message || `Error ${res.status}`);
+    const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    const method = options?.method ?? 'GET';
+    const serverError = {
+      code: typeof body.code === 'string' ? body.code : undefined,
+      title: typeof body.title === 'string' ? body.title : undefined,
+      description: typeof body.description === 'string' ? body.description : undefined,
+      statusCode: typeof body.statusCode === 'number' ? body.statusCode : undefined,
+      message: typeof body.message === 'string' ? body.message : undefined,
+    };
+    if (typeof window !== 'undefined') {
+      const { notifyApiError } = await import('@/lib/api-error-toast');
+      notifyApiError(res.status, method, path, serverError);
+    }
+    throw new ApiError(res.status, serverError.title ?? serverError.message ?? `Error ${res.status}`, serverError.code);
   }
 
   if (res.status === 204 || res.headers.get('content-length') === '0') {

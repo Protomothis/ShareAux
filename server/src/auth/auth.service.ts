@@ -1,11 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  Logger,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import bcrypt from 'bcrypt';
@@ -13,11 +6,12 @@ import { createHash } from 'crypto';
 import { LessThan, Repository } from 'typeorm';
 
 import { AUTH_ACCESS_EXPIRY_SEC, AUTH_GUEST_EXPIRY_SEC, AUTH_REFRESH_EXPIRY_SEC } from '../constants.js';
+import { AppException } from '../exceptions/app.exception.js';
 import { InviteCode } from '../entities/invite-code.entity.js';
 import { RefreshToken } from '../entities/refresh-token.entity.js';
 import { User } from '../entities/user.entity.js';
 import type { OAuthProfile } from '../types/index.js';
-import { AuthProvider, Permission, UserRole } from '../types/index.js';
+import { AuthProvider, ErrorCode, Permission, UserRole } from '../types/index.js';
 import type { UserCookiePayload } from './cookie.util.js';
 import type { LoginDto } from './dto/login.dto.js';
 import type { RegisterDto } from './dto/register.dto.js';
@@ -42,9 +36,9 @@ export class AuthService {
   async validateOAuthUser(profile: OAuthProfile): Promise<User> {
     const user = await this.userRepo.findOneBy({ googleId: profile.googleId });
     if (!user) {
-      throw new UnauthorizedException('Google 계정이 연동되지 않았습니다. 먼저 회원가입 후 설정에서 연동해주세요.');
+      throw new AppException(ErrorCode.AUTH_016);
     }
-    if (user.bannedAt) throw new UnauthorizedException('정지된 계정입니다');
+    if (user.bannedAt) throw new AppException(ErrorCode.AUTH_002);
     user.email = profile.email;
     user.avatarUrl = profile.avatarUrl ?? user.avatarUrl;
     return this.userRepo.save(user);
@@ -53,7 +47,7 @@ export class AuthService {
   async linkGoogle(userId: string, googleId: string, email: string): Promise<void> {
     const existing = await this.userRepo.findOneBy({ googleId });
     if (existing && existing.id !== userId) {
-      throw new BadRequestException('이미 다른 계정에 연동된 Google 계정입니다');
+      throw new AppException(ErrorCode.AUTH_017);
     }
     await this.userRepo.update(userId, { googleId, email });
   }
@@ -68,9 +62,9 @@ export class AuthService {
       .addSelect('u.passwordHash')
       .where('u.id = :userId', { userId })
       .getOne();
-    if (!user?.passwordHash) throw new BadRequestException('비밀번호 변경을 지원하지 않는 계정입니다');
+    if (!user?.passwordHash) throw new AppException(ErrorCode.AUTH_010);
     const valid = await bcrypt.compare(currentPassword, user.passwordHash);
-    if (!valid) throw new BadRequestException('현재 비밀번호가 올바르지 않습니다');
+    if (!valid) throw new AppException(ErrorCode.AUTH_011);
     await this.userRepo.update(userId, { passwordHash: await bcrypt.hash(newPassword, 10) });
   }
 
@@ -95,21 +89,21 @@ export class AuthService {
     try {
       payload = this.jwtService.verify<{ sub: string }>(token);
     } catch {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new AppException(ErrorCode.AUTH_013);
     }
 
     const stored = await this.refreshTokenRepo.findOne({
       where: { tokenHash: this.hash(token), revoked: false },
     });
-    if (!stored) throw new UnauthorizedException('Refresh token revoked or not found');
+    if (!stored) throw new AppException(ErrorCode.AUTH_014);
 
     // Rotation: 기존 토큰 무효화
     stored.revoked = true;
     await this.refreshTokenRepo.save(stored);
 
     const user = await this.userRepo.findOneBy({ id: payload.sub });
-    if (!user) throw new UnauthorizedException('User not found');
-    if (user.bannedAt) throw new UnauthorizedException('정지된 계정입니다');
+    if (!user) throw new AppException(ErrorCode.AUTH_012);
+    if (user.bannedAt) throw new AppException(ErrorCode.AUTH_002);
 
     return this.generateTokenPair(user);
   }
@@ -134,16 +128,16 @@ export class AuthService {
 
     if (!isFirstUser) {
       // 첫 유저가 아니면 초대코드 필수
-      if (!dto.code) throw new UnauthorizedException('초대코드를 입력하세요');
+      if (!dto.code) throw new AppException(ErrorCode.AUTH_007);
       invite = await this.inviteCodeRepo.findOneBy({ code: dto.code, isActive: true });
-      if (!invite) throw new UnauthorizedException('유효하지 않은 초대코드입니다');
-      if (invite.expiresAt && invite.expiresAt < new Date()) throw new UnauthorizedException('만료된 초대코드입니다');
-      if (invite.usedCount >= invite.maxUses) throw new UnauthorizedException('초대코드 사용 한도를 초과했습니다');
-      if (!invite.allowRegistration) throw new UnauthorizedException('이 초대코드로는 회원가입할 수 없습니다');
+      if (!invite) throw new AppException(ErrorCode.AUTH_003);
+      if (invite.expiresAt && invite.expiresAt < new Date()) throw new AppException(ErrorCode.AUTH_004);
+      if (invite.usedCount >= invite.maxUses) throw new AppException(ErrorCode.AUTH_005);
+      if (!invite.allowRegistration) throw new AppException(ErrorCode.AUTH_006);
     }
 
     const existing = await this.userRepo.findOneBy({ username: dto.username });
-    if (existing) throw new BadRequestException('이미 사용 중인 아이디입니다');
+    if (existing) throw new AppException(ErrorCode.AUTH_008);
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
     const user = await this.userRepo.save(
@@ -172,20 +166,20 @@ export class AuthService {
       .addSelect('u.passwordHash')
       .where('u.username = :username', { username: dto.username })
       .getOne();
-    if (!user?.passwordHash) throw new UnauthorizedException('아이디 또는 비밀번호가 올바르지 않습니다');
+    if (!user?.passwordHash) throw new AppException(ErrorCode.AUTH_001);
 
     const valid = await bcrypt.compare(dto.password, user.passwordHash);
-    if (!valid) throw new UnauthorizedException('아이디 또는 비밀번호가 올바르지 않습니다');
-    if (user.bannedAt) throw new UnauthorizedException('정지된 계정입니다');
+    if (!valid) throw new AppException(ErrorCode.AUTH_001);
+    if (user.bannedAt) throw new AppException(ErrorCode.AUTH_002);
 
     return this.generateTokenPair(user);
   }
 
   async guestLogin(code: string, nickname: string): Promise<TokenPair> {
     const invite = await this.inviteCodeRepo.findOneBy({ code, isActive: true });
-    if (!invite) throw new UnauthorizedException('유효하지 않은 초대코드입니다');
-    if (invite.expiresAt && invite.expiresAt < new Date()) throw new UnauthorizedException('만료된 초대코드입니다');
-    if (invite.usedCount >= invite.maxUses) throw new UnauthorizedException('초대코드 사용 한도를 초과했습니다');
+    if (!invite) throw new AppException(ErrorCode.AUTH_003);
+    if (invite.expiresAt && invite.expiresAt < new Date()) throw new AppException(ErrorCode.AUTH_004);
+    if (invite.usedCount >= invite.maxUses) throw new AppException(ErrorCode.AUTH_005);
 
     const user = this.userRepo.create({
       provider: AuthProvider.Invite,
@@ -218,8 +212,8 @@ export class AuthService {
 
   async deleteAccount(userId: string): Promise<void> {
     const user = await this.userRepo.findOneBy({ id: userId });
-    if (!user) throw new NotFoundException('User not found');
-    if (user.role === UserRole.SuperAdmin) throw new ForbiddenException('SuperAdmin은 탈퇴할 수 없습니다');
+    if (!user) throw new AppException(ErrorCode.AUTH_012);
+    if (user.role === UserRole.SuperAdmin) throw new AppException(ErrorCode.AUTH_018);
 
     const mgr = this.userRepo.manager;
 

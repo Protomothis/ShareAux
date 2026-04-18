@@ -68,9 +68,7 @@ export function UserPermissionSection({ user }: UserPermissionSectionProps) {
         });
       }
       toast.success('저장되었습니다');
-    } catch {
-      toast.error('저장에 실패했습니다');
-    }
+    } catch {}
   }, [user, role, permissions, isAdmin, updateRole, updatePermissions]);
 
   return (

@@ -94,7 +94,6 @@ export default function SearchModal({
       onTrackAdded?.();
       onClose();
     } catch {
-      toast.error('추가에 실패했습니다');
     } finally {
       setAdding(false);
     }
@@ -242,7 +241,7 @@ export default function SearchModal({
         </div>
       </Modal.Body>
 
-      <Modal.Footer className="border-0 px-5 py-3">
+      <Modal.Footer className="border-0 px-5 py-3 sm:flex-col sm:items-stretch">
         <SearchSelectedBar
           selected={selected}
           adding={adding}

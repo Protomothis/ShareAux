@@ -111,6 +111,7 @@ export default function ProfileSettingsModal({ open, onClose }: ProfileSettingsM
 
 function MenuPage({ setPage, me, role }: { setPage: (p: Page) => void; me: MeResponse | null; role?: string }) {
   const authConfig = useAuthConfig();
+  const isGuest = role === 'guest';
   return (
     <>
       <Modal.Header>
@@ -123,13 +124,15 @@ function MenuPage({ setPage, me, role }: { setPage: (p: Page) => void; me: MeRes
           description={me?.nickname}
           onClick={() => setPage('nickname')}
         />
-        <MenuItem
-          icon={<KeyRound size={16} />}
-          label="비밀번호 변경"
-          description="계정 비밀번호"
-          onClick={() => setPage('password')}
-        />
-        {authConfig.google && (
+        {!isGuest && (
+          <MenuItem
+            icon={<KeyRound size={16} />}
+            label="비밀번호 변경"
+            description="계정 비밀번호"
+            onClick={() => setPage('password')}
+          />
+        )}
+        {!isGuest && authConfig.google && (
           <MenuItem
             icon={<Link2 size={16} />}
             label="Google 연동"
@@ -137,7 +140,7 @@ function MenuPage({ setPage, me, role }: { setPage: (p: Page) => void; me: MeRes
             onClick={() => setPage('google')}
           />
         )}
-        {role !== 'superAdmin' && (
+        {!isGuest && role !== 'superAdmin' && (
           <>
             <div className="my-1 h-px bg-white/[0.06]" />
             <MenuItem
@@ -176,7 +179,6 @@ function NicknamePage({
       useAuthStore.getState().init();
       onDone('닉네임이 변경되었습니다');
     } catch (e) {
-      toast.error((e as ApiError).message || '변경 실패');
     } finally {
       setLoading(false);
     }
@@ -231,7 +233,6 @@ function PasswordPage({ onBack, onDone }: { onBack: () => void; onDone: (msg: st
       });
       onDone('비밀번호가 변경되었습니다');
     } catch (e) {
-      toast.error((e as ApiError).message || '변경 실패');
     } finally {
       setLoading(false);
     }

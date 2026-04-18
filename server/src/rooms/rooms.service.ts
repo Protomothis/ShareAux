@@ -1,24 +1,17 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  Logger,
-  NotFoundException,
-  OnModuleInit,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { nanoid } from 'nanoid';
 import { Repository } from 'typeorm';
 
 import { Room } from '../entities/room.entity.js';
+import { AppException } from '../exceptions/app.exception.js';
 import { RoomBan } from '../entities/room-ban.entity.js';
 import { RoomMember } from '../entities/room-member.entity.js';
 import { RoomPermission } from '../entities/room-permission.entity.js';
 import { RoomPlayback } from '../entities/room-playback.entity.js';
 import type { LeaveResult } from '../types/index.js';
-import { AutoDjMode, Permission } from '../types/index.js';
+import { AutoDjMode, ErrorCode, Permission } from '../types/index.js';
 import type { CreateRoomDto } from './dto/create-room.dto.js';
 import type { UpdateRoomDto } from './dto/update-room.dto.js';
 import { MemberService } from './member.service.js';
@@ -84,7 +77,7 @@ export class RoomsService implements OnModuleInit {
     const user = await this.roomRepo.manager.findOneBy((await import('../entities/user.entity.js')).User, {
       id: hostId,
     });
-    if (!user) throw new UnauthorizedException('User not found — please re-login');
+    if (!user) throw new AppException(ErrorCode.AUTH_012);
     const room = this.roomRepo.create({
       name: dto.name,
       maxMembers: dto.maxMembers ?? 10,
@@ -149,7 +142,7 @@ export class RoomsService implements OnModuleInit {
       where: { id, isActive: true },
       relations: ['host'],
     });
-    if (!room) throw new NotFoundException('Room not found');
+    if (!room) throw new AppException(ErrorCode.ROOM_001);
 
     const members = await this.memberRepo.find({ where: { roomId: id }, relations: ['user'] });
     const perms = await this.permRepo.find({ where: { roomId: id } });
@@ -163,13 +156,13 @@ export class RoomsService implements OnModuleInit {
   async join(roomId: string, userId: string, password?: string): Promise<RoomMember> {
     // password는 select:false이므로 is_private로 판단 후 필요 시 명시적 select
     const room = await this.roomRepo.findOneBy({ id: roomId, isActive: true });
-    if (!room) throw new NotFoundException('Room not found');
+    if (!room) throw new AppException(ErrorCode.ROOM_001);
 
     const count = await this.memberRepo.countBy({ roomId });
-    if (count >= room.maxMembers) throw new BadRequestException('Room is full');
+    if (count >= room.maxMembers) throw new AppException(ErrorCode.ROOM_002);
 
     const banned = await this.banRepo.findOneBy({ roomId, userId });
-    if (banned) throw new ForbiddenException('이 방에서 추방되어 입장할 수 없습니다');
+    if (banned) throw new AppException(ErrorCode.ROOM_003);
 
     if (room.isPrivate) {
       const withPw = await this.roomRepo
@@ -178,7 +171,7 @@ export class RoomsService implements OnModuleInit {
         .where('room.id = :id', { id: roomId })
         .getOne();
       if (withPw?.password && (!password || !(await bcrypt.compare(password, withPw.password)))) {
-        throw new ForbiddenException('Invalid password');
+        throw new AppException(ErrorCode.ROOM_017);
       }
     }
 
@@ -211,15 +204,15 @@ export class RoomsService implements OnModuleInit {
 
   async remove(roomId: string, hostId: string): Promise<void> {
     const room = await this.roomRepo.findOne({ where: { id: roomId }, relations: ['host'] });
-    if (!room) throw new NotFoundException('Room not found');
-    if (room.host.id !== hostId) throw new ForbiddenException('Only host can delete');
+    if (!room) throw new AppException(ErrorCode.ROOM_001);
+    if (room.host.id !== hostId) throw new AppException(ErrorCode.ROOM_010);
     await this.roomRepo.remove(room);
   }
 
   async update(roomId: string, hostId: string, dto: UpdateRoomDto): Promise<Room> {
     const room = await this.roomRepo.findOneBy({ id: roomId, isActive: true });
-    if (!room) throw new NotFoundException('Room not found');
-    if (room.hostId !== hostId) throw new ForbiddenException('Only host can update room');
+    if (!room) throw new AppException(ErrorCode.ROOM_001);
+    if (room.hostId !== hostId) throw new AppException(ErrorCode.ROOM_004);
     const enqueueChanged =
       (dto.enqueueWindowMin && dto.enqueueWindowMin !== room.enqueueWindowMin) ||
       (dto.enqueueLimitPerWindow && dto.enqueueLimitPerWindow !== room.enqueueLimitPerWindow);
@@ -263,8 +256,8 @@ export class RoomsService implements OnModuleInit {
 
   async resetEnqueueCounts(roomId: string, hostId: string): Promise<void> {
     const room = await this.roomRepo.findOneBy({ id: roomId, isActive: true });
-    if (!room) throw new NotFoundException('Room not found');
-    if (room.hostId !== hostId) throw new ForbiddenException('Only host can reset');
+    if (!room) throw new AppException(ErrorCode.ROOM_001);
+    if (room.hostId !== hostId) throw new AppException(ErrorCode.ROOM_011);
     const pastDate = new Date(Date.now() - room.enqueueWindowMin * 60_000 - 1000);
     await this.roomRepo.manager
       .createQueryBuilder()

@@ -1,5 +1,36 @@
 # 변경 이력
 
+## 0.1.2 (2026-04-18)
+
+### 기능 추가
+
+- 에러 코드 체계 통일: 52개 ErrorCode (AUTH/ROOM/PLAYER/QUEUE/SEARCH/ADMIN/CAPTCHA/COMMON)
+- 글로벌 에러 toast: 서버 메타(code/title/description) 기반, dev 환경 디버그 정보
+- 멤버 액션 메뉴: 클릭 → 권한 관리 / 신고하기 선택
+- 신고 기능: ReportModal (사유 선택 + 상세 입력 + API 연동)
+- WS 연결 끊김 배너: motion 애니메이션, 재연결 시 자동 사라짐
+- 플레이어 썸네일 shimmer: 로딩/전환 시 빛 지나가는 효과
+- 플레이어 텍스트 shimmer: 준비중/스킵 중 상태 텍스트
+
+### 버그 수정
+
+- 오디오 곡 전환: prepareResync()로 clearBuffer+gotInit 리셋 통합, stall 3초 자동 resync
+- 프로그레스바 점프: streaming 전환 시 서버 elapsedMs 무조건 동기화
+- 프로그레스바 드르륵: skipping/preparing 시 elapsed 즉시 리셋, isPlaying=false → idle
+- audio.currentTime 보정: streaming일 때만 실행 (이전 곡 위치 오염 방지)
+- 큐 애니메이션: seenIdsRef로 React 19 호환, overflow-x-hidden
+- 검색 모달 footer: 선택 바 전체 너비 확보
+- 게스트 로그인 후 authStore.init() 누락
+- 게스트 프로필: 비밀번호/Google연동/탈퇴 숨김
+- 방 설정 레이아웃: 신청횟수 초기화/제재 관리 여백 추가
+
+### 개선
+
+- useRoomEvents: onSystem if/else 체인 → 역할별 핸들러 분리
+- useAudioControl: elapsedBase 변경 즉시 반영
+- 에러 toast 중복 제거 (11개 개별 toast → 글로벌 1곳)
+- 신고 관리 페이지: 처리/무시 설명 추가
+
 ## 0.1.1 (2026-04-18)
 
 ### 기능 추가
