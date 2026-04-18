@@ -134,9 +134,31 @@ docker compose up -d
 
 ---
 
-## 리버스 프록시 (nginx)
+## 리버스 프록시
 
-외부 도메인으로 서비스할 경우 nginx 설정 예시:
+ShareAux는 클라이언트(Next.js)와 서버(NestJS)가 별도 포트로 동작합니다. 리버스 프록시로 하나의 도메인에서 서비스하려면 아래 경로 규칙을 따르세요.
+
+### 경로 구조
+
+| 경로 | 대상 | 설명 |
+|------|------|------|
+| `/` | 클라이언트 (:3001) | Next.js 페이지 |
+| `/api/*` | 서버 (:3000) | REST API |
+| `/ws` | 서버 (:3000) | WebSocket (오디오 스트리밍 + 실시간 이벤트) |
+
+> ⚠️ 클라이언트는 `window.location.origin`을 기준으로 API/WS URL을 자동 생성합니다.
+> 따라서 `/api`와 `/ws`가 같은 도메인에서 접근 가능해야 합니다.
+
+### 환경 변수 설정
+
+리버스 프록시 사용 시 `.env`에서 아래 값을 실제 도메인으로 변경하세요:
+
+```env
+CLIENT_URL=https://aux.example.com
+GOOGLE_CALLBACK_URL=https://aux.example.com/api/auth/google/callback
+```
+
+### nginx 예시
 
 ```nginx
 server {
@@ -146,21 +168,29 @@ server {
     ssl_certificate /path/to/cert.pem;
     ssl_certificate_key /path/to/key.pem;
 
-    # 클라이언트 (Next.js)
-    location / {
-        proxy_pass http://localhost:3001;
+    # WebSocket (오디오 스트리밍) — 반드시 /ws를 별도로 처리
+    location /ws {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_read_timeout 86400s;
+    }
+
+    # API
+    location /api/ {
+        proxy_pass http://localhost:3000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # API + WebSocket
-    location /api/ {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
+    # 클라이언트 (Next.js) — 나머지 모든 경로
+    location / {
+        proxy_pass http://localhost:3001;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -169,7 +199,25 @@ server {
 }
 ```
 
-> WebSocket 연결을 위해 `/api/` 경로에 `Upgrade` 헤더 전달이 필수입니다.
+### Traefik 예시 (라벨 기반)
+
+```yaml
+services:
+  server:
+    labels:
+      - "traefik.http.routers.shareaux-api.rule=Host(`aux.example.com`) && (PathPrefix(`/api`) || PathPrefix(`/ws`))"
+      - "traefik.http.services.shareaux-api.loadbalancer.server.port=3000"
+  client:
+    labels:
+      - "traefik.http.routers.shareaux-client.rule=Host(`aux.example.com`)"
+      - "traefik.http.services.shareaux-client.loadbalancer.server.port=3001"
+```
+
+### 주의사항
+
+- `/ws` 경로에 `proxy_read_timeout`을 충분히 길게 설정하세요 (오디오 스트리밍은 장시간 연결 유지)
+- HTTPS 사용 시 WebSocket은 자동으로 `wss://`로 연결됩니다
+- Cloudflare 등 CDN 사용 시 WebSocket 지원을 활성화해야 합니다
 
 ---
 

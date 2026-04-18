@@ -41,14 +41,17 @@
 git clone https://github.com/Protomothis/ShareAux.git
 cd ShareAux
 cp .env.example .env
-# .env 파일을 환경에 맞게 수정 (docs/deployment.md 참고)
+# .env 파일에서 JWT_SECRET을 반드시 변경하세요!
+# Google 로그인, 가사 번역 등은 선택 사항입니다.
 
-# 2. 실행
-docker compose up -d
+# 2. 실행 (GHCR 이미지 사용 — 빌드 불필요)
+docker compose -f docker-compose.ghcr.yml up -d
 
 # 3. 접속
-# http://localhost:3001
+# http://localhost:3001 → 첫 접속 시 관리자 계정 생성 화면이 나타납니다.
 ```
+
+> 💡 소스에서 직접 빌드하려면 `docker compose up -d`를 사용하세요.
 
 ### 소스에서 실행
 
@@ -64,10 +67,32 @@ docker compose up db -d
 ./dev.sh up
 ```
 
+## 첫 사용 가이드
+
+1. **접속** — `http://localhost:3001` (또는 설정한 도메인)
+2. **관리자 계정 생성** — 첫 접속 시 자동으로 setup 화면이 나타납니다
+3. **초대코드 생성** — 관리자 페이지(`/admin`) → 초대코드 관리 → 새 초대코드 생성
+4. **친구 초대** — 초대코드를 공유하면 게스트 입장 또는 회원가입 가능
+5. **방 만들기** — 방 목록에서 + 버튼 → 방 이름 입력 → 생성
+6. **함께 듣기** — 곡 검색 → 큐에 추가 → 모든 참여자에게 실시간 스트리밍 🎶
+
+> 💡 HTTPS 환경에서 사용해야 iOS Safari에서도 정상 동작합니다.
+
+## 시스템 요구사항
+
+| 항목 | 최소 | 권장 |
+|------|------|------|
+| RAM | 512MB | 1GB+ |
+| 디스크 | 1GB | 5GB+ (곡 캐시) |
+| CPU | 1코어 | 2코어+ (동시 스트리밍 시) |
+| Docker | 20.10+ | 최신 |
+| 네트워크 | WebSocket 지원 필수 | HTTPS + 도메인 |
+
 ## 문서
 
 - [기능 상세](docs/features.md) — 방, 재생, 가사, 채팅, 권한, 관리자 기능 상세
 - [배포 가이드](docs/deployment.md) — Docker 설정, 환경 변수, 리버스 프록시
+- [자주 묻는 질문](docs/faq.md) — 재생 안 됨, iOS 이슈, 설정 방법 등
 - [개발 가이드](docs/development.md) — 로컬 개발 환경, 필수 도구, 프로젝트 구조
 - [아키텍처](docs/architecture.md) — 시스템 설계, 오디오 파이프라인, WebSocket 프로토콜
 - [AI 에이전트 규칙](AGENTS.md) — AI 코딩 어시스턴트 사용 시 참고 (Copilot, Cursor, Kiro 등)
