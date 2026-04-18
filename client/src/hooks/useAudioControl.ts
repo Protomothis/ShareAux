@@ -14,8 +14,11 @@ export function useAudioControl({ elapsedBase, syncTime, isPlaying, volume, onVo
   const [prevVolume, setPrevVolume] = useState(1);
 
   useEffect(() => {
-    if (!isPlaying || !syncTime) return;
-    const tick = () => setElapsed(elapsedBase + (Date.now() - syncTime));
+    if (!isPlaying || !syncTime) {
+      setElapsed(0);
+      return;
+    }
+    const tick = () => setElapsed(Math.max(0, elapsedBase + (Date.now() - syncTime)));
     const initial = setTimeout(tick, 0);
     const id = setInterval(tick, 500);
     return () => {

@@ -56,6 +56,8 @@ export function useAudio(onPlaying?: () => void) {
     }
   }, []);
 
+  const needsFirstPlayRef = useRef(true);
+
   // --- clearBuffer: SourceBuffer 데이터만 클리어 (MSE/Audio 유지) ---
   const clearBuffer = useCallback((): Promise<void> => {
     const sb = sbRef.current;
@@ -65,6 +67,7 @@ export function useAudio(onPlaying?: () => void) {
     appendingRef.current = false;
     gotInitRef.current = false;
     resettingRef.current = true;
+    needsFirstPlayRef.current = true;
 
     return new Promise<void>((resolve) => {
       try {
@@ -73,27 +76,25 @@ export function useAudio(onPlaying?: () => void) {
         /* */
       }
 
+      const finish = () => {
+        resettingRef.current = false;
+        if (audioRef.current) audioRef.current.currentTime = 0;
+        resolve();
+      };
+
       try {
         if (sb.buffered.length > 0) {
           const start = sb.buffered.start(0);
           const end = sb.buffered.end(sb.buffered.length - 1);
           sb.remove(start, end);
-          sb.addEventListener(
-            'updateend',
-            () => {
-              resettingRef.current = false;
-              resolve();
-            },
-            { once: true },
-          );
+          sb.addEventListener('updateend', finish, { once: true });
           return;
         }
       } catch {
         /* */
       }
 
-      resettingRef.current = false;
-      resolve();
+      finish();
     });
   }, []);
 
@@ -165,17 +166,16 @@ export function useAudio(onPlaying?: () => void) {
     audio.volume = volumeRef.current;
     audio.disableRemotePlayback = true;
     // 최초/곡 전환: timeupdate로 실제 재생 확인 (1회만)
-    let needsFirstPlay = true;
     audio.addEventListener('timeupdate', () => {
-      if (needsFirstPlay) {
-        needsFirstPlay = false;
+      if (needsFirstPlayRef.current) {
+        needsFirstPlayRef.current = false;
         onPlayingRef.current?.();
       }
     });
     // 중간 버퍼링 복구: waiting → playing
     let wasWaiting = false;
     audio.addEventListener('waiting', () => {
-      needsFirstPlay = true; // 다음 timeupdate에서 다시 fire
+      needsFirstPlayRef.current = true; // 다음 timeupdate에서 다시 fire
       wasWaiting = true;
       const sb = sbRef.current;
       const buffered = sb?.buffered.length ? sb.buffered.end(sb.buffered.length - 1) - audio.currentTime : 0;
