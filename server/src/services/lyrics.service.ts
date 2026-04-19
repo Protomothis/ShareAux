@@ -22,6 +22,7 @@ interface Json3Event {
 }
 
 import { cleanArtist, extractTitle, smartClean } from './title-cleaner.js';
+import { detectLang } from './detect-lang.js';
 
 @Injectable()
 export class LyricsService {
@@ -69,7 +70,11 @@ export class LyricsService {
         .where('t.id = :trackId', { trackId })
         .getOne();
       if (existing?.lyricsStatus === 'found' && existing.lyricsData) {
-        return { syncedLyrics: existing.lyricsData, lyricsType: existing.lyricsType ?? LyricsType.SYNCED };
+        return {
+          syncedLyrics: existing.lyricsData,
+          lyricsType: existing.lyricsType ?? LyricsType.SYNCED,
+          lang: existing.lyricsLang,
+        };
       }
       if (existing?.lyricsStatus === 'not_found') {
         // 24시간 후 재시도 허용
@@ -92,7 +97,9 @@ export class LyricsService {
         lyricsStatus: result?.syncedLyrics ? 'found' : 'not_found',
         lyricsData: result?.syncedLyrics ?? null,
         lyricsType: result?.lyricsType ?? null,
+        lyricsLang: result?.syncedLyrics ? detectLang(result.syncedLyrics) : null,
       });
+      if (result) result.lang = detectLang(result.syncedLyrics ?? '') ?? null;
     }
 
     return result;

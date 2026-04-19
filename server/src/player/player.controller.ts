@@ -276,16 +276,12 @@ export class PlayerController {
       );
       if (result?.syncedLyrics) {
         // 번역 enqueue (한국어 제외)
-        if (
-          this.translationService.isEnabled &&
-          track?.lyricsLang !== 'ko' &&
-          (!track?.lyricsTransStatus || track.lyricsTransStatus === 'failed')
-        ) {
+        if (this.translationService.isEnabled && result.lang !== 'ko') {
           this.translationService.enqueue(status.track.id, roomId);
         }
         return {
           syncedLyrics: result.syncedLyrics,
-          lang: track?.lyricsLang ?? null,
+          lang: result.lang ?? null,
           ruby: null,
           translated: null,
           transStatus: null,

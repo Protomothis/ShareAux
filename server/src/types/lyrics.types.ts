@@ -9,4 +9,5 @@ export enum LyricsStatus {
 export interface LyricsResult {
   syncedLyrics?: string;
   lyricsType?: LyricsType;
+  lang?: string | null;
 }
