@@ -39,7 +39,7 @@ export const customFetch = async <T>(url: string, options?: RequestInit): Promis
   }
 
   const text = await res.text();
-  return (text ? JSON.parse(text) : undefined) as T;
+  return (text ? JSON.parse(text) : null) as T;
 };
 
 export default customFetch;
