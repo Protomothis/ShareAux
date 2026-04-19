@@ -52,8 +52,8 @@ export class QueueService {
 
   async getQuota(roomId: string, userId: string) {
     const room = await this.roomRepo.findOneBy({ id: roomId });
-    if (!room) return { used: 0, limit: 0, windowMin: 0, unlimited: true, banned: false, cooldownSourceIds: [] };
-    const cooldownSourceIds = await this.getCooldownSourceIds(roomId, room.replayCooldownMin);
+    if (!room) return { used: 0, limit: 0, windowMin: 0, unlimited: true, banned: false, blockedSourceIds: [] };
+    const blockedSourceIds = await this.getBlockedSourceIds(roomId, room.replayCooldownMin);
     const isPrivileged = room.hostId === userId;
     if (isPrivileged) {
       return {
@@ -62,12 +62,12 @@ export class QueueService {
         windowMin: room.enqueueWindowMin,
         unlimited: true,
         banned: false,
-        cooldownSourceIds: [],
+        blockedSourceIds: [],
       };
     }
     const perm = await this.permRepo.findOneBy({ roomId, userId });
     if (perm && !perm.permissions.includes(Permission.AddQueue))
-      return { used: 0, limit: 0, windowMin: 0, unlimited: false, banned: true, cooldownSourceIds };
+      return { used: 0, limit: 0, windowMin: 0, unlimited: false, banned: true, blockedSourceIds };
     const since = new Date(Date.now() - room.enqueueWindowMin * 60_000);
     const used = await this.queueRepo
       .createQueryBuilder('q')
@@ -81,21 +81,39 @@ export class QueueService {
       windowMin: room.enqueueWindowMin,
       unlimited: false,
       banned: false,
-      cooldownSourceIds,
+      blockedSourceIds,
     };
   }
 
-  private async getCooldownSourceIds(roomId: string, cooldownMin: number): Promise<string[]> {
-    if (cooldownMin === 0) return [];
-    const qb = this.playHistoryRepo
-      .createQueryBuilder('h')
-      .select('DISTINCT h.source_id', 'sourceId')
-      .where('h.room_id = :roomId', { roomId });
-    if (cooldownMin > 0) {
-      qb.andWhere('h.played_at > :since', { since: new Date(Date.now() - cooldownMin * 60_000) });
+  private async getBlockedSourceIds(roomId: string, cooldownMin: number): Promise<string[]> {
+    const ids = new Set<string>();
+
+    // 현재 큐
+    const queue = await this.queueRepo.find({
+      where: { room: { id: roomId }, played: false },
+      relations: ['track'],
+    });
+    for (const q of queue) if (q.track?.sourceId) ids.add(q.track.sourceId);
+
+    // 현재 재생 중
+    const { RoomPlayback } = await import('../entities/room-playback.entity.js');
+    const pb = await this.queueRepo.manager.findOne(RoomPlayback, { where: { roomId }, relations: ['track'] });
+    if (pb?.track?.sourceId) ids.add(pb.track.sourceId);
+
+    // 쿨다운
+    if (cooldownMin !== 0) {
+      const qb = this.playHistoryRepo
+        .createQueryBuilder('h')
+        .select('DISTINCT h.source_id', 'sourceId')
+        .where('h.room_id = :roomId', { roomId });
+      if (cooldownMin > 0) {
+        qb.andWhere('h.played_at > :since', { since: new Date(Date.now() - cooldownMin * 60_000) });
+      }
+      const rows = await qb.getRawMany<{ sourceId: string }>();
+      for (const r of rows) ids.add(r.sourceId);
     }
-    const rows = await qb.getRawMany<{ sourceId: string }>();
-    return rows.map((r) => r.sourceId);
+
+    return [...ids];
   }
 
   async addTrack(roomId: string, trackId: string, userId: string) {

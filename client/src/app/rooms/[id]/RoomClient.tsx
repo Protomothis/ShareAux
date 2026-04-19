@@ -396,7 +396,6 @@ export default function RoomClient({ id }: { id: string }) {
             {mobileTab === 'queue' && (
               <Queue
                 roomId={id}
-                currentSourceId={currentTrack?.sourceId}
                 canSearch={can('addQueue')}
                 canEnqueue={can('addQueue')}
                 canReorder={isHost || can('host')}

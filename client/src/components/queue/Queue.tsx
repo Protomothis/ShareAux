@@ -38,7 +38,6 @@ function OverlayItem({ item }: { item: RoomQueue }) {
 
 interface QueueProps {
   roomId: string;
-  currentSourceId?: string;
   canSearch?: boolean;
   canEnqueue?: boolean;
   canReorder?: boolean;
@@ -50,7 +49,6 @@ interface QueueProps {
 
 export default function Queue({
   roomId,
-  currentSourceId,
   canSearch = true,
   canEnqueue = true,
   canReorder = false,
@@ -210,11 +208,7 @@ export default function Queue({
         onClose={() => setSearchOpen(false)}
         roomId={roomId}
         canEnqueue={canEnqueue}
-        queueTrackIds={[
-          ...queue.map((q) => q.track.sourceId || q.track.id),
-          ...(quota?.cooldownSourceIds ?? []),
-          ...(currentSourceId ? [currentSourceId] : []),
-        ]}
+        queueTrackIds={quota?.blockedSourceIds ?? []}
         onTrackAdded={() => {
           invalidate.queue(roomId);
           invalidate.quota(roomId);
