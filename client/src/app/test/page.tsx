@@ -1,4 +1,4 @@
-import { Provider } from '@/api/model';
+import { TrackProvider } from '@/api/model';
 ('use client');
 
 import { useCallback, useRef, useState } from 'react';
@@ -59,7 +59,7 @@ export default function TestPage() {
   const enqueue = async (trackId: string) => {
     if (!roomId) return addLog('roomId 없음');
     try {
-      await queueControllerAddTracks(roomId, { items: [{ provider: Provider.YT, sourceId: trackId }] });
+      await queueControllerAddTracks(roomId, { items: [{ provider: TrackProvider.yt, sourceId: trackId }] });
       addLog(`대기열 추가: ${trackId}`);
     } catch (e) {
       addLog(`대기열 추가 실패: ${e}`);

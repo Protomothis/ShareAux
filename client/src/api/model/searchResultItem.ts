@@ -5,9 +5,10 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
+import type { SearchResultItemProvider } from './searchResultItemProvider';
 
 export interface SearchResultItem {
-  provider: string;
+  provider: SearchResultItemProvider;
   sourceId: string;
   name: string;
   /** @nullable */

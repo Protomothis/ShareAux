@@ -1,4 +1,4 @@
-import { Provider } from '@/api/model';
+import { TrackProvider } from '@/api/model';
 ('use client');
 
 import { Search, Sparkles, X } from 'lucide-react';

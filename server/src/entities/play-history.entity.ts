@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Provider } from '../types/provider.enum.js';
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 import { Room } from './room.entity.js';
@@ -22,8 +23,8 @@ export class PlayHistory {
   playedBy!: User | null;
 
   /** 트랙 provider (트랙 삭제와 독립) */
-  @ApiProperty({ default: 'yt' })
-  @Column({ type: 'varchar', default: 'yt' })
+  @ApiProperty({ enum: Provider, default: Provider.YT })
+  @Column({ type: 'varchar', default: Provider.YT })
   provider!: string;
 
   /** 트랙 sourceId (트랙 삭제와 독립) */

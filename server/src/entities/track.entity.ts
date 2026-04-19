@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
+import { Provider } from '../types/provider.enum.js';
+
 @Entity('tracks')
 @Unique(['provider', 'sourceId'])
 export class Track {
@@ -8,8 +10,8 @@ export class Track {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ApiProperty({ default: 'yt' })
-  @Column({ type: 'varchar', default: 'yt' })
+  @ApiProperty({ enum: Provider, default: Provider.YT })
+  @Column({ type: 'varchar', default: Provider.YT })
   provider!: string;
 
   @ApiProperty()
