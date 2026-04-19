@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
+
+import { Provider } from '../types/provider.enum.js';
 import { Repository } from 'typeorm';
 
 import {
@@ -364,6 +366,7 @@ export class AutoDjService {
     if (existing) return existing;
     return this.trackRepo.save(
       this.trackRepo.create({
+        provider: Provider.YT,
         sourceId: r.id,
         name: r.title,
         artist: r.artist,
