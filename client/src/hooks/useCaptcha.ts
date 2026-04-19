@@ -30,7 +30,7 @@ export function useCaptcha() {
     if (fetchingRef.current) return;
     fetchingRef.current = true;
     try {
-      const res = await customFetch<ChallengeResponse>('/captcha/challenge');
+      const res = await customFetch<ChallengeResponse>('/api/captcha/challenge');
       setState({
         enabled: res.enabled,
         id: res.id ?? null,

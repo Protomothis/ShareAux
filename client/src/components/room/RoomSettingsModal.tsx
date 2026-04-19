@@ -207,7 +207,7 @@ export default function RoomSettingsModal({
     if (unmutingId) return;
     setUnmutingId(userId);
     try {
-      await customFetch(`/rooms/${roomId}/mute/${userId}`, { method: 'DELETE' });
+      await customFetch(`/api/rooms/${roomId}/mute/${userId}`, { method: 'DELETE' });
       setMutes((prev) => prev.filter((m) => m.userId !== userId));
       toast.success('채팅 제한이 해제되었습니다');
     } catch {

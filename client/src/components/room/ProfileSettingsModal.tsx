@@ -175,7 +175,10 @@ function NicknamePage({
     if (!validate({ nickname: value })) return;
     setLoading(true);
     try {
-      await customFetch('/auth/profile/nickname', { method: 'PUT', body: JSON.stringify({ nickname: value.trim() }) });
+      await customFetch('/api/auth/profile/nickname', {
+        method: 'PUT',
+        body: JSON.stringify({ nickname: value.trim() }),
+      });
       useAuthStore.getState().init();
       onDone('닉네임이 변경되었습니다');
     } catch (e) {
@@ -227,7 +230,7 @@ function PasswordPage({ onBack, onDone }: { onBack: () => void; onDone: (msg: st
     if (!validate({ cur, next, confirm })) return;
     setLoading(true);
     try {
-      await customFetch('/auth/profile/password', {
+      await customFetch('/api/auth/profile/password', {
         method: 'PUT',
         body: JSON.stringify({ currentPassword: cur, newPassword: next }),
       });
@@ -351,7 +354,7 @@ function DeletePage({ onBack, router }: { onBack: () => void; router: ReturnType
     setLoading(true);
     setError('');
     try {
-      await customFetch('/auth/account', { method: 'DELETE', body: JSON.stringify({ password }) });
+      await customFetch('/api/auth/account', { method: 'DELETE', body: JSON.stringify({ password }) });
       useAuthStore.getState().clear();
       router.push('/login');
     } catch (e) {

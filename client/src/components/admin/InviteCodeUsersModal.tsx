@@ -25,7 +25,7 @@ export function InviteCodeUsersModal({ inviteCodeId, code, onOpenChange }: Invit
 
   const { data: users = [], isLoading } = useQuery<User[]>({
     queryKey: ['admin', 'invite-codes', inviteCodeId, 'users'],
-    queryFn: () => customFetch(`/admin/invite-codes/${inviteCodeId}/users`),
+    queryFn: () => customFetch(`/api/admin/invite-codes/${inviteCodeId}/users`),
     enabled: !!inviteCodeId,
   });
 
@@ -35,7 +35,7 @@ export function InviteCodeUsersModal({ inviteCodeId, code, onOpenChange }: Invit
     if (!inviteCodeId) return;
     setDeleting(true);
     try {
-      await customFetch(`/admin/invite-codes/${inviteCodeId}/guests`, { method: 'DELETE' });
+      await customFetch(`/api/admin/invite-codes/${inviteCodeId}/guests`, { method: 'DELETE' });
       toast.success(`게스트 ${guestCount}명 삭제 완료`);
       setConfirmOpen(false);
       await qc.invalidateQueries({ queryKey: ['admin', 'invite-codes', inviteCodeId, 'users'] });
