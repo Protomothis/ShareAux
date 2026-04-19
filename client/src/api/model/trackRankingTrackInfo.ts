@@ -5,10 +5,16 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
+import type { TrackRankingTrackInfoLyricsStatus } from './trackRankingTrackInfoLyricsStatus';
+import type { TrackRankingTrackInfoMetaStatus } from './trackRankingTrackInfoMetaStatus';
 
 export interface TrackRankingTrackInfo {
   name: string;
   sourceId: string;
   /** @nullable */
   songArtist?: string | null;
+  lyricsStatus: TrackRankingTrackInfoLyricsStatus;
+  /** @nullable */
+  lyricsLang?: string | null;
+  metaStatus: TrackRankingTrackInfoMetaStatus;
 }

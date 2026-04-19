@@ -115,6 +115,8 @@ export * from './trackLyricsStatus';
 export * from './trackMetaStatus';
 export * from './trackRankingItem';
 export * from './trackRankingTrackInfo';
+export * from './trackRankingTrackInfoLyricsStatus';
+export * from './trackRankingTrackInfoMetaStatus';
 export * from './trackSource';
 export * from './trackStats';
 export * from './tracksControllerGetMyVote200';

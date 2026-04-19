@@ -9,6 +9,15 @@ export class TrackRankingTrackInfo {
 
   @ApiPropertyOptional({ nullable: true })
   songArtist!: string | null;
+
+  @ApiProperty({ enum: ['searching', 'found', 'not_found'] })
+  lyricsStatus!: 'searching' | 'found' | 'not_found';
+
+  @ApiPropertyOptional({ nullable: true })
+  lyricsLang!: string | null;
+
+  @ApiProperty({ enum: ['pending', 'done'] })
+  metaStatus!: 'pending' | 'done';
 }
 
 export class TrackRankingItem {
