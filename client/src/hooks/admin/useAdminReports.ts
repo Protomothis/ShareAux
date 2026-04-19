@@ -6,7 +6,7 @@ import {
   useAdminControllerGetReports,
 } from '@/api/admin/admin';
 import type { AdminControllerGetReportsParams, Report } from '@/api/model';
-import { customFetch } from '@/lib/api-client';
+import { customFetch } from '@/api/mutator';
 
 export function useAdminReports(params: AdminControllerGetReportsParams) {
   return useAdminControllerGetReports(params);

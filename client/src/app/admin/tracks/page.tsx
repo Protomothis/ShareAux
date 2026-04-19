@@ -68,6 +68,23 @@ const columns: Column<TrackRankingItem>[] = [
     render: (item) => <span className="text-sa-text-muted">{item.uniqueUsers}</span>,
   },
   {
+    key: 'lyrics',
+    header: '가사',
+    width: '5rem',
+    hideOnMobile: true,
+    render: (item) => {
+      const s = item.track.lyricsStatus;
+      const lang = item.track.lyricsLang;
+      return s === 'found' ? (
+        <StatusBadge variant="success">{lang?.toUpperCase() ?? '있음'}</StatusBadge>
+      ) : s === 'not_found' ? (
+        <StatusBadge variant="danger">없음</StatusBadge>
+      ) : (
+        <StatusBadge variant="muted">검색중</StatusBadge>
+      );
+    },
+  },
+  {
     key: 'score',
     header: '점수',
     width: '5rem',

@@ -1,6 +1,9 @@
+import type { TrackSource } from './dto/add-tracks-body.dto.js';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
+
+import { PlayHistory } from '../entities/play-history.entity.js';
 
 import { AppException } from '../exceptions/app.exception.js';
 import { Room } from '../entities/room.entity.js';
@@ -18,6 +21,7 @@ export class QueueService {
     @InjectRepository(Track) private trackRepo: Repository<Track>,
     @InjectRepository(RoomPermission) private permRepo: Repository<RoomPermission>,
     @InjectRepository(Room) private roomRepo: Repository<Room>,
+    @InjectRepository(PlayHistory) private playHistoryRepo: Repository<PlayHistory>,
   ) {}
 
   getQueue(roomId: string) {
@@ -48,7 +52,8 @@ export class QueueService {
 
   async getQuota(roomId: string, userId: string) {
     const room = await this.roomRepo.findOneBy({ id: roomId });
-    if (!room) return { used: 0, limit: 0, windowMin: 0, unlimited: true, banned: false };
+    if (!room) return { used: 0, limit: 0, windowMin: 0, unlimited: true, banned: false, blockedSourceIds: [] };
+    const blockedSourceIds = await this.getBlockedSourceIds(roomId, room.replayCooldownMin);
     const isPrivileged = room.hostId === userId;
     if (isPrivileged) {
       return {
@@ -57,11 +62,12 @@ export class QueueService {
         windowMin: room.enqueueWindowMin,
         unlimited: true,
         banned: false,
+        blockedSourceIds: [],
       };
     }
     const perm = await this.permRepo.findOneBy({ roomId, userId });
     if (perm && !perm.permissions.includes(Permission.AddQueue))
-      return { used: 0, limit: 0, windowMin: 0, unlimited: false, banned: true };
+      return { used: 0, limit: 0, windowMin: 0, unlimited: false, banned: true, blockedSourceIds };
     const since = new Date(Date.now() - room.enqueueWindowMin * 60_000);
     const used = await this.queueRepo
       .createQueryBuilder('q')
@@ -75,7 +81,39 @@ export class QueueService {
       windowMin: room.enqueueWindowMin,
       unlimited: false,
       banned: false,
+      blockedSourceIds,
     };
+  }
+
+  private async getBlockedSourceIds(roomId: string, cooldownMin: number): Promise<string[]> {
+    const ids = new Set<string>();
+
+    // 현재 큐
+    const queue = await this.queueRepo.find({
+      where: { room: { id: roomId }, played: false },
+      relations: ['track'],
+    });
+    for (const q of queue) if (q.track?.sourceId) ids.add(q.track.sourceId);
+
+    // 현재 재생 중
+    const { RoomPlayback } = await import('../entities/room-playback.entity.js');
+    const pb = await this.queueRepo.manager.findOne(RoomPlayback, { where: { roomId }, relations: ['track'] });
+    if (pb?.track?.sourceId) ids.add(pb.track.sourceId);
+
+    // 쿨다운
+    if (cooldownMin !== 0) {
+      const qb = this.playHistoryRepo
+        .createQueryBuilder('h')
+        .select('DISTINCT h.source_id', 'sourceId')
+        .where('h.room_id = :roomId', { roomId });
+      if (cooldownMin > 0) {
+        qb.andWhere('h.played_at > :since', { since: new Date(Date.now() - cooldownMin * 60_000) });
+      }
+      const rows = await qb.getRawMany<{ sourceId: string }>();
+      for (const r of rows) ids.add(r.sourceId);
+    }
+
+    return [...ids];
   }
 
   async addTrack(roomId: string, trackId: string, userId: string) {
@@ -120,27 +158,64 @@ export class QueueService {
     );
   }
 
-  async addTracks(roomId: string, trackIds: string[], userId: string) {
+  async addTracks(roomId: string, items: TrackSource[], userId: string) {
     const total = await this.queueRepo.countBy({ room: { id: roomId }, played: false });
-    if (total + trackIds.length > 50) throw new AppException(ErrorCode.QUEUE_004);
+    if (total + items.length > 50) throw new AppException(ErrorCode.QUEUE_004);
 
     const room = await this.roomRepo.findOneBy({ id: roomId });
     const isPrivileged = room?.hostId === userId;
 
     // 호스트가 아니면 maxSelectPerAdd 제한 적용
-    if (!isPrivileged && room && trackIds.length > room.maxSelectPerAdd) {
+    if (!isPrivileged && room && items.length > room.maxSelectPerAdd) {
       throw new AppException(ErrorCode.QUEUE_007);
     }
 
-    // 중복 제거
+    // sourceId → Track upsert
+    const tracks: Track[] = [];
+    for (const item of items) {
+      let track = await this.trackRepo.findOneBy({ sourceId: item.sourceId });
+      if (!track) {
+        track = await this.trackRepo.save(
+          this.trackRepo.create({
+            provider: item.provider,
+            sourceId: item.sourceId,
+            name: item.name,
+            artist: item.artist,
+            thumbnail: item.thumbnail,
+            durationMs: item.durationMs,
+            fetchedAt: new Date(),
+          }),
+        );
+      }
+      tracks.push(track);
+    }
+
+    // 중복 제거 (큐 + 현재 재생 중인 곡)
     const existing = await this.queueRepo.find({
       where: { room: { id: roomId }, played: false },
       select: ['track'],
       relations: ['track'],
     });
     const existingIds = new Set(existing.map((q) => q.track.id));
-    const unique = trackIds.filter((id) => !existingIds.has(id));
+    const playback = await this.queueRepo.manager.findOne(
+      (await import('../entities/room-playback.entity.js')).RoomPlayback,
+      { where: { roomId }, relations: ['track'] },
+    );
+    if (playback?.track) existingIds.add(playback.track.id);
+    const unique = tracks.filter((t) => !existingIds.has(t.id));
     if (!unique.length) throw new AppException(ErrorCode.QUEUE_003);
+
+    // 재신청 쿨다운 체크 (0=제한없음, -1=방 종료까지, >0=N분)
+    if (!isPrivileged && room && room.replayCooldownMin !== 0) {
+      for (const track of unique) {
+        const where: Record<string, unknown> = { room: { id: roomId }, sourceId: track.sourceId };
+        if (room.replayCooldownMin > 0) {
+          where.playedAt = MoreThan(new Date(Date.now() - room.replayCooldownMin * 60_000));
+        }
+        const recent = await this.playHistoryRepo.findOne({ where, order: { playedAt: 'DESC' } });
+        if (recent) throw new AppException(ErrorCode.QUEUE_008);
+      }
+    }
 
     if (!isPrivileged && room) {
       const since = new Date(Date.now() - room.enqueueWindowMin * 60_000);
@@ -162,10 +237,10 @@ export class QueueService {
       .getRawOne<{ max: number }>();
     let pos = (max?.max ?? 0) + 1;
 
-    const entries = unique.map((trackId) =>
+    const entries = unique.map((track) =>
       this.queueRepo.create({
         room: { id: roomId } as Room,
-        track: { id: trackId } as Track,
+        track,
         addedBy: { id: userId } as unknown as User,
         position: pos++,
       }),

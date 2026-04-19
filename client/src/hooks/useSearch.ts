@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { PlaylistResult, Track } from '@/api/model';
+import type { PlaylistResult } from '@/api/model';
 import { searchControllerSearch, searchControllerSuggest } from '@/api/search/search';
+import type { SearchResultItem } from '@/api/model';
 
 export function useSearch(isOpen: boolean) {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [results, setResults] = useState<Track[]>([]);
+  const [results, setResults] = useState<SearchResultItem[]>([]);
   const [playlists, setPlaylists] = useState<PlaylistResult[]>([]);
   const [continuation, setContinuation] = useState<string | undefined>();
   const [loading, setLoading] = useState(false);
@@ -17,7 +18,7 @@ export function useSearch(isOpen: boolean) {
   const suggestTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const suggestAbortRef = useRef<AbortController>(undefined);
   const searchCache = useRef(
-    new Map<string, { tracks: Track[]; playlists: PlaylistResult[]; continuation?: string }>(),
+    new Map<string, { tracks: SearchResultItem[]; playlists: PlaylistResult[]; continuation?: string }>(),
   );
 
   // 모달 열릴 때 리셋
@@ -103,8 +104,8 @@ export function useSearch(isOpen: boolean) {
     try {
       const data = await searchControllerSearch({ q: debouncedQuery, continuation });
       setResults((prev) => {
-        const ids = new Set(prev.map((t) => t.id));
-        return [...prev, ...data.tracks.filter((t) => !ids.has(t.id))];
+        const ids = new Set(prev.map((t) => t.sourceId));
+        return [...prev, ...data.tracks.filter((t) => !ids.has(t.sourceId))];
       });
       setContinuation(data.continuation);
     } catch {

@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, ChevronRight, KeyRound, Link2, Loader2, Trash2, User } from 'lucide-react';
+import { ArrowLeft, ChevronRight, KeyRound, Link2, Loader2, Trash2, User as UserIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -12,8 +12,13 @@ import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useAuthConfig } from '@/hooks/useAuthConfig';
-import type { ApiError } from '@/lib/api-client';
-import { customFetch } from '@/lib/api-client';
+import type { ApiError } from '@/api/mutator';
+import {
+  authControllerDeleteAccount,
+  authControllerMe,
+  authControllerUpdateNickname,
+  authControllerUpdatePassword,
+} from '@/api/auth/auth';
 import { useAuthStore } from '@/stores/auth';
 
 type Page = 'menu' | 'nickname' | 'password' | 'google' | 'delete';
@@ -23,11 +28,7 @@ interface ProfileSettingsModalProps {
   onClose: () => void;
 }
 
-interface MeResponse {
-  userId: string;
-  email?: string | null;
-  nickname: string;
-}
+import type { User } from '@/api/model';
 
 // ─── Menu Item ──────────────────────────────────────────
 
@@ -74,7 +75,7 @@ function SubHeader({ title, onBack }: { title: string; onBack: () => void }) {
 
 export default function ProfileSettingsModal({ open, onClose }: ProfileSettingsModalProps) {
   const [page, setPage] = useState<Page>('menu');
-  const [me, setMe] = useState<MeResponse | null>(null);
+  const [me, setMe] = useState<User | null>(null);
   const role = useAuthStore((s) => s.role);
   const router = useRouter();
 
@@ -83,7 +84,7 @@ export default function ProfileSettingsModal({ open, onClose }: ProfileSettingsM
       setPage('menu');
       return;
     }
-    customFetch<MeResponse>('/auth/me')
+    authControllerMe()
       .then(setMe)
       .catch(() => {});
   }, [open]);
@@ -109,7 +110,7 @@ export default function ProfileSettingsModal({ open, onClose }: ProfileSettingsM
 
 // ─── Pages ──────────────────────────────────────────────
 
-function MenuPage({ setPage, me, role }: { setPage: (p: Page) => void; me: MeResponse | null; role?: string }) {
+function MenuPage({ setPage, me, role }: { setPage: (p: Page) => void; me: User | null; role?: string }) {
   const authConfig = useAuthConfig();
   const isGuest = role === 'guest';
   return (
@@ -119,7 +120,7 @@ function MenuPage({ setPage, me, role }: { setPage: (p: Page) => void; me: MeRes
       </Modal.Header>
       <Modal.Body className="-mx-0 space-y-0.5">
         <MenuItem
-          icon={<User size={16} />}
+          icon={<UserIcon size={16} />}
           label="닉네임 변경"
           description={me?.nickname}
           onClick={() => setPage('nickname')}
@@ -156,15 +157,7 @@ function MenuPage({ setPage, me, role }: { setPage: (p: Page) => void; me: MeRes
   );
 }
 
-function NicknamePage({
-  me,
-  onBack,
-  onDone,
-}: {
-  me: MeResponse | null;
-  onBack: () => void;
-  onDone: (msg: string) => void;
-}) {
+function NicknamePage({ me, onBack, onDone }: { me: User | null; onBack: () => void; onDone: (msg: string) => void }) {
   const [value, setValue] = useState(me?.nickname ?? '');
   const [loading, setLoading] = useState(false);
   const { errors, validate, clearError } = useFormValidation<{ nickname: string }>({
@@ -175,7 +168,7 @@ function NicknamePage({
     if (!validate({ nickname: value })) return;
     setLoading(true);
     try {
-      await customFetch('/auth/profile/nickname', { method: 'PUT', body: JSON.stringify({ nickname: value.trim() }) });
+      await authControllerUpdateNickname({ nickname: value.trim() });
       useAuthStore.getState().init();
       onDone('닉네임이 변경되었습니다');
     } catch (e) {
@@ -227,10 +220,7 @@ function PasswordPage({ onBack, onDone }: { onBack: () => void; onDone: (msg: st
     if (!validate({ cur, next, confirm })) return;
     setLoading(true);
     try {
-      await customFetch('/auth/profile/password', {
-        method: 'PUT',
-        body: JSON.stringify({ currentPassword: cur, newPassword: next }),
-      });
+      await authControllerUpdatePassword({ currentPassword: cur, newPassword: next });
       onDone('비밀번호가 변경되었습니다');
     } catch (e) {
     } finally {
@@ -285,7 +275,7 @@ function PasswordPage({ onBack, onDone }: { onBack: () => void; onDone: (msg: st
   );
 }
 
-function GooglePage({ me, onBack }: { me: MeResponse | null; onBack: () => void }) {
+function GooglePage({ me, onBack }: { me: User | null; onBack: () => void }) {
   const linked = !!me?.email;
   return (
     <>
@@ -351,7 +341,7 @@ function DeletePage({ onBack, router }: { onBack: () => void; router: ReturnType
     setLoading(true);
     setError('');
     try {
-      await customFetch('/auth/account', { method: 'DELETE', body: JSON.stringify({ password }) });
+      await authControllerDeleteAccount({ password });
       useAuthStore.getState().clear();
       router.push('/login');
     } catch (e) {

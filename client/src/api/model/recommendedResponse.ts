@@ -5,8 +5,8 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
-import type { Track } from './track';
+import type { SearchResultItem } from './searchResultItem';
 
 export interface RecommendedResponse {
-  recommended: Track[];
+  recommended: SearchResultItem[];
 }

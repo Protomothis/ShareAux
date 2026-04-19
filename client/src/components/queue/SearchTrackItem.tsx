@@ -3,14 +3,14 @@
 import { Check } from 'lucide-react';
 import { memo } from 'react';
 
-import type { Track } from '@/api/model';
+import type { SearchResultItem } from '@/api/model';
 import Thumbnail from '@/components/common/Thumbnail';
 import { Button } from '@/components/ui/button';
 import { formatDuration } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 interface SearchTrackItemProps {
-  track: Track;
+  track: SearchResultItem;
   order: number;
   disabled: boolean;
   full: boolean;
@@ -53,7 +53,7 @@ export const SearchTrackItem = memo(function SearchTrackItem({
         </p>
       </div>
       {disabled && !inQueue && <Check size={14} className="shrink-0 text-green-400" />}
-      {inQueue && <span className="shrink-0 text-xs text-sa-text-muted">신청곡에 있음</span>}
+      {inQueue && <span className="shrink-0 text-xs text-sa-text-muted">재신청 불가</span>}
     </Button>
   );
 });

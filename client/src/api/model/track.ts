@@ -5,12 +5,14 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
+import type { TrackProvider } from './trackProvider';
 import type { TrackMetaStatus } from './trackMetaStatus';
 import type { TrackLyricsStatus } from './trackLyricsStatus';
 
 export interface Track {
   id: string;
-  youtubeId: string;
+  provider: TrackProvider;
+  sourceId: string;
   name: string;
   /** @nullable */
   artist?: string | null;

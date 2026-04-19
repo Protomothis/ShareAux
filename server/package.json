@@ -1,6 +1,6 @@
 {
   "name": "shareaux-server",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "ShareAux 서버 — 실시간 음악 공유 플랫폼 백엔드",
   "repository": {
     "type": "git",

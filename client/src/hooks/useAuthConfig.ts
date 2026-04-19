@@ -2,23 +2,19 @@
 
 import { useEffect, useState } from 'react';
 
-import { customFetch } from '@/lib/api-client';
+import type { AuthConfigResponse } from '@/api/model';
+import { authControllerGetAuthConfig } from '@/api/auth/auth';
 
-interface AuthConfig {
-  google: boolean;
-  captcha: boolean;
-}
+const defaultConfig: AuthConfigResponse = { google: false, captcha: false, translation: false };
 
-const defaultConfig: AuthConfig = { google: false, captcha: false };
-
-let cachedConfig: AuthConfig | null = null;
+let cachedConfig: AuthConfigResponse | null = null;
 
 export function useAuthConfig() {
-  const [config, setConfig] = useState<AuthConfig>(cachedConfig ?? defaultConfig);
+  const [config, setConfig] = useState<AuthConfigResponse>(cachedConfig ?? defaultConfig);
 
   useEffect(() => {
     if (cachedConfig) return;
-    customFetch<AuthConfig>('/auth/config')
+    authControllerGetAuthConfig()
       .then((c) => {
         cachedConfig = c;
         setConfig(c);

@@ -1,6 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
+
+import { AuthService } from '../auth/auth.service.js';
 import { nanoid } from 'nanoid';
 import { LessThan, Repository } from 'typeorm';
 
@@ -18,7 +20,7 @@ import { InviteCode } from '../entities/invite-code.entity.js';
 import { Report } from '../entities/report.entity.js';
 import { Room } from '../entities/room.entity.js';
 import { RoomMember } from '../entities/room-member.entity.js';
-import { RoomPlayHistory } from '../entities/room-play-history.entity.js';
+import { PlayHistory } from '../entities/play-history.entity.js';
 import { RoomQueue } from '../entities/room-queue.entity.js';
 import { Track } from '../entities/track.entity.js';
 import { TrackStats } from '../entities/track-stats.entity.js';
@@ -43,7 +45,7 @@ export class AdminService {
     @InjectRepository(RoomMember) private readonly memberRepo: Repository<RoomMember>,
     @InjectRepository(InviteCode) private readonly inviteCodeRepo: Repository<InviteCode>,
     @InjectRepository(TrackStats) private readonly trackStatsRepo: Repository<TrackStats>,
-    @InjectRepository(RoomPlayHistory) private readonly playHistoryRepo: Repository<RoomPlayHistory>,
+    @InjectRepository(PlayHistory) private readonly playHistoryRepo: Repository<PlayHistory>,
     @InjectRepository(UserTrackHistory) private readonly userHistoryRepo: Repository<UserTrackHistory>,
     @InjectRepository(Track) private readonly trackRepo: Repository<Track>,
     @InjectRepository(RoomQueue) private readonly queueRepo: Repository<RoomQueue>,
@@ -53,6 +55,7 @@ export class AdminService {
     private readonly audio: AudioService,
     private readonly preload: PreloadService,
     private readonly metrics: MetricsService,
+    @Inject(forwardRef(() => AuthService)) private readonly authService: AuthService,
   ) {}
 
   async getDashboard() {
@@ -113,6 +116,10 @@ export class AdminService {
 
   async unbanUser(userId: string): Promise<void> {
     await this.userRepo.update(userId, { bannedAt: null });
+  }
+
+  async deleteUser(userId: string): Promise<void> {
+    await this.authService.deleteAccount(userId);
   }
 
   async getRooms(page: number, limit: number) {
@@ -187,6 +194,26 @@ export class AdminService {
     if (!code) throw new AppException(ErrorCode.ADMIN_003);
     await this.inviteCodeRepo.remove(code);
     return { success: true };
+  }
+
+  async getInviteCodeUsers(inviteCodeId: string) {
+    return this.userRepo.find({
+      where: { inviteCode: { id: inviteCodeId } },
+      order: { createdAt: 'DESC' },
+      select: ['id', 'nickname', 'username', 'role', 'provider', 'createdAt'],
+    });
+  }
+
+  async deleteInviteCodeGuests(inviteCodeId: string): Promise<number> {
+    const guests = await this.userRepo.find({
+      where: { inviteCode: { id: inviteCodeId }, role: UserRole.Guest },
+      select: ['id'],
+    });
+    if (!guests.length) return 0;
+    for (const g of guests) {
+      await this.authService.deleteAccount(g.id).catch(() => {});
+    }
+    return guests.length;
   }
 
   async deleteExpiredGuests() {
@@ -399,7 +426,7 @@ export class AdminService {
       this.queueRepo.count(),
       this.trackRepo
         .createQueryBuilder('t')
-        .where('t.id NOT IN (SELECT DISTINCT track_id FROM room_play_histories)')
+        .where('t.source_id NOT IN (SELECT DISTINCT source_id FROM play_histories)')
         .getCount(),
       this.trackRepo
         .createQueryBuilder('t')
@@ -447,7 +474,7 @@ export class AdminService {
   async cleanupUnplayedTracks(): Promise<number> {
     const tracks = await this.trackRepo
       .createQueryBuilder('t')
-      .where('t.id NOT IN (SELECT DISTINCT track_id FROM room_play_histories)')
+      .where('t.source_id NOT IN (SELECT DISTINCT source_id FROM play_histories)')
       .getMany();
     if (!tracks.length) return 0;
     return this.deleteTracks(tracks.map((t) => t.id));
@@ -511,12 +538,6 @@ export class AdminService {
     await this.voteRepo.createQueryBuilder().delete().where('track_id IN (:...trackIds)', { trackIds }).execute();
     await this.trackStatsRepo.createQueryBuilder().delete().where('track_id IN (:...trackIds)', { trackIds }).execute();
     await this.queueRepo
-      .createQueryBuilder()
-      .update()
-      .set({ track: null as unknown as Track })
-      .where('track_id IN (:...trackIds)', { trackIds })
-      .execute();
-    await this.playHistoryRepo
       .createQueryBuilder()
       .update()
       .set({ track: null as unknown as Track })
@@ -600,7 +621,7 @@ export class AdminService {
       .createQueryBuilder('t')
       .delete()
       .where('t.fetched_at < :cutoff', { cutoff: trackCutoff })
-      .andWhere('t.id NOT IN (SELECT DISTINCT track_id FROM room_play_histories WHERE played_at > :cutoff)', {
+      .andWhere('t.source_id NOT IN (SELECT DISTINCT source_id FROM play_histories WHERE played_at > :cutoff)', {
         cutoff: trackCutoff,
       })
       .andWhere('t.id NOT IN (SELECT DISTINCT track_id FROM room_queues WHERE played = false)')

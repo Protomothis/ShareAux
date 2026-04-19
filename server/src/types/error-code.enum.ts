@@ -57,6 +57,7 @@ export enum ErrorCode {
   QUEUE_005 = 'QUEUE_005',
   QUEUE_006 = 'QUEUE_006',
   QUEUE_007 = 'QUEUE_007',
+  QUEUE_008 = 'QUEUE_008',
 
   // Search
   SEARCH_001 = 'SEARCH_001',

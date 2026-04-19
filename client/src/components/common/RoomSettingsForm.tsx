@@ -17,6 +17,7 @@ export interface RoomFormValues {
   defaultEnqueueEnabled: boolean;
   defaultVoteSkipEnabled: boolean;
   maxSelectPerAdd: number;
+  replayCooldownMin: number;
   autoDjEnabled: boolean;
   autoDjMode: AutoDjMode;
   autoDjThreshold: number;
@@ -33,6 +34,7 @@ export const DEFAULT_FORM_VALUES: RoomFormValues = {
   defaultEnqueueEnabled: true,
   defaultVoteSkipEnabled: true,
   maxSelectPerAdd: 3,
+  replayCooldownMin: 0,
   autoDjEnabled: false,
   autoDjMode: 'related',
   autoDjThreshold: 2,
@@ -167,6 +169,28 @@ export default function RoomSettingsForm({
         <p className="text-[11px] text-muted-foreground">
           {v.enqueueWindowMin}분 동안 멤버당 최대 {v.enqueueLimitPerWindow}곡, 1회 {v.maxSelectPerAdd}곡 (DJ 제외)
         </p>
+        <div className="mt-3 border-t border-white/5 pt-3">
+          <FormField label="재신청 제한">
+            <select
+              className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-white"
+              value={v.replayCooldownMin}
+              onChange={(e) => change('replayCooldownMin', Number(e.target.value))}
+            >
+              <option value={0}>제한 없음</option>
+              <option value={30}>30분</option>
+              <option value={60}>60분</option>
+              <option value={90}>90분</option>
+              <option value={-1}>방 종료까지</option>
+            </select>
+          </FormField>
+          {v.replayCooldownMin !== 0 && (
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              {v.replayCooldownMin === -1
+                ? '같은 곡은 방이 종료될 때까지 재신청 불가 (DJ 제외)'
+                : `같은 곡은 재생 후 ${v.replayCooldownMin}분간 재신청 불가 (DJ 제외)`}
+            </p>
+          )}
+        </div>
       </FormSection>
 
       {/* ─── AutoDJ ─── */}

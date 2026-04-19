@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import type { Track } from '@/api/model';
+import type { RoomQueue, Track } from '@/api/model';
 import { useInvalidate } from '@/hooks/useQueries';
 import { debug } from '@/lib/debug';
 import type { AutoDjStatus, ChatMessage, StreamState, TrackVoteMap } from '@/types';
@@ -218,7 +218,12 @@ export function useRoomEvents(
 
       // 큐/AutoDJ
       if (data.event === WsEvent.queueUpdated) {
-        invalidate.queue(roomId);
+        const d = data.data as { queue?: RoomQueue[] } | undefined;
+        if (d?.queue) {
+          invalidate.setQueue(roomId, d.queue);
+        } else {
+          invalidate.queue(roomId);
+        }
         invalidate.history(roomId);
         return;
       }

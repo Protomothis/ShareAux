@@ -23,7 +23,7 @@ import type {
 
 import type { AddTracksBody, QuotaResponse, ReorderBody, RoomQueue } from '.././model';
 
-import { customFetch } from '../../lib/api-client';
+import { customFetch } from '.././mutator';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 

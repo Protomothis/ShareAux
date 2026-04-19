@@ -1,4 +1,5 @@
-import type { PlaylistResult, Track } from '@/api/model';
+import type { PlaylistResult } from '@/api/model';
+import type { SearchResultItem } from '@/api/model';
 import EmptyState from '@/components/common/EmptyState';
 
 import { SearchPlaylistItem } from './SearchPlaylistItem';
@@ -9,14 +10,14 @@ interface SearchResultsProps {
   loading: boolean;
   loadingMore: boolean;
   debouncedQuery: string;
-  results: Track[];
+  results: SearchResultItem[];
   playlists: PlaylistResult[];
-  selected: Track[];
+  selected: SearchResultItem[];
   disabledIds: Set<string>;
   addedIds: Set<string>;
   queueTrackIds: string[];
   maxSelect: number;
-  onToggleTrack: (track: Track) => void;
+  onToggleTrack: (track: SearchResultItem) => void;
 }
 
 export default function SearchResults({
@@ -47,7 +48,13 @@ export default function SearchResults({
   }
 
   if (results.length === 0 && playlists.length === 0) {
-    return <EmptyState icon="😶" title="검색 결과가 없습니다" description={`"${debouncedQuery}"에 대한 결과를 찾지 못했어요.\n다른 키워드로 검색해 보세요.`} />;
+    return (
+      <EmptyState
+        icon="😶"
+        title="검색 결과가 없습니다"
+        description={`"${debouncedQuery}"에 대한 결과를 찾지 못했어요.\n다른 키워드로 검색해 보세요.`}
+      />
+    );
   }
 
   return (
@@ -64,16 +71,16 @@ export default function SearchResults({
       ))}
 
       {results.map((track) => {
-        const order = selected.findIndex((t) => t.id === track.id) + 1;
-        const isDisabled = addedIds.has(track.id) || queueTrackIds.includes(track.youtubeId || track.id);
+        const order = selected.findIndex((t) => t.sourceId === track.sourceId) + 1;
+        const isDisabled = addedIds.has(track.sourceId) || queueTrackIds.includes(track.sourceId);
         return (
           <SearchTrackItem
-            key={track.id}
+            key={track.sourceId}
             track={track}
             order={order}
             disabled={isDisabled}
             full={selected.length >= maxSelect && !order}
-            inQueue={queueTrackIds.includes(track.youtubeId || track.id)}
+            inQueue={queueTrackIds.includes(track.sourceId)}
             onClick={() => !isDisabled && onToggleTrack(track)}
           />
         );

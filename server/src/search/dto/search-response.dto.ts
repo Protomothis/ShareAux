@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+import { SearchResultItem } from './search-result-item.dto.js';
 import { Track } from '../../entities/track.entity.js';
 
 export class PlaylistResult {
@@ -11,13 +12,13 @@ export class PlaylistResult {
 }
 
 export class SearchResponse {
-  @ApiProperty({ type: () => [Track] }) tracks!: Track[];
+  @ApiProperty({ type: () => [SearchResultItem] }) tracks!: SearchResultItem[];
   @ApiProperty({ type: () => [PlaylistResult] }) playlists!: PlaylistResult[];
   @ApiProperty({ required: false }) continuation?: string;
 }
 
 export class PlaylistTracksResponse {
-  @ApiProperty({ type: () => [Track] }) tracks!: Track[];
+  @ApiProperty({ type: () => [SearchResultItem] }) tracks!: SearchResultItem[];
   @ApiProperty() total!: number;
   @ApiProperty() page!: number;
   @ApiProperty() limit!: number;
@@ -30,7 +31,7 @@ export class ShowcaseResponse {
 }
 
 export class RecommendedResponse {
-  @ApiProperty({ type: () => [Track] }) recommended!: Track[];
+  @ApiProperty({ type: () => [SearchResultItem] }) recommended!: SearchResultItem[];
 }
 
 export class SuggestResponse {

@@ -90,7 +90,7 @@ export class PreloadService {
           // 긴 곡은 프리로드 스킵
           if (item.track.durationMs > PRELOAD_MAX_TRACK_DURATION_SEC * 1000) continue;
 
-          this.startDownload(tid, item.track.youtubeId);
+          this.startDownload(tid, item.track.sourceId);
         }
       })
       .catch((e) => this.logger.warn(`triggerPreload failed for room ${roomId}:`, e));
@@ -114,12 +114,12 @@ export class PreloadService {
 
   // --- Internal ---
 
-  private async startDownload(trackId: string, youtubeId: string, retry = 0): Promise<void> {
+  private async startDownload(trackId: string, sourceId: string, retry = 0): Promise<void> {
     const entry: PreloadEntry = {
       state: PreloadState.Downloading,
       buffer: null,
       size: 0,
-      youtubeId,
+      sourceId,
       refCount: 1,
       at: 0,
     };
@@ -130,7 +130,7 @@ export class PreloadService {
       // 다운로드 시작 전 eviction 체크
       this.evictIfNeeded();
 
-      const buffer = await this.ytdlp.downloadAudio(youtubeId);
+      const buffer = await this.ytdlp.downloadAudio(sourceId);
       entry.buffer = buffer;
       entry.size = buffer.length;
       entry.state = PreloadState.Preloaded;
@@ -140,7 +140,7 @@ export class PreloadService {
       if (retry < PRELOAD_RETRY_COUNT) {
         this.releaseSlot();
         this.logger.warn(`Preload retry ${retry + 1}/${PRELOAD_RETRY_COUNT} for ${trackId}`);
-        return this.startDownload(trackId, youtubeId, retry + 1);
+        return this.startDownload(trackId, sourceId, retry + 1);
       }
       entry.state = PreloadState.Failed;
       this.logger.warn(`Preload failed for ${trackId}: ${e instanceof Error ? e.message : e}`);

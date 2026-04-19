@@ -111,7 +111,7 @@ export default function RoomClient({ id }: { id: string }) {
   const { audio, listening, volume, onAudio, handleListenToggle, handleVolumeChange } = roomAudio;
   useEffect(() => {
     if (streamState === 'skipping' || streamState === 'preparing') {
-      void audio.prepareResync();
+      void audio.prepareResync().then(() => wsActionsRef.current?.sendResync());
     }
   }, [streamState, audio]);
   useEffect(() => {
@@ -284,6 +284,7 @@ export default function RoomClient({ id }: { id: string }) {
     autoDjEnabled: room?.autoDjEnabled,
     autoDjStatus,
     streamState,
+    onSkipError: () => invalidate.player(id),
   };
 
   const chatProps = {
@@ -423,6 +424,7 @@ export default function RoomClient({ id }: { id: string }) {
         enqueueLimitPerWindow={room.enqueueLimitPerWindow ?? 15}
         crossfade={room.crossfade ?? true}
         maxSelectPerAdd={room.maxSelectPerAdd ?? 3}
+        replayCooldownMin={room.replayCooldownMin ?? 0}
         defaultEnqueueEnabled={room.defaultEnqueueEnabled ?? true}
         defaultVoteSkipEnabled={room.defaultVoteSkipEnabled ?? true}
         autoDjEnabled={room.autoDjEnabled ?? false}

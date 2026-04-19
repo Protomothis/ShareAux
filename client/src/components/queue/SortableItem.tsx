@@ -44,10 +44,12 @@ export default function SortableItem({
   const isRemoving = removingId === item.id;
   const isNew = staggerIndex !== undefined;
 
-  // 타이머 기반 순차 reveal — 이전 아이템 애니메이션 체감 완료 후 다음 시작
   const [revealed, setRevealed] = useState(!isNew);
   useEffect(() => {
-    if (!isNew) return;
+    if (!isNew) {
+      setRevealed(true);
+      return;
+    }
     const timer = setTimeout(() => setRevealed(true), staggerIndex * STAGGER_DELAY_MS);
     return () => clearTimeout(timer);
   }, [isNew, staggerIndex]);

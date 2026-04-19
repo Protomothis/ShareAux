@@ -12,4 +12,6 @@ export interface QuotaResponse {
   windowMin: number;
   unlimited: boolean;
   banned: boolean;
+  /** 신청 불가 sourceId 목록 (큐 + 현재재생 + 쿨다운) */
+  blockedSourceIds: string[];
 }

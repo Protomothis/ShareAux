@@ -26,12 +26,12 @@ export function TrackDetailModal({ track, onOpenChange }: TrackDetailModalProps)
           <div className="flex items-center justify-between">
             <span className="text-sa-text-muted">YouTube</span>
             <a
-              href={`https://www.youtube.com/watch?v=${track.track.youtubeId}`}
+              href={`https://www.youtube.com/watch?v=${track.track.sourceId}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1 text-sa-accent hover:underline"
             >
-              {track.track.youtubeId}
+              {track.track.sourceId}
               <ExternalLink size={12} />
             </a>
           </div>
@@ -56,7 +56,22 @@ export function TrackDetailModal({ track, onOpenChange }: TrackDetailModalProps)
 
           <div className="flex items-center justify-between">
             <span className="text-sa-text-muted">가사</span>
-            <StatusBadge variant="muted">미확인</StatusBadge>
+            {track.track.lyricsStatus === 'found' ? (
+              <StatusBadge variant="success">{track.track.lyricsLang?.toUpperCase() ?? '있음'}</StatusBadge>
+            ) : track.track.lyricsStatus === 'not_found' ? (
+              <StatusBadge variant="danger">없음</StatusBadge>
+            ) : (
+              <StatusBadge variant="muted">검색중</StatusBadge>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="text-sa-text-muted">메타</span>
+            {track.track.metaStatus === 'done' ? (
+              <StatusBadge variant="success">완료</StatusBadge>
+            ) : (
+              <StatusBadge variant="muted">대기</StatusBadge>
+            )}
           </div>
         </div>
       </Modal.Body>
