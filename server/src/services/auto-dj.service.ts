@@ -15,7 +15,7 @@ import {
 } from '../constants.js';
 import { Room } from '../entities/room.entity.js';
 import { RoomPlayback } from '../entities/room-playback.entity.js';
-import { RoomPlayHistory } from '../entities/room-play-history.entity.js';
+import { PlayHistory } from '../entities/play-history.entity.js';
 import { RoomQueue } from '../entities/room-queue.entity.js';
 import { Track } from '../entities/track.entity.js';
 import { TrackStats } from '../entities/track-stats.entity.js';
@@ -43,7 +43,7 @@ export class AutoDjService {
     @InjectRepository(Room) private readonly roomRepo: Repository<Room>,
     @InjectRepository(RoomQueue) private readonly queueRepo: Repository<RoomQueue>,
     @InjectRepository(RoomPlayback) private readonly playbackRepo: Repository<RoomPlayback>,
-    @InjectRepository(RoomPlayHistory) private readonly historyRepo: Repository<RoomPlayHistory>,
+    @InjectRepository(PlayHistory) private readonly historyRepo: Repository<PlayHistory>,
     @InjectRepository(Track) private readonly trackRepo: Repository<Track>,
     @InjectRepository(TrackStats) private readonly statsRepo: Repository<TrackStats>,
     private readonly ytdlp: YtdlpService,
@@ -229,9 +229,14 @@ export class AutoDjService {
       where: { room: { id: roomId } },
       order: { playedAt: 'DESC' },
       take: AUTODJ_FRESHNESS_HISTORY_DEPTH,
-      relations: ['track'],
     });
-    return histories.filter((h) => h.track).map((h) => ({ track: h.track, weight: 1.0 }));
+    if (!histories.length) return [];
+    const youtubeIds = [...new Set(histories.map((h) => h.youtubeId))];
+    const tracks = await this.trackRepo.find({ where: youtubeIds.map((yid) => ({ youtubeId: yid })) });
+    const trackMap = new Map(tracks.map((t) => [t.youtubeId, t]));
+    return histories
+      .filter((h) => trackMap.has(h.youtubeId))
+      .map((h) => ({ track: trackMap.get(h.youtubeId)!, weight: 1.0 }));
   }
 
   private async getPopularCandidates(): Promise<WeightedCandidate[]> {
@@ -276,9 +281,12 @@ export class AutoDjService {
       where: { room: { id: roomId } },
       order: { playedAt: 'DESC' },
       take: AUTODJ_FRESHNESS_HARD_EXCLUDE,
-      relations: ['track'],
     });
-    const recentIds = recentHistory.map((h) => h.track.id);
+    const recentYoutubeIds = recentHistory.map((h) => h.youtubeId);
+    const recentTracks = recentYoutubeIds.length
+      ? await this.trackRepo.find({ where: recentYoutubeIds.map((yid) => ({ youtubeId: yid })) })
+      : [];
+    const recentIds = recentTracks.map((t) => t.id);
     const excluded = new Set([...queueTrackIds, ...recentIds]);
 
     let filtered = candidates.filter((c) => !excluded.has(c.track.id));
@@ -288,12 +296,17 @@ export class AutoDjService {
       where: { room: { id: roomId } },
       order: { playedAt: 'DESC' },
       take: AUTODJ_FRESHNESS_HISTORY_DEPTH,
-      relations: ['track'],
     });
-    const historyIndex = new Map(deepHistory.map((h, i) => [h.track.id, i]));
+    const deepTracks = deepHistory.length
+      ? await this.trackRepo.find({ where: deepHistory.map((h) => ({ youtubeId: h.youtubeId })) })
+      : [];
+    const deepTrackMap = new Map(deepTracks.map((t) => [t.youtubeId, t]));
+    const historyIndex = new Map(
+      deepHistory.map((h, i) => [deepTrackMap.get(h.youtubeId)?.id, i]).filter(([id]) => id) as [string, number][],
+    );
 
     // 아티스트 페널티: 직전 큐 + 재생 이력에서 최근 아티스트
-    const recentArtists = recentHistory.map((h) => h.track.artist).filter(Boolean);
+    const recentArtists = recentHistory.map((h) => h.artist).filter(Boolean) as string[];
 
     filtered = filtered.map((c) => {
       let { weight } = c;

@@ -6,7 +6,7 @@ import { SKIP_MIN_PLAY_MS, VOTE_SKIP_DIVISOR, VOTE_SKIP_MIN_REQUIRED } from '../
 import { AppException } from '../exceptions/app.exception.js';
 import { ErrorCode } from '../types/error-code.enum.js';
 import { RoomPlayback } from '../entities/room-playback.entity.js';
-import { RoomPlayHistory } from '../entities/room-play-history.entity.js';
+import { PlayHistory } from '../entities/play-history.entity.js';
 import { RoomQueue } from '../entities/room-queue.entity.js';
 import { Room } from '../entities/room.entity.js';
 import { Track } from '../entities/track.entity.js';
@@ -39,7 +39,7 @@ export class PlayerService {
     @InjectRepository(RoomQueue) private readonly queueRepo: Repository<RoomQueue>,
     @InjectRepository(TrackStats) private readonly statsRepo: Repository<TrackStats>,
     @InjectRepository(UserTrackHistory) private readonly userHistoryRepo: Repository<UserTrackHistory>,
-    @InjectRepository(RoomPlayHistory) private readonly playHistoryRepo: Repository<RoomPlayHistory>,
+    @InjectRepository(PlayHistory) private readonly playHistoryRepo: Repository<PlayHistory>,
   ) {}
 
   // --- Playback ---
@@ -70,7 +70,7 @@ export class PlayerService {
     this.onTrackChangeCallback?.(roomId);
 
     // 글로벌 stats/history UPSERT (fire-and-forget)
-    this.recordPlay(roomId, trackId, addedByUserId).catch((e) =>
+    this.recordPlay(roomId, track, addedByUserId).catch((e) =>
       this.logger.warn('recordPlay failed', e instanceof Error ? e.message : e),
     );
 
@@ -285,7 +285,9 @@ export class PlayerService {
     }
   }
 
-  private async recordPlay(roomId: string, trackId: string, userId?: string): Promise<void> {
+  private async recordPlay(roomId: string, track: Track, userId?: string): Promise<void> {
+    const trackId = track.id;
+
     // TrackStats UPSERT
     const existing = await this.statsRepo.findOneBy({ trackId });
     if (existing) {
@@ -320,12 +322,18 @@ export class PlayerService {
       }
     }
 
-    // RoomPlayHistory 기록
-    const history = new RoomPlayHistory();
-    history.room = { id: roomId } as Room;
-    history.track = { id: trackId } as Track;
-    if (userId) history.playedBy = { id: userId } as User;
-    await this.playHistoryRepo.save(history);
+    // PlayHistory 기록 (메타 스냅샷 포함)
+    await this.playHistoryRepo.save(
+      this.playHistoryRepo.create({
+        room: { id: roomId } as Room,
+        playedBy: userId ? ({ id: userId } as User) : null,
+        youtubeId: track.youtubeId,
+        title: track.songTitle || track.name,
+        artist: track.songArtist || track.artist,
+        thumbnail: track.thumbnail,
+        durationMs: track.durationMs,
+      }),
+    );
   }
 
   private async recordCompleted(trackId: string, userId?: string): Promise<void> {

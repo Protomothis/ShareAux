@@ -18,7 +18,7 @@ import { InviteCode } from '../entities/invite-code.entity.js';
 import { Report } from '../entities/report.entity.js';
 import { Room } from '../entities/room.entity.js';
 import { RoomMember } from '../entities/room-member.entity.js';
-import { RoomPlayHistory } from '../entities/room-play-history.entity.js';
+import { PlayHistory } from '../entities/play-history.entity.js';
 import { RoomQueue } from '../entities/room-queue.entity.js';
 import { Track } from '../entities/track.entity.js';
 import { TrackStats } from '../entities/track-stats.entity.js';
@@ -43,7 +43,7 @@ export class AdminService {
     @InjectRepository(RoomMember) private readonly memberRepo: Repository<RoomMember>,
     @InjectRepository(InviteCode) private readonly inviteCodeRepo: Repository<InviteCode>,
     @InjectRepository(TrackStats) private readonly trackStatsRepo: Repository<TrackStats>,
-    @InjectRepository(RoomPlayHistory) private readonly playHistoryRepo: Repository<RoomPlayHistory>,
+    @InjectRepository(PlayHistory) private readonly playHistoryRepo: Repository<PlayHistory>,
     @InjectRepository(UserTrackHistory) private readonly userHistoryRepo: Repository<UserTrackHistory>,
     @InjectRepository(Track) private readonly trackRepo: Repository<Track>,
     @InjectRepository(RoomQueue) private readonly queueRepo: Repository<RoomQueue>,
@@ -399,7 +399,7 @@ export class AdminService {
       this.queueRepo.count(),
       this.trackRepo
         .createQueryBuilder('t')
-        .where('t.id NOT IN (SELECT DISTINCT track_id FROM room_play_histories)')
+        .where('t.youtube_id NOT IN (SELECT DISTINCT youtube_id FROM play_histories)')
         .getCount(),
       this.trackRepo
         .createQueryBuilder('t')
@@ -447,7 +447,7 @@ export class AdminService {
   async cleanupUnplayedTracks(): Promise<number> {
     const tracks = await this.trackRepo
       .createQueryBuilder('t')
-      .where('t.id NOT IN (SELECT DISTINCT track_id FROM room_play_histories)')
+      .where('t.youtube_id NOT IN (SELECT DISTINCT youtube_id FROM play_histories)')
       .getMany();
     if (!tracks.length) return 0;
     return this.deleteTracks(tracks.map((t) => t.id));
@@ -511,12 +511,6 @@ export class AdminService {
     await this.voteRepo.createQueryBuilder().delete().where('track_id IN (:...trackIds)', { trackIds }).execute();
     await this.trackStatsRepo.createQueryBuilder().delete().where('track_id IN (:...trackIds)', { trackIds }).execute();
     await this.queueRepo
-      .createQueryBuilder()
-      .update()
-      .set({ track: null as unknown as Track })
-      .where('track_id IN (:...trackIds)', { trackIds })
-      .execute();
-    await this.playHistoryRepo
       .createQueryBuilder()
       .update()
       .set({ track: null as unknown as Track })
@@ -600,7 +594,7 @@ export class AdminService {
       .createQueryBuilder('t')
       .delete()
       .where('t.fetched_at < :cutoff', { cutoff: trackCutoff })
-      .andWhere('t.id NOT IN (SELECT DISTINCT track_id FROM room_play_histories WHERE played_at > :cutoff)', {
+      .andWhere('t.youtube_id NOT IN (SELECT DISTINCT youtube_id FROM play_histories WHERE played_at > :cutoff)', {
         cutoff: trackCutoff,
       })
       .andWhere('t.id NOT IN (SELECT DISTINCT track_id FROM room_queues WHERE played = false)')

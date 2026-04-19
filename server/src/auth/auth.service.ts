@@ -222,7 +222,7 @@ export class AuthService {
     const { RoomPermission } = await import('../entities/room-permission.entity.js');
     const { RoomBan } = await import('../entities/room-ban.entity.js');
     const { RoomQueue } = await import('../entities/room-queue.entity.js');
-    const { RoomPlayHistory } = await import('../entities/room-play-history.entity.js');
+    const { PlayHistory } = await import('../entities/play-history.entity.js');
     const { Room } = await import('../entities/room.entity.js');
 
     await mgr.delete(RoomMember, { userId });
@@ -234,7 +234,12 @@ export class AuthService {
       .set({ addedBy: null })
       .where('added_by = :userId', { userId })
       .execute();
-    await mgr.delete(RoomPlayHistory, { playedBy: { id: userId } });
+    await mgr
+      .createQueryBuilder()
+      .update(PlayHistory)
+      .set({ playedBy: null })
+      .where('played_by = :userId', { userId })
+      .execute();
     await mgr.update(Room, { hostId: userId, isActive: true }, { isActive: false });
 
     // user 삭제 (CASCADE: refresh_tokens, track_votes, user_track_history)
