@@ -76,4 +76,14 @@ export class UpdateRoomDto {
   @Min(1)
   @Max(5)
   autoDjThreshold?: number;
+
+  @ApiProperty({ required: false, nullable: true, description: 'AutoDJ 즐겨찾기 폴더 필터 (null=전체)' })
+  @IsOptional()
+  @IsString()
+  autoDjFolderId?: string | null;
+
+  @ApiProperty({ required: false, description: '즐겨찾기 소진 시 혼합 모드 폴백' })
+  @IsOptional()
+  @IsBoolean()
+  autoDjFavFallbackMixed?: boolean;
 }

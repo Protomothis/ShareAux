@@ -14,4 +14,5 @@ export const RoomDetailAutoDjMode = {
   history: 'history',
   popular: 'popular',
   mixed: 'mixed',
+  favorites: 'favorites',
 } as const;

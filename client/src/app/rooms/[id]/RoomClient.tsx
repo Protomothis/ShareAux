@@ -433,6 +433,8 @@ export default function RoomClient({ id }: { id: string }) {
         autoDjEnabled={room.autoDjEnabled ?? false}
         autoDjMode={room.autoDjMode ?? 'related'}
         autoDjThreshold={room.autoDjThreshold ?? 2}
+        autoDjFolderId={room.autoDjFolderId}
+        autoDjFavFallbackMixed={room.autoDjFavFallbackMixed}
         onSaved={() => invalidate.room(id)}
       />
       <LeaveConfirmModal open={showLeaveConfirm} onConfirm={handleLeave} onClose={() => setShowLeaveConfirm(false)} />
