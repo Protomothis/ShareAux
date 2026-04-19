@@ -76,10 +76,9 @@ export default function Queue({
     for (const q of queue) {
       if (!seen.has(q.id)) {
         stagger.set(q.id, idx++);
+        seen.add(q.id);
       }
     }
-    // 등록은 useMemo 밖에서 — 다음 렌더에서 중복 방지
-    for (const id of stagger.keys()) seen.add(id);
     return stagger;
   }, [queue]);
 
