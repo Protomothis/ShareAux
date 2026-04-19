@@ -6,6 +6,8 @@
  * OpenAPI spec version: 1.0
  */
 
+export * from './addFavoriteBody';
+export * from './addFavoriteBodyProvider';
 export * from './addTracksBody';
 export * from './adminControllerGetAuditLogsParams';
 export * from './adminControllerGetDailyPlaysParams';
@@ -42,6 +44,9 @@ export * from './dashboardResponse';
 export * from './deleteAccountDto';
 export * from './errorFileItem';
 export * from './errorLogItem';
+export * from './favoriteIdsResponse';
+export * from './favoriteItem';
+export * from './favoriteItemProvider';
 export * from './guestLoginDto';
 export * from './inviteCode';
 export * from './inviteCodePermissionsItem';

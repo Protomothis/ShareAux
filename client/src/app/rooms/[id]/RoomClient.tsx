@@ -65,6 +65,7 @@ export default function RoomClient({ id }: { id: string }) {
 
   const userId = useAuthStore((s) => s.userId);
   const nickname = useAuthStore((s) => s.nickname);
+  const role = useAuthStore((s) => s.role);
 
   const isHost = !!(room && userId && room.hostId === userId);
   const { can } = useMyPermissions(id);
@@ -376,6 +377,7 @@ export default function RoomClient({ id }: { id: string }) {
             canEnqueue={can('addQueue')}
             canReorder={isHost || can('host')}
             isHost={isHost}
+            isGuest={role === 'guest'}
             maxSelectPerAdd={room.maxSelectPerAdd}
             trackVotes={trackVotes}
           />
@@ -401,6 +403,7 @@ export default function RoomClient({ id }: { id: string }) {
                 canEnqueue={can('addQueue')}
                 canReorder={isHost || can('host')}
                 isHost={isHost}
+            isGuest={role === 'guest'}
                 maxSelectPerAdd={room.maxSelectPerAdd}
                 trackVotes={trackVotes}
                 autoDjStatus={autoDjStatus}

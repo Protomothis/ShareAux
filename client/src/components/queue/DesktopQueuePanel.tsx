@@ -25,6 +25,7 @@ interface DesktopQueuePanelProps {
   canEnqueue?: boolean;
   canReorder?: boolean;
   isHost?: boolean;
+  isGuest?: boolean;
   maxSelectPerAdd?: number;
   trackVotes?: TrackVoteMap;
 }

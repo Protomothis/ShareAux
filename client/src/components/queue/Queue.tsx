@@ -42,6 +42,7 @@ interface QueueProps {
   canEnqueue?: boolean;
   canReorder?: boolean;
   isHost?: boolean;
+  isGuest?: boolean;
   maxSelectPerAdd?: number;
   trackVotes?: TrackVoteMap;
   autoDjStatus?: AutoDjStatus;
@@ -53,6 +54,7 @@ export default function Queue({
   canEnqueue = true,
   canReorder = false,
   isHost = false,
+  isGuest = false,
   maxSelectPerAdd = 3,
   trackVotes,
   autoDjStatus = 'idle',
@@ -217,6 +219,7 @@ export default function Queue({
         }}
         maxSelectPerAdd={maxSelectPerAdd}
         isHost={isHost}
+        isGuest={isGuest}
       />
 
       <Dialog open={!!confirmRemoveId} onOpenChange={(open) => !open && setConfirmRemoveId(null)}>
