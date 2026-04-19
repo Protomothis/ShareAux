@@ -551,4 +551,16 @@ export const ERROR_META: Record<ErrorCode, ErrorMeta> = {
     title: '게스트 사용 불가',
     description: '즐겨찾기는 로그인 회원만 사용할 수 있습니다',
   },
+  [ErrorCode.FAV_003]: {
+    code: ErrorCode.FAV_003,
+    httpStatus: HttpStatus.BAD_REQUEST,
+    title: '폴더 초과',
+    description: '폴더는 최대 20개까지 생성할 수 있습니다',
+  },
+  [ErrorCode.FAV_004]: {
+    code: ErrorCode.FAV_004,
+    httpStatus: HttpStatus.NOT_FOUND,
+    title: '폴더 없음',
+    description: '해당 폴더를 찾을 수 없습니다',
+  },
 };

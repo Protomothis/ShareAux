@@ -3,6 +3,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique }
 
 import { Track } from './track.entity.js';
 import { User } from './user.entity.js';
+import { UserFavoriteFolder } from './user-favorite-folder.entity.js';
 
 @Entity('user_favorites')
 @Unique(['user', 'track'])
@@ -23,6 +24,13 @@ export class UserFavorite {
 
   @Column({ name: 'track_id' })
   trackId!: string;
+
+  @ManyToOne(() => UserFavoriteFolder, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'folder_id' })
+  folder!: UserFavoriteFolder | null;
+
+  @Column({ name: 'folder_id', nullable: true })
+  folderId!: string | null;
 
   @ApiProperty()
   @Column({ type: 'timestamptz', name: 'created_at', default: () => 'CURRENT_TIMESTAMP' })

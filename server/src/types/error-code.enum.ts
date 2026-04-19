@@ -84,4 +84,6 @@ export enum ErrorCode {
   // Favorites
   FAV_001 = 'FAV_001',
   FAV_002 = 'FAV_002',
+  FAV_003 = 'FAV_003',
+  FAV_004 = 'FAV_004',
 }
