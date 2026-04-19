@@ -56,6 +56,8 @@ export default function CreateRoomModal({ open, onClose, onCreated }: CreateRoom
         ...(values.autoDjEnabled ? { autoDjMode: values.autoDjMode, autoDjThreshold: values.autoDjThreshold } : {}),
       });
       onCreated(room.id);
+    } catch {
+      /* mutator가 toast 처리 */
     } finally {
       setLoading(false);
     }

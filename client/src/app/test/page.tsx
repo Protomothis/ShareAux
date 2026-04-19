@@ -1,5 +1,6 @@
+'use client';
+
 import { TrackProvider } from '@/api/model';
-('use client');
 
 import { useCallback, useRef, useState } from 'react';
 

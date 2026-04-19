@@ -1,5 +1,6 @@
+'use client';
+
 import { TrackProvider } from '@/api/model';
-('use client');
 
 import { Search, Sparkles, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
