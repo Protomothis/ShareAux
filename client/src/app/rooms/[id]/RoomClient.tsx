@@ -111,7 +111,7 @@ export default function RoomClient({ id }: { id: string }) {
   const { audio, listening, volume, onAudio, handleListenToggle, handleVolumeChange } = roomAudio;
   useEffect(() => {
     if (streamState === 'skipping' || streamState === 'preparing') {
-      void audio.prepareResync();
+      void audio.prepareResync().then(() => wsActionsRef.current?.sendResync());
     }
   }, [streamState, audio]);
   useEffect(() => {
