@@ -66,7 +66,7 @@ export function TrackDetailModal({ track, onOpenChange }: TrackDetailModalProps)
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-sa-text-muted">메타</span>
+            <span className="text-sa-text-muted">Content ID 매칭</span>
             {track.track.metaStatus === 'done' ? (
               <StatusBadge variant="success">완료</StatusBadge>
             ) : (
