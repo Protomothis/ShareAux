@@ -47,7 +47,7 @@ export default function DesktopQueuePanel(props: DesktopQueuePanelProps) {
           transition={{ duration: 0.12 }}
           className="min-h-0 flex-1 overflow-hidden"
         >
-          {tab === 'queue' ? <Queue {...props} /> : <HistoryPanel roomId={props.roomId} />}
+          {tab === 'queue' ? <Queue {...props} /> : <HistoryPanel roomId={props.roomId} isGuest={props.isGuest} />}
         </motion.div>
       </AnimatePresence>
     </div>

@@ -55,7 +55,7 @@ export default function SearchModal({
   const listRef = useRef<HTMLDivElement>(null);
 
   const search = useSearch(isOpen);
-  const { favoriteIds, toggle: toggleFavorite } = useFavorites(isOpen && !isGuest);
+  const { favoriteIds, loadingIds: favLoadingIds, toggle: toggleFavorite } = useFavorites(isOpen && !isGuest);
   const maxSelect = isHost ? MAX_QUEUE_SIZE : maxSelectPerAdd;
 
   useEffect(() => {
@@ -250,6 +250,7 @@ export default function SearchModal({
               disabledIds={disabledIds}
               maxReached={selected.length >= maxSelect}
               favoriteIds={favoriteIds}
+              favLoadingIds={favLoadingIds}
               onToggleFavorite={toggleFavorite}
               isGuest={isGuest}
             />
@@ -269,6 +270,7 @@ export default function SearchModal({
               maxSelect={maxSelect}
               onToggleTrack={toggleSelect}
               favoriteIds={favoriteIds}
+              favLoadingIds={favLoadingIds}
               onToggleFavorite={toggleFavorite}
               isGuest={isGuest}
             />
@@ -282,6 +284,7 @@ export default function SearchModal({
               disabledIds={disabledIds}
               maxReached={selected.length >= maxSelect}
               favoriteIds={favoriteIds}
+              favLoadingIds={favLoadingIds}
               onToggleFavorite={toggleFavorite}
             />
           )}

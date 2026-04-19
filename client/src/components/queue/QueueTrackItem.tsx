@@ -22,20 +22,25 @@ interface QueueTrackItemProps {
   leading?: ReactNode;
   /** 아티스트 줄 오른쪽 인라인 액션 (투표, 삭제 등) */
   actions?: ReactNode;
+  /** 썸네일 좌상단 슬롯 (즐겨찾기 등) */
+  favoriteSlot?: ReactNode;
   className?: string;
 }
 
-export default memo(function QueueTrackItem({ item, leading, actions, className }: QueueTrackItemProps) {
+export default memo(function QueueTrackItem({ item, leading, actions, favoriteSlot, className }: QueueTrackItemProps) {
   return (
     <div className={cn('group/item flex items-center gap-3 rounded-xl px-3 py-2.5 transition select-none', className)}>
       {leading}
 
       {/* 썸네일 + 재생시간 오버레이 */}
-      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg">
-        <Thumbnail src={item.track.thumbnail} size="sm" className="h-full w-full rounded-lg" />
-        <span className="absolute bottom-0.5 right-0.5 rounded bg-black/70 px-1 text-[9px] tabular-nums leading-tight text-white/80">
-          {formatDuration(item.track.durationMs)}
-        </span>
+      <div className="relative shrink-0">
+        <div className="h-12 w-12 overflow-hidden rounded-lg">
+          <Thumbnail src={item.track.thumbnail} size="sm" className="h-full w-full rounded-lg" />
+          <span className="absolute bottom-0.5 right-0.5 rounded bg-black/70 px-1 text-[9px] tabular-nums leading-tight text-white/80">
+            {formatDuration(item.track.durationMs)}
+          </span>
+        </div>
+        {favoriteSlot && <div className="absolute -left-1.5 -top-1.5 z-10">{favoriteSlot}</div>}
       </div>
 
       {/* 곡 정보 */}

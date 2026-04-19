@@ -7,6 +7,7 @@ import { GripVertical, Loader2, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import type { RoomQueue } from '@/api/model';
+import { FavoriteButton } from '@/components/common/FavoriteButton';
 import { Button } from '@/components/ui/button';
 import type { ShimmerVariant, TrackVoteMap } from '@/types';
 
@@ -26,6 +27,10 @@ interface SortableItemProps {
   trackVotes?: TrackVoteMap;
   shimmer?: ShimmerVariant;
   staggerIndex?: number;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
+  favLoading?: boolean;
+  isGuest?: boolean;
 }
 
 export default function SortableItem({
@@ -38,6 +43,10 @@ export default function SortableItem({
   trackVotes,
   shimmer,
   staggerIndex,
+  isFavorite,
+  onToggleFavorite,
+  favLoading,
+  isGuest,
 }: SortableItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
   const isReordering = reorderingId === item.id;
@@ -74,6 +83,11 @@ export default function SortableItem({
       <QueueTrackItem
         item={item}
         className={`${isDragging ? 'opacity-30' : ''} ${isReordering ? 'pointer-events-none opacity-60' : 'hover:bg-white/[0.06]'}`}
+        favoriteSlot={
+          !isGuest && onToggleFavorite ? (
+            <FavoriteButton active={!!isFavorite} onClick={onToggleFavorite} loading={favLoading} />
+          ) : undefined
+        }
         leading={
           canReorder ? (
             isReordering ? (

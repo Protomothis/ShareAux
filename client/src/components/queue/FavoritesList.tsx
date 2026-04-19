@@ -23,6 +23,7 @@ interface FavoritesListProps {
   disabledIds: Set<string>;
   maxReached: boolean;
   favoriteIds: Set<string>;
+  favLoadingIds?: Set<string>;
   onToggleFavorite: (track: SearchResultItem) => void;
 }
 
@@ -44,6 +45,7 @@ export default function FavoritesList({
   disabledIds,
   maxReached,
   favoriteIds,
+  favLoadingIds,
   onToggleFavorite,
 }: FavoritesListProps) {
   const { data: favorites, isLoading, refetch } = useFavoritesControllerList();
@@ -195,6 +197,7 @@ export default function FavoritesList({
                 <Thumbnail src={fav.thumbnail} size="sm" className="size-10 rounded" />
                 <FavoriteButton
                   active={favoriteIds.has(fav.sourceId)}
+                  loading={favLoadingIds?.has(fav.sourceId)}
                   onClick={() => onToggleFavorite(track)}
                   className="absolute -left-1 -top-1"
                 />

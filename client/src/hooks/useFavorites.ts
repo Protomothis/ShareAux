@@ -1,17 +1,21 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 
 import {
   favoritesControllerAdd,
   favoritesControllerGetIds,
   favoritesControllerRemove,
+  getFavoritesControllerListQueryKey,
 } from '@/api/favorites/favorites';
 import type { SearchResultItem } from '@/api/model';
 import { TrackProvider } from '@/api/model';
 
 export function useFavorites(enabled: boolean) {
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+  const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set());
+  const qc = useQueryClient();
 
   useEffect(() => {
     if (!enabled) return;
@@ -31,6 +35,7 @@ export function useFavorites(enabled: boolean) {
         else next.add(id);
         return next;
       });
+      setLoadingIds((prev) => new Set(prev).add(id));
       try {
         if (was) {
           await favoritesControllerRemove(id);
@@ -44,6 +49,7 @@ export function useFavorites(enabled: boolean) {
             durationMs: track.durationMs,
           });
         }
+        void qc.invalidateQueries({ queryKey: getFavoritesControllerListQueryKey() });
       } catch {
         // rollback
         setFavoriteIds((prev) => {
@@ -52,10 +58,16 @@ export function useFavorites(enabled: boolean) {
           else next.delete(id);
           return next;
         });
+      } finally {
+        setLoadingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
       }
     },
     [favoriteIds],
   );
 
-  return { favoriteIds, toggle };
+  return { favoriteIds, loadingIds, toggle };
 }

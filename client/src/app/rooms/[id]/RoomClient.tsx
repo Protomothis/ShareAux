@@ -403,13 +403,13 @@ export default function RoomClient({ id }: { id: string }) {
                 canEnqueue={can('addQueue')}
                 canReorder={isHost || can('host')}
                 isHost={isHost}
-            isGuest={role === 'guest'}
+                isGuest={role === 'guest'}
                 maxSelectPerAdd={room.maxSelectPerAdd}
                 trackVotes={trackVotes}
                 autoDjStatus={autoDjStatus}
               />
             )}
-            {mobileTab === 'history' && <HistoryPanel roomId={id} />}
+            {mobileTab === 'history' && <HistoryPanel roomId={id} isGuest={role === 'guest'} />}
             {mobileTab === 'members' && <MemberList {...memberListProps} />}
           </motion.div>
         </AnimatePresence>

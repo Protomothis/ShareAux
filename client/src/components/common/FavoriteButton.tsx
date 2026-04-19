@@ -1,6 +1,6 @@
 'use client';
 
-import { Heart } from 'lucide-react';
+import { Heart, Loader2 } from 'lucide-react';
 import { memo } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 interface FavoriteButtonProps {
   active: boolean;
   onClick: () => void;
+  loading?: boolean;
   size?: number;
   className?: string;
 }
@@ -16,7 +17,8 @@ interface FavoriteButtonProps {
 export const FavoriteButton = memo(function FavoriteButton({
   active,
   onClick,
-  size = 12,
+  loading,
+  size = 14,
   className,
 }: FavoriteButtonProps) {
   return (
@@ -25,17 +27,21 @@ export const FavoriteButton = memo(function FavoriteButton({
       tabIndex={0}
       onClick={(e) => {
         e.stopPropagation();
-        onClick();
+        if (!loading) onClick();
       }}
       onKeyDown={(e) => {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && !loading) {
           e.stopPropagation();
           onClick();
         }
       }}
       className={cn('rounded-full bg-black/60 p-1 cursor-pointer touch-manipulation', className)}
     >
-      <Heart size={size} className={cn(active ? 'fill-red-400 text-red-400' : 'text-white/50 hover:text-white')} />
+      {loading ? (
+        <Loader2 size={size} className="animate-spin text-white/50" />
+      ) : (
+        <Heart size={size} className={cn(active ? 'fill-red-400 text-red-400' : 'text-white/50 hover:text-white')} />
+      )}
     </div>
   );
 });

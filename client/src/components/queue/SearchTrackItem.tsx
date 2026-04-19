@@ -17,6 +17,7 @@ interface SearchTrackItemProps {
   inQueue: boolean;
   onClick: () => void;
   isFavorite?: boolean;
+  favLoading?: boolean;
   onToggleFavorite?: () => void;
   isGuest?: boolean;
 }
@@ -29,6 +30,7 @@ export const SearchTrackItem = memo(function SearchTrackItem({
   inQueue,
   onClick,
   isFavorite,
+  favLoading,
   onToggleFavorite,
   isGuest,
 }: SearchTrackItemProps) {

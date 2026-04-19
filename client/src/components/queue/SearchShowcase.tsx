@@ -19,6 +19,7 @@ interface SearchShowcaseProps {
   disabledIds: Set<string>;
   maxReached: boolean;
   favoriteIds?: Set<string>;
+  favLoadingIds?: Set<string>;
   onToggleFavorite?: (track: SearchResultItem) => void;
   isGuest?: boolean;
 }
@@ -65,6 +66,7 @@ function GridCard({
   onClick,
   isFavorite,
   onToggleFavorite,
+  favLoading,
   isGuest,
 }: {
   track: SearchResultItem;
@@ -73,6 +75,7 @@ function GridCard({
   order: number;
   onClick: () => void;
   isFavorite?: boolean;
+  favLoading?: boolean;
   onToggleFavorite?: () => void;
   isGuest?: boolean;
 }) {
@@ -100,7 +103,12 @@ function GridCard({
           </div>
         )}
         {!isGuest && onToggleFavorite && !selected && (
-          <FavoriteButton active={!!isFavorite} onClick={onToggleFavorite} className="absolute left-1 top-1" />
+          <FavoriteButton
+            active={!!isFavorite}
+            onClick={onToggleFavorite}
+            loading={favLoading}
+            className="absolute left-1 top-1"
+          />
         )}
       </div>
       <div className="min-w-0 w-full px-0.5">
@@ -135,6 +143,7 @@ export default function SearchShowcase({
   disabledIds,
   maxReached,
   favoriteIds,
+  favLoadingIds,
   onToggleFavorite,
   isGuest,
 }: SearchShowcaseProps) {
@@ -179,6 +188,7 @@ export default function SearchShowcase({
           order={selectedOrder.indexOf(t.sourceId) + 1}
           onClick={() => handleClick(t)}
           isFavorite={favoriteIds?.has(t.sourceId)}
+          favLoading={favLoadingIds?.has(t.sourceId)}
           onToggleFavorite={() => onToggleFavorite?.(t)}
           isGuest={isGuest}
         />
