@@ -172,13 +172,18 @@ export class QueueService {
       tracks.push(track);
     }
 
-    // 중복 제거
+    // 중복 제거 (큐 + 현재 재생 중인 곡)
     const existing = await this.queueRepo.find({
       where: { room: { id: roomId }, played: false },
       select: ['track'],
       relations: ['track'],
     });
     const existingIds = new Set(existing.map((q) => q.track.id));
+    const playback = await this.queueRepo.manager.findOne(
+      (await import('../entities/room-playback.entity.js')).RoomPlayback,
+      { where: { roomId }, relations: ['track'] },
+    );
+    if (playback?.track) existingIds.add(playback.track.id);
     const unique = tracks.filter((t) => !existingIds.has(t.id));
     if (!unique.length) throw new AppException(ErrorCode.QUEUE_003);
 
