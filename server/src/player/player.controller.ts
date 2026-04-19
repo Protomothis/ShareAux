@@ -88,14 +88,7 @@ export class PlayerController {
     // AutoDJ 배치 완료 → 큐 업데이트 + 자동 재생
     this.autoDjService.onBatchComplete((roomId, tracks) => {
       void (async () => {
-        const queue = await this.queueRepo.find({
-          where: { room: { id: roomId }, played: false },
-          order: { position: 'ASC' },
-          relations: ['track', 'addedBy'],
-        });
-        this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue });
-
-        // 재생 중이 아니면 첫 곡 자동 재생
+        // 재생 중이 아니면 첫 곡 자동 재생 (play 내부에서 QueueUpdated broadcast)
         const status = await this.playerService.getStatus(roomId);
         this.logger.debug(
           `[AutoDJ] batchComplete: roomId=${roomId}, isPlaying=${status?.isPlaying}, trackCount=${tracks.length}, firstTrackId=${tracks[0]?.id}`,
@@ -106,6 +99,14 @@ export class PlayerController {
           });
           const newStatus = await this.playerService.getStatus(roomId);
           this.gateway.broadcastSystem(roomId, WsEvent.PlaybackUpdated, '', newStatus);
+        } else {
+          // 재생 중이면 큐만 업데이트
+          const queue = await this.queueRepo.find({
+            where: { room: { id: roomId }, played: false },
+            order: { position: 'ASC' },
+            relations: ['track', 'addedBy'],
+          });
+          this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue });
         }
       })();
     });
