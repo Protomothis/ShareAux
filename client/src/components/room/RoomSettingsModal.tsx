@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import type { BanInfo } from '@/api/model';
+import type { ResetBansResponse, SanctionItem, SanctionsResponse } from '@/api/model';
 import { roomsControllerResetEnqueueCounts, roomsControllerUnban, roomsControllerUpdate } from '@/api/rooms/rooms';
 import { roomsControllerGetSanctions, roomsControllerMuteUser, roomsControllerResetBans } from '@/api/rooms/rooms';
 import Modal from '@/components/common/Modal';
@@ -14,18 +14,6 @@ import { FormSection } from '@/components/ui/form';
 import type { AutoDjMode } from '@/types';
 import { Button } from '@/components/ui/button';
 import { useFormValidation } from '@/hooks/useFormValidation';
-
-interface MuteInfo {
-  userId: string;
-  nickname: string;
-  remainingSec: number;
-  level: number;
-}
-
-interface SanctionsResponse {
-  bans: BanInfo[];
-  mutes: MuteInfo[];
-}
 
 interface RoomSettingsModalProps {
   open: boolean;
@@ -75,8 +63,8 @@ export default function RoomSettingsModal({
     enqueueWindowMin,
     enqueueLimitPerWindow,
   });
-  const [bans, setBans] = useState<BanInfo[]>([]);
-  const [mutes, setMutes] = useState<MuteInfo[]>([]);
+  const [bans, setBans] = useState<SanctionItem[]>([]);
+  const [mutes, setMutes] = useState<SanctionItem[]>([]);
   const [saving, setSaving] = useState(false);
   const [resettingEnqueue, setResettingEnqueue] = useState(false);
   const [resettingBans, setResettingBans] = useState(false);
@@ -110,7 +98,7 @@ export default function RoomSettingsModal({
       enqueueLimitPerWindow,
     });
     clearAll();
-    (roomsControllerGetSanctions(roomId) as unknown as Promise<SanctionsResponse>)
+    roomsControllerGetSanctions(roomId)
       .then((res) => {
         setBans(res.bans ?? []);
         setMutes(res.mutes ?? []);
@@ -180,7 +168,7 @@ export default function RoomSettingsModal({
     if (resettingBans) return;
     setResettingBans(true);
     try {
-      const res = (await roomsControllerResetBans(roomId)) as unknown as { cleared: number };
+      const res = await roomsControllerResetBans(roomId);
       toast.success(`제재 목록이 초기화되었습니다 (${res.cleared}명)`);
       setBans([]);
       setMutes([]);
@@ -254,7 +242,7 @@ export default function RoomSettingsModal({
                       <div className="min-w-0 flex-1">
                         <span className="truncate text-sm">{m.nickname}</span>
                         <span className="ml-1.5 text-xs text-muted-foreground">
-                          🔇 채팅 제한 ({Math.ceil(m.remainingSec / 60)}분 남음)
+                          🔇 채팅 제한 ({Math.ceil((m.remainingSec ?? 0) / 60)}분 남음)
                         </span>
                       </div>
                       <Button

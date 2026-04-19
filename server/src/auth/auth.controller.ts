@@ -34,6 +34,7 @@ import { DeleteAccountDto } from './dto/delete-account.dto.js';
 import { GuestLoginDto } from './dto/guest-login.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
+import { AuthConfigResponse } from './dto/auth-config-response.dto.js';
 import { UpdateNicknameDto } from './dto/update-nickname.dto.js';
 import { UpdatePasswordDto } from './dto/update-password.dto.js';
 
@@ -58,6 +59,7 @@ export class AuthController {
 
   @Get('config')
   @ApiOperation({ summary: '인증 설정 (Google/CAPTCHA 활성 여부)' })
+  @ApiOkResponse({ type: AuthConfigResponse })
   getAuthConfig() {
     return {
       google: this.isGoogleEnabled,

@@ -22,6 +22,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AuthConfigResponse,
   AuthControllerExchangeBody,
   AuthControllerGuestLogin200,
   DeleteAccountDto,
@@ -44,8 +45,8 @@ export const getAuthControllerGetAuthConfigUrl = () => {
   return `/api/auth/config`;
 };
 
-export const authControllerGetAuthConfig = async (options?: RequestInit): Promise<void> => {
-  return customFetch<void>(getAuthControllerGetAuthConfigUrl(), {
+export const authControllerGetAuthConfig = async (options?: RequestInit): Promise<AuthConfigResponse> => {
+  return customFetch<AuthConfigResponse>(getAuthControllerGetAuthConfigUrl(), {
     ...options,
     method: 'GET',
   });

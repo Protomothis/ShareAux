@@ -4,11 +4,7 @@ import { useCallback, useRef, useState } from 'react';
 
 import { captchaControllerGetChallenge } from '@/api/captcha/captcha';
 
-interface ChallengeResponse {
-  enabled: boolean;
-  id?: string;
-  challenge?: string;
-}
+import type { CaptchaChallengeResponse } from '@/api/model';
 
 interface CaptchaState {
   enabled: boolean;
@@ -30,7 +26,7 @@ export function useCaptcha() {
     if (fetchingRef.current) return;
     fetchingRef.current = true;
     try {
-      const res = (await captchaControllerGetChallenge()) as unknown as ChallengeResponse;
+      const res = await captchaControllerGetChallenge();
       setState({
         enabled: res.enabled,
         id: res.id ?? null,

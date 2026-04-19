@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, ChevronRight, KeyRound, Link2, Loader2, Trash2, User } from 'lucide-react';
+import { ArrowLeft, ChevronRight, KeyRound, Link2, Loader2, Trash2, User as UserIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -28,11 +28,7 @@ interface ProfileSettingsModalProps {
   onClose: () => void;
 }
 
-interface MeResponse {
-  userId: string;
-  email?: string | null;
-  nickname: string;
-}
+import type { User } from '@/api/model';
 
 // ─── Menu Item ──────────────────────────────────────────
 
@@ -79,7 +75,7 @@ function SubHeader({ title, onBack }: { title: string; onBack: () => void }) {
 
 export default function ProfileSettingsModal({ open, onClose }: ProfileSettingsModalProps) {
   const [page, setPage] = useState<Page>('menu');
-  const [me, setMe] = useState<MeResponse | null>(null);
+  const [me, setMe] = useState<User | null>(null);
   const role = useAuthStore((s) => s.role);
   const router = useRouter();
 
@@ -88,7 +84,9 @@ export default function ProfileSettingsModal({ open, onClose }: ProfileSettingsM
       setPage('menu');
       return;
     }
-    (authControllerMe() as unknown as Promise<MeResponse>).then(setMe).catch(() => {});
+    authControllerMe()
+      .then(setMe)
+      .catch(() => {});
   }, [open]);
 
   const done = useCallback(
@@ -112,7 +110,7 @@ export default function ProfileSettingsModal({ open, onClose }: ProfileSettingsM
 
 // ─── Pages ──────────────────────────────────────────────
 
-function MenuPage({ setPage, me, role }: { setPage: (p: Page) => void; me: MeResponse | null; role?: string }) {
+function MenuPage({ setPage, me, role }: { setPage: (p: Page) => void; me: User | null; role?: string }) {
   const authConfig = useAuthConfig();
   const isGuest = role === 'guest';
   return (
@@ -122,7 +120,7 @@ function MenuPage({ setPage, me, role }: { setPage: (p: Page) => void; me: MeRes
       </Modal.Header>
       <Modal.Body className="-mx-0 space-y-0.5">
         <MenuItem
-          icon={<User size={16} />}
+          icon={<UserIcon size={16} />}
           label="닉네임 변경"
           description={me?.nickname}
           onClick={() => setPage('nickname')}
@@ -159,15 +157,7 @@ function MenuPage({ setPage, me, role }: { setPage: (p: Page) => void; me: MeRes
   );
 }
 
-function NicknamePage({
-  me,
-  onBack,
-  onDone,
-}: {
-  me: MeResponse | null;
-  onBack: () => void;
-  onDone: (msg: string) => void;
-}) {
+function NicknamePage({ me, onBack, onDone }: { me: User | null; onBack: () => void; onDone: (msg: string) => void }) {
   const [value, setValue] = useState(me?.nickname ?? '');
   const [loading, setLoading] = useState(false);
   const { errors, validate, clearError } = useFormValidation<{ nickname: string }>({
@@ -285,7 +275,7 @@ function PasswordPage({ onBack, onDone }: { onBack: () => void; onDone: (msg: st
   );
 }
 
-function GooglePage({ me, onBack }: { me: MeResponse | null; onBack: () => void }) {
+function GooglePage({ me, onBack }: { me: User | null; onBack: () => void }) {
   const linked = !!me?.email;
   return (
     <>
