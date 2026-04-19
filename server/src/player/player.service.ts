@@ -252,8 +252,6 @@ export class PlayerService {
     // 이미 preparing 중이면 무시 (중복 호출 방어)
     const currentState = this.streamState.get(roomId);
     if (currentState === 'preparing') return;
-
-    // completed 추적: skip이 아닌 자연 종료 시
     const wasSkipped = this.skippedRooms.has(roomId);
     this.skippedRooms.delete(roomId);
     if (!wasSkipped) {
@@ -275,12 +273,13 @@ export class PlayerService {
     });
 
     if (next) {
-      // 다음 곡 대기 중 — preparing 상태로 클라이언트에 알림
       this.streamState.set(roomId, 'preparing');
       await this.playbackRepo.update(roomId, { isPlaying: false });
       this.onTrackChangeCallback?.(roomId);
-      // 마지막 오디오 프레임이 클라이언트에 도달할 시간 확보
-      await new Promise((r) => setTimeout(r, TRACK_END_DELAY_MS));
+      // 자연 종료 시에만 마지막 버퍼 재생 대기 (스킵은 즉시 전환)
+      if (!wasSkipped) {
+        await new Promise((r) => setTimeout(r, TRACK_END_DELAY_MS));
+      }
       await this.queueRepo.update(next.id, { played: true });
       await this.play(roomId, next.track.id);
     } else {

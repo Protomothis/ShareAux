@@ -79,7 +79,11 @@ export class LyricsService {
       if (existing?.lyricsStatus === 'found' && existing.lyricsData) {
         return { syncedLyrics: existing.lyricsData, enhanced: false };
       }
-      if (existing?.lyricsStatus === 'not_found') return null;
+      if (existing?.lyricsStatus === 'not_found') {
+        // 24시간 후 재시도 허용
+        const age = Date.now() - new Date(existing.fetchedAt).getTime();
+        if (age < 24 * 60 * 60_000) return null;
+      }
     }
 
     const result = await this.searchLyrics(trackName, duration, artist, sourceId, songTitle, songArtist);
