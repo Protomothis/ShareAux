@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
 
-import { SKIP_MIN_PLAY_MS, VOTE_SKIP_DIVISOR, VOTE_SKIP_MIN_REQUIRED } from '../constants.js';
+import { SKIP_MIN_PLAY_MS, TRACK_END_DELAY_MS, VOTE_SKIP_DIVISOR, VOTE_SKIP_MIN_REQUIRED } from '../constants.js';
 import { AppException } from '../exceptions/app.exception.js';
 import { ErrorCode } from '../types/error-code.enum.js';
 import { RoomPlayback } from '../entities/room-playback.entity.js';
@@ -281,7 +281,7 @@ export class PlayerService {
     });
     if (next) {
       // 마지막 오디오 프레임이 클라이언트에 도달할 시간 확보
-      await new Promise((r) => setTimeout(r, 2000));
+      await new Promise((r) => setTimeout(r, TRACK_END_DELAY_MS));
       await this.queueRepo.update(next.id, { played: true });
       await this.play(roomId, next.track.id);
     }
