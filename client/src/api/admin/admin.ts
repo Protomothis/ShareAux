@@ -54,6 +54,7 @@ import type {
   Report,
   StreamingMetricsResponse,
   SystemStatsResponse,
+  TrackLyricsResponse,
   TrackRankingItem,
   UpdateRoleDto,
   UpdateSettingsDto,
@@ -3968,6 +3969,334 @@ export const useAdminControllerResolveReport = <TError = unknown, TContext = unk
   queryClient?: QueryClient,
 ): UseMutationResult<Awaited<ReturnType<typeof adminControllerResolveReport>>, TError, { id: string }, TContext> => {
   const mutationOptions = getAdminControllerResolveReportMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
+ * @summary 트랙 가사 조회
+ */
+export const getAdminControllerGetTrackLyricsUrl = (id: string) => {
+  return `/api/admin/tracks/${id}/lyrics`;
+};
+
+export const adminControllerGetTrackLyrics = async (
+  id: string,
+  options?: RequestInit,
+): Promise<TrackLyricsResponse> => {
+  return customFetch<TrackLyricsResponse>(getAdminControllerGetTrackLyricsUrl(id), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getAdminControllerGetTrackLyricsQueryKey = (id?: string) => {
+  return [`/api/admin/tracks/${id}/lyrics`] as const;
+};
+
+export const getAdminControllerGetTrackLyricsQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminControllerGetTrackLyricsQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>> = ({ signal }) =>
+    adminControllerGetTrackLyrics(id, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, enabled: !!id, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminControllerGetTrackLyricsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>
+>;
+export type AdminControllerGetTrackLyricsQueryError = unknown;
+
+export function useAdminControllerGetTrackLyrics<
+  TData = Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>,
+  TError = unknown,
+>(
+  id: string,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>,
+          TError,
+          Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminControllerGetTrackLyrics<
+  TData = Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>,
+          TError,
+          Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminControllerGetTrackLyrics<
+  TData = Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 트랙 가사 조회
+ */
+
+export function useAdminControllerGetTrackLyrics<
+  TData = Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminControllerGetTrackLyricsQueryOptions(id, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 트랙 가사 초기화
+ */
+export const getAdminControllerResetTrackLyricsUrl = (id: string) => {
+  return `/api/admin/tracks/${id}/lyrics`;
+};
+
+export const adminControllerResetTrackLyrics = async (id: string, options?: RequestInit): Promise<void> => {
+  return customFetch<void>(getAdminControllerResetTrackLyricsUrl(id), {
+    ...options,
+    method: 'DELETE',
+  });
+};
+
+export const getAdminControllerResetTrackLyricsMutationOptions = <TError = unknown, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminControllerResetTrackLyrics>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminControllerResetTrackLyrics>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ['adminControllerResetTrackLyrics'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof adminControllerResetTrackLyrics>>, { id: string }> = (
+    props,
+  ) => {
+    const { id } = props ?? {};
+
+    return adminControllerResetTrackLyrics(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminControllerResetTrackLyricsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminControllerResetTrackLyrics>>
+>;
+
+export type AdminControllerResetTrackLyricsMutationError = unknown;
+
+/**
+ * @summary 트랙 가사 초기화
+ */
+export const useAdminControllerResetTrackLyrics = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminControllerResetTrackLyrics>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<Awaited<ReturnType<typeof adminControllerResetTrackLyrics>>, TError, { id: string }, TContext> => {
+  const mutationOptions = getAdminControllerResetTrackLyricsMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
+ * @summary 트랙 Content ID 메타 초기화
+ */
+export const getAdminControllerResetTrackMetaUrl = (id: string) => {
+  return `/api/admin/tracks/${id}/meta`;
+};
+
+export const adminControllerResetTrackMeta = async (id: string, options?: RequestInit): Promise<void> => {
+  return customFetch<void>(getAdminControllerResetTrackMetaUrl(id), {
+    ...options,
+    method: 'DELETE',
+  });
+};
+
+export const getAdminControllerResetTrackMetaMutationOptions = <TError = unknown, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminControllerResetTrackMeta>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<Awaited<ReturnType<typeof adminControllerResetTrackMeta>>, TError, { id: string }, TContext> => {
+  const mutationKey = ['adminControllerResetTrackMeta'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof adminControllerResetTrackMeta>>, { id: string }> = (
+    props,
+  ) => {
+    const { id } = props ?? {};
+
+    return adminControllerResetTrackMeta(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminControllerResetTrackMetaMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminControllerResetTrackMeta>>
+>;
+
+export type AdminControllerResetTrackMetaMutationError = unknown;
+
+/**
+ * @summary 트랙 Content ID 메타 초기화
+ */
+export const useAdminControllerResetTrackMeta = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminControllerResetTrackMeta>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<Awaited<ReturnType<typeof adminControllerResetTrackMeta>>, TError, { id: string }, TContext> => {
+  const mutationOptions = getAdminControllerResetTrackMetaMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
+ * @summary 트랙 삭제
+ */
+export const getAdminControllerDeleteTrackUrl = (id: string) => {
+  return `/api/admin/tracks/${id}`;
+};
+
+export const adminControllerDeleteTrack = async (id: string, options?: RequestInit): Promise<void> => {
+  return customFetch<void>(getAdminControllerDeleteTrackUrl(id), {
+    ...options,
+    method: 'DELETE',
+  });
+};
+
+export const getAdminControllerDeleteTrackMutationOptions = <TError = unknown, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminControllerDeleteTrack>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<Awaited<ReturnType<typeof adminControllerDeleteTrack>>, TError, { id: string }, TContext> => {
+  const mutationKey = ['adminControllerDeleteTrack'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof adminControllerDeleteTrack>>, { id: string }> = (
+    props,
+  ) => {
+    const { id } = props ?? {};
+
+    return adminControllerDeleteTrack(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminControllerDeleteTrackMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminControllerDeleteTrack>>
+>;
+
+export type AdminControllerDeleteTrackMutationError = unknown;
+
+/**
+ * @summary 트랙 삭제
+ */
+export const useAdminControllerDeleteTrack = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminControllerDeleteTrack>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<Awaited<ReturnType<typeof adminControllerDeleteTrack>>, TError, { id: string }, TContext> => {
+  const mutationOptions = getAdminControllerDeleteTrackMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

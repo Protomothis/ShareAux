@@ -49,6 +49,7 @@ import { StreamingMetricsResponse } from './dto/streaming-metrics-response.dto.j
 import { SystemSettingItem, UpdateSettingsDto } from './dto/system-setting.dto.js';
 import { SystemStatsResponse } from './dto/system-stats-response.dto.js';
 import { TrackRankingItem } from './dto/track-ranking-item.dto.js';
+import { TrackLyricsResponse } from './dto/track-lyrics-response.dto.js';
 import { UpdateRoleDto } from './dto/update-role.dto.js';
 import { UserDetailResponse } from './dto/user-detail-response.dto.js';
 import { UsersBreakdownResponse } from './dto/users-breakdown-response.dto.js';
@@ -471,5 +472,33 @@ export class AdminController {
     const report = await this.adminService.resolveReport(id, req.user.userId, status);
     await this.auditService.log(req.user.userId, 'report_resolve', 'report', id, { status }, req.ip);
     return report;
+  }
+
+  @Get('tracks/:id/lyrics')
+  @ApiOperation({ summary: '트랙 가사 조회' })
+  @ApiOkResponse({ type: TrackLyricsResponse })
+  async getTrackLyrics(@Param('id') id: string): Promise<TrackLyricsResponse> {
+    return this.adminService.getTrackLyrics(id);
+  }
+
+  @Delete('tracks/:id/lyrics')
+  @ApiOperation({ summary: '트랙 가사 초기화' })
+  async resetTrackLyrics(@Param('id') id: string) {
+    await this.adminService.resetTrackLyrics(id);
+    return { ok: true };
+  }
+
+  @Delete('tracks/:id/meta')
+  @ApiOperation({ summary: '트랙 Content ID 메타 초기화' })
+  async resetTrackMeta(@Param('id') id: string) {
+    await this.adminService.resetTrackMeta(id);
+    return { ok: true };
+  }
+
+  @Delete('tracks/:id')
+  @ApiOperation({ summary: '트랙 삭제' })
+  async deleteTrack(@Param('id') id: string) {
+    await this.adminService.deleteTrack(id);
+    return { ok: true };
   }
 }

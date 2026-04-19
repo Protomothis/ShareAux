@@ -1,17 +1,58 @@
 'use client';
 
-import { ExternalLink, Music, ThumbsDown, ThumbsUp, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ExternalLink, Music, ThumbsDown, ThumbsUp, Trash2, Users } from 'lucide-react';
+import { toast } from 'sonner';
 
+import {
+  adminControllerDeleteTrack,
+  adminControllerGetTrackLyrics,
+  adminControllerResetTrackLyrics,
+  adminControllerResetTrackMeta,
+} from '@/api/admin/admin';
 import type { TrackRankingItem } from '@/api/model';
+import {
+  TrackRankingTrackInfoLyricsStatus,
+  TrackRankingTrackInfoLyricsType,
+  TrackRankingTrackInfoMetaStatus,
+} from '@/api/model';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import Modal from '@/components/common/Modal';
 
 interface TrackDetailModalProps {
   track: TrackRankingItem | null;
   onOpenChange: (open: boolean) => void;
+  onDeleted?: () => void;
 }
 
-export function TrackDetailModal({ track, onOpenChange }: TrackDetailModalProps) {
+export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: TrackDetailModalProps) {
+  const [localTrack, setLocalTrack] = useState(trackProp);
+  const [lyrics, setLyrics] = useState<string | null>(null);
+  const [translated, setTranslated] = useState<string | null>(null);
+  const [lyricsLoading, setLyricsLoading] = useState(false);
+  const [lyricsTab, setLyricsTab] = useState<'original' | 'translated'>('original');
+
+  useEffect(() => {
+    setLocalTrack(trackProp);
+  }, [trackProp]);
+
+  const track = localTrack;
+
+  useEffect(() => {
+    setLyrics(null);
+    setTranslated(null);
+    setLyricsTab('original');
+    if (!track || track.track.lyricsStatus !== TrackRankingTrackInfoLyricsStatus.found) return;
+    setLyricsLoading(true);
+    adminControllerGetTrackLyrics(track.trackId)
+      .then((r) => {
+        setLyrics(r.synced ?? null);
+        setTranslated(r.translated ?? null);
+      })
+      .catch(() => setLyrics(null))
+      .finally(() => setLyricsLoading(false));
+  }, [track]);
+
   if (!track) return null;
 
   return (
@@ -56,25 +97,119 @@ export function TrackDetailModal({ track, onOpenChange }: TrackDetailModalProps)
 
           <div className="flex items-center justify-between">
             <span className="text-sa-text-muted">가사</span>
-            {track.track.lyricsStatus === 'found' ? (
-              <StatusBadge variant="success">{track.track.lyricsLang?.toUpperCase() ?? '있음'}</StatusBadge>
-            ) : track.track.lyricsStatus === 'not_found' ? (
-              <StatusBadge variant="danger">없음</StatusBadge>
-            ) : (
-              <StatusBadge variant="muted">검색중</StatusBadge>
-            )}
+            <div className="flex items-center gap-1.5">
+              {track.track.lyricsStatus === TrackRankingTrackInfoLyricsStatus.found ? (
+                <StatusBadge variant="success">
+                  {track.track.lyricsType === TrackRankingTrackInfoLyricsType.karaoke ? 'KLRC' : 'LRC'}{' '}
+                  {track.track.lyricsLang?.toUpperCase() ?? ''}
+                  {track.track.hasTranslation ? ' 번역' : ''}
+                </StatusBadge>
+              ) : track.track.lyricsStatus === TrackRankingTrackInfoLyricsStatus.not_found ? (
+                <StatusBadge variant="danger">없음</StatusBadge>
+              ) : (
+                <StatusBadge variant="muted">검색중</StatusBadge>
+              )}
+              {track.track.lyricsStatus !== TrackRankingTrackInfoLyricsStatus.searching && (
+                <button
+                  onClick={async () => {
+                    if (!confirm('가사 정보를 삭제하시겠습니까? 다음 재생 시 재검색됩니다.')) return;
+                    await adminControllerResetTrackLyrics(track.trackId);
+                    toast.success('가사 삭제 완료');
+                    setLyrics(null);
+                    setTranslated(null);
+                    setLocalTrack((prev) =>
+                      prev
+                        ? {
+                            ...prev,
+                            track: {
+                              ...prev.track,
+                              lyricsStatus: TrackRankingTrackInfoLyricsStatus.searching,
+                              lyricsLang: null,
+                              lyricsType: null,
+                              hasTranslation: false,
+                            },
+                          }
+                        : prev,
+                    );
+                  }}
+                  className="text-red-400/60 hover:text-red-400"
+                  title="가사 삭제"
+                >
+                  <Trash2 size={12} />
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center justify-between">
             <span className="text-sa-text-muted">Content ID 매칭</span>
-            {track.track.metaStatus === 'done' ? (
-              <StatusBadge variant="success">완료</StatusBadge>
-            ) : (
-              <StatusBadge variant="muted">대기</StatusBadge>
-            )}
+            <div className="flex items-center gap-1.5">
+              {track.track.metaStatus === TrackRankingTrackInfoMetaStatus.done ? (
+                <StatusBadge variant="success">완료</StatusBadge>
+              ) : (
+                <StatusBadge variant="muted">대기</StatusBadge>
+              )}
+              {track.track.metaStatus === TrackRankingTrackInfoMetaStatus.done && (
+                <button
+                  onClick={async () => {
+                    if (!confirm('Content ID 매칭 정보를 삭제하시겠습니까? 다음 재생 시 재매칭됩니다.')) return;
+                    await adminControllerResetTrackMeta(track.trackId);
+                    toast.success('Content ID 삭제 완료');
+                    setLocalTrack((prev) =>
+                      prev
+                        ? { ...prev, track: { ...prev.track, metaStatus: TrackRankingTrackInfoMetaStatus.pending } }
+                        : prev,
+                    );
+                  }}
+                  className="text-red-400/60 hover:text-red-400"
+                  title="Content ID 삭제"
+                >
+                  <Trash2 size={12} />
+                </button>
+              )}
+            </div>
           </div>
+
+          {lyrics && (
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setLyricsTab('original')}
+                  className={`text-xs ${lyricsTab === 'original' ? 'text-sa-accent' : 'text-sa-text-muted hover:text-sa-text-secondary'}`}
+                >
+                  원문
+                </button>
+                {translated && (
+                  <button
+                    onClick={() => setLyricsTab('translated')}
+                    className={`text-xs ${lyricsTab === 'translated' ? 'text-sa-accent' : 'text-sa-text-muted hover:text-sa-text-secondary'}`}
+                  >
+                    번역
+                  </button>
+                )}
+              </div>
+              <div className="max-h-48 overflow-y-auto rounded-lg bg-white/[0.03] p-3 text-xs leading-relaxed text-sa-text-secondary">
+                {stripLrcTimestamps(lyricsTab === 'translated' && translated ? translated : lyrics)}
+              </div>
+            </div>
+          )}
+          {lyricsLoading && <p className="text-xs text-sa-text-muted">가사 불러오는 중...</p>}
         </div>
       </Modal.Body>
+      <Modal.Footer>
+        <button
+          onClick={async () => {
+            if (!confirm('이 트랙을 삭제하시겠습니까? 관련 큐/통계도 함께 삭제됩니다.')) return;
+            await adminControllerDeleteTrack(track.trackId);
+            toast.success('트랙 삭제 완료');
+            onOpenChange(false);
+            onDeleted?.();
+          }}
+          className="text-xs text-red-400 hover:text-red-300"
+        >
+          트랙 삭제
+        </button>
+      </Modal.Footer>
     </Modal>
   );
 }
@@ -89,4 +224,21 @@ function Stat({ icon, label, value }: { icon?: React.ReactNode; label: string; v
       <div className="mt-0.5 text-[10px] text-sa-text-muted">{label}</div>
     </div>
   );
+}
+
+function stripLrcTimestamps(lrc: string): React.ReactNode {
+  const lines = lrc
+    .split('\n')
+    .map((l) =>
+      l
+        .replace(/\[\d{2}:\d{2}[.\d]*\]/g, '')
+        .replace(/<\d{2}:\d{2}[.\d]*>/g, '')
+        .trim(),
+    )
+    .filter((l) => l.length > 0);
+  return lines.map((l, i) => (
+    <p key={i} className="min-h-[1.25rem]">
+      {l}
+    </p>
+  ));
 }

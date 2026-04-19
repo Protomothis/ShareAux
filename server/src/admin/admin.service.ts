@@ -225,10 +225,24 @@ export class AdminService {
   // --- 인기 트랙 ---
 
   async getTopTracks(limit: number) {
-    return this.trackStatsRepo.find({
-      relations: ['track'],
-      order: { score: 'DESC' },
-      take: limit,
+    const items = await this.trackRepo
+      .createQueryBuilder('t')
+      .addSelect('t.lyrics_translated')
+      .leftJoinAndMapOne('t.stats', TrackStats, 's', 's.track_id = t.id')
+      .orderBy('s.score', 'DESC', 'NULLS LAST')
+      .take(limit)
+      .getMany();
+    return items.map((t) => {
+      const s = (t as unknown as { stats: TrackStats | null }).stats;
+      return {
+        trackId: t.id,
+        totalPlays: s?.totalPlays ?? 0,
+        uniqueUsers: s?.uniqueUsers ?? 0,
+        likes: s?.likes ?? 0,
+        dislikes: s?.dislikes ?? 0,
+        score: s?.score ?? 0,
+        track: { ...t, hasTranslation: !!t.lyricsTranslated },
+      };
     });
   }
 
@@ -632,5 +646,55 @@ export class AdminService {
         `[Retention] history: -${historyDeleted}, queues: -${queueResult.affected ?? 0}, tracks: -${trackResult.affected ?? 0}`,
       );
     }
+  }
+
+  async getTrackLyrics(trackId: string) {
+    const track = await this.trackRepo
+      .createQueryBuilder('t')
+      .addSelect('t.lyricsData')
+      .addSelect('t.lyricsTranslated')
+      .where('t.id = :trackId', { trackId })
+      .getOne();
+    if (!track) throw new AppException(ErrorCode.ADMIN_001);
+    return {
+      synced: track.lyricsData,
+      translated: track.lyricsTranslated,
+      lang: track.lyricsLang,
+    };
+  }
+
+  async resetTrackLyrics(trackId: string) {
+    await this.trackRepo.update(trackId, {
+      lyricsStatus: 'searching',
+      lyricsData: null,
+      lyricsLang: null,
+      lyricsType: null,
+      lyricsRuby: null,
+      lyricsTranslated: null,
+    });
+  }
+
+  async resetTrackMeta(trackId: string) {
+    await this.trackRepo.update(trackId, {
+      metaStatus: 'pending',
+      songTitle: null,
+      songArtist: null,
+      songAlbum: null,
+    });
+  }
+
+  async deleteTrack(trackId: string) {
+    const track = await this.trackRepo.findOneBy({ id: trackId });
+    if (!track) throw new AppException(ErrorCode.ADMIN_001);
+    // FK 참조 정리
+    await this.trackStatsRepo.delete({ trackId });
+    await this.trackRepo.manager.delete('room_queues', { track: { id: trackId } });
+    await this.trackRepo.manager
+      .createQueryBuilder()
+      .delete()
+      .from('room_playbacks')
+      .where('track_id = :trackId', { trackId })
+      .execute();
+    await this.trackRepo.remove(track);
   }
 }
