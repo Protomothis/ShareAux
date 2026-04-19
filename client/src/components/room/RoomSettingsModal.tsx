@@ -24,6 +24,7 @@ interface RoomSettingsModalProps {
   enqueueLimitPerWindow: number;
   crossfade: boolean;
   maxSelectPerAdd: number;
+  replayCooldownMin: number;
   defaultEnqueueEnabled: boolean;
   defaultVoteSkipEnabled: boolean;
   autoDjEnabled: boolean;
@@ -41,6 +42,7 @@ export default function RoomSettingsModal({
   enqueueLimitPerWindow,
   crossfade,
   maxSelectPerAdd,
+  replayCooldownMin,
   defaultEnqueueEnabled,
   defaultVoteSkipEnabled,
   autoDjEnabled,
@@ -57,6 +59,7 @@ export default function RoomSettingsModal({
     defaultEnqueueEnabled,
     defaultVoteSkipEnabled,
     maxSelectPerAdd,
+    replayCooldownMin,
     autoDjEnabled,
     autoDjMode: autoDjMode as AutoDjMode,
     autoDjThreshold,
@@ -91,6 +94,7 @@ export default function RoomSettingsModal({
       defaultEnqueueEnabled,
       defaultVoteSkipEnabled,
       maxSelectPerAdd,
+      replayCooldownMin,
       autoDjEnabled,
       autoDjMode: autoDjMode as AutoDjMode,
       autoDjThreshold,
@@ -137,6 +141,7 @@ export default function RoomSettingsModal({
         enqueueLimitPerWindow: values.enqueueLimitPerWindow,
         crossfade: values.crossfade,
         maxSelectPerAdd: values.maxSelectPerAdd,
+        replayCooldownMin: values.replayCooldownMin,
         defaultEnqueueEnabled: values.defaultEnqueueEnabled,
         defaultVoteSkipEnabled: values.defaultVoteSkipEnabled,
         autoDjEnabled: values.autoDjEnabled,

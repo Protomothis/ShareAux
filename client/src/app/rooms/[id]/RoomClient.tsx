@@ -423,6 +423,7 @@ export default function RoomClient({ id }: { id: string }) {
         enqueueLimitPerWindow={room.enqueueLimitPerWindow ?? 15}
         crossfade={room.crossfade ?? true}
         maxSelectPerAdd={room.maxSelectPerAdd ?? 3}
+        replayCooldownMin={room.replayCooldownMin ?? 0}
         defaultEnqueueEnabled={room.defaultEnqueueEnabled ?? true}
         defaultVoteSkipEnabled={room.defaultVoteSkipEnabled ?? true}
         autoDjEnabled={room.autoDjEnabled ?? false}

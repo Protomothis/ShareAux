@@ -208,7 +208,7 @@ export default function Queue({
         onClose={() => setSearchOpen(false)}
         roomId={roomId}
         canEnqueue={canEnqueue}
-        queueTrackIds={queue.map((q) => q.track.sourceId || q.track.id)}
+        queueTrackIds={[...queue.map((q) => q.track.sourceId || q.track.id), ...(quota?.cooldownSourceIds ?? [])]}
         onTrackAdded={() => {
           invalidate.queue(roomId);
           invalidate.quota(roomId);

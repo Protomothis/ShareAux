@@ -441,6 +441,12 @@ export const ERROR_META: Record<ErrorCode, ErrorMeta> = {
     title: '일괄 추가 한도 초과',
     description: '한 번에 추가할 수 있는 곡 수를 초과했습니다',
   },
+  [ErrorCode.QUEUE_008]: {
+    code: ErrorCode.QUEUE_008,
+    httpStatus: HttpStatus.TOO_MANY_REQUESTS,
+    title: '재신청 쿨다운',
+    description: '최근 재생된 곡입니다. 잠시 후 다시 신청해주세요',
+  },
 
   // ── Search ──
   [ErrorCode.SEARCH_001]: {

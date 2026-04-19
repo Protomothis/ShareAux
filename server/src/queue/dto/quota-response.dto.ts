@@ -6,4 +6,6 @@ export class QuotaResponse {
   @ApiProperty() windowMin!: number;
   @ApiProperty() unlimited!: boolean;
   @ApiProperty() banned!: boolean;
+  @ApiProperty({ type: [String], description: '쿨다운 중인 sourceId 목록' })
+  cooldownSourceIds!: string[];
 }

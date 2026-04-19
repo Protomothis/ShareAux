@@ -12,4 +12,6 @@ export interface QuotaResponse {
   windowMin: number;
   unlimited: boolean;
   banned: boolean;
+  /** 쿨다운 중인 sourceId 목록 */
+  cooldownSourceIds: string[];
 }
