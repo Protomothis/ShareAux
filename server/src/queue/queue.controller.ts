@@ -62,9 +62,9 @@ export class QueueController {
     @Body() body: AddTracksBody,
     @Req() req: AuthenticatedRequest,
   ) {
-    const sourceIds = body.items.map((i) => i.sourceId);
-    const entries = await this.queue.addTracks(roomId, sourceIds, req.user.userId);
+    const entries = await this.queue.addTracks(roomId, body.items, req.user.userId);
     const updatedQueue = await this.queue.getQueue(roomId);
+    const sourceIds = body.items.map((i) => i.sourceId);
     const addedTracks = updatedQueue.filter((q) => sourceIds.includes(q.track.sourceId)).map((q) => q.track);
 
     // Content ID 메타데이터 백그라운드 enrich

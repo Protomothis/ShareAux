@@ -89,7 +89,14 @@ export default function SearchModal({
     setAdding(true);
     try {
       await queueControllerAddTracks(roomId, {
-        items: selected.map((t) => ({ provider: t.provider, sourceId: t.sourceId })),
+        items: selected.map((t) => ({
+          provider: t.provider,
+          sourceId: t.sourceId,
+          name: t.name,
+          artist: t.artist ?? undefined,
+          thumbnail: t.thumbnail ?? undefined,
+          durationMs: t.durationMs,
+        })),
       });
       for (const track of selected) setAddedIds((prev) => new Set(prev).add(track.sourceId));
       const names = selected.map((t) => t.name).slice(0, 2);

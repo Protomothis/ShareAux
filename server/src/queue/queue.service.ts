@@ -1,4 +1,4 @@
-import { Provider } from '../types/provider.enum.js';
+import type { TrackSource } from './dto/add-tracks-body.dto.js';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -121,29 +121,31 @@ export class QueueService {
     );
   }
 
-  async addTracks(roomId: string, sourceIds: string[], userId: string) {
+  async addTracks(roomId: string, items: TrackSource[], userId: string) {
     const total = await this.queueRepo.countBy({ room: { id: roomId }, played: false });
-    if (total + sourceIds.length > 50) throw new AppException(ErrorCode.QUEUE_004);
+    if (total + items.length > 50) throw new AppException(ErrorCode.QUEUE_004);
 
     const room = await this.roomRepo.findOneBy({ id: roomId });
     const isPrivileged = room?.hostId === userId;
 
     // 호스트가 아니면 maxSelectPerAdd 제한 적용
-    if (!isPrivileged && room && sourceIds.length > room.maxSelectPerAdd) {
+    if (!isPrivileged && room && items.length > room.maxSelectPerAdd) {
       throw new AppException(ErrorCode.QUEUE_007);
     }
 
     // sourceId → Track upsert
     const tracks: Track[] = [];
-    for (const sid of sourceIds) {
-      let track = await this.trackRepo.findOneBy({ sourceId: sid });
+    for (const item of items) {
+      let track = await this.trackRepo.findOneBy({ sourceId: item.sourceId });
       if (!track) {
         track = await this.trackRepo.save(
           this.trackRepo.create({
-            provider: Provider.YT,
-            sourceId: sid,
-            name: sid,
-            durationMs: 0,
+            provider: item.provider,
+            sourceId: item.sourceId,
+            name: item.name,
+            artist: item.artist,
+            thumbnail: item.thumbnail,
+            durationMs: item.durationMs,
             fetchedAt: new Date(),
           }),
         );

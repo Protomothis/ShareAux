@@ -1,6 +1,6 @@
 import { Provider } from '../../types/provider.enum.js';
 import { ApiProperty } from '@nestjs/swagger';
-import { ArrayMaxSize, ArrayMinSize, IsString, ValidateNested } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class TrackSource {
@@ -11,6 +11,24 @@ export class TrackSource {
   @ApiProperty()
   @IsString()
   sourceId!: string;
+
+  @ApiProperty()
+  @IsString()
+  name!: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  artist?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  thumbnail?: string;
+
+  @ApiProperty()
+  @IsNumber()
+  durationMs!: number;
 }
 
 export class AddTracksBody {

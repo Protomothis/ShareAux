@@ -10,4 +10,8 @@ import type { TrackSourceProvider } from './trackSourceProvider';
 export interface TrackSource {
   provider: TrackSourceProvider;
   sourceId: string;
+  name: string;
+  artist?: string;
+  thumbnail?: string;
+  durationMs: number;
 }
