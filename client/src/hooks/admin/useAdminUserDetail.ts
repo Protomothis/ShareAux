@@ -4,6 +4,7 @@ import {
   getAdminControllerGetUserDetailQueryKey,
   getAdminControllerGetUsersQueryKey,
   useAdminControllerBanUser,
+  useAdminControllerDeleteUser,
   useAdminControllerGetUserDetail,
   useAdminControllerUnbanUser,
   useAdminControllerUpdateUserRole,
@@ -48,4 +49,9 @@ export function useBanUser(id: string) {
 export function useUnbanUser(id: string) {
   const invalidate = useInvalidateUserDetail(id);
   return useAdminControllerUnbanUser({ mutation: { onSuccess: invalidate } });
+}
+
+export function useDeleteUser(id: string) {
+  const invalidate = useInvalidateUserDetail(id);
+  return useAdminControllerDeleteUser({ mutation: { onSuccess: invalidate } });
 }

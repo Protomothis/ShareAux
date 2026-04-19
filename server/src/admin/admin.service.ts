@@ -1,6 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
+
+import { AuthService } from '../auth/auth.service.js';
 import { nanoid } from 'nanoid';
 import { LessThan, Repository } from 'typeorm';
 
@@ -53,6 +55,7 @@ export class AdminService {
     private readonly audio: AudioService,
     private readonly preload: PreloadService,
     private readonly metrics: MetricsService,
+    @Inject(forwardRef(() => AuthService)) private readonly authService: AuthService,
   ) {}
 
   async getDashboard() {
@@ -113,6 +116,10 @@ export class AdminService {
 
   async unbanUser(userId: string): Promise<void> {
     await this.userRepo.update(userId, { bannedAt: null });
+  }
+
+  async deleteUser(userId: string): Promise<void> {
+    await this.authService.deleteAccount(userId);
   }
 
   async getRooms(page: number, limit: number) {

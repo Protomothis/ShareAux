@@ -1,5 +1,7 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { AuthModule } from '../auth/auth.module.js';
 
 import { InviteCode } from '../entities/invite-code.entity.js';
 import { Report } from '../entities/report.entity.js';
@@ -35,6 +37,7 @@ import { ReportController } from './report.controller.js';
       Report,
     ]),
     RoomsModule,
+    forwardRef(() => AuthModule),
   ],
   controllers: [AdminController, ReportController],
   providers: [AdminService],

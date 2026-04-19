@@ -150,6 +150,14 @@ export class AdminController {
     return { success: true };
   }
 
+  @Delete('users/:id')
+  @ApiOperation({ summary: '계정 삭제' })
+  async deleteUser(@Param('id') id: string) {
+    await this.adminService.deleteUser(id);
+    this.gateway.disconnectUser(id, WS_CLOSE_BANNED);
+    return { success: true };
+  }
+
   @Get('rooms')
   @ApiOperation({ summary: 'List rooms (paginated)' })
   @ApiOkResponse({ type: PaginatedRoomsResponse })
