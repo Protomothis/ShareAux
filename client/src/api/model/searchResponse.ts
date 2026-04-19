@@ -5,11 +5,11 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
-import type { Track } from './track';
+import type { SearchResultItem } from './searchResultItem';
 import type { PlaylistResult } from './playlistResult';
 
 export interface SearchResponse {
-  tracks: Track[];
+  tracks: SearchResultItem[];
   playlists: PlaylistResult[];
   continuation?: string;
 }

@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 
 import type { BanInfo } from '@/api/model';
 import { roomsControllerResetEnqueueCounts, roomsControllerUnban, roomsControllerUpdate } from '@/api/rooms/rooms';
-import { customFetch } from '@/lib/api-client';
+import { customFetch } from '@/api/mutator';
 import Modal from '@/components/common/Modal';
 import RoomSettingsForm from '@/components/common/RoomSettingsForm';
 import type { RoomFormValues } from '@/components/common/RoomSettingsForm';

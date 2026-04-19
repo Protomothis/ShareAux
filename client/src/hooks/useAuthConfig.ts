@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { customFetch } from '@/lib/api-client';
+import { customFetch } from '@/api/mutator';
 
 interface AuthConfig {
   google: boolean;

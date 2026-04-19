@@ -43,7 +43,7 @@ export function useDeleteInviteCode() {
   const qc = useQueryClient();
   return {
     mutate: async (id: string, opts?: { onSuccess?: () => void }) => {
-      const { customFetch } = await import('@/lib/api-client');
+      const { customFetch } = await import('@/api/mutator');
       await customFetch(`/api/admin/invite-codes/${id}`, { method: 'DELETE' });
       await qc.invalidateQueries({ queryKey: getAdminControllerGetInviteCodesQueryKey() });
       opts?.onSuccess?.();

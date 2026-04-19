@@ -9,7 +9,7 @@ import {
   useAdminControllerUpdateUserRole,
 } from '@/api/admin/admin';
 import type { UpdatePermissionsBody } from '@/api/model';
-import { customFetch } from '@/lib/api-client';
+import { customFetch } from '@/api/mutator';
 
 export function useAdminUserDetail(id: string) {
   return useAdminControllerGetUserDetail(id);

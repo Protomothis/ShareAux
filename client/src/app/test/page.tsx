@@ -3,7 +3,7 @@ import { Provider } from '@/api/model';
 
 import { useCallback, useRef, useState } from 'react';
 
-import type { Track } from '@/api/model';
+import type { SearchResultItem } from '@/api/model';
 import { playerControllerPlay } from '@/api/player/player';
 import { queueControllerAddTracks, queueControllerGetQueue } from '@/api/queue/queue';
 import { roomsControllerCreate } from '@/api/rooms/rooms';
@@ -19,7 +19,7 @@ export default function TestPage() {
   const [roomId, setRoomId] = useState('');
   const [roomName, setRoomName] = useState('test-room');
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Track[]>([]);
+  const [results, setResults] = useState<SearchResultItem[]>([]);
   const [log, setLog] = useState<string[]>([]);
   const [audioFrames, setAudioFrames] = useState(0);
   const [listening, setListening] = useState(false);
@@ -165,11 +165,11 @@ export default function TestPage() {
       {results.length > 0 && (
         <div className="space-y-1 max-h-40 overflow-y-auto">
           {results.map((t) => (
-            <div key={t.id} className="flex justify-between items-center bg-gray-800 px-2 py-1 rounded">
+            <div key={t.sourceId} className="flex justify-between items-center bg-gray-800 px-2 py-1 rounded">
               <span>
                 {t.name} - {t.artist}
               </span>
-              <button onClick={() => enqueue(t.id)} className="bg-yellow-600 px-2 rounded text-xs">
+              <button onClick={() => enqueue(t.sourceId)} className="bg-yellow-600 px-2 rounded text-xs">
                 추가
               </button>
             </div>

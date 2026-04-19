@@ -60,7 +60,7 @@ function GridCard({
   order,
   onClick,
 }: {
-  track: Track | SearchResultItem;
+  track: SearchResultItem;
   selected: boolean;
   disabled: boolean;
   order: number;
@@ -130,12 +130,29 @@ export default function SearchShowcase({
     refetch: recRefetch,
   } = useSearchControllerGetRecommended(roomId);
 
-  const handleClick = (track: Track) => {
+  const handleClick = (track: SearchResultItem) => {
     if (disabledIds.has(track.sourceId) || (maxReached && !selectedIds.has(track.sourceId))) return;
-    onSelectTrack(track);
+    const { provider, sourceId, name, durationMs } = track;
+    onSelectTrack({
+      provider,
+      sourceId,
+      name,
+      artist: track.artist ?? null,
+      thumbnail: track.thumbnail ?? null,
+      durationMs,
+    });
   };
 
-  const grid = (tracks: Track[]) => (
+  const toSearchItem = (t: Track): SearchResultItem => ({
+    provider: t.provider,
+    sourceId: t.sourceId,
+    name: t.name,
+    artist: t.artist ?? null,
+    thumbnail: t.thumbnail ?? null,
+    durationMs: t.durationMs,
+  });
+
+  const grid = (tracks: SearchResultItem[]) => (
     <div className="grid grid-cols-3 gap-1">
       {tracks.map((t) => (
         <GridCard
@@ -180,17 +197,17 @@ export default function SearchShowcase({
         <>
           {popular.length > 0 && (
             <Section icon={<Flame size={14} className="text-orange-400" />} title="인기곡">
-              {grid(popular)}
+              {grid(popular.map(toSearchItem))}
             </Section>
           )}
           {myHistory.length > 0 && (
             <Section icon={<Music size={14} className="text-sa-accent" />} title="내 신청 기록">
-              {grid(myHistory)}
+              {grid(myHistory.map(toSearchItem))}
             </Section>
           )}
           {recent.length > 0 && (
             <Section icon={<History size={14} className="text-sa-text-muted" />} title="최근 재생">
-              {grid(recent)}
+              {grid(recent.map(toSearchItem))}
             </Section>
           )}
         </>

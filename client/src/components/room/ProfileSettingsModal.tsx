@@ -12,8 +12,8 @@ import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useAuthConfig } from '@/hooks/useAuthConfig';
-import type { ApiError } from '@/lib/api-client';
-import { customFetch } from '@/lib/api-client';
+import type { ApiError } from '@/api/mutator';
+import { customFetch } from '@/api/mutator';
 import { useAuthStore } from '@/stores/auth';
 
 type Page = 'menu' | 'nickname' | 'password' | 'google' | 'delete';
