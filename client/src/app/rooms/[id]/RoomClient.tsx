@@ -284,6 +284,7 @@ export default function RoomClient({ id }: { id: string }) {
     autoDjEnabled: room?.autoDjEnabled,
     autoDjStatus,
     streamState,
+    onSkipError: () => invalidate.player(id),
   };
 
   const chatProps = {

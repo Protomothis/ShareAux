@@ -37,6 +37,7 @@ interface PlayerControlsProps {
   visualMode: VisualMode;
   onCycleVisual: () => void;
   streamState?: StreamState;
+  onSkipError?: () => void;
 }
 
 export default function PlayerControls({
@@ -63,6 +64,7 @@ export default function PlayerControls({
   visualMode,
   onCycleVisual,
   streamState,
+  onSkipError,
 }: PlayerControlsProps) {
   const [skipping, setSkipping] = useState<'prev' | 'next' | false>(false);
   const cooldown = elapsedMs < SKIP_COOLDOWN_MS;
@@ -74,7 +76,7 @@ export default function PlayerControls({
     try {
       await playerControllerSkip(roomId);
     } catch {
-      /* */
+      onSkipError?.();
     } finally {
       setSkipping(false);
     }
