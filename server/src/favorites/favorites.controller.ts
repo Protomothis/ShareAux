@@ -7,6 +7,7 @@ import { AppException } from '../exceptions/app.exception.js';
 import { ErrorCode } from '../types/error-code.enum.js';
 import { UserRole } from '../types/user-role.enum.js';
 import { AddFavoriteBody } from './dto/add-favorite-body.dto.js';
+import { BulkRemoveFavoritesBody } from './dto/bulk-remove-favorites-body.dto.js';
 import { FavoriteIdsResponse } from './dto/favorite-ids-response.dto.js';
 import { FavoriteItem } from './dto/favorite-item.dto.js';
 import { FavoritesService } from './favorites.service.js';
@@ -50,5 +51,12 @@ export class FavoritesController {
   async remove(@Req() req: AuthenticatedRequest, @Param('sourceId') sourceId: string): Promise<void> {
     this.assertNotGuest(req);
     await this.favoritesService.remove(req.user.userId, sourceId);
+  }
+
+  @Post('bulk-remove')
+  @ApiOperation({ summary: '즐겨찾기 일괄 해제' })
+  async bulkRemove(@Req() req: AuthenticatedRequest, @Body() body: BulkRemoveFavoritesBody): Promise<void> {
+    this.assertNotGuest(req);
+    await this.favoritesService.bulkRemove(req.user.userId, body.sourceIds);
   }
 }

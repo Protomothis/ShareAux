@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 
 import type { SearchResultItem, Track } from '@/api/model';
 import { useSearchControllerGetRecommended, useSearchControllerGetShowcase } from '@/api/search/search';
+import { FavoriteButton } from '@/components/common/FavoriteButton';
 import Thumbnail from '@/components/common/Thumbnail';
 import { Button } from '@/components/ui/button';
 import { formatDuration } from '@/lib/format';
@@ -17,6 +18,9 @@ interface SearchShowcaseProps {
   selectedOrder: string[];
   disabledIds: Set<string>;
   maxReached: boolean;
+  favoriteIds?: Set<string>;
+  onToggleFavorite?: (track: SearchResultItem) => void;
+  isGuest?: boolean;
 }
 
 function Section({
@@ -59,12 +63,18 @@ function GridCard({
   disabled,
   order,
   onClick,
+  isFavorite,
+  onToggleFavorite,
+  isGuest,
 }: {
   track: SearchResultItem;
   selected: boolean;
   disabled: boolean;
   order: number;
   onClick: () => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
+  isGuest?: boolean;
 }) {
   return (
     <Button
@@ -88,6 +98,9 @@ function GridCard({
               {order}
             </span>
           </div>
+        )}
+        {!isGuest && onToggleFavorite && !selected && (
+          <FavoriteButton active={!!isFavorite} onClick={onToggleFavorite} className="absolute left-1 top-1" />
         )}
       </div>
       <div className="min-w-0 w-full px-0.5">
@@ -121,6 +134,9 @@ export default function SearchShowcase({
   selectedOrder,
   disabledIds,
   maxReached,
+  favoriteIds,
+  onToggleFavorite,
+  isGuest,
 }: SearchShowcaseProps) {
   const { data: showcaseData, isLoading: showcaseLoading } = useSearchControllerGetShowcase(roomId);
   const {
@@ -162,6 +178,9 @@ export default function SearchShowcase({
           disabled={disabledIds.has(t.sourceId)}
           order={selectedOrder.indexOf(t.sourceId) + 1}
           onClick={() => handleClick(t)}
+          isFavorite={favoriteIds?.has(t.sourceId)}
+          onToggleFavorite={() => onToggleFavorite?.(t)}
+          isGuest={isGuest}
         />
       ))}
     </div>

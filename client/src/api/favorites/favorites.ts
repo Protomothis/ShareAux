@@ -21,7 +21,7 @@ import type {
   UseQueryResult,
 } from '@tanstack/react-query';
 
-import type { AddFavoriteBody, FavoriteIdsResponse, FavoriteItem } from '.././model';
+import type { AddFavoriteBody, BulkRemoveFavoritesBody, FavoriteIdsResponse, FavoriteItem } from '.././model';
 
 import { customFetch } from '.././mutator';
 
@@ -400,6 +400,88 @@ export const useFavoritesControllerRemove = <TError = unknown, TContext = unknow
   queryClient?: QueryClient,
 ): UseMutationResult<Awaited<ReturnType<typeof favoritesControllerRemove>>, TError, { sourceId: string }, TContext> => {
   const mutationOptions = getFavoritesControllerRemoveMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
+ * @summary 즐겨찾기 일괄 해제
+ */
+export const getFavoritesControllerBulkRemoveUrl = () => {
+  return `/api/favorites/bulk-remove`;
+};
+
+export const favoritesControllerBulkRemove = async (
+  bulkRemoveFavoritesBody: BulkRemoveFavoritesBody,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getFavoritesControllerBulkRemoveUrl(), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(bulkRemoveFavoritesBody),
+  });
+};
+
+export const getFavoritesControllerBulkRemoveMutationOptions = <TError = unknown, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof favoritesControllerBulkRemove>>,
+    TError,
+    { data: BulkRemoveFavoritesBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof favoritesControllerBulkRemove>>,
+  TError,
+  { data: BulkRemoveFavoritesBody },
+  TContext
+> => {
+  const mutationKey = ['favoritesControllerBulkRemove'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof favoritesControllerBulkRemove>>,
+    { data: BulkRemoveFavoritesBody }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return favoritesControllerBulkRemove(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type FavoritesControllerBulkRemoveMutationResult = NonNullable<
+  Awaited<ReturnType<typeof favoritesControllerBulkRemove>>
+>;
+export type FavoritesControllerBulkRemoveMutationBody = BulkRemoveFavoritesBody;
+export type FavoritesControllerBulkRemoveMutationError = unknown;
+
+/**
+ * @summary 즐겨찾기 일괄 해제
+ */
+export const useFavoritesControllerBulkRemove = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof favoritesControllerBulkRemove>>,
+      TError,
+      { data: BulkRemoveFavoritesBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof favoritesControllerBulkRemove>>,
+  TError,
+  { data: BulkRemoveFavoritesBody },
+  TContext
+> => {
+  const mutationOptions = getFavoritesControllerBulkRemoveMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

@@ -249,6 +249,9 @@ export default function SearchModal({
               selectedOrder={selected.map((t) => t.sourceId)}
               disabledIds={disabledIds}
               maxReached={selected.length >= maxSelect}
+              favoriteIds={favoriteIds}
+              onToggleFavorite={toggleFavorite}
+              isGuest={isGuest}
             />
           )}
 

@@ -31,6 +31,7 @@ export * from './authControllerGuestLogin200';
 export * from './banInfo';
 export * from './bannedIp';
 export * from './bannedIpItem';
+export * from './bulkRemoveFavoritesBody';
 export * from './captchaChallengeResponse';
 export * from './cleanupSummaryResponse';
 export * from './createInviteCodeDto';

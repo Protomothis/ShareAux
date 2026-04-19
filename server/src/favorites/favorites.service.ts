@@ -83,4 +83,21 @@ export class FavoritesService {
     if (!track) return;
     await this.favRepo.delete({ userId, trackId: track.id });
   }
+
+  async bulkRemove(userId: string, sourceIds: string[]): Promise<void> {
+    if (!sourceIds.length) return;
+    const tracks = await this.trackRepo
+      .createQueryBuilder('t')
+      .where('t.source_id IN (:...sourceIds)', { sourceIds })
+      .getMany();
+    if (!tracks.length) return;
+    await this.favRepo
+      .createQueryBuilder()
+      .delete()
+      .where('user_id = :userId AND track_id IN (:...trackIds)', {
+        userId,
+        trackIds: tracks.map((t) => t.id),
+      })
+      .execute();
+  }
 }

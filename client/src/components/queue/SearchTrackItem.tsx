@@ -1,8 +1,9 @@
 'use client';
-import { Check, Heart } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { memo } from 'react';
 
 import type { SearchResultItem } from '@/api/model';
+import { FavoriteButton } from '@/components/common/FavoriteButton';
 import Thumbnail from '@/components/common/Thumbnail';
 import { Button } from '@/components/ui/button';
 import { formatDuration } from '@/lib/format';
@@ -16,7 +17,7 @@ interface SearchTrackItemProps {
   inQueue: boolean;
   onClick: () => void;
   isFavorite?: boolean;
-  onToggleFavorite?: (e: React.MouseEvent) => void;
+  onToggleFavorite?: () => void;
   isGuest?: boolean;
 }
 
@@ -53,18 +54,11 @@ export const SearchTrackItem = memo(function SearchTrackItem({
       <div className="relative shrink-0">
         <Thumbnail src={track.thumbnail} size="sm" className="size-10 rounded" />
         {!isGuest && onToggleFavorite && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleFavorite(e);
-            }}
-            className="absolute -left-1 -top-1 rounded-full bg-black/60 p-0.5"
-          >
-            <Heart
-              size={12}
-              className={cn(isFavorite ? 'fill-red-400 text-red-400' : 'text-white/50 hover:text-white')}
-            />
-          </button>
+          <FavoriteButton
+            active={!!isFavorite}
+            onClick={() => onToggleFavorite?.()}
+            className="absolute -left-1 -top-1"
+          />
         )}
       </div>
       <div className="min-w-0 flex-1">
