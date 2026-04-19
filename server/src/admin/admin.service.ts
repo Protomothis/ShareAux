@@ -489,6 +489,7 @@ export class AdminService {
     const tracks = await this.trackRepo
       .createQueryBuilder('t')
       .where('t.source_id NOT IN (SELECT DISTINCT source_id FROM play_histories)')
+      .andWhere('t.id NOT IN (SELECT DISTINCT track_id FROM user_favorites)')
       .getMany();
     if (!tracks.length) return 0;
     return this.deleteTracks(tracks.map((t) => t.id));
@@ -500,6 +501,7 @@ export class AdminService {
       .createQueryBuilder('t')
       .innerJoin('track_stats', 'ts', 'ts.track_id = t.id')
       .where('ts.last_played_at < :cutoff', { cutoff })
+      .andWhere('t.id NOT IN (SELECT DISTINCT track_id FROM user_favorites)')
       .getMany();
     if (!tracks.length) return 0;
     return this.deleteTracks(tracks.map((t) => t.id));
@@ -639,6 +641,7 @@ export class AdminService {
         cutoff: trackCutoff,
       })
       .andWhere('t.id NOT IN (SELECT DISTINCT track_id FROM room_queues WHERE played = false)')
+      .andWhere('t.id NOT IN (SELECT DISTINCT track_id FROM user_favorites)')
       .execute();
 
     if (historyDeleted || queueResult.affected || trackResult.affected) {

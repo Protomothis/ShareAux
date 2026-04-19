@@ -539,4 +539,16 @@ export const ERROR_META: Record<ErrorCode, ErrorMeta> = {
     title: '투표 기록 없음',
     description: '투표 기록이 없습니다',
   },
+  [ErrorCode.FAV_001]: {
+    code: ErrorCode.FAV_001,
+    httpStatus: HttpStatus.BAD_REQUEST,
+    title: '즐겨찾기 초과',
+    description: '즐겨찾기는 최대 200곡까지 가능합니다',
+  },
+  [ErrorCode.FAV_002]: {
+    code: ErrorCode.FAV_002,
+    httpStatus: HttpStatus.FORBIDDEN,
+    title: '게스트 사용 불가',
+    description: '즐겨찾기는 로그인 회원만 사용할 수 있습니다',
+  },
 };

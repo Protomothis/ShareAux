@@ -7,6 +7,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AdminModule } from './admin/admin.module.js';
+import { FavoritesModule } from './favorites/favorites.module.js';
 import { THROTTLE_LIMIT_DEFAULT, THROTTLE_TTL_MS } from './constants.js';
 import { HealthController, SetupController } from './app.controller.js';
 import { AuthModule } from './auth/auth.module.js';
@@ -43,6 +44,7 @@ import { TracksModule } from './tracks/tracks.module.js';
     QueueModule,
     SearchModule,
     AdminModule,
+    FavoritesModule,
     TracksModule,
     TypeOrmModule.forFeature([User]),
   ],
