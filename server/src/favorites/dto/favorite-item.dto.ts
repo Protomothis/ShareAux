@@ -24,6 +24,9 @@ export class FavoriteItem {
   @ApiProperty()
   durationMs!: number;
 
+  @ApiPropertyOptional({ nullable: true })
+  folderId!: string | null;
+
   @ApiProperty()
   createdAt!: Date;
 }

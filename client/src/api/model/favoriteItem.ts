@@ -17,5 +17,7 @@ export interface FavoriteItem {
   /** @nullable */
   thumbnail?: string | null;
   durationMs: number;
+  /** @nullable */
+  folderId?: string | null;
   createdAt: string;
 }

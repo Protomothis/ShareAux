@@ -40,6 +40,7 @@ export class FavoritesService {
       artist: f.track.artist,
       thumbnail: f.track.thumbnail,
       durationMs: f.track.durationMs,
+      folderId: f.folderId,
       createdAt: f.createdAt,
     }));
   }

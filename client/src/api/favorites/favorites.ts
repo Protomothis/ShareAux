@@ -21,7 +21,16 @@ import type {
   UseQueryResult,
 } from '@tanstack/react-query';
 
-import type { AddFavoriteBody, BulkRemoveFavoritesBody, FavoriteIdsResponse, FavoriteItem } from '.././model';
+import type {
+  AddFavoriteBody,
+  BulkRemoveFavoritesBody,
+  CreateFolderBody,
+  FavoriteIdsResponse,
+  FavoriteItem,
+  FolderItem,
+  MoveFavoriteBody,
+  UpdateFolderBody,
+} from '.././model';
 
 import { customFetch } from '.././mutator';
 
@@ -482,6 +491,440 @@ export const useFavoritesControllerBulkRemove = <TError = unknown, TContext = un
   TContext
 > => {
   const mutationOptions = getFavoritesControllerBulkRemoveMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
+ * @summary 폴더 목록
+ */
+export const getFavoritesControllerListFoldersUrl = () => {
+  return `/api/favorites/folders`;
+};
+
+export const favoritesControllerListFolders = async (options?: RequestInit): Promise<FolderItem[]> => {
+  return customFetch<FolderItem[]>(getFavoritesControllerListFoldersUrl(), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getFavoritesControllerListFoldersQueryKey = () => {
+  return [`/api/favorites/folders`] as const;
+};
+
+export const getFavoritesControllerListFoldersQueryOptions = <
+  TData = Awaited<ReturnType<typeof favoritesControllerListFolders>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof favoritesControllerListFolders>>, TError, TData>>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getFavoritesControllerListFoldersQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof favoritesControllerListFolders>>> = ({ signal }) =>
+    favoritesControllerListFolders({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof favoritesControllerListFolders>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type FavoritesControllerListFoldersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof favoritesControllerListFolders>>
+>;
+export type FavoritesControllerListFoldersQueryError = unknown;
+
+export function useFavoritesControllerListFolders<
+  TData = Awaited<ReturnType<typeof favoritesControllerListFolders>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof favoritesControllerListFolders>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof favoritesControllerListFolders>>,
+          TError,
+          Awaited<ReturnType<typeof favoritesControllerListFolders>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useFavoritesControllerListFolders<
+  TData = Awaited<ReturnType<typeof favoritesControllerListFolders>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof favoritesControllerListFolders>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof favoritesControllerListFolders>>,
+          TError,
+          Awaited<ReturnType<typeof favoritesControllerListFolders>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useFavoritesControllerListFolders<
+  TData = Awaited<ReturnType<typeof favoritesControllerListFolders>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof favoritesControllerListFolders>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 폴더 목록
+ */
+
+export function useFavoritesControllerListFolders<
+  TData = Awaited<ReturnType<typeof favoritesControllerListFolders>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof favoritesControllerListFolders>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getFavoritesControllerListFoldersQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 폴더 생성
+ */
+export const getFavoritesControllerCreateFolderUrl = () => {
+  return `/api/favorites/folders`;
+};
+
+export const favoritesControllerCreateFolder = async (
+  createFolderBody: CreateFolderBody,
+  options?: RequestInit,
+): Promise<FolderItem> => {
+  return customFetch<FolderItem>(getFavoritesControllerCreateFolderUrl(), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(createFolderBody),
+  });
+};
+
+export const getFavoritesControllerCreateFolderMutationOptions = <TError = unknown, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof favoritesControllerCreateFolder>>,
+    TError,
+    { data: CreateFolderBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof favoritesControllerCreateFolder>>,
+  TError,
+  { data: CreateFolderBody },
+  TContext
+> => {
+  const mutationKey = ['favoritesControllerCreateFolder'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof favoritesControllerCreateFolder>>,
+    { data: CreateFolderBody }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return favoritesControllerCreateFolder(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type FavoritesControllerCreateFolderMutationResult = NonNullable<
+  Awaited<ReturnType<typeof favoritesControllerCreateFolder>>
+>;
+export type FavoritesControllerCreateFolderMutationBody = CreateFolderBody;
+export type FavoritesControllerCreateFolderMutationError = unknown;
+
+/**
+ * @summary 폴더 생성
+ */
+export const useFavoritesControllerCreateFolder = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof favoritesControllerCreateFolder>>,
+      TError,
+      { data: CreateFolderBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof favoritesControllerCreateFolder>>,
+  TError,
+  { data: CreateFolderBody },
+  TContext
+> => {
+  const mutationOptions = getFavoritesControllerCreateFolderMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
+ * @summary 폴더 수정
+ */
+export const getFavoritesControllerUpdateFolderUrl = (id: string) => {
+  return `/api/favorites/folders/${id}`;
+};
+
+export const favoritesControllerUpdateFolder = async (
+  id: string,
+  updateFolderBody: UpdateFolderBody,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getFavoritesControllerUpdateFolderUrl(id), {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(updateFolderBody),
+  });
+};
+
+export const getFavoritesControllerUpdateFolderMutationOptions = <TError = unknown, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof favoritesControllerUpdateFolder>>,
+    TError,
+    { id: string; data: UpdateFolderBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof favoritesControllerUpdateFolder>>,
+  TError,
+  { id: string; data: UpdateFolderBody },
+  TContext
+> => {
+  const mutationKey = ['favoritesControllerUpdateFolder'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof favoritesControllerUpdateFolder>>,
+    { id: string; data: UpdateFolderBody }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return favoritesControllerUpdateFolder(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type FavoritesControllerUpdateFolderMutationResult = NonNullable<
+  Awaited<ReturnType<typeof favoritesControllerUpdateFolder>>
+>;
+export type FavoritesControllerUpdateFolderMutationBody = UpdateFolderBody;
+export type FavoritesControllerUpdateFolderMutationError = unknown;
+
+/**
+ * @summary 폴더 수정
+ */
+export const useFavoritesControllerUpdateFolder = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof favoritesControllerUpdateFolder>>,
+      TError,
+      { id: string; data: UpdateFolderBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof favoritesControllerUpdateFolder>>,
+  TError,
+  { id: string; data: UpdateFolderBody },
+  TContext
+> => {
+  const mutationOptions = getFavoritesControllerUpdateFolderMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
+ * @summary 폴더 삭제 (곡 → 미분류)
+ */
+export const getFavoritesControllerDeleteFolderUrl = (id: string) => {
+  return `/api/favorites/folders/${id}`;
+};
+
+export const favoritesControllerDeleteFolder = async (id: string, options?: RequestInit): Promise<void> => {
+  return customFetch<void>(getFavoritesControllerDeleteFolderUrl(id), {
+    ...options,
+    method: 'DELETE',
+  });
+};
+
+export const getFavoritesControllerDeleteFolderMutationOptions = <TError = unknown, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof favoritesControllerDeleteFolder>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof favoritesControllerDeleteFolder>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ['favoritesControllerDeleteFolder'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof favoritesControllerDeleteFolder>>, { id: string }> = (
+    props,
+  ) => {
+    const { id } = props ?? {};
+
+    return favoritesControllerDeleteFolder(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type FavoritesControllerDeleteFolderMutationResult = NonNullable<
+  Awaited<ReturnType<typeof favoritesControllerDeleteFolder>>
+>;
+
+export type FavoritesControllerDeleteFolderMutationError = unknown;
+
+/**
+ * @summary 폴더 삭제 (곡 → 미분류)
+ */
+export const useFavoritesControllerDeleteFolder = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof favoritesControllerDeleteFolder>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<Awaited<ReturnType<typeof favoritesControllerDeleteFolder>>, TError, { id: string }, TContext> => {
+  const mutationOptions = getFavoritesControllerDeleteFolderMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
+ * @summary 곡 폴더 이동
+ */
+export const getFavoritesControllerMoveFavoriteUrl = (sourceId: string) => {
+  return `/api/favorites/${sourceId}/folder`;
+};
+
+export const favoritesControllerMoveFavorite = async (
+  sourceId: string,
+  moveFavoriteBody: MoveFavoriteBody,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getFavoritesControllerMoveFavoriteUrl(sourceId), {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(moveFavoriteBody),
+  });
+};
+
+export const getFavoritesControllerMoveFavoriteMutationOptions = <TError = unknown, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof favoritesControllerMoveFavorite>>,
+    TError,
+    { sourceId: string; data: MoveFavoriteBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof favoritesControllerMoveFavorite>>,
+  TError,
+  { sourceId: string; data: MoveFavoriteBody },
+  TContext
+> => {
+  const mutationKey = ['favoritesControllerMoveFavorite'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof favoritesControllerMoveFavorite>>,
+    { sourceId: string; data: MoveFavoriteBody }
+  > = (props) => {
+    const { sourceId, data } = props ?? {};
+
+    return favoritesControllerMoveFavorite(sourceId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type FavoritesControllerMoveFavoriteMutationResult = NonNullable<
+  Awaited<ReturnType<typeof favoritesControllerMoveFavorite>>
+>;
+export type FavoritesControllerMoveFavoriteMutationBody = MoveFavoriteBody;
+export type FavoritesControllerMoveFavoriteMutationError = unknown;
+
+/**
+ * @summary 곡 폴더 이동
+ */
+export const useFavoritesControllerMoveFavorite = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof favoritesControllerMoveFavorite>>,
+      TError,
+      { sourceId: string; data: MoveFavoriteBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof favoritesControllerMoveFavorite>>,
+  TError,
+  { sourceId: string; data: MoveFavoriteBody },
+  TContext
+> => {
+  const mutationOptions = getFavoritesControllerMoveFavoriteMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };
