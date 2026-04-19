@@ -280,6 +280,8 @@ export class PlayerService {
       relations: ['track'],
     });
     if (next) {
+      // 마지막 오디오 프레임이 클라이언트에 도달할 시간 확보
+      await new Promise((r) => setTimeout(r, 2000));
       await this.queueRepo.update(next.id, { played: true });
       await this.play(roomId, next.track.id);
     }
