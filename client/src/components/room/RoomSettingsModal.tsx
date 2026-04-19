@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 
 import type { BanInfo } from '@/api/model';
 import { roomsControllerResetEnqueueCounts, roomsControllerUnban, roomsControllerUpdate } from '@/api/rooms/rooms';
-import { customFetch } from '@/api/mutator';
+import { roomsControllerGetSanctions, roomsControllerMuteUser, roomsControllerResetBans } from '@/api/rooms/rooms';
 import Modal from '@/components/common/Modal';
 import RoomSettingsForm from '@/components/common/RoomSettingsForm';
 import type { RoomFormValues } from '@/components/common/RoomSettingsForm';
@@ -110,7 +110,7 @@ export default function RoomSettingsModal({
       enqueueLimitPerWindow,
     });
     clearAll();
-    customFetch<SanctionsResponse>('/rooms/' + roomId + '/sanctions')
+    (roomsControllerGetSanctions(roomId) as unknown as Promise<SanctionsResponse>)
       .then((res) => {
         setBans(res.bans ?? []);
         setMutes(res.mutes ?? []);
@@ -180,7 +180,7 @@ export default function RoomSettingsModal({
     if (resettingBans) return;
     setResettingBans(true);
     try {
-      const res = await customFetch<{ cleared: number }>(`/rooms/${roomId}/bans`, { method: 'DELETE' });
+      const res = (await roomsControllerResetBans(roomId)) as unknown as { cleared: number };
       toast.success(`제재 목록이 초기화되었습니다 (${res.cleared}명)`);
       setBans([]);
       setMutes([]);
@@ -207,7 +207,7 @@ export default function RoomSettingsModal({
     if (unmutingId) return;
     setUnmutingId(userId);
     try {
-      await customFetch(`/api/rooms/${roomId}/mute/${userId}`, { method: 'DELETE' });
+      await roomsControllerMuteUser(roomId, userId);
       setMutes((prev) => prev.filter((m) => m.userId !== userId));
       toast.success('채팅 제한이 해제되었습니다');
     } catch {

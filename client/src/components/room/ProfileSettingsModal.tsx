@@ -13,7 +13,12 @@ import { PasswordInput } from '@/components/ui/password-input';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useAuthConfig } from '@/hooks/useAuthConfig';
 import type { ApiError } from '@/api/mutator';
-import { customFetch } from '@/api/mutator';
+import {
+  authControllerDeleteAccount,
+  authControllerMe,
+  authControllerUpdateNickname,
+  authControllerUpdatePassword,
+} from '@/api/auth/auth';
 import { useAuthStore } from '@/stores/auth';
 
 type Page = 'menu' | 'nickname' | 'password' | 'google' | 'delete';
@@ -83,9 +88,7 @@ export default function ProfileSettingsModal({ open, onClose }: ProfileSettingsM
       setPage('menu');
       return;
     }
-    customFetch<MeResponse>('/auth/me')
-      .then(setMe)
-      .catch(() => {});
+    (authControllerMe() as unknown as Promise<MeResponse>).then(setMe).catch(() => {});
   }, [open]);
 
   const done = useCallback(
@@ -175,10 +178,7 @@ function NicknamePage({
     if (!validate({ nickname: value })) return;
     setLoading(true);
     try {
-      await customFetch('/api/auth/profile/nickname', {
-        method: 'PUT',
-        body: JSON.stringify({ nickname: value.trim() }),
-      });
+      await authControllerUpdateNickname({ nickname: value.trim() });
       useAuthStore.getState().init();
       onDone('닉네임이 변경되었습니다');
     } catch (e) {
@@ -230,10 +230,7 @@ function PasswordPage({ onBack, onDone }: { onBack: () => void; onDone: (msg: st
     if (!validate({ cur, next, confirm })) return;
     setLoading(true);
     try {
-      await customFetch('/api/auth/profile/password', {
-        method: 'PUT',
-        body: JSON.stringify({ currentPassword: cur, newPassword: next }),
-      });
+      await authControllerUpdatePassword({ currentPassword: cur, newPassword: next });
       onDone('비밀번호가 변경되었습니다');
     } catch (e) {
     } finally {
@@ -354,7 +351,7 @@ function DeletePage({ onBack, router }: { onBack: () => void; router: ReturnType
     setLoading(true);
     setError('');
     try {
-      await customFetch('/api/auth/account', { method: 'DELETE', body: JSON.stringify({ password }) });
+      await authControllerDeleteAccount({ password });
       useAuthStore.getState().clear();
       router.push('/login');
     } catch (e) {

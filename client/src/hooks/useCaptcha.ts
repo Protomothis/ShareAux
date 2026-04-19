@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 
-import { customFetch } from '@/api/mutator';
+import { captchaControllerGetChallenge } from '@/api/captcha/captcha';
 
 interface ChallengeResponse {
   enabled: boolean;
@@ -30,7 +30,7 @@ export function useCaptcha() {
     if (fetchingRef.current) return;
     fetchingRef.current = true;
     try {
-      const res = await customFetch<ChallengeResponse>('/api/captcha/challenge');
+      const res = (await captchaControllerGetChallenge()) as unknown as ChallengeResponse;
       setState({
         enabled: res.enabled,
         id: res.id ?? null,

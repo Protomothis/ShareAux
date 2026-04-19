@@ -4,13 +4,12 @@ import { Loader2, Trash2, Users } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
-import type { User } from '@/api/model';
+import { useQueryClient } from '@tanstack/react-query';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import Modal from '@/components/common/Modal';
 import { Button } from '@/components/ui/button';
-import { customFetch } from '@/api/mutator';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { adminControllerDeleteInviteCodeGuests, useAdminControllerGetInviteCodeUsers } from '@/api/admin/admin';
 
 interface InviteCodeUsersModalProps {
   inviteCodeId: string | null;
@@ -23,10 +22,8 @@ export function InviteCodeUsersModal({ inviteCodeId, code, onOpenChange }: Invit
   const [deleting, setDeleting] = useState(false);
   const qc = useQueryClient();
 
-  const { data: users = [], isLoading } = useQuery<User[]>({
-    queryKey: ['admin', 'invite-codes', inviteCodeId, 'users'],
-    queryFn: () => customFetch(`/api/admin/invite-codes/${inviteCodeId}/users`),
-    enabled: !!inviteCodeId,
+  const { data: users = [], isLoading } = useAdminControllerGetInviteCodeUsers(inviteCodeId ?? '', {
+    query: { enabled: !!inviteCodeId },
   });
 
   const guestCount = users.filter((u) => u.role === 'guest').length;
@@ -35,10 +32,10 @@ export function InviteCodeUsersModal({ inviteCodeId, code, onOpenChange }: Invit
     if (!inviteCodeId) return;
     setDeleting(true);
     try {
-      await customFetch(`/api/admin/invite-codes/${inviteCodeId}/guests`, { method: 'DELETE' });
+      await adminControllerDeleteInviteCodeGuests(inviteCodeId);
       toast.success(`게스트 ${guestCount}명 삭제 완료`);
       setConfirmOpen(false);
-      await qc.invalidateQueries({ queryKey: ['admin', 'invite-codes', inviteCodeId, 'users'] });
+      await qc.invalidateQueries({ queryKey: ['admin', 'invite-codes'] });
     } catch {
       /* mutator handles toast */
     } finally {

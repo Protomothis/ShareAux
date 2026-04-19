@@ -1215,6 +1215,208 @@ export const useAdminControllerDeleteInviteCode = <TError = unknown, TContext = 
   return useMutation(mutationOptions, queryClient);
 };
 /**
+ * @summary 초대코드별 유저 목록
+ */
+export const getAdminControllerGetInviteCodeUsersUrl = (id: string) => {
+  return `/api/admin/invite-codes/${id}/users`;
+};
+
+export const adminControllerGetInviteCodeUsers = async (id: string, options?: RequestInit): Promise<User[]> => {
+  return customFetch<User[]>(getAdminControllerGetInviteCodeUsersUrl(id), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getAdminControllerGetInviteCodeUsersQueryKey = (id?: string) => {
+  return [`/api/admin/invite-codes/${id}/users`] as const;
+};
+
+export const getAdminControllerGetInviteCodeUsersQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminControllerGetInviteCodeUsers>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetInviteCodeUsers>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminControllerGetInviteCodeUsersQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminControllerGetInviteCodeUsers>>> = ({ signal }) =>
+    adminControllerGetInviteCodeUsers(id, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, enabled: !!id, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminControllerGetInviteCodeUsers>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminControllerGetInviteCodeUsersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminControllerGetInviteCodeUsers>>
+>;
+export type AdminControllerGetInviteCodeUsersQueryError = unknown;
+
+export function useAdminControllerGetInviteCodeUsers<
+  TData = Awaited<ReturnType<typeof adminControllerGetInviteCodeUsers>>,
+  TError = unknown,
+>(
+  id: string,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetInviteCodeUsers>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminControllerGetInviteCodeUsers>>,
+          TError,
+          Awaited<ReturnType<typeof adminControllerGetInviteCodeUsers>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminControllerGetInviteCodeUsers<
+  TData = Awaited<ReturnType<typeof adminControllerGetInviteCodeUsers>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetInviteCodeUsers>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminControllerGetInviteCodeUsers>>,
+          TError,
+          Awaited<ReturnType<typeof adminControllerGetInviteCodeUsers>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminControllerGetInviteCodeUsers<
+  TData = Awaited<ReturnType<typeof adminControllerGetInviteCodeUsers>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetInviteCodeUsers>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 초대코드별 유저 목록
+ */
+
+export function useAdminControllerGetInviteCodeUsers<
+  TData = Awaited<ReturnType<typeof adminControllerGetInviteCodeUsers>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetInviteCodeUsers>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminControllerGetInviteCodeUsersQueryOptions(id, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 초대코드 게스트 일괄 삭제
+ */
+export const getAdminControllerDeleteInviteCodeGuestsUrl = (id: string) => {
+  return `/api/admin/invite-codes/${id}/guests`;
+};
+
+export const adminControllerDeleteInviteCodeGuests = async (id: string, options?: RequestInit): Promise<void> => {
+  return customFetch<void>(getAdminControllerDeleteInviteCodeGuestsUrl(id), {
+    ...options,
+    method: 'DELETE',
+  });
+};
+
+export const getAdminControllerDeleteInviteCodeGuestsMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminControllerDeleteInviteCodeGuests>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminControllerDeleteInviteCodeGuests>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ['adminControllerDeleteInviteCodeGuests'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminControllerDeleteInviteCodeGuests>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return adminControllerDeleteInviteCodeGuests(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminControllerDeleteInviteCodeGuestsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminControllerDeleteInviteCodeGuests>>
+>;
+
+export type AdminControllerDeleteInviteCodeGuestsMutationError = unknown;
+
+/**
+ * @summary 초대코드 게스트 일괄 삭제
+ */
+export const useAdminControllerDeleteInviteCodeGuests = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminControllerDeleteInviteCodeGuests>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminControllerDeleteInviteCodeGuests>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions = getAdminControllerDeleteInviteCodeGuestsMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
  * @summary Delete expired guest users (>12h)
  */
 export const getAdminControllerDeleteExpiredGuestsUrl = () => {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { customFetch } from '@/api/mutator';
+import { authControllerGetAuthConfig } from '@/api/auth/auth';
 
 interface AuthConfig {
   google: boolean;
@@ -18,7 +18,7 @@ export function useAuthConfig() {
 
   useEffect(() => {
     if (cachedConfig) return;
-    customFetch<AuthConfig>('/auth/config')
+    (authControllerGetAuthConfig() as unknown as Promise<AuthConfig>)
       .then((c) => {
         cachedConfig = c;
         setConfig(c);
