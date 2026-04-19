@@ -27,6 +27,23 @@ import { cleanArtist, extractTitle, smartClean } from './title-cleaner.js';
 export class LyricsService {
   private readonly logger = new Logger(LyricsService.name);
   private readonly ytdlpPath: string;
+  private readonly MAX_CONCURRENT = 3;
+  private running = 0;
+  private waitQueue: (() => void)[] = [];
+
+  private async acquireSlot(): Promise<void> {
+    if (this.running < this.MAX_CONCURRENT) {
+      this.running++;
+      return;
+    }
+    await new Promise<void>((resolve) => this.waitQueue.push(resolve));
+    this.running++;
+  }
+
+  private releaseSlot(): void {
+    this.running--;
+    this.waitQueue.shift()?.();
+  }
 
   constructor(
     config: ConfigService,
@@ -61,7 +78,13 @@ export class LyricsService {
       }
     }
 
-    const result = await this.searchLyrics(trackName, duration, artist, sourceId, songTitle, songArtist);
+    await this.acquireSlot();
+    let result: LyricsResult | null;
+    try {
+      result = await this.searchLyrics(trackName, duration, artist, sourceId, songTitle, songArtist);
+    } finally {
+      this.releaseSlot();
+    }
 
     // DB에 저장
     if (trackId) {
