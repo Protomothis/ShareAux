@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { use } from 'react';
 
 import { UserBanSection } from '@/components/admin/user-detail/UserBanSection';
+import { UserDeleteSection } from '@/components/admin/user-detail/UserDeleteSection';
 import { UserHistorySection } from '@/components/admin/user-detail/UserHistorySection';
 import { UserPermissionSection } from '@/components/admin/user-detail/UserPermissionSection';
 import { UserProfileHeader } from '@/components/admin/user-detail/UserProfileHeader';
@@ -31,6 +32,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
       <UserPermissionSection user={user} />
       <UserHistorySection user={user} />
       <UserBanSection user={user} />
+      <UserDeleteSection user={user} />
     </div>
   );
 }

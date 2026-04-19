@@ -26,17 +26,19 @@ import type {
   CreateRoomDto,
   JoinRoomDto,
   MyPermissionsResponse,
+  ResetBansResponse,
   Room,
   RoomDetail,
   RoomListItem,
   RoomMember,
   RoomPermission,
   RoomsControllerLeave201,
+  SanctionsResponse,
   UpdatePermissionsBody,
   UpdateRoomDto,
 } from '.././model';
 
-import { customFetch } from '../../lib/api-client';
+import { customFetch } from '.././mutator';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -1030,8 +1032,8 @@ export const getRoomsControllerResetBansUrl = (id: string) => {
   return `/api/rooms/${id}/reset-bans`;
 };
 
-export const roomsControllerResetBans = async (id: string, options?: RequestInit): Promise<void> => {
-  return customFetch<void>(getRoomsControllerResetBansUrl(id), {
+export const roomsControllerResetBans = async (id: string, options?: RequestInit): Promise<ResetBansResponse> => {
+  return customFetch<ResetBansResponse>(getRoomsControllerResetBansUrl(id), {
     ...options,
     method: 'POST',
   });
@@ -1272,8 +1274,8 @@ export const getRoomsControllerGetSanctionsUrl = (id: string) => {
   return `/api/rooms/${id}/sanctions`;
 };
 
-export const roomsControllerGetSanctions = async (id: string, options?: RequestInit): Promise<void> => {
-  return customFetch<void>(getRoomsControllerGetSanctionsUrl(id), {
+export const roomsControllerGetSanctions = async (id: string, options?: RequestInit): Promise<SanctionsResponse> => {
+  return customFetch<SanctionsResponse>(getRoomsControllerGetSanctionsUrl(id), {
     ...options,
     method: 'GET',
   });

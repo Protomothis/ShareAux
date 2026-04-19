@@ -158,12 +158,19 @@ src/
 
 - 서버 컴포넌트 기본. `"use client"`는 훅/브라우저 API/인터랙션 필요 시에만
 - `components/ui/` shadcn 프리미티브 필수 사용 (인라인 `<button>`, `<input>` 금지)
-- HTTP: `ky` (`@/lib/api-client.ts`), fetch/axios 사용 금지
 - 상태: zustand (클라이언트), react-query (서버)
 - 스타일: Tailwind 4 + `cn()` (`@/lib/utils.ts`)
 - 애니메이션: `motion/react`에서 import (`framer-motion` 아님)
 - 경로 별칭: `@/*` → `./src/*`
 - `client/src/api/`는 orval 자동 생성 — 수동 수정 금지
+
+### API 호출 규칙
+
+- **orval 생성 함수만 사용** — `customFetch` 직접 호출 금지. 서버 엔드포인트에 Swagger 데코레이터 추가 → `npx orval` → 생성된 함수 사용
+- **서버 타입만 사용** — 클라이언트에서 API 응답 타입을 직접 정의하지 않음. 서버에 response DTO 추가 → orval이 자동 생성한 타입 사용
+- **`as unknown as` 강제 캐스팅 금지** — orval 생성 타입이 `void`면 서버 DTO가 누락된 것. 서버에서 `@ApiResponse`/`@ApiOkResponse` 데코레이터로 response type 지정 후 orval 재생성
+- **enum은 서버에서 정의** — 클라이언트 전용 enum 생성 금지. 서버 엔티티/DTO에서 `@ApiProperty({ enum: ... })` → orval이 자동 생성
+- **orval 재생성 절차**: 서버 DTO 변경 → 서버 재시작 → `cd client && rm src/api/model/index.ts && npx orval`
 
 ### React 19 컴파일러 규칙
 

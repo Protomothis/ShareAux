@@ -5,11 +5,12 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
+import type { TrackSource } from './trackSource';
 
 export interface AddTracksBody {
   /**
    * @minItems 1
    * @maxItems 50
    */
-  trackIds: string[];
+  items: TrackSource[];
 }

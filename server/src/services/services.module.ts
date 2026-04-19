@@ -5,7 +5,7 @@ import { AuditLog } from '../entities/audit-log.entity.js';
 import { BannedIp } from '../entities/banned-ip.entity.js';
 import { Room } from '../entities/room.entity.js';
 import { RoomPlayback } from '../entities/room-playback.entity.js';
-import { RoomPlayHistory } from '../entities/room-play-history.entity.js';
+import { PlayHistory } from '../entities/play-history.entity.js';
 import { RoomQueue } from '../entities/room-queue.entity.js';
 import { SystemSetting } from '../entities/system-setting.entity.js';
 import { Track } from '../entities/track.entity.js';
@@ -29,7 +29,7 @@ import { YtdlpService } from './ytdlp.service.js';
       RoomQueue,
       Room,
       RoomPlayback,
-      RoomPlayHistory,
+      PlayHistory,
       Track,
       TrackStats,
       SystemSetting,

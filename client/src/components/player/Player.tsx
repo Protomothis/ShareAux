@@ -40,6 +40,7 @@ interface PlayerProps {
   autoDjEnabled?: boolean;
   autoDjStatus?: AutoDjStatus;
   streamState?: StreamState;
+  onSkipError?: () => void;
 }
 
 export default function Player({
@@ -70,6 +71,7 @@ export default function Player({
   autoDjEnabled,
   autoDjStatus,
   streamState,
+  onSkipError,
 }: PlayerProps) {
   const { elapsed, muted, effectiveVolume, toggleMute, handleVolumeChange } = useAudioControl({
     elapsedBase,
@@ -162,6 +164,7 @@ export default function Player({
           })
         }
         streamState={streamState}
+        onSkipError={onSkipError}
       />
     </div>
   );

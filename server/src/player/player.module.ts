@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { RoomMember } from '../entities/room-member.entity.js';
 import { RoomPlayback } from '../entities/room-playback.entity.js';
-import { RoomPlayHistory } from '../entities/room-play-history.entity.js';
+import { PlayHistory } from '../entities/play-history.entity.js';
 import { RoomQueue } from '../entities/room-queue.entity.js';
 import { Track } from '../entities/track.entity.js';
 import { TrackStats } from '../entities/track-stats.entity.js';
@@ -15,15 +15,7 @@ import { PlayerService } from './player.service.js';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      RoomPlayback,
-      RoomPlayHistory,
-      RoomQueue,
-      RoomMember,
-      Track,
-      TrackStats,
-      UserTrackHistory,
-    ]),
+    TypeOrmModule.forFeature([RoomPlayback, PlayHistory, RoomQueue, RoomMember, Track, TrackStats, UserTrackHistory]),
     RoomsModule,
   ],
   controllers: [PlayerController],

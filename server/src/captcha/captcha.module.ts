@@ -4,6 +4,7 @@ import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { InMemoryCaptchaService, WoodallAliases } from '@p-captcha/node';
 
 import { CAPTCHA_DIFFICULTY, CAPTCHA_ROUNDS } from '../constants.js';
+import { CaptchaChallengeResponse } from './dto/captcha-challenge-response.dto.js';
 
 @Injectable()
 export class CaptchaService {
@@ -37,7 +38,7 @@ class CaptchaController {
 
   @Get('challenge')
   @ApiOperation({ summary: 'PoW 챌린지 생성' })
-  @ApiOkResponse({ description: 'challenge + id (CAPTCHA 비활성 시 enabled: false)' })
+  @ApiOkResponse({ type: CaptchaChallengeResponse })
   getChallenge() {
     if (!this.captcha.isEnabled()) {
       return { enabled: false };

@@ -235,7 +235,10 @@ export async function fetchMusicCredits(videoId: string): Promise<MusicCredits> 
     for (let i = blockStart; i < raw.length && i < blockStart + 5000; i++) {
       if (raw[i] === '[') depth++;
       else if (raw[i] === ']') depth--;
-      if (depth === 0) { blockEnd = i + 1; break; }
+      if (depth === 0) {
+        blockEnd = i + 1;
+        break;
+      }
     }
 
     const runs = JSON.parse(raw.slice(blockStart, blockEnd)) as any[];

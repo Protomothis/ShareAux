@@ -2,11 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
 
-import { SKIP_MIN_PLAY_MS, VOTE_SKIP_DIVISOR, VOTE_SKIP_MIN_REQUIRED } from '../constants.js';
+import { SKIP_MIN_PLAY_MS, TRACK_END_DELAY_MS, VOTE_SKIP_DIVISOR, VOTE_SKIP_MIN_REQUIRED } from '../constants.js';
 import { AppException } from '../exceptions/app.exception.js';
 import { ErrorCode } from '../types/error-code.enum.js';
 import { RoomPlayback } from '../entities/room-playback.entity.js';
-import { RoomPlayHistory } from '../entities/room-play-history.entity.js';
+import { PlayHistory } from '../entities/play-history.entity.js';
 import { RoomQueue } from '../entities/room-queue.entity.js';
 import { Room } from '../entities/room.entity.js';
 import { Track } from '../entities/track.entity.js';
@@ -39,7 +39,7 @@ export class PlayerService {
     @InjectRepository(RoomQueue) private readonly queueRepo: Repository<RoomQueue>,
     @InjectRepository(TrackStats) private readonly statsRepo: Repository<TrackStats>,
     @InjectRepository(UserTrackHistory) private readonly userHistoryRepo: Repository<UserTrackHistory>,
-    @InjectRepository(RoomPlayHistory) private readonly playHistoryRepo: Repository<RoomPlayHistory>,
+    @InjectRepository(PlayHistory) private readonly playHistoryRepo: Repository<PlayHistory>,
   ) {}
 
   // --- Playback ---
@@ -70,7 +70,7 @@ export class PlayerService {
     this.onTrackChangeCallback?.(roomId);
 
     // 글로벌 stats/history UPSERT (fire-and-forget)
-    this.recordPlay(roomId, trackId, addedByUserId).catch((e) =>
+    this.recordPlay(roomId, track, addedByUserId).catch((e) =>
       this.logger.warn('recordPlay failed', e instanceof Error ? e.message : e),
     );
 
@@ -78,10 +78,10 @@ export class PlayerService {
     let url = '';
     if (!audioBuffer) {
       try {
-        url = await this.ytdlp.getAudioUrl(track.youtubeId);
+        url = await this.ytdlp.getAudioUrl(track.sourceId);
       } catch {
         // URL도 못 받으면 재생 불가 → 스킵
-        this.logger.warn(`[${roomId}] Play failed: cannot get audio for ${track.youtubeId}`);
+        this.logger.warn(`[${roomId}] Play failed: cannot get audio for ${track.sourceId}`);
         this.preload.release(trackId);
         this.streamState.set(roomId, 'idle');
         this.onPlayFailCallback?.(roomId, track.name);
@@ -96,7 +96,7 @@ export class PlayerService {
       roomId,
       url,
       () => this.onTrackEnd(roomId),
-      () => this.ytdlp.getAudioUrl(track.youtubeId),
+      () => this.ytdlp.getAudioUrl(track.sourceId),
       async () => {
         this.streamState.set(roomId, 'streaming');
         await this.playbackRepo.update(roomId, { startedAt: new Date() });
@@ -252,8 +252,6 @@ export class PlayerService {
     // 이미 preparing 중이면 무시 (중복 호출 방어)
     const currentState = this.streamState.get(roomId);
     if (currentState === 'preparing') return;
-
-    // completed 추적: skip이 아닌 자연 종료 시
     const wasSkipped = this.skippedRooms.has(roomId);
     this.skippedRooms.delete(roomId);
     if (!wasSkipped) {
@@ -268,24 +266,32 @@ export class PlayerService {
     this.currentAddedBy.delete(roomId);
 
     this.clearVotes(roomId);
-    this.streamState.set(roomId, 'idle');
-
-    // 이전 트랙 정보 클리어 → 클라이언트에 즉시 idle 상태 전달
-    await this.playbackRepo.update(roomId, { isPlaying: false });
-    this.onTrackChangeCallback?.(roomId);
-
     const next = await this.queueRepo.findOne({
       where: { room: { id: roomId }, played: false },
       order: { position: 'ASC' },
       relations: ['track'],
     });
+
     if (next) {
+      this.streamState.set(roomId, 'preparing');
+      await this.playbackRepo.update(roomId, { isPlaying: false });
+      this.onTrackChangeCallback?.(roomId);
+      // 자연 종료 시에만 마지막 버퍼 재생 대기 (스킵은 즉시 전환)
+      if (!wasSkipped) {
+        await new Promise((r) => setTimeout(r, TRACK_END_DELAY_MS));
+      }
       await this.queueRepo.update(next.id, { played: true });
       await this.play(roomId, next.track.id);
+    } else {
+      this.streamState.set(roomId, 'idle');
+      await this.playbackRepo.update(roomId, { isPlaying: false });
+      this.onTrackChangeCallback?.(roomId);
     }
   }
 
-  private async recordPlay(roomId: string, trackId: string, userId?: string): Promise<void> {
+  private async recordPlay(roomId: string, track: Track, userId?: string): Promise<void> {
+    const trackId = track.id;
+
     // TrackStats UPSERT
     const existing = await this.statsRepo.findOneBy({ trackId });
     if (existing) {
@@ -320,12 +326,19 @@ export class PlayerService {
       }
     }
 
-    // RoomPlayHistory 기록
-    const history = new RoomPlayHistory();
-    history.room = { id: roomId } as Room;
-    history.track = { id: trackId } as Track;
-    if (userId) history.playedBy = { id: userId } as User;
-    await this.playHistoryRepo.save(history);
+    // PlayHistory 기록 (메타 스냅샷 포함)
+    await this.playHistoryRepo.save(
+      this.playHistoryRepo.create({
+        room: { id: roomId } as Room,
+        playedBy: userId ? ({ id: userId } as User) : null,
+        provider: track.provider,
+        sourceId: track.sourceId,
+        title: track.songTitle || track.name,
+        artist: track.songArtist || track.artist,
+        thumbnail: track.thumbnail,
+        durationMs: track.durationMs,
+      }),
+    );
   }
 
   private async recordCompleted(trackId: string, userId?: string): Promise<void> {
@@ -353,7 +366,7 @@ export class PlayerService {
   updateCodecInfo(track: Track): void {
     if (track.codec) return;
     void this.ytdlp
-      .getAudioInfo(track.youtubeId)
+      .getAudioInfo(track.sourceId)
       .then(async (info) => {
         track.codec = info.codec;
         track.bitrateKbps = info.bitrateKbps;

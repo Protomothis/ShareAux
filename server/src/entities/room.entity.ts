@@ -60,6 +60,10 @@ export class Room {
   @Column({ default: 3, name: 'max_select_per_add' })
   maxSelectPerAdd!: number;
 
+  @ApiProperty({ default: 0, description: '같은 곡 재신청 쿨다운 (분, 0=제한없음)' })
+  @Column({ default: 0, name: 'replay_cooldown_min' })
+  replayCooldownMin!: number;
+
   @ApiProperty({ default: true })
   @Column({ default: true, name: 'default_enqueue_enabled' })
   defaultEnqueueEnabled!: boolean;

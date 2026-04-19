@@ -222,6 +222,7 @@ export class RoomsService implements OnModuleInit {
     if (dto.enqueueLimitPerWindow) room.enqueueLimitPerWindow = dto.enqueueLimitPerWindow;
     if (dto.crossfade !== undefined) room.crossfade = dto.crossfade;
     if (dto.maxSelectPerAdd !== undefined) room.maxSelectPerAdd = dto.maxSelectPerAdd;
+    if (dto.replayCooldownMin !== undefined) room.replayCooldownMin = dto.replayCooldownMin;
     if (dto.defaultEnqueueEnabled !== undefined) room.defaultEnqueueEnabled = dto.defaultEnqueueEnabled;
     if (dto.defaultVoteSkipEnabled !== undefined) room.defaultVoteSkipEnabled = dto.defaultVoteSkipEnabled;
     if (dto.autoDjEnabled !== undefined) room.autoDjEnabled = dto.autoDjEnabled;

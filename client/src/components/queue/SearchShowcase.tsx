@@ -3,7 +3,7 @@
 import { Flame, History, Loader2, Music, Radio, RefreshCw } from 'lucide-react';
 import type { ReactNode } from 'react';
 
-import type { Track } from '@/api/model';
+import type { SearchResultItem, Track } from '@/api/model';
 import { useSearchControllerGetRecommended, useSearchControllerGetShowcase } from '@/api/search/search';
 import Thumbnail from '@/components/common/Thumbnail';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 
 interface SearchShowcaseProps {
   roomId: string;
-  onSelectTrack: (track: Track) => void;
+  onSelectTrack: (track: SearchResultItem) => void;
   selectedIds: Set<string>;
   selectedOrder: string[];
   disabledIds: Set<string>;
@@ -60,7 +60,7 @@ function GridCard({
   order,
   onClick,
 }: {
-  track: Track;
+  track: SearchResultItem;
   selected: boolean;
   disabled: boolean;
   order: number;
@@ -130,20 +130,37 @@ export default function SearchShowcase({
     refetch: recRefetch,
   } = useSearchControllerGetRecommended(roomId);
 
-  const handleClick = (track: Track) => {
-    if (disabledIds.has(track.id) || (maxReached && !selectedIds.has(track.id))) return;
-    onSelectTrack(track);
+  const handleClick = (track: SearchResultItem) => {
+    if (disabledIds.has(track.sourceId) || (maxReached && !selectedIds.has(track.sourceId))) return;
+    const { provider, sourceId, name, durationMs } = track;
+    onSelectTrack({
+      provider,
+      sourceId,
+      name,
+      artist: track.artist ?? null,
+      thumbnail: track.thumbnail ?? null,
+      durationMs,
+    });
   };
 
-  const grid = (tracks: Track[]) => (
+  const toSearchItem = (t: Track): SearchResultItem => ({
+    provider: t.provider,
+    sourceId: t.sourceId,
+    name: t.name,
+    artist: t.artist ?? null,
+    thumbnail: t.thumbnail ?? null,
+    durationMs: t.durationMs,
+  });
+
+  const grid = (tracks: SearchResultItem[]) => (
     <div className="grid grid-cols-3 gap-1">
       {tracks.map((t) => (
         <GridCard
-          key={t.id}
+          key={t.sourceId}
           track={t}
-          selected={selectedIds.has(t.id)}
-          disabled={disabledIds.has(t.id)}
-          order={selectedOrder.indexOf(t.id) + 1}
+          selected={selectedIds.has(t.sourceId)}
+          disabled={disabledIds.has(t.sourceId)}
+          order={selectedOrder.indexOf(t.sourceId) + 1}
           onClick={() => handleClick(t)}
         />
       ))}
@@ -180,17 +197,17 @@ export default function SearchShowcase({
         <>
           {popular.length > 0 && (
             <Section icon={<Flame size={14} className="text-orange-400" />} title="인기곡">
-              {grid(popular)}
+              {grid(popular.map(toSearchItem))}
             </Section>
           )}
           {myHistory.length > 0 && (
             <Section icon={<Music size={14} className="text-sa-accent" />} title="내 신청 기록">
-              {grid(myHistory)}
+              {grid(myHistory.map(toSearchItem))}
             </Section>
           )}
           {recent.length > 0 && (
             <Section icon={<History size={14} className="text-sa-text-muted" />} title="최근 재생">
-              {grid(recent)}
+              {grid(recent.map(toSearchItem))}
             </Section>
           )}
         </>

@@ -64,7 +64,7 @@ export class LyricsService {
     trackName: string,
     duration?: number,
     artist?: string,
-    youtubeId?: string,
+    sourceId?: string,
     songTitle?: string | null,
     songArtist?: string | null,
     trackId?: string,
@@ -79,10 +79,14 @@ export class LyricsService {
       if (existing?.lyricsStatus === 'found' && existing.lyricsData) {
         return { syncedLyrics: existing.lyricsData, enhanced: false };
       }
-      if (existing?.lyricsStatus === 'not_found') return null;
+      if (existing?.lyricsStatus === 'not_found') {
+        // 24시간 후 재시도 허용
+        const age = Date.now() - new Date(existing.fetchedAt).getTime();
+        if (age < 24 * 60 * 60_000) return null;
+      }
     }
 
-    const result = await this.searchLyrics(trackName, duration, artist, youtubeId, songTitle, songArtist);
+    const result = await this.searchLyrics(trackName, duration, artist, sourceId, songTitle, songArtist);
 
     // DB에 저장
     if (trackId) {
@@ -100,7 +104,7 @@ export class LyricsService {
     trackName: string,
     duration?: number,
     artist?: string,
-    youtubeId?: string,
+    sourceId?: string,
     songTitle?: string | null,
     songArtist?: string | null,
   ): Promise<LyricsResult | null> {
@@ -120,10 +124,10 @@ export class LyricsService {
     }
 
     // 2순위: YouTube 공식 자막 (LRC)
-    if (youtubeId) {
-      const ytLyrics = await this.getYouTubeSubtitles(youtubeId);
+    if (sourceId) {
+      const ytLyrics = await this.getYouTubeSubtitles(sourceId);
       if (ytLyrics) {
-        this.logger.log(`YouTube subtitles found for ${youtubeId}`);
+        this.logger.log(`YouTube subtitles found for ${sourceId}`);
 
         return ytLyrics;
       }

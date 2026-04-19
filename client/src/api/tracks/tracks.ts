@@ -23,7 +23,7 @@ import type {
 
 import type { TrackStats, VoteDto, VoteResponse } from '.././model';
 
-import { customFetch } from '../../lib/api-client';
+import { customFetch } from '.././mutator';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 

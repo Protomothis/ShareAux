@@ -16,6 +16,7 @@ import { RoomDetail } from './dto/room-detail.dto.js';
 import { RoomListItem } from './dto/room-list-item.dto.js';
 import { UpdatePermissionsBody } from './dto/update-permissions-body.dto.js';
 import { UpdateRoomDto } from './dto/update-room.dto.js';
+import { ResetBansResponse, SanctionsResponse } from './dto/sanctions-response.dto.js';
 import { RoomsGateway } from './rooms.gateway.js';
 import { RoomsService } from './rooms.service.js';
 
@@ -180,6 +181,7 @@ export class RoomsController {
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: '밴 초기화' })
   @ApiBearerAuth()
+  @ApiResponse({ status: 201, type: ResetBansResponse })
   async resetBans(@Param('id', ParseUUIDPipe) id: string, @Req() req: AuthenticatedRequest) {
     const count = await this.rooms.resetBans(id, req.user.userId);
     return { ok: true, cleared: count };
@@ -211,6 +213,7 @@ export class RoomsController {
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: '제재 목록 (추방 + 채팅 제한)' })
   @ApiBearerAuth()
+  @ApiResponse({ status: 200, type: SanctionsResponse })
   async getSanctions(@Param('id', ParseUUIDPipe) id: string) {
     const [bans, mutes] = await Promise.all([this.rooms.getBans(id), Promise.resolve(this.chatMute.getMutes(id))]);
     return {

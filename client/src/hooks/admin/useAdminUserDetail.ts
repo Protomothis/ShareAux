@@ -4,12 +4,13 @@ import {
   getAdminControllerGetUserDetailQueryKey,
   getAdminControllerGetUsersQueryKey,
   useAdminControllerBanUser,
+  useAdminControllerDeleteUser,
   useAdminControllerGetUserDetail,
   useAdminControllerUnbanUser,
   useAdminControllerUpdateUserRole,
 } from '@/api/admin/admin';
 import type { UpdatePermissionsBody } from '@/api/model';
-import { customFetch } from '@/lib/api-client';
+import { customFetch } from '@/api/mutator';
 
 export function useAdminUserDetail(id: string) {
   return useAdminControllerGetUserDetail(id);
@@ -48,4 +49,9 @@ export function useBanUser(id: string) {
 export function useUnbanUser(id: string) {
   const invalidate = useInvalidateUserDetail(id);
   return useAdminControllerUnbanUser({ mutation: { onSuccess: invalidate } });
+}
+
+export function useDeleteUser(id: string) {
+  const invalidate = useInvalidateUserDetail(id);
+  return useAdminControllerDeleteUser({ mutation: { onSuccess: invalidate } });
 }

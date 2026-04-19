@@ -21,6 +21,7 @@ export const FFMPEG_FRAG_DURATION = '1000000'; // 1초 (μs)
 export const FFMPEG_MAX_RETRIES = 3;
 export const FFMPEG_RECENT_CHUNKS = 3;
 export const STREAM_BUFFER_CHUNKS = 3; // 버스트 전송 전 모을 청크 수 (= 초)
+export const TRACK_END_DELAY_MS = 2000; // 곡 전환 전 마지막 버퍼 재생 대기 (ms)
 
 // ─── Preload ────────────────────────────────────────────
 export const PRELOAD_MAX_CONCURRENT = 20;
@@ -439,6 +440,12 @@ export const ERROR_META: Record<ErrorCode, ErrorMeta> = {
     httpStatus: HttpStatus.BAD_REQUEST,
     title: '일괄 추가 한도 초과',
     description: '한 번에 추가할 수 있는 곡 수를 초과했습니다',
+  },
+  [ErrorCode.QUEUE_008]: {
+    code: ErrorCode.QUEUE_008,
+    httpStatus: HttpStatus.TOO_MANY_REQUESTS,
+    title: '재신청 쿨다운',
+    description: '최근 재생된 곡입니다. 잠시 후 다시 신청해주세요',
   },
 
   // ── Search ──

@@ -4,9 +4,9 @@ import { Loader2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import type { BanInfo } from '@/api/model';
+import type { ResetBansResponse, SanctionItem, SanctionsResponse } from '@/api/model';
 import { roomsControllerResetEnqueueCounts, roomsControllerUnban, roomsControllerUpdate } from '@/api/rooms/rooms';
-import { customFetch } from '@/lib/api-client';
+import { roomsControllerGetSanctions, roomsControllerMuteUser, roomsControllerResetBans } from '@/api/rooms/rooms';
 import Modal from '@/components/common/Modal';
 import RoomSettingsForm from '@/components/common/RoomSettingsForm';
 import type { RoomFormValues } from '@/components/common/RoomSettingsForm';
@@ -14,18 +14,6 @@ import { FormSection } from '@/components/ui/form';
 import type { AutoDjMode } from '@/types';
 import { Button } from '@/components/ui/button';
 import { useFormValidation } from '@/hooks/useFormValidation';
-
-interface MuteInfo {
-  userId: string;
-  nickname: string;
-  remainingSec: number;
-  level: number;
-}
-
-interface SanctionsResponse {
-  bans: BanInfo[];
-  mutes: MuteInfo[];
-}
 
 interface RoomSettingsModalProps {
   open: boolean;
@@ -36,6 +24,7 @@ interface RoomSettingsModalProps {
   enqueueLimitPerWindow: number;
   crossfade: boolean;
   maxSelectPerAdd: number;
+  replayCooldownMin: number;
   defaultEnqueueEnabled: boolean;
   defaultVoteSkipEnabled: boolean;
   autoDjEnabled: boolean;
@@ -53,6 +42,7 @@ export default function RoomSettingsModal({
   enqueueLimitPerWindow,
   crossfade,
   maxSelectPerAdd,
+  replayCooldownMin,
   defaultEnqueueEnabled,
   defaultVoteSkipEnabled,
   autoDjEnabled,
@@ -69,14 +59,15 @@ export default function RoomSettingsModal({
     defaultEnqueueEnabled,
     defaultVoteSkipEnabled,
     maxSelectPerAdd,
+    replayCooldownMin,
     autoDjEnabled,
     autoDjMode: autoDjMode as AutoDjMode,
     autoDjThreshold,
     enqueueWindowMin,
     enqueueLimitPerWindow,
   });
-  const [bans, setBans] = useState<BanInfo[]>([]);
-  const [mutes, setMutes] = useState<MuteInfo[]>([]);
+  const [bans, setBans] = useState<SanctionItem[]>([]);
+  const [mutes, setMutes] = useState<SanctionItem[]>([]);
   const [saving, setSaving] = useState(false);
   const [resettingEnqueue, setResettingEnqueue] = useState(false);
   const [resettingBans, setResettingBans] = useState(false);
@@ -103,6 +94,7 @@ export default function RoomSettingsModal({
       defaultEnqueueEnabled,
       defaultVoteSkipEnabled,
       maxSelectPerAdd,
+      replayCooldownMin,
       autoDjEnabled,
       autoDjMode: autoDjMode as AutoDjMode,
       autoDjThreshold,
@@ -110,7 +102,7 @@ export default function RoomSettingsModal({
       enqueueLimitPerWindow,
     });
     clearAll();
-    customFetch<SanctionsResponse>('/rooms/' + roomId + '/sanctions')
+    roomsControllerGetSanctions(roomId)
       .then((res) => {
         setBans(res.bans ?? []);
         setMutes(res.mutes ?? []);
@@ -149,6 +141,7 @@ export default function RoomSettingsModal({
         enqueueLimitPerWindow: values.enqueueLimitPerWindow,
         crossfade: values.crossfade,
         maxSelectPerAdd: values.maxSelectPerAdd,
+        replayCooldownMin: values.replayCooldownMin,
         defaultEnqueueEnabled: values.defaultEnqueueEnabled,
         defaultVoteSkipEnabled: values.defaultVoteSkipEnabled,
         autoDjEnabled: values.autoDjEnabled,
@@ -180,7 +173,7 @@ export default function RoomSettingsModal({
     if (resettingBans) return;
     setResettingBans(true);
     try {
-      const res = await customFetch<{ cleared: number }>(`/rooms/${roomId}/bans`, { method: 'DELETE' });
+      const res = await roomsControllerResetBans(roomId);
       toast.success(`제재 목록이 초기화되었습니다 (${res.cleared}명)`);
       setBans([]);
       setMutes([]);
@@ -207,7 +200,7 @@ export default function RoomSettingsModal({
     if (unmutingId) return;
     setUnmutingId(userId);
     try {
-      await customFetch(`/rooms/${roomId}/mute/${userId}`, { method: 'DELETE' });
+      await roomsControllerMuteUser(roomId, userId);
       setMutes((prev) => prev.filter((m) => m.userId !== userId));
       toast.success('채팅 제한이 해제되었습니다');
     } catch {
@@ -254,7 +247,7 @@ export default function RoomSettingsModal({
                       <div className="min-w-0 flex-1">
                         <span className="truncate text-sm">{m.nickname}</span>
                         <span className="ml-1.5 text-xs text-muted-foreground">
-                          🔇 채팅 제한 ({Math.ceil(m.remainingSec / 60)}분 남음)
+                          🔇 채팅 제한 ({Math.ceil((m.remainingSec ?? 0) / 60)}분 남음)
                         </span>
                       </div>
                       <Button

@@ -25,6 +25,8 @@ export interface RoomListItem {
   enqueueLimitPerWindow: number;
   crossfade: boolean;
   maxSelectPerAdd: number;
+  /** 같은 곡 재신청 쿨다운 (분, 0=제한없음) */
+  replayCooldownMin: number;
   defaultEnqueueEnabled: boolean;
   defaultVoteSkipEnabled: boolean;
   autoDjEnabled: boolean;

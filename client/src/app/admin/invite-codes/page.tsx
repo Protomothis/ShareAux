@@ -1,6 +1,6 @@
 'use client';
 
-import { Link2, Plus, Power, Trash2 } from 'lucide-react';
+import { Link2, Plus, Power, Trash2, Users } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -10,6 +10,7 @@ import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminPagination } from '@/components/admin/AdminPagination';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { CreateInviteCodeModal } from '@/components/admin/CreateInviteCodeModal';
+import { InviteCodeUsersModal } from '@/components/admin/InviteCodeUsersModal';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { useAdminInviteCodes, useDeactivateInviteCode, useDeleteInviteCode } from '@/hooks/admin/useAdminInviteCodes';
@@ -25,6 +26,7 @@ export default function AdminInviteCodesPage() {
   const [page, setPage] = useState(1);
   const [showCreate, setShowCreate] = useState(false);
   const [actionTarget, setActionTarget] = useState<ActionTarget | null>(null);
+  const [usersTarget, setUsersTarget] = useState<{ id: string; code: string } | null>(null);
 
   const { data, isLoading } = useAdminInviteCodes({ page, limit: LIMIT });
   const { data: permMeta } = usePermissionMeta();
@@ -96,6 +98,7 @@ export default function AdminInviteCodesPage() {
               onCopy={copyLink}
               onDeactivate={() => setActionTarget({ id: item.id, type: 'deactivate' })}
               onDelete={() => setActionTarget({ id: item.id, type: 'delete' })}
+              onShowUsers={() => setUsersTarget({ id: item.id, code: item.code })}
             />
           ))}
         </div>
@@ -103,6 +106,11 @@ export default function AdminInviteCodesPage() {
 
       <AdminPagination page={page} totalPages={Math.ceil((data?.total ?? 0) / LIMIT)} onPageChange={setPage} />
       <CreateInviteCodeModal open={showCreate} onOpenChange={setShowCreate} />
+      <InviteCodeUsersModal
+        inviteCodeId={usersTarget?.id ?? null}
+        code={usersTarget?.code ?? ''}
+        onOpenChange={(open) => !open && setUsersTarget(null)}
+      />
       <ConfirmDialog
         open={!!actionTarget}
         onOpenChange={(open) => !open && setActionTarget(null)}
@@ -127,9 +135,10 @@ interface InviteCodeCardProps {
   onCopy: (code: string) => void;
   onDeactivate: () => void;
   onDelete: () => void;
+  onShowUsers: () => void;
 }
 
-function InviteCodeCard({ item, permLabel, onCopy, onDeactivate, onDelete }: InviteCodeCardProps) {
+function InviteCodeCard({ item, permLabel, onCopy, onDeactivate, onDelete, onShowUsers }: InviteCodeCardProps) {
   const pct = Math.round((item.usedCount / item.maxUses) * 100);
   const expiresLabel = item.expiresAt
     ? new Date(item.expiresAt) < new Date()
@@ -160,6 +169,9 @@ function InviteCodeCard({ item, permLabel, onCopy, onDeactivate, onDelete }: Inv
               <Power size={14} />
             </Button>
           )}
+          <Button variant="ghost" size="icon-sm" onClick={onShowUsers} className="text-sa-text-muted hover:text-white">
+            <Users size={14} />
+          </Button>
           <Button variant="ghost" size="icon-sm" onClick={onDelete} className="text-sa-text-muted hover:text-red-400">
             <Trash2 size={14} />
           </Button>

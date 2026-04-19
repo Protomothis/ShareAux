@@ -18,7 +18,9 @@ import type {
   UseQueryResult,
 } from '@tanstack/react-query';
 
-import { customFetch } from '../../lib/api-client';
+import type { CaptchaChallengeResponse } from '.././model';
+
+import { customFetch } from '.././mutator';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -29,8 +31,8 @@ export const getCaptchaControllerGetChallengeUrl = () => {
   return `/api/captcha/challenge`;
 };
 
-export const captchaControllerGetChallenge = async (options?: RequestInit): Promise<void> => {
-  return customFetch<void>(getCaptchaControllerGetChallengeUrl(), {
+export const captchaControllerGetChallenge = async (options?: RequestInit): Promise<CaptchaChallengeResponse> => {
+  return customFetch<CaptchaChallengeResponse>(getCaptchaControllerGetChallengeUrl(), {
     ...options,
     method: 'GET',
   });

@@ -39,6 +39,12 @@ export interface UpdateRoomDto {
    * @maximum 10
    */
   maxSelectPerAdd?: number;
+  /**
+   * 같은 곡 재신청 쿨다운 (분, 0=제한없음)
+   * @minimum -1
+   * @maximum 1440
+   */
+  replayCooldownMin?: number;
   /** 새 멤버 기본 곡 신청 허용 */
   defaultEnqueueEnabled?: boolean;
   /** 새 멤버 기본 스킵 투표 허용 */

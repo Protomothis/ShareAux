@@ -43,6 +43,13 @@ export class UpdateRoomDto {
   @Max(10)
   maxSelectPerAdd?: number;
 
+  @ApiProperty({ required: false, default: 0, description: '같은 곡 재신청 쿨다운 (분, 0=제한없음)' })
+  @IsOptional()
+  @IsInt()
+  @Min(-1)
+  @Max(1440)
+  replayCooldownMin?: number;
+
   @ApiProperty({ required: false, description: '새 멤버 기본 곡 신청 허용' })
   @IsOptional()
   @IsBoolean()

@@ -1,15 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
+
+import { Provider } from '../types/provider.enum.js';
 
 @Entity('tracks')
+@Unique(['provider', 'sourceId'])
 export class Track {
   @ApiProperty()
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
+  @ApiProperty({ enum: Provider, default: Provider.YT })
+  @Column({ type: 'varchar', default: Provider.YT })
+  provider!: string;
+
   @ApiProperty()
-  @Column({ unique: true, name: 'youtube_id' })
-  youtubeId!: string;
+  @Column({ name: 'source_id' })
+  sourceId!: string;
 
   @ApiProperty()
   @Column()

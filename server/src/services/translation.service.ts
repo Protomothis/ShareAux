@@ -142,7 +142,6 @@ export class TranslationService implements OnModuleInit {
 
       if (!result) {
         await this.trackRepo.update(track.id, { lyricsTransStatus: 'failed' });
-        this.onUpdatedCallback?.(job.trackId, job.roomIds);
         return;
       }
 

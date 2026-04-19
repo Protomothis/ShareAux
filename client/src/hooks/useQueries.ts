@@ -6,6 +6,7 @@ import {
   getQueueControllerGetMyQuotaQueryKey,
   getQueueControllerGetQueueQueryKey,
 } from '@/api/queue/queue';
+import type { RoomQueue } from '@/api/model';
 import {
   getRoomsControllerFindAllQueryKey,
   getRoomsControllerFindOneQueryKey,
@@ -28,6 +29,7 @@ export function useInvalidate() {
     rooms: () => qc.invalidateQueries({ queryKey: queryKeys.rooms }),
     room: (id: string) => qc.invalidateQueries({ queryKey: queryKeys.room(id) }),
     queue: (roomId: string) => qc.invalidateQueries({ queryKey: queryKeys.queue(roomId) }),
+    setQueue: (roomId: string, data: RoomQueue[]) => qc.setQueryData(queryKeys.queue(roomId), data),
     quota: (roomId: string) => qc.invalidateQueries({ queryKey: queryKeys.quota(roomId) }),
     history: (roomId: string) => qc.invalidateQueries({ queryKey: queryKeys.history(roomId) }),
     player: (roomId: string) => qc.invalidateQueries({ queryKey: queryKeys.player(roomId) }),

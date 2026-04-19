@@ -150,6 +150,14 @@ export class AdminController {
     return { success: true };
   }
 
+  @Delete('users/:id')
+  @ApiOperation({ summary: '계정 삭제' })
+  async deleteUser(@Param('id') id: string) {
+    await this.adminService.deleteUser(id);
+    this.gateway.disconnectUser(id, WS_CLOSE_BANNED);
+    return { success: true };
+  }
+
   @Get('rooms')
   @ApiOperation({ summary: 'List rooms (paginated)' })
   @ApiOkResponse({ type: PaginatedRoomsResponse })
@@ -196,6 +204,19 @@ export class AdminController {
   @ApiOkResponse({ description: '초대코드 삭제 완료' })
   deleteInviteCode(@Param('id') id: string) {
     return this.adminService.deleteInviteCode(id);
+  }
+
+  @Get('invite-codes/:id/users')
+  @ApiOperation({ summary: '초대코드별 유저 목록' })
+  getInviteCodeUsers(@Param('id') id: string) {
+    return this.adminService.getInviteCodeUsers(id);
+  }
+
+  @Delete('invite-codes/:id/guests')
+  @ApiOperation({ summary: '초대코드 게스트 일괄 삭제' })
+  async deleteInviteCodeGuests(@Param('id') id: string) {
+    const deleted = await this.adminService.deleteInviteCodeGuests(id);
+    return { deleted };
   }
 
   @Delete('invite-codes/expired-guests')

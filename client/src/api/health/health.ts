@@ -20,7 +20,7 @@ import type {
 
 import type { PermissionMeta } from '.././model';
 
-import { customFetch } from '../../lib/api-client';
+import { customFetch } from '.././mutator';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -230,6 +230,119 @@ export function useHealthControllerPermissionsMeta<
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
   const queryOptions = getHealthControllerPermissionsMetaQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 에러 코드 메타 정보
+ */
+export const getHealthControllerErrorsMetaUrl = () => {
+  return `/api/errors/meta`;
+};
+
+export const healthControllerErrorsMeta = async (options?: RequestInit): Promise<void> => {
+  return customFetch<void>(getHealthControllerErrorsMetaUrl(), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getHealthControllerErrorsMetaQueryKey = () => {
+  return [`/api/errors/meta`] as const;
+};
+
+export const getHealthControllerErrorsMetaQueryOptions = <
+  TData = Awaited<ReturnType<typeof healthControllerErrorsMeta>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof healthControllerErrorsMeta>>, TError, TData>>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getHealthControllerErrorsMetaQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof healthControllerErrorsMeta>>> = ({ signal }) =>
+    healthControllerErrorsMeta({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof healthControllerErrorsMeta>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type HealthControllerErrorsMetaQueryResult = NonNullable<Awaited<ReturnType<typeof healthControllerErrorsMeta>>>;
+export type HealthControllerErrorsMetaQueryError = unknown;
+
+export function useHealthControllerErrorsMeta<
+  TData = Awaited<ReturnType<typeof healthControllerErrorsMeta>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof healthControllerErrorsMeta>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof healthControllerErrorsMeta>>,
+          TError,
+          Awaited<ReturnType<typeof healthControllerErrorsMeta>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useHealthControllerErrorsMeta<
+  TData = Awaited<ReturnType<typeof healthControllerErrorsMeta>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof healthControllerErrorsMeta>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof healthControllerErrorsMeta>>,
+          TError,
+          Awaited<ReturnType<typeof healthControllerErrorsMeta>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useHealthControllerErrorsMeta<
+  TData = Awaited<ReturnType<typeof healthControllerErrorsMeta>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof healthControllerErrorsMeta>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 에러 코드 메타 정보
+ */
+
+export function useHealthControllerErrorsMeta<
+  TData = Awaited<ReturnType<typeof healthControllerErrorsMeta>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof healthControllerErrorsMeta>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getHealthControllerErrorsMetaQueryOptions(options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>;
