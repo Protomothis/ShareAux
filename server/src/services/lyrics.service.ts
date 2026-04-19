@@ -21,6 +21,8 @@ interface Json3Event {
   segs?: { utf8: string }[];
 }
 
+import { cleanArtist, extractTitle, smartClean } from './title-cleaner.js';
+
 @Injectable()
 export class LyricsService {
   private readonly logger = new Logger(LyricsService.name);
@@ -31,80 +33,6 @@ export class LyricsService {
     @InjectRepository(Track) private readonly trackRepo: Repository<Track>,
   ) {
     this.ytdlpPath = config.get<string>('YTDLP_PATH', 'yt-dlp');
-  }
-
-  /** 노이즈 제거용 정규식 */
-  private static readonly NOISE_RE = new RegExp(
-    [
-      // 영어 노이즈
-      'official\\s*(music\\s*)?video',
-      'official\\s*audio',
-      'official\\s*lyric\\s*video',
-      'official\\s*visualizer',
-      'official\\s*mv',
-      'music\\s*video',
-      'lyric\\s*video',
-      'm\\/?v',
-      'lyrics?',
-      'audio',
-      'video',
-      'visualizer',
-      'performance\\s*video',
-      'dance\\s*practice',
-      'color\\s*coded',
-      'original\\s*mix',
-      'full\\s*ver\\.?',
-      'short\\s*ver\\.?',
-      'ver\\.\\d+',
-      'remaster(ed)?',
-      'hd|hq|4k|1080p',
-      'live',
-      'stage',
-      'teaser',
-      'preview',
-      'track\\s*\\d+',
-      // 한국어 노이즈
-      '가사',
-      '공식',
-      '뮤직비디오',
-      '자막',
-      // 일본어 노이즈
-      '歌ってみた',
-      'MV',
-    ].join('|'),
-    'gi',
-  );
-
-  /** 괄호류 정규식 (CJK 포함) */
-  private static readonly BRACKET_RE = /[【\[（(「『《][^】\]）)」』》]*[】\]）)」』》]/g;
-
-  private smartClean(title: string): string {
-    const quoted = /['"]([^'"]+)['"]/.exec(title)?.[1];
-    const noBracket = title
-      .replace(LyricsService.BRACKET_RE, '')
-      .replace(/\s*\/\s*THE FIRST TAKE.*/i, '')
-      .replace(/\s*\/\s*/g, ' ');
-    const noNoise = noBracket.replace(LyricsService.NOISE_RE, '');
-    // feat./ft. 이후 제거
-    const noFeat = noNoise.replace(/\s*(feat\.?|ft\.?)\s*.*/i, '');
-    const cleaned = noFeat.replace(/\s+/g, ' ').trim();
-    return quoted ? `${cleaned} ${quoted}`.trim() : cleaned;
-  }
-
-  private extractTitle(name: string): string {
-    const quoted = /['"]([^'"]+)['"]/.exec(name)?.[1];
-    if (quoted) return quoted;
-    const noBracket = name.replace(LyricsService.BRACKET_RE, '');
-    // 구분자: - – — | ~
-    const parts = noBracket.split(/\s*[-–—|~]\s*/);
-    const raw = parts.length >= 2 ? parts.slice(1).join(' ') : noBracket;
-    return raw
-      .replace(/\s*\/\s*THE FIRST TAKE.*/i, '')
-      .replace(/\s*\/\s*/g, ' ')
-      .replace(LyricsService.NOISE_RE, '')
-      .replace(/\s*(feat\.?|ft\.?)\s*.*/i, '')
-      .replace(/\s+/g, ' ')
-      .trim();
   }
 
   async getLyrics(
@@ -159,8 +87,8 @@ export class LyricsService {
     // 1순위: KLRC (karaoke) — Musixmatch에서만 제공
     const klrcQueries: string[] = [];
     if (songTitle && songArtist) klrcQueries.push(`${songArtist} ${songTitle}`);
-    if (artist) klrcQueries.push(`${artist} ${this.extractTitle(trackName)}`);
-    klrcQueries.push(this.smartClean(trackName));
+    if (artist) klrcQueries.push(`${artist} ${extractTitle(trackName)}`);
+    klrcQueries.push(smartClean(trackName));
     for (const q of [...new Set(klrcQueries.filter((s) => s.length > 2))]) {
       const klrc = await this.runSyncedlyrics(q, true);
       if (klrc) {
@@ -191,20 +119,13 @@ export class LyricsService {
     }
 
     // 4순위: LRCLIB + syncedlyrics (YouTube 제목 기반)
-    const title = this.extractTitle(trackName);
-    const cleanedFull = this.smartClean(trackName);
+    const title = extractTitle(trackName);
+    const cleanedFull = smartClean(trackName);
 
     const queries: string[] = [];
     if (artist) {
-      const cleanArtist = artist
-        .replace(
-          /\s*(Stone\s*Music\s*Entertainment|HYBE\s*LABELS|SM\s*TOWN|JYP\s*Entertainment|YG\s*Entertainment|Warner\s*Music|Universal\s*Music|Sony\s*Music|Capitol\s*Records)\s*/gi,
-          '',
-        )
-        .replace(/\s*(VEVO|Official|Records|Music|Entertainment|Labels|Channel|Topic)\s*/gi, '')
-        .replace(/\s*\/\s*.*/, '') // 슬래시 뒤 제거 (なとり / natori → なとり)
-        .trim();
-      queries.push(`${cleanArtist} ${title}`);
+      const cleaned = cleanArtist(artist);
+      if (cleaned) queries.push(`${cleaned} ${title}`);
     }
     queries.push(cleanedFull, trackName);
     const unique = [...new Set(queries.filter((q) => q.length > 2))];

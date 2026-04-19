@@ -20,6 +20,7 @@ import { MetricsService } from './metrics.service.js';
 import { PreloadService } from './preload.service.js';
 import { SettingsService } from './settings.service.js';
 import { TranslationService } from './translation.service.js';
+import { MusicBrainzService } from './musicbrainz.service.js';
 import { YtdlpService } from './ytdlp.service.js';
 
 @Global()
@@ -49,6 +50,7 @@ import { YtdlpService } from './ytdlp.service.js';
     ErrorLogService,
     IpBanService,
     TranslationService,
+    MusicBrainzService,
   ],
   exports: [
     AudioService,
@@ -62,6 +64,7 @@ import { YtdlpService } from './ytdlp.service.js';
     ErrorLogService,
     IpBanService,
     TranslationService,
+    MusicBrainzService,
   ],
 })
 export class ServicesModule {}
