@@ -4,8 +4,8 @@
  * 주의: orval이 이 파일을 평가하므로 @/ alias import 금지
  */
 const getBaseUrl = () => {
-  if (typeof window !== 'undefined') return window.location.origin + '/api';
-  return process.env.INTERNAL_API_URL || 'http://localhost:3000/api';
+  if (typeof window !== 'undefined') return window.location.origin;
+  return process.env.INTERNAL_API_URL?.replace(/\/api$/, '') || 'http://localhost:3000';
 };
 
 export class ApiError extends Error {

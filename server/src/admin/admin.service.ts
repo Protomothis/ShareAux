@@ -196,6 +196,26 @@ export class AdminService {
     return { success: true };
   }
 
+  async getInviteCodeUsers(inviteCodeId: string) {
+    return this.userRepo.find({
+      where: { inviteCode: { id: inviteCodeId } },
+      order: { createdAt: 'DESC' },
+      select: ['id', 'nickname', 'username', 'role', 'provider', 'createdAt'],
+    });
+  }
+
+  async deleteInviteCodeGuests(inviteCodeId: string): Promise<number> {
+    const guests = await this.userRepo.find({
+      where: { inviteCode: { id: inviteCodeId }, role: UserRole.Guest },
+      select: ['id'],
+    });
+    if (!guests.length) return 0;
+    for (const g of guests) {
+      await this.authService.deleteAccount(g.id).catch(() => {});
+    }
+    return guests.length;
+  }
+
   async deleteExpiredGuests() {
     const cutoff = new Date(Date.now() - ADMIN_INACTIVE_CUTOFF_MS);
     const { affected } = await this.userRepo.delete({ role: UserRole.Guest, createdAt: LessThan(cutoff) });

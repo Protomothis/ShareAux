@@ -206,6 +206,19 @@ export class AdminController {
     return this.adminService.deleteInviteCode(id);
   }
 
+  @Get('invite-codes/:id/users')
+  @ApiOperation({ summary: '초대코드별 유저 목록' })
+  getInviteCodeUsers(@Param('id') id: string) {
+    return this.adminService.getInviteCodeUsers(id);
+  }
+
+  @Delete('invite-codes/:id/guests')
+  @ApiOperation({ summary: '초대코드 게스트 일괄 삭제' })
+  async deleteInviteCodeGuests(@Param('id') id: string) {
+    const deleted = await this.adminService.deleteInviteCodeGuests(id);
+    return { deleted };
+  }
+
   @Delete('invite-codes/expired-guests')
   @ApiOperation({ summary: 'Delete expired guest users (>12h)' })
   @ApiOkResponse({ description: '만료된 게스트 삭제 결과' })
