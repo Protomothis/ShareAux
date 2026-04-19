@@ -234,6 +234,23 @@ docker compose build
 docker compose up -d
 ```
 
+### DB 마이그레이션이 필요한 버전
+
+일부 버전은 DB 스키마가 변경되어 마이그레이션이 필요합니다. `migrations/` 디렉토리에 SQL 스크립트가 제공됩니다.
+
+```bash
+# 1. 반드시 백업
+docker compose exec db pg_dump -U spotiparty spotiparty > backup.sql
+
+# 2. 마이그레이션 실행 (예: v0.1.2 → v0.1.3)
+docker compose exec -T db psql -U spotiparty < migrations/v0.1.2-to-v0.1.3.sql
+
+# 3. 이미지 업데이트
+docker compose pull && docker compose up -d
+```
+
+> ⚠️ 마이그레이션 없이 업데이트하면 `synchronize: true`가 새 컬럼을 추가하지만, 기존 데이터가 유실될 수 있습니다.
+
 ---
 
 ## 문제 해결
