@@ -2,17 +2,17 @@
 
 import {
   DndContext,
-  DragOverlay,
   PointerSensor,
+  pointerWithin,
   TouchSensor,
   useDraggable,
   useDroppable,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import type { DragEndEvent } from '@dnd-kit/core';
-import { ChevronDown, ChevronRight, FolderOpen, GripVertical, Heart, Plus, Search, Trash2 } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
+import { ChevronDown, ChevronRight, FolderOpen, GripVertical, Heart, Search, Trash2 } from 'lucide-react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import {
@@ -70,6 +70,8 @@ function sortFavs(list: FavoriteItem[], sort: SortKey): FavoriteItem[] {
   }
 }
 
+const DROP_PREFIX = 'drop:';
+
 export default function FavoritesList({
   onSelectTrack,
   selectedIds,
@@ -104,7 +106,6 @@ export default function FavoritesList({
     [filter],
   );
 
-  // 폴더별 그룹
   const grouped = useMemo(() => {
     if (!favorites) return { folders: [], uncategorized: [] };
     const byFolder = new Map<string, FavoriteItem[]>();
@@ -135,12 +136,15 @@ export default function FavoritesList({
       return next;
     });
 
+  const handleDragStart = (e: DragStartEvent) => setDraggingId(e.active.id as string);
+
   const handleDragEnd = async (e: DragEndEvent) => {
     setDraggingId(null);
     const sourceId = e.active.id as string;
-    const overId = e.over?.id as string | undefined;
-    if (!overId) return;
-    const targetFolderId = overId === '__uncategorized__' ? null : overId;
+    const rawOverId = e.over?.id as string | undefined;
+    if (!rawOverId?.startsWith(DROP_PREFIX)) return;
+    const dropTarget = rawOverId.slice(DROP_PREFIX.length);
+    const targetFolderId = dropTarget === '__uncategorized__' ? null : dropTarget;
     const fav = favorites?.find((f) => f.sourceId === sourceId);
     if (!fav || fav.folderId === targetFolderId) return;
     await favoritesControllerMoveFavorite(sourceId, { folderId: targetFolderId });
@@ -148,8 +152,6 @@ export default function FavoritesList({
     refetchFolders();
     toast.success('이동 완료');
   };
-
-  const draggingFav = draggingId ? favorites?.find((f) => f.sourceId === draggingId) : null;
 
   if (isLoading) {
     return <p className="py-12 text-center text-sm text-sa-text-muted">불러오는 중...</p>;
@@ -185,45 +187,16 @@ export default function FavoritesList({
     );
   }
 
-  const renderItem = (fav: FavoriteItem) => {
-    const track = toSearchResult(fav);
-    const order = selectedOrder.indexOf(fav.sourceId) + 1;
-    const inQueue = disabledIds.has(fav.sourceId);
-    const disabled = inQueue || (!order && maxReached);
-    return (
-      <DraggableFavItem
-        key={fav.id}
-        fav={fav}
-        track={track}
-        order={order}
-        disabled={disabled}
-        inQueue={inQueue}
-        editMode={editMode}
-        selected={removeSet.has(fav.sourceId)}
-        isFavorite={favoriteIds.has(fav.sourceId)}
-        favLoading={favLoadingIds?.has(fav.sourceId)}
-        onToggleFavorite={() => onToggleFavorite(track)}
-        onClick={() => {
-          if (editMode) {
-            setRemoveSet((prev) => {
-              const next = new Set(prev);
-              if (next.has(fav.sourceId)) next.delete(fav.sourceId);
-              else next.add(fav.sourceId);
-              return next;
-            });
-          } else if (!disabled) {
-            onSelectTrack(track);
-          }
-        }}
-      />
-    );
-  };
-
   return (
-    <DndContext sensors={sensors} onDragStart={(e) => setDraggingId(e.active.id as string)} onDragEnd={handleDragEnd}>
-      <div className="space-y-3">
+    <DndContext
+      sensors={sensors}
+      collisionDetection={pointerWithin}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="flex h-full flex-col space-y-3">
         {/* 상단 바 */}
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <div className="relative flex-1">
             <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sa-text-muted" />
             <Input
@@ -261,7 +234,7 @@ export default function FavoritesList({
 
         {/* 편집 모드 액션 바 */}
         {editMode && removeSet.size > 0 && (
-          <div className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2">
+          <div className="flex shrink-0 items-center justify-between rounded-lg bg-white/5 px-3 py-2">
             <span className="text-xs text-sa-text-secondary">{removeSet.size}곡 선택됨</span>
             <div className="flex items-center gap-1.5">
               {folders.length > 0 && (
@@ -312,39 +285,71 @@ export default function FavoritesList({
           </div>
         )}
 
-        {/* 폴더 섹션들 */}
-        {grouped.folders.map((folder) => (
-          <FolderSection
-            key={folder.id}
-            folder={folder}
-            items={folder.items}
-            isCollapsed={collapsed.has(folder.id)}
-            onToggleCollapse={() => toggleCollapse(folder.id)}
-            renderItem={renderItem}
-            isDragActive={!!draggingId}
-          />
-        ))}
+        {/* 스크롤 영역 */}
+        <div
+          className={cn(
+            'min-h-0 flex-1 space-y-2 overflow-x-hidden',
+            draggingId ? 'overflow-y-clip' : 'overflow-y-auto',
+          )}
+        >
+          {grouped.folders.map((folder) => (
+            <FolderSection
+              key={folder.id}
+              folderId={folder.id}
+              folderName={folder.name}
+              folderColor={folder.color}
+              items={folder.items}
+              isCollapsed={collapsed.has(folder.id)}
+              onToggleCollapse={() => toggleCollapse(folder.id)}
+              isDragActive={!!draggingId}
+              editMode={editMode}
+              removeSet={removeSet}
+              selectedOrder={selectedOrder}
+              disabledIds={disabledIds}
+              maxReached={maxReached}
+              favoriteIds={favoriteIds}
+              favLoadingIds={favLoadingIds}
+              onToggleFavorite={onToggleFavorite}
+              onSelectTrack={onSelectTrack}
+              onToggleRemove={(sid) =>
+                setRemoveSet((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(sid)) next.delete(sid);
+                  else next.add(sid);
+                  return next;
+                })
+              }
+            />
+          ))}
 
-        {/* 미분류 */}
-        {grouped.uncategorized.length > 0 && (
           <FolderSection
-            folder={null}
+            folderId="__uncategorized__"
+            folderName="미분류"
+            folderColor={null}
             items={grouped.uncategorized}
             isCollapsed={collapsed.has('__uncategorized__')}
             onToggleCollapse={() => toggleCollapse('__uncategorized__')}
-            renderItem={renderItem}
             isDragActive={!!draggingId}
+            editMode={editMode}
+            removeSet={removeSet}
+            selectedOrder={selectedOrder}
+            disabledIds={disabledIds}
+            maxReached={maxReached}
+            favoriteIds={favoriteIds}
+            favLoadingIds={favLoadingIds}
+            onToggleFavorite={onToggleFavorite}
+            onSelectTrack={onSelectTrack}
+            onToggleRemove={(sid) =>
+              setRemoveSet((prev) => {
+                const next = new Set(prev);
+                if (next.has(sid)) next.delete(sid);
+                else next.add(sid);
+                return next;
+              })
+            }
           />
-        )}
+        </div>
       </div>
-
-      <DragOverlay dropAnimation={null}>
-        {draggingFav && (
-          <div className="rounded-lg bg-sa-bg-elevated/90 px-3 py-2 shadow-xl backdrop-blur">
-            <p className="truncate text-sm text-white">{draggingFav.name}</p>
-          </div>
-        )}
-      </DragOverlay>
 
       {showFolderManager && (
         <FolderManager
@@ -358,56 +363,106 @@ export default function FavoritesList({
   );
 }
 
-// --- 폴더 섹션 (droppable) ---
-function FolderSection({
-  folder,
-  items,
-  isCollapsed,
-  onToggleCollapse,
-  renderItem,
-  isDragActive,
-}: {
-  folder: (FolderItem & { items: FavoriteItem[] }) | null;
+// --- 폴더 섹션 (droppable = 섹션 전체) ---
+interface FolderSectionProps {
+  folderId: string;
+  folderName: string;
+  folderColor: string | null;
   items: FavoriteItem[];
   isCollapsed: boolean;
   onToggleCollapse: () => void;
-  renderItem: (fav: FavoriteItem) => React.ReactNode;
   isDragActive: boolean;
-}) {
-  const id = folder?.id ?? '__uncategorized__';
-  const { setNodeRef, isOver } = useDroppable({ id });
+  editMode: boolean;
+  removeSet: Set<string>;
+  selectedOrder: string[];
+  disabledIds: Set<string>;
+  maxReached: boolean;
+  favoriteIds: Set<string>;
+  favLoadingIds?: Set<string>;
+  onToggleFavorite: (track: SearchResultItem) => void;
+  onSelectTrack: (track: SearchResultItem) => void;
+  onToggleRemove: (sourceId: string) => void;
+}
+
+function FolderSection({
+  folderId,
+  folderName,
+  folderColor,
+  items,
+  isCollapsed,
+  onToggleCollapse,
+  isDragActive,
+  editMode,
+  removeSet,
+  selectedOrder,
+  disabledIds,
+  maxReached,
+  favoriteIds,
+  favLoadingIds,
+  onToggleFavorite,
+  onSelectTrack,
+  onToggleRemove,
+}: FolderSectionProps) {
+  const dropId = `${DROP_PREFIX}${folderId}`;
+  const { setNodeRef, isOver } = useDroppable({ id: dropId });
 
   return (
     <div
       ref={setNodeRef}
       className={cn('rounded-xl transition', isOver && isDragActive && 'bg-sa-accent/10 ring-1 ring-sa-accent/30')}
     >
-      <button
-        onClick={onToggleCollapse}
-        className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-white/5"
-      >
-        {isCollapsed ? (
-          <ChevronRight size={14} className="text-sa-text-muted" />
-        ) : (
-          <ChevronDown size={14} className="text-sa-text-muted" />
-        )}
-        {folder ? (
-          <span className={cn('size-2.5 shrink-0 rounded-full', folderColorClass(folder.color))} />
-        ) : (
-          <FolderOpen size={14} className="text-sa-text-muted" />
-        )}
-        <span className="flex-1 truncate text-xs font-medium text-white">{folder?.name ?? '미분류'}</span>
-        <span className="text-[10px] text-sa-text-muted">{items.length}곡</span>
-      </button>
-      {!isCollapsed && <div className="space-y-0.5 pl-1">{items.map(renderItem)}</div>}
+      <div className="rounded-lg px-2 py-1.5">
+        <button onClick={onToggleCollapse} className="flex w-full items-center gap-2 text-left">
+          {isCollapsed ? (
+            <ChevronRight size={14} className="text-sa-text-muted" />
+          ) : (
+            <ChevronDown size={14} className="text-sa-text-muted" />
+          )}
+          {folderColor ? (
+            <span className={cn('size-2.5 shrink-0 rounded-full', folderColorClass(folderColor))} />
+          ) : (
+            <FolderOpen size={14} className="text-sa-text-muted" />
+          )}
+          <span className="flex-1 truncate text-xs font-medium text-white">{folderName}</span>
+          <span className="text-[10px] text-sa-text-muted">{items.length}곡</span>
+        </button>
+      </div>
+
+      {!isCollapsed && (
+        <div className="mt-0.5 space-y-0.5 pl-1">
+          {items.map((fav) => {
+            const track = toSearchResult(fav);
+            const order = selectedOrder.indexOf(fav.sourceId) + 1;
+            const inQueue = disabledIds.has(fav.sourceId);
+            const disabled = inQueue || (!order && maxReached);
+            return (
+              <FavItem
+                key={fav.id}
+                fav={fav}
+                order={order}
+                disabled={disabled}
+                inQueue={inQueue}
+                editMode={editMode}
+                selected={removeSet.has(fav.sourceId)}
+                isFavorite={favoriteIds.has(fav.sourceId)}
+                favLoading={favLoadingIds?.has(fav.sourceId)}
+                onToggleFavorite={() => onToggleFavorite(track)}
+                onClick={() => {
+                  if (editMode) onToggleRemove(fav.sourceId);
+                  else if (!disabled) onSelectTrack(track);
+                }}
+              />
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
 
-// --- 드래그 가능한 곡 아이템 ---
-function DraggableFavItem({
+// --- 곡 아이템 (draggable — transform 방식) ---
+function FavItem({
   fav,
-  track,
   order,
   disabled,
   inQueue,
@@ -419,7 +474,6 @@ function DraggableFavItem({
   onClick,
 }: {
   fav: FavoriteItem;
-  track: SearchResultItem;
   order: number;
   disabled: boolean;
   inQueue: boolean;
@@ -430,20 +484,36 @@ function DraggableFavItem({
   onToggleFavorite: () => void;
   onClick: () => void;
 }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: fav.sourceId });
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: fav.sourceId });
+  const widthRef = useRef(0);
+  const nodeRef = useCallback(
+    (el: HTMLElement | null) => {
+      setNodeRef(el);
+      if (el) widthRef.current = el.offsetWidth;
+    },
+    [setNodeRef],
+  );
+  const style: React.CSSProperties | undefined = transform
+    ? {
+        transform: `translate(${transform.x}px, ${transform.y}px)`,
+        zIndex: 999,
+        position: 'relative',
+        width: widthRef.current || undefined,
+      }
+    : undefined;
 
   return (
     <div
-      ref={setNodeRef}
+      ref={nodeRef}
+      style={style}
       onClick={onClick}
       className={cn(
-        'flex items-center gap-2.5 rounded-xl p-2 text-left transition hover:bg-white/5',
+        'flex select-none items-center gap-2.5 rounded-xl p-2 text-left hover:bg-white/5',
         order && !editMode && 'bg-sa-accent/10 border border-sa-accent/30',
         disabled && !editMode && 'opacity-40',
-        isDragging && 'opacity-30',
+        isDragging && '!bg-[#242424] shadow-xl ring-1 ring-sa-accent/30',
       )}
     >
-      {/* 드래그 핸들 or 선택 체크 */}
       {editMode ? (
         <div
           className={cn(
@@ -454,12 +524,15 @@ function DraggableFavItem({
           {selected ? '✓' : ''}
         </div>
       ) : (
-        <div className="shrink-0 cursor-grab touch-none text-sa-text-muted" {...attributes} {...listeners}>
+        <div
+          {...attributes}
+          {...listeners}
+          className="flex shrink-0 cursor-grab items-center justify-center touch-none text-sa-text-muted max-md:-ml-2 max-md:h-10 max-md:w-10 md:h-6 md:w-6"
+        >
           <GripVertical size={14} />
         </div>
       )}
 
-      {/* 썸네일 + 하트 */}
       <div className="relative shrink-0">
         <div className="size-9 overflow-hidden rounded-lg">
           <Thumbnail src={fav.thumbnail} size="sm" className="size-9 rounded-lg" />
@@ -475,7 +548,6 @@ function DraggableFavItem({
         )}
       </div>
 
-      {/* 곡 정보 */}
       <div className="min-w-0 flex-1">
         <p className="truncate text-xs font-medium text-white">{fav.name}</p>
         <p className="truncate text-[10px] text-sa-text-secondary">
