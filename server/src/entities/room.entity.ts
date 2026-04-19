@@ -84,6 +84,14 @@ export class Room {
   @Column({ default: 2, name: 'auto_dj_threshold' })
   autoDjThreshold!: number;
 
+  @ApiProperty({ required: false, nullable: true, description: 'AutoDJ 즐겨찾기 모드 폴더 필터 (null=전체)' })
+  @Column({ type: 'varchar', nullable: true, name: 'auto_dj_folder_id' })
+  autoDjFolderId!: string | null;
+
+  @ApiProperty({ default: false, description: 'AutoDJ 즐겨찾기 소진 시 혼합 모드 폴백' })
+  @Column({ default: false, name: 'auto_dj_fav_fallback_mixed' })
+  autoDjFavFallbackMixed!: boolean;
+
   @ApiProperty()
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt!: Date;

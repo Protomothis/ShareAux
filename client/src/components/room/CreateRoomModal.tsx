@@ -53,7 +53,14 @@ export default function CreateRoomModal({ open, onClose, onCreated }: CreateRoom
         defaultVoteSkipEnabled: values.defaultVoteSkipEnabled,
         maxSelectPerAdd: values.maxSelectPerAdd,
         autoDjEnabled: values.autoDjEnabled,
-        ...(values.autoDjEnabled ? { autoDjMode: values.autoDjMode, autoDjThreshold: values.autoDjThreshold } : {}),
+        ...(values.autoDjEnabled
+          ? {
+              autoDjMode: values.autoDjMode,
+              autoDjThreshold: values.autoDjThreshold,
+              autoDjFolderId: values.autoDjFolderId,
+              autoDjFavFallbackMixed: values.autoDjFavFallbackMixed,
+            }
+          : {}),
       });
       onCreated(room.id);
     } catch {

@@ -10,6 +10,7 @@ import { RoomQueue } from '../entities/room-queue.entity.js';
 import { SystemSetting } from '../entities/system-setting.entity.js';
 import { Track } from '../entities/track.entity.js';
 import { TrackStats } from '../entities/track-stats.entity.js';
+import { UserFavorite } from '../entities/user-favorite.entity.js';
 import { AuditService } from './audit.service.js';
 import { AudioService } from './audio.service.js';
 import { AutoDjService } from './auto-dj.service.js';
@@ -33,6 +34,7 @@ import { YtdlpService } from './ytdlp.service.js';
       PlayHistory,
       Track,
       TrackStats,
+      UserFavorite,
       SystemSetting,
       AuditLog,
       BannedIp,

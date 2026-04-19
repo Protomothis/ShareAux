@@ -17,4 +17,5 @@ export const UpdateRoomDtoAutoDjMode = {
   history: 'history',
   popular: 'popular',
   mixed: 'mixed',
+  favorites: 'favorites',
 } as const;
