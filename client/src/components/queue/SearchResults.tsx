@@ -18,6 +18,10 @@ interface SearchResultsProps {
   queueTrackIds: string[];
   maxSelect: number;
   onToggleTrack: (track: SearchResultItem) => void;
+  favoriteIds?: Set<string>;
+  favLoadingIds?: Set<string>;
+  onToggleFavorite?: (track: SearchResultItem) => void;
+  isGuest?: boolean;
 }
 
 export default function SearchResults({
@@ -32,6 +36,10 @@ export default function SearchResults({
   queueTrackIds,
   maxSelect,
   onToggleTrack,
+  favoriteIds,
+  favLoadingIds,
+  onToggleFavorite,
+  isGuest,
 }: SearchResultsProps) {
   if (loading) {
     return (
@@ -82,6 +90,10 @@ export default function SearchResults({
             full={selected.length >= maxSelect && !order}
             inQueue={queueTrackIds.includes(track.sourceId)}
             onClick={() => !isDisabled && onToggleTrack(track)}
+            isFavorite={favoriteIds?.has(track.sourceId)}
+            favLoading={favLoadingIds?.has(track.sourceId)}
+            onToggleFavorite={() => onToggleFavorite?.(track)}
+            isGuest={isGuest}
           />
         );
       })}

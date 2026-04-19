@@ -10,6 +10,8 @@ import { TrackStats } from '../entities/track-stats.entity.js';
 import { UserTrackHistory } from '../entities/user-track-history.entity.js';
 import { type YtdlpSearchResult, YtdlpService } from '../services/ytdlp.service.js';
 import { fetchMusicCredits } from '../services/innertube-parser.js';
+import { MusicBrainzService } from '../services/musicbrainz.service.js';
+import { cleanArtist, extractTitle } from '../services/title-cleaner.js';
 import type { SearchResultItem } from './dto/search-result-item.dto.js';
 
 @Injectable()
@@ -19,6 +21,7 @@ export class SearchService {
 
   constructor(
     private readonly ytdlp: YtdlpService,
+    private readonly musicBrainz: MusicBrainzService,
     @InjectRepository(Track) private readonly trackRepo: Repository<Track>,
     @InjectRepository(RoomPlayback) private readonly playbackRepo: Repository<RoomPlayback>,
     @InjectRepository(TrackStats) private readonly statsRepo: Repository<TrackStats>,
@@ -198,7 +201,21 @@ export class SearchService {
       update.songAlbum = credits.songAlbum;
       this.logger.log(`[enrich] ${sourceId} → "${credits.songTitle}" by ${credits.songArtist}`);
     } else {
-      this.logger.log(`[enrich] ${sourceId} → no credits found`);
+      // Content ID 없으면 MusicBrainz 폴백
+      const track = await this.trackRepo.findOneBy({ id: trackId });
+      if (track) {
+        const artist = cleanArtist(track.artist ?? '');
+        const title = extractTitle(track.name);
+        const mb = await this.musicBrainz.search(artist || title, title);
+        if (mb) {
+          update.songTitle = mb.title;
+          update.songArtist = mb.artist;
+          update.songAlbum = mb.album ?? null;
+          this.logger.log(`[enrich] ${sourceId} → MusicBrainz: "${mb.title}" by ${mb.artist}`);
+        } else {
+          this.logger.log(`[enrich] ${sourceId} → no credits found`);
+        }
+      }
     }
     await this.trackRepo.update(trackId, update);
   }

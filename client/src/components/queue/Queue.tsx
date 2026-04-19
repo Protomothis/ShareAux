@@ -15,6 +15,7 @@ import EmptyState from '@/components/common/EmptyState';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useInvalidate } from '@/hooks/useQueries';
 import { useQueueDnd } from '@/hooks/useQueueDnd';
+import { useFavorites } from '@/hooks/useFavorites';
 import { MAX_QUEUE_SIZE } from '@/lib/constants';
 import type { AutoDjStatus, TrackVoteMap } from '@/types';
 
@@ -42,6 +43,7 @@ interface QueueProps {
   canEnqueue?: boolean;
   canReorder?: boolean;
   isHost?: boolean;
+  isGuest?: boolean;
   maxSelectPerAdd?: number;
   trackVotes?: TrackVoteMap;
   autoDjStatus?: AutoDjStatus;
@@ -53,6 +55,7 @@ export default function Queue({
   canEnqueue = true,
   canReorder = false,
   isHost = false,
+  isGuest = false,
   maxSelectPerAdd = 3,
   trackVotes,
   autoDjStatus = 'idle',
@@ -62,6 +65,7 @@ export default function Queue({
   const invalidate = useInvalidate();
   const queryClient = useQueryClient();
   const [searchOpen, setSearchOpen] = useState(false);
+  const { favoriteIds, loadingIds: favLoadingIds, toggle: toggleFavorite } = useFavorites(!isGuest);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
   // 이미 본 아이템 ID 추적 — shimmer/stagger는 처음 나타날 때만
@@ -172,6 +176,20 @@ export default function Queue({
                       trackVotes={trackVotes}
                       shimmer={staggerMap.has(item.id) ? (item.isAutoDj ? 'accent' : 'white') : undefined}
                       staggerIndex={staggerMap.get(item.id)}
+                      isFavorite={favoriteIds.has(item.track.sourceId)}
+                      favLoading={favLoadingIds.has(item.track.sourceId)}
+                      onToggleFavorite={() =>
+                        toggleFavorite({
+                          provider: item.track
+                            .provider as unknown as import('@/api/model').SearchResultItem['provider'],
+                          sourceId: item.track.sourceId,
+                          name: item.track.name,
+                          artist: item.track.artist ?? null,
+                          thumbnail: item.track.thumbnail ?? null,
+                          durationMs: item.track.durationMs,
+                        })
+                      }
+                      isGuest={isGuest}
                     />
                   ))}
                 </AnimatePresence>
@@ -217,6 +235,7 @@ export default function Queue({
         }}
         maxSelectPerAdd={maxSelectPerAdd}
         isHost={isHost}
+        isGuest={isGuest}
       />
 
       <Dialog open={!!confirmRemoveId} onOpenChange={(open) => !open && setConfirmRemoveId(null)}>

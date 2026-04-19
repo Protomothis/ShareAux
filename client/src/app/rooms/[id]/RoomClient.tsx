@@ -65,6 +65,7 @@ export default function RoomClient({ id }: { id: string }) {
 
   const userId = useAuthStore((s) => s.userId);
   const nickname = useAuthStore((s) => s.nickname);
+  const role = useAuthStore((s) => s.role);
 
   const isHost = !!(room && userId && room.hostId === userId);
   const { can } = useMyPermissions(id);
@@ -80,7 +81,7 @@ export default function RoomClient({ id }: { id: string }) {
     isPlaying,
     setPlaying,
     lyricsStatus,
-    lyricsEnhanced,
+    lyricsType,
     lyricsVersion,
     skipVotes,
     setLyricsStatus,
@@ -278,7 +279,7 @@ export default function RoomClient({ id }: { id: string }) {
     streamCodec: playerData?.streamCodec,
     streamBitrate: playerData?.streamBitrate,
     lyricsStatus,
-    lyricsEnhanced,
+    lyricsType,
     lyricsVersion,
     trackVotes,
     autoDjEnabled: room?.autoDjEnabled,
@@ -376,6 +377,7 @@ export default function RoomClient({ id }: { id: string }) {
             canEnqueue={can('addQueue')}
             canReorder={isHost || can('host')}
             isHost={isHost}
+            isGuest={role === 'guest'}
             maxSelectPerAdd={room.maxSelectPerAdd}
             trackVotes={trackVotes}
           />
@@ -401,12 +403,13 @@ export default function RoomClient({ id }: { id: string }) {
                 canEnqueue={can('addQueue')}
                 canReorder={isHost || can('host')}
                 isHost={isHost}
+                isGuest={role === 'guest'}
                 maxSelectPerAdd={room.maxSelectPerAdd}
                 trackVotes={trackVotes}
                 autoDjStatus={autoDjStatus}
               />
             )}
-            {mobileTab === 'history' && <HistoryPanel roomId={id} />}
+            {mobileTab === 'history' && <HistoryPanel roomId={id} isGuest={role === 'guest'} />}
             {mobileTab === 'members' && <MemberList {...memberListProps} />}
           </motion.div>
         </AnimatePresence>

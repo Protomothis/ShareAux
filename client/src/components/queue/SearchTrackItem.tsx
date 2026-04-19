@@ -1,9 +1,9 @@
 'use client';
-
 import { Check } from 'lucide-react';
 import { memo } from 'react';
 
 import type { SearchResultItem } from '@/api/model';
+import { FavoriteButton } from '@/components/common/FavoriteButton';
 import Thumbnail from '@/components/common/Thumbnail';
 import { Button } from '@/components/ui/button';
 import { formatDuration } from '@/lib/format';
@@ -16,6 +16,10 @@ interface SearchTrackItemProps {
   full: boolean;
   inQueue: boolean;
   onClick: () => void;
+  isFavorite?: boolean;
+  favLoading?: boolean;
+  onToggleFavorite?: () => void;
+  isGuest?: boolean;
 }
 
 export const SearchTrackItem = memo(function SearchTrackItem({
@@ -25,6 +29,10 @@ export const SearchTrackItem = memo(function SearchTrackItem({
   full,
   inQueue,
   onClick,
+  isFavorite,
+  favLoading,
+  onToggleFavorite,
+  isGuest,
 }: SearchTrackItemProps) {
   return (
     <Button
@@ -45,7 +53,16 @@ export const SearchTrackItem = memo(function SearchTrackItem({
       >
         {order || ''}
       </div>
-      <Thumbnail src={track.thumbnail} size="sm" className="size-10 shrink-0 rounded" />
+      <div className="relative shrink-0">
+        <Thumbnail src={track.thumbnail} size="sm" className="size-10 rounded" />
+        {!isGuest && onToggleFavorite && (
+          <FavoriteButton
+            active={!!isFavorite}
+            onClick={() => onToggleFavorite?.()}
+            className="absolute -left-1 -top-1"
+          />
+        )}
+      </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-white">{track.name}</p>
         <p className="truncate text-xs text-sa-text-secondary">

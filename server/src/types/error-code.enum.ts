@@ -80,4 +80,10 @@ export enum ErrorCode {
   COMMON_001 = 'COMMON_001',
   COMMON_002 = 'COMMON_002',
   COMMON_003 = 'COMMON_003',
+
+  // Favorites
+  FAV_001 = 'FAV_001',
+  FAV_002 = 'FAV_002',
+  FAV_003 = 'FAV_003',
+  FAV_004 = 'FAV_004',
 }

@@ -24,7 +24,7 @@ import {
  * - audio.load() 절대 호출 안 함 → autoplay 정책 안 걸림
  * - 모든 프레임은 queue에 쌓고 flush로 순차 append
  */
-export function useAudio(onPlaying?: () => void, onStall?: () => void) {
+export function useAudio(onPlaying?: () => void, onStall?: () => void, onError?: () => void) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const msRef = useRef<ManagedMediaSourceLike | null>(null);
   const sbRef = useRef<SourceBuffer | null>(null);
@@ -38,12 +38,16 @@ export function useAudio(onPlaying?: () => void, onStall?: () => void) {
 
   const onPlayingRef = useRef(onPlaying);
   const onStallRef = useRef(onStall);
+  const onErrorRef = useRef(onError);
   useEffect(() => {
     onPlayingRef.current = onPlaying;
     onStallRef.current = onStall;
+    onErrorRef.current = onError;
   }, [onPlaying, onStall]);
 
   // --- flush: queue에서 하나씩 SourceBuffer에 append ---
+  const resetMSERef = useRef<() => void>(() => {});
+
   const flush = useCallback(() => {
     const sb = sbRef.current;
     const ms = msRef.current;
@@ -55,6 +59,7 @@ export function useAudio(onPlaying?: () => void, onStall?: () => void) {
     } catch (e: unknown) {
       debug('[audio] flush error:', (e as Error)?.message);
       appendingRef.current = false;
+      if (audioRef.current?.error) resetMSERef.current();
     }
   }, []);
 
@@ -136,6 +141,42 @@ export function useAudio(onPlaying?: () => void, onStall?: () => void) {
     },
     [flush],
   );
+
+  // --- resetMSE: 에러 상태에서 MSE + SourceBuffer 재생성 ---
+  const resetMSE = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio || !MSE_SUPPORTED) return;
+    debug('[audio] resetMSE — rebuilding MediaSource');
+    audio.pause();
+    wantPlayRef.current = false;
+    queueRef.current = [];
+    appendingRef.current = false;
+    gotInitRef.current = false;
+    resettingRef.current = false;
+    needsFirstPlayRef.current = true;
+    sbRef.current = null;
+    readyRef.current = false;
+
+    const ms = createMSE();
+    msRef.current = ms;
+    attachMSE(audio, ms);
+
+    if (ms.readyState === 'open') {
+      setupSb(ms);
+      readyRef.current = true;
+    } else {
+      ms.addEventListener(
+        'sourceopen',
+        () => {
+          setupSb(ms);
+          readyRef.current = true;
+        },
+        { once: true },
+      );
+    }
+    onErrorRef.current?.();
+  }, [setupSb]);
+  resetMSERef.current = resetMSE;
 
   // --- Analyser (데스크톱 Visualizer용) ---
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -315,6 +356,10 @@ export function useAudio(onPlaying?: () => void, onStall?: () => void) {
 
   // resync/곡 전환 준비 — 버퍼 클리어 + 다음 init을 첫 init으로 인식
   const prepareResync = useCallback(() => {
+    if (audioRef.current?.error) {
+      resetMSERef.current();
+      return Promise.resolve();
+    }
     gotInitRef.current = false;
     clearTimeout(stallTimerRef.current);
     return clearBuffer();
