@@ -15,7 +15,7 @@ export interface PreloadEntry {
   state: PreloadState;
   buffer: Buffer | null;
   size: number;
-  youtubeId: string;
+  sourceId: string;
   refCount: number;
   at: number;
 }

@@ -3,13 +3,13 @@
 import { ChevronDown, ChevronUp, Loader2, X } from 'lucide-react';
 import { useState } from 'react';
 
-import type { Track } from '@/api/model';
+import type { SearchResultItem } from '@/api/model';
 import Thumbnail from '@/components/common/Thumbnail';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface SearchSelectedBarProps {
-  selected: Track[];
+  selected: SearchResultItem[];
   adding: boolean;
   onRemove: (id: string) => void;
   onSubmit: () => void;
@@ -29,7 +29,7 @@ export function SearchSelectedBar({ selected, adding, onRemove, onSubmit }: Sear
           <div className="flex -space-x-2">
             {selected.slice(0, 3).map((t) => (
               <Thumbnail
-                key={t.id}
+                key={t.sourceId}
                 src={t.thumbnail}
                 size="sm"
                 className="size-7 rounded-md border-2 border-black/90"
@@ -56,7 +56,7 @@ export function SearchSelectedBar({ selected, adding, onRemove, onSubmit }: Sear
       {expanded && (
         <div className="mt-2 flex max-h-32 flex-col gap-1 overflow-y-auto">
           {selected.map((track, i) => (
-            <div key={track.id} className={cn('flex items-center gap-2 rounded-lg px-2 py-1', 'bg-white/5')}>
+            <div key={track.sourceId} className={cn('flex items-center gap-2 rounded-lg px-2 py-1', 'bg-white/5')}>
               <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-sa-accent text-[9px] font-bold text-white">
                 {i + 1}
               </span>
@@ -64,7 +64,7 @@ export function SearchSelectedBar({ selected, adding, onRemove, onSubmit }: Sear
               <Button
                 variant="ghost"
                 size="icon-xs"
-                onClick={() => onRemove(track.id)}
+                onClick={() => onRemove(track.sourceId)}
                 className="shrink-0 text-white/30 hover:text-white"
               >
                 <X className="size-3" />

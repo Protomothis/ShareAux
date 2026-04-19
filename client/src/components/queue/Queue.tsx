@@ -209,7 +209,7 @@ export default function Queue({
         onClose={() => setSearchOpen(false)}
         roomId={roomId}
         canEnqueue={canEnqueue}
-        queueTrackIds={queue.map((q) => q.track.youtubeId || q.track.id)}
+        queueTrackIds={queue.map((q) => q.track.sourceId || q.track.id)}
         onTrackAdded={() => {
           invalidate.queue(roomId);
           invalidate.quota(roomId);

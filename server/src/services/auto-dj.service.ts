@@ -231,12 +231,12 @@ export class AutoDjService {
       take: AUTODJ_FRESHNESS_HISTORY_DEPTH,
     });
     if (!histories.length) return [];
-    const youtubeIds = [...new Set(histories.map((h) => h.youtubeId))];
-    const tracks = await this.trackRepo.find({ where: youtubeIds.map((yid) => ({ youtubeId: yid })) });
-    const trackMap = new Map(tracks.map((t) => [t.youtubeId, t]));
+    const sourceIds = [...new Set(histories.map((h) => h.sourceId))];
+    const tracks = await this.trackRepo.find({ where: sourceIds.map((yid) => ({ sourceId: yid })) });
+    const trackMap = new Map(tracks.map((t) => [t.sourceId, t]));
     return histories
-      .filter((h) => trackMap.has(h.youtubeId))
-      .map((h) => ({ track: trackMap.get(h.youtubeId)!, weight: 1.0 }));
+      .filter((h) => trackMap.has(h.sourceId))
+      .map((h) => ({ track: trackMap.get(h.sourceId)!, weight: 1.0 }));
   }
 
   private async getPopularCandidates(): Promise<WeightedCandidate[]> {
@@ -282,9 +282,9 @@ export class AutoDjService {
       order: { playedAt: 'DESC' },
       take: AUTODJ_FRESHNESS_HARD_EXCLUDE,
     });
-    const recentYoutubeIds = recentHistory.map((h) => h.youtubeId);
-    const recentTracks = recentYoutubeIds.length
-      ? await this.trackRepo.find({ where: recentYoutubeIds.map((yid) => ({ youtubeId: yid })) })
+    const recentSourceIds = recentHistory.map((h) => h.sourceId);
+    const recentTracks = recentSourceIds.length
+      ? await this.trackRepo.find({ where: recentSourceIds.map((yid) => ({ sourceId: yid })) })
       : [];
     const recentIds = recentTracks.map((t) => t.id);
     const excluded = new Set([...queueTrackIds, ...recentIds]);
@@ -298,11 +298,11 @@ export class AutoDjService {
       take: AUTODJ_FRESHNESS_HISTORY_DEPTH,
     });
     const deepTracks = deepHistory.length
-      ? await this.trackRepo.find({ where: deepHistory.map((h) => ({ youtubeId: h.youtubeId })) })
+      ? await this.trackRepo.find({ where: deepHistory.map((h) => ({ sourceId: h.sourceId })) })
       : [];
-    const deepTrackMap = new Map(deepTracks.map((t) => [t.youtubeId, t]));
+    const deepTrackMap = new Map(deepTracks.map((t) => [t.sourceId, t]));
     const historyIndex = new Map(
-      deepHistory.map((h, i) => [deepTrackMap.get(h.youtubeId)?.id, i]).filter(([id]) => id) as [string, number][],
+      deepHistory.map((h, i) => [deepTrackMap.get(h.sourceId)?.id, i]).filter(([id]) => id) as [string, number][],
     );
 
     // 아티스트 페널티: 직전 큐 + 재생 이력에서 최근 아티스트
@@ -348,7 +348,7 @@ export class AutoDjService {
 
   private async getCurrentVideoId(roomId: string): Promise<string | null> {
     const playback = await this.playbackRepo.findOne({ where: { roomId }, relations: ['track'] });
-    if (playback?.track?.youtubeId) return playback.track.youtubeId;
+    if (playback?.track?.sourceId) return playback.track.sourceId;
 
     // 폴백: 최근 큐
     const recent = await this.queueRepo.findOne({
@@ -356,15 +356,15 @@ export class AutoDjService {
       order: { addedAt: 'DESC' },
       relations: ['track'],
     });
-    return recent?.track?.youtubeId ?? null;
+    return recent?.track?.sourceId ?? null;
   }
 
   private async upsertTrack(r: YtdlpSearchResult): Promise<Track> {
-    const existing = await this.trackRepo.findOneBy({ youtubeId: r.id });
+    const existing = await this.trackRepo.findOneBy({ sourceId: r.id });
     if (existing) return existing;
     return this.trackRepo.save(
       this.trackRepo.create({
-        youtubeId: r.id,
+        sourceId: r.id,
         name: r.title,
         artist: r.artist,
         thumbnail: r.thumbnail,

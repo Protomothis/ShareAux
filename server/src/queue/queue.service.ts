@@ -1,3 +1,4 @@
+import { Provider } from '../types/provider.enum.js';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -120,16 +121,34 @@ export class QueueService {
     );
   }
 
-  async addTracks(roomId: string, trackIds: string[], userId: string) {
+  async addTracks(roomId: string, sourceIds: string[], userId: string) {
     const total = await this.queueRepo.countBy({ room: { id: roomId }, played: false });
-    if (total + trackIds.length > 50) throw new AppException(ErrorCode.QUEUE_004);
+    if (total + sourceIds.length > 50) throw new AppException(ErrorCode.QUEUE_004);
 
     const room = await this.roomRepo.findOneBy({ id: roomId });
     const isPrivileged = room?.hostId === userId;
 
     // 호스트가 아니면 maxSelectPerAdd 제한 적용
-    if (!isPrivileged && room && trackIds.length > room.maxSelectPerAdd) {
+    if (!isPrivileged && room && sourceIds.length > room.maxSelectPerAdd) {
       throw new AppException(ErrorCode.QUEUE_007);
+    }
+
+    // sourceId → Track upsert
+    const tracks: Track[] = [];
+    for (const sid of sourceIds) {
+      let track = await this.trackRepo.findOneBy({ sourceId: sid });
+      if (!track) {
+        track = await this.trackRepo.save(
+          this.trackRepo.create({
+            provider: Provider.YT,
+            sourceId: sid,
+            name: sid,
+            durationMs: 0,
+            fetchedAt: new Date(),
+          }),
+        );
+      }
+      tracks.push(track);
     }
 
     // 중복 제거
@@ -139,7 +158,7 @@ export class QueueService {
       relations: ['track'],
     });
     const existingIds = new Set(existing.map((q) => q.track.id));
-    const unique = trackIds.filter((id) => !existingIds.has(id));
+    const unique = tracks.filter((t) => !existingIds.has(t.id));
     if (!unique.length) throw new AppException(ErrorCode.QUEUE_003);
 
     if (!isPrivileged && room) {
@@ -162,10 +181,10 @@ export class QueueService {
       .getRawOne<{ max: number }>();
     let pos = (max?.max ?? 0) + 1;
 
-    const entries = unique.map((trackId) =>
+    const entries = unique.map((track) =>
       this.queueRepo.create({
         room: { id: roomId } as Room,
-        track: { id: trackId } as Track,
+        track,
         addedBy: { id: userId } as unknown as User,
         position: pos++,
       }),

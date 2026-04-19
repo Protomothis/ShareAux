@@ -62,14 +62,15 @@ export class QueueController {
     @Body() body: AddTracksBody,
     @Req() req: AuthenticatedRequest,
   ) {
-    const entries = await this.queue.addTracks(roomId, body.trackIds, req.user.userId);
+    const sourceIds = body.items.map((i) => i.sourceId);
+    const entries = await this.queue.addTracks(roomId, sourceIds, req.user.userId);
     const updatedQueue = await this.queue.getQueue(roomId);
-    const addedTracks = updatedQueue.filter((q) => body.trackIds.includes(q.track.id)).map((q) => q.track);
+    const addedTracks = updatedQueue.filter((q) => sourceIds.includes(q.track.sourceId)).map((q) => q.track);
 
     // Content ID 메타데이터 백그라운드 enrich
     const needsEnrich = addedTracks.filter((t) => t.metaStatus !== 'done');
     if (needsEnrich.length) {
-      Promise.all(needsEnrich.map((t) => this.search.enrichTrackCredits(t.id, t.youtubeId)))
+      Promise.all(needsEnrich.map((t) => this.search.enrichTrackCredits(t.id, t.sourceId)))
         .then(async () => {
           const [refreshed, status] = await Promise.all([this.queue.getQueue(roomId), this.player.getStatus(roomId)]);
           this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue: refreshed });
@@ -103,7 +104,7 @@ export class QueueController {
     this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue: updatedQueue });
     this.gateway.broadcastSystem(roomId, WsEvent.TrackAdded, msg);
     this.player.triggerPreload(roomId);
-    this.autoPlayIfIdle(roomId, entries[0]?.track?.id ?? body.trackIds[0]);
+    this.autoPlayIfIdle(roomId, entries[0]?.track?.id ?? addedTracks[0]?.id);
     return entries;
   }
 

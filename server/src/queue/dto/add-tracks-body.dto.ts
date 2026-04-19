@@ -1,10 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ArrayMaxSize, ArrayMinSize, IsString } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsString, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class TrackSource {
+  @ApiProperty({ default: 'yt' })
+  @IsString()
+  provider!: string;
+
+  @ApiProperty()
+  @IsString()
+  sourceId!: string;
+}
 
 export class AddTracksBody {
-  @ApiProperty({ type: [String] })
-  @IsString({ each: true })
+  @ApiProperty({ type: [TrackSource] })
+  @ValidateNested({ each: true })
+  @Type(() => TrackSource)
   @ArrayMinSize(1)
   @ArrayMaxSize(50)
-  trackIds!: string[];
+  items!: TrackSource[];
 }

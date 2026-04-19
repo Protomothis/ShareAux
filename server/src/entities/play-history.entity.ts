@@ -21,10 +21,15 @@ export class PlayHistory {
   @JoinColumn({ name: 'played_by' })
   playedBy!: User | null;
 
-  /** 트랙 youtubeId (트랙 삭제와 독립) */
+  /** 트랙 provider (트랙 삭제와 독립) */
+  @ApiProperty({ default: 'yt' })
+  @Column({ type: 'varchar', default: 'yt' })
+  provider!: string;
+
+  /** 트랙 sourceId (트랙 삭제와 독립) */
   @ApiProperty()
-  @Column({ name: 'youtube_id' })
-  youtubeId!: string;
+  @Column({ name: 'source_id' })
+  sourceId!: string;
 
   /** 재생 시점 메타 스냅샷 */
   @ApiProperty()

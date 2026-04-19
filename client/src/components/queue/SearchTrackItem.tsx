@@ -3,14 +3,14 @@
 import { Check } from 'lucide-react';
 import { memo } from 'react';
 
-import type { Track } from '@/api/model';
+import type { SearchResultItem } from '@/api/model';
 import Thumbnail from '@/components/common/Thumbnail';
 import { Button } from '@/components/ui/button';
 import { formatDuration } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 interface SearchTrackItemProps {
-  track: Track;
+  track: SearchResultItem;
   order: number;
   disabled: boolean;
   full: boolean;

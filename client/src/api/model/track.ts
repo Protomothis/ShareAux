@@ -10,7 +10,8 @@ import type { TrackLyricsStatus } from './trackLyricsStatus';
 
 export interface Track {
   id: string;
-  youtubeId: string;
+  provider: string;
+  sourceId: string;
   name: string;
   /** @nullable */
   artist?: string | null;

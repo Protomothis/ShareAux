@@ -120,7 +120,7 @@ export class PlayerController {
   private searchLyricsWhenReady(roomId: string, track: Track, broadcast = false): void {
     const doSearch = (t: Track) => {
       this.lyricsService
-        .getLyrics(t.name, t.durationMs / 1000, t.artist, t.youtubeId, t.songTitle, t.songArtist, t.id)
+        .getLyrics(t.name, t.durationMs / 1000, t.artist, t.sourceId, t.songTitle, t.songArtist, t.id)
         .then(async (r) => {
           if (!broadcast) return;
           // 아직 같은 곡 재생 중인지 확인
@@ -268,7 +268,7 @@ export class PlayerController {
         status.track.name,
         status.track.durationMs / 1000,
         status.track.artist,
-        status.track.youtubeId,
+        status.track.sourceId,
         status.track.songTitle,
         status.track.songArtist,
         status.track.id,

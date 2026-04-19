@@ -5,7 +5,7 @@ export class TrackRankingTrackInfo {
   name!: string;
 
   @ApiProperty()
-  youtubeId!: string;
+  sourceId!: string;
 
   @ApiPropertyOptional({ nullable: true })
   songArtist!: string | null;

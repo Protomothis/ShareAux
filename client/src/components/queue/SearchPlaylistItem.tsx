@@ -3,18 +3,19 @@
 import { ChevronDown, ListMusic, Loader2 } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 
-import type { PlaylistResult, Track } from '@/api/model';
+import type { PlaylistResult } from '@/api/model';
 import { searchControllerGetPlaylistTracks } from '@/api/search/search';
 import { Button } from '@/components/ui/button';
 
 import { SearchTrackItem } from './SearchTrackItem';
+import type { SearchResultItem } from '@/api/model';
 
 interface SearchPlaylistItemProps {
   playlist: PlaylistResult;
-  selected: Track[];
+  selected: SearchResultItem[];
   disabledIds: Set<string>;
   maxReached: boolean;
-  onToggleTrack: (track: Track) => void;
+  onToggleTrack: (track: SearchResultItem) => void;
 }
 
 const LIMIT = 20;
@@ -27,7 +28,7 @@ export function SearchPlaylistItem({
   onToggleTrack,
 }: SearchPlaylistItemProps) {
   const [open, setOpen] = useState(false);
-  const [tracks, setTracks] = useState<Track[]>([]);
+  const [tracks, setTracks] = useState<SearchResultItem[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -85,16 +86,16 @@ export function SearchPlaylistItem({
       {open && (
         <div className="ml-2 mt-1 border-l border-white/10 pl-3 space-y-0.5">
           {tracks.map((track) => {
-            const order = selected.findIndex((t) => t.id === track.id) + 1;
+            const order = selected.findIndex((t) => t.sourceId === track.sourceId) + 1;
 
             return (
               <SearchTrackItem
-                key={track.id}
+                key={track.sourceId}
                 track={track}
                 order={order}
-                disabled={disabledIds.has(track.id)}
+                disabled={disabledIds.has(track.sourceId)}
                 full={!order && maxReached}
-                inQueue={disabledIds.has(track.id)}
+                inQueue={disabledIds.has(track.sourceId)}
                 onClick={() => onToggleTrack(track)}
               />
             );

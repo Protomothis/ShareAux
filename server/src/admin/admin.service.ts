@@ -399,7 +399,7 @@ export class AdminService {
       this.queueRepo.count(),
       this.trackRepo
         .createQueryBuilder('t')
-        .where('t.youtube_id NOT IN (SELECT DISTINCT youtube_id FROM play_histories)')
+        .where('t.source_id NOT IN (SELECT DISTINCT source_id FROM play_histories)')
         .getCount(),
       this.trackRepo
         .createQueryBuilder('t')
@@ -447,7 +447,7 @@ export class AdminService {
   async cleanupUnplayedTracks(): Promise<number> {
     const tracks = await this.trackRepo
       .createQueryBuilder('t')
-      .where('t.youtube_id NOT IN (SELECT DISTINCT youtube_id FROM play_histories)')
+      .where('t.source_id NOT IN (SELECT DISTINCT source_id FROM play_histories)')
       .getMany();
     if (!tracks.length) return 0;
     return this.deleteTracks(tracks.map((t) => t.id));
@@ -594,7 +594,7 @@ export class AdminService {
       .createQueryBuilder('t')
       .delete()
       .where('t.fetched_at < :cutoff', { cutoff: trackCutoff })
-      .andWhere('t.youtube_id NOT IN (SELECT DISTINCT youtube_id FROM play_histories WHERE played_at > :cutoff)', {
+      .andWhere('t.source_id NOT IN (SELECT DISTINCT source_id FROM play_histories WHERE played_at > :cutoff)', {
         cutoff: trackCutoff,
       })
       .andWhere('t.id NOT IN (SELECT DISTINCT track_id FROM room_queues WHERE played = false)')

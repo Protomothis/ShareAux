@@ -26,12 +26,12 @@ export function TrackDetailModal({ track, onOpenChange }: TrackDetailModalProps)
           <div className="flex items-center justify-between">
             <span className="text-sa-text-muted">YouTube</span>
             <a
-              href={`https://www.youtube.com/watch?v=${track.track.youtubeId}`}
+              href={`https://www.youtube.com/watch?v=${track.track.sourceId}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1 text-sa-accent hover:underline"
             >
-              {track.track.youtubeId}
+              {track.track.sourceId}
               <ExternalLink size={12} />
             </a>
           </div>

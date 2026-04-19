@@ -40,7 +40,8 @@ export function setAuthCookies(
 }
 
 export function clearAuthCookies(res: Response, isProd: boolean): void {
-  const clear = (name: string, path = '/') => res.clearCookie(name, { httpOnly: true, secure: isProd, sameSite: 'lax', path });
+  const clear = (name: string, path = '/') =>
+    res.clearCookie(name, { httpOnly: true, secure: isProd, sameSite: 'lax', path });
   clear(AUTH_COOKIE_ACCESS);
   clear(AUTH_COOKIE_REFRESH, '/api/auth/refresh');
   res.clearCookie(AUTH_COOKIE_USER, { secure: isProd, sameSite: 'lax', path: '/' });

@@ -78,10 +78,10 @@ export class PlayerService {
     let url = '';
     if (!audioBuffer) {
       try {
-        url = await this.ytdlp.getAudioUrl(track.youtubeId);
+        url = await this.ytdlp.getAudioUrl(track.sourceId);
       } catch {
         // URL도 못 받으면 재생 불가 → 스킵
-        this.logger.warn(`[${roomId}] Play failed: cannot get audio for ${track.youtubeId}`);
+        this.logger.warn(`[${roomId}] Play failed: cannot get audio for ${track.sourceId}`);
         this.preload.release(trackId);
         this.streamState.set(roomId, 'idle');
         this.onPlayFailCallback?.(roomId, track.name);
@@ -96,7 +96,7 @@ export class PlayerService {
       roomId,
       url,
       () => this.onTrackEnd(roomId),
-      () => this.ytdlp.getAudioUrl(track.youtubeId),
+      () => this.ytdlp.getAudioUrl(track.sourceId),
       async () => {
         this.streamState.set(roomId, 'streaming');
         await this.playbackRepo.update(roomId, { startedAt: new Date() });
@@ -327,7 +327,8 @@ export class PlayerService {
       this.playHistoryRepo.create({
         room: { id: roomId } as Room,
         playedBy: userId ? ({ id: userId } as User) : null,
-        youtubeId: track.youtubeId,
+        provider: track.provider,
+        sourceId: track.sourceId,
         title: track.songTitle || track.name,
         artist: track.songArtist || track.artist,
         thumbnail: track.thumbnail,
@@ -361,7 +362,7 @@ export class PlayerService {
   updateCodecInfo(track: Track): void {
     if (track.codec) return;
     void this.ytdlp
-      .getAudioInfo(track.youtubeId)
+      .getAudioInfo(track.sourceId)
       .then(async (info) => {
         track.codec = info.codec;
         track.bitrateKbps = info.bitrateKbps;

@@ -147,3 +147,5 @@ export * from './voteSkipResponse';
 export * from './wsEnumsSchema';
 export * from './wsEnumsSchemaAutoDjStatus';
 export * from './wsEnumsSchemaWsEvent';
+export type { SearchResultItem } from './searchResultItem';
+export { Provider } from './provider';

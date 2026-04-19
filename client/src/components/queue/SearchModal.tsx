@@ -1,10 +1,11 @@
-'use client';
+import { Provider } from '@/api/model';
+('use client');
 
 import { Search, Sparkles, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import type { Track } from '@/api/model';
+import type { SearchResultItem } from '@/api/model';
 import { queueControllerAddTracks } from '@/api/queue/queue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,7 +43,7 @@ export default function SearchModal({
   isHost = false,
 }: SearchModalProps) {
   const [tab, setTab] = useState<Tab>('showcase');
-  const [selected, setSelected] = useState<Track[]>([]);
+  const [selected, setSelected] = useState<SearchResultItem[]>([]);
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const [adding, setAdding] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -69,10 +70,10 @@ export default function SearchModal({
     if (el.scrollTop + el.clientHeight >= el.scrollHeight - 100) search.loadMore();
   }, [search]);
 
-  const toggleSelect = (track: Track) => {
+  const toggleSelect = (track: SearchResultItem) => {
     setSelected((prev) => {
-      const idx = prev.findIndex((t) => t.id === track.id);
-      if (idx >= 0) return prev.filter((t) => t.id !== track.id);
+      const idx = prev.findIndex((t) => t.sourceId === track.sourceId);
+      if (idx >= 0) return prev.filter((t) => t.sourceId !== track.sourceId);
       if (prev.length >= maxSelect) return prev;
       return [...prev, track];
     });
@@ -86,8 +87,10 @@ export default function SearchModal({
     }
     setAdding(true);
     try {
-      await queueControllerAddTracks(roomId, { trackIds: selected.map((t) => t.id) });
-      for (const track of selected) setAddedIds((prev) => new Set(prev).add(track.id));
+      await queueControllerAddTracks(roomId, {
+        items: selected.map((t) => ({ provider: t.provider, sourceId: t.sourceId })),
+      });
+      for (const track of selected) setAddedIds((prev) => new Set(prev).add(track.sourceId));
       const names = selected.map((t) => t.name).slice(0, 2);
       const label = names.join(', ') + (selected.length > 2 ? ` 외 ${selected.length - 2}곡` : '');
       toast.success('🎵 신청 완료', { description: label });
@@ -99,7 +102,7 @@ export default function SearchModal({
     }
   };
 
-  const selectedIds = new Set(selected.map((t) => t.id));
+  const selectedIds = new Set(selected.map((t) => t.sourceId));
   const disabledIds = new Set([...addedIds, ...queueTrackIds]);
 
   return (
@@ -217,7 +220,7 @@ export default function SearchModal({
               roomId={roomId}
               onSelectTrack={toggleSelect}
               selectedIds={selectedIds}
-              selectedOrder={selected.map((t) => t.id)}
+              selectedOrder={selected.map((t) => t.sourceId)}
               disabledIds={disabledIds}
               maxReached={selected.length >= maxSelect}
             />
@@ -245,7 +248,7 @@ export default function SearchModal({
         <SearchSelectedBar
           selected={selected}
           adding={adding}
-          onRemove={(id) => setSelected((prev) => prev.filter((t) => t.id !== id))}
+          onRemove={(id) => setSelected((prev) => prev.filter((t) => t.sourceId !== id))}
           onSubmit={handleAdd}
         />
       </Modal.Footer>

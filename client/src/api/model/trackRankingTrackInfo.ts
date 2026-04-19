@@ -8,7 +8,7 @@
 
 export interface TrackRankingTrackInfo {
   name: string;
-  youtubeId: string;
+  sourceId: string;
   /** @nullable */
   songArtist?: string | null;
 }
