@@ -30,6 +30,8 @@ interface RoomSettingsModalProps {
   autoDjEnabled: boolean;
   autoDjMode: string;
   autoDjThreshold: number;
+  autoDjFolderId?: string | null;
+  autoDjFavFallbackMixed?: boolean;
   onSaved: () => void;
 }
 
@@ -48,6 +50,8 @@ export default function RoomSettingsModal({
   autoDjEnabled,
   autoDjMode,
   autoDjThreshold,
+  autoDjFolderId,
+  autoDjFavFallbackMixed,
   onSaved,
 }: RoomSettingsModalProps) {
   const [values, setValues] = useState<RoomFormValues>({
@@ -63,6 +67,8 @@ export default function RoomSettingsModal({
     autoDjEnabled,
     autoDjMode: autoDjMode as AutoDjMode,
     autoDjThreshold,
+    autoDjFolderId: autoDjFolderId ?? null,
+    autoDjFavFallbackMixed: autoDjFavFallbackMixed ?? false,
     enqueueWindowMin,
     enqueueLimitPerWindow,
   });
@@ -98,6 +104,8 @@ export default function RoomSettingsModal({
       autoDjEnabled,
       autoDjMode: autoDjMode as AutoDjMode,
       autoDjThreshold,
+      autoDjFolderId: autoDjFolderId ?? null,
+      autoDjFavFallbackMixed: autoDjFavFallbackMixed ?? false,
       enqueueWindowMin,
       enqueueLimitPerWindow,
     });
@@ -122,6 +130,7 @@ export default function RoomSettingsModal({
     autoDjEnabled,
     autoDjMode,
     autoDjThreshold,
+    autoDjFolderId,
     enqueueWindowMin,
     enqueueLimitPerWindow,
     clearAll,
@@ -147,6 +156,8 @@ export default function RoomSettingsModal({
         autoDjEnabled: values.autoDjEnabled,
         autoDjMode: values.autoDjMode,
         autoDjThreshold: values.autoDjThreshold,
+        autoDjFolderId: values.autoDjFolderId,
+        autoDjFavFallbackMixed: values.autoDjFavFallbackMixed,
       });
       onSaved();
       toast.success('설정이 저장되었습니다');

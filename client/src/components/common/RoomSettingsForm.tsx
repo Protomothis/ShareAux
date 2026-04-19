@@ -21,6 +21,8 @@ export interface RoomFormValues {
   autoDjEnabled: boolean;
   autoDjMode: AutoDjMode;
   autoDjThreshold: number;
+  autoDjFolderId: string | null;
+  autoDjFavFallbackMixed: boolean;
   enqueueWindowMin: number;
   enqueueLimitPerWindow: number;
 }
@@ -38,6 +40,8 @@ export const DEFAULT_FORM_VALUES: RoomFormValues = {
   autoDjEnabled: false,
   autoDjMode: 'related',
   autoDjThreshold: 2,
+  autoDjFolderId: null,
+  autoDjFavFallbackMixed: false,
   enqueueWindowMin: 30,
   enqueueLimitPerWindow: 15,
 };
@@ -199,9 +203,13 @@ export default function RoomSettingsForm({
           enabled={v.autoDjEnabled}
           mode={v.autoDjMode}
           threshold={v.autoDjThreshold}
+          folderId={v.autoDjFolderId}
+          favFallbackMixed={v.autoDjFavFallbackMixed}
           onEnabledChange={(c) => change('autoDjEnabled', c)}
           onModeChange={(m) => change('autoDjMode', m)}
           onThresholdChange={(n) => change('autoDjThreshold', n)}
+          onFolderIdChange={(id) => change('autoDjFolderId', id)}
+          onFavFallbackMixedChange={(c) => change('autoDjFavFallbackMixed', c)}
         />
       </FormSection>
     </div>

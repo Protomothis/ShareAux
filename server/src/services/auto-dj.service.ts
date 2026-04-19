@@ -21,6 +21,7 @@ import { PlayHistory } from '../entities/play-history.entity.js';
 import { RoomQueue } from '../entities/room-queue.entity.js';
 import { Track } from '../entities/track.entity.js';
 import { TrackStats } from '../entities/track-stats.entity.js';
+import { UserFavorite } from '../entities/user-favorite.entity.js';
 import type { AutoDjStatus } from '../types/index.js';
 import { AutoDjMode } from '../types/index.js';
 import { type YtdlpSearchResult, YtdlpService } from './ytdlp.service.js';
@@ -48,6 +49,7 @@ export class AutoDjService {
     @InjectRepository(PlayHistory) private readonly historyRepo: Repository<PlayHistory>,
     @InjectRepository(Track) private readonly trackRepo: Repository<Track>,
     @InjectRepository(TrackStats) private readonly statsRepo: Repository<TrackStats>,
+    @InjectRepository(UserFavorite) private readonly favoriteRepo: Repository<UserFavorite>,
     private readonly ytdlp: YtdlpService,
   ) {}
 
@@ -116,14 +118,18 @@ export class AutoDjService {
       this.statusCallback?.(roomId, 'thinking');
 
       const toAdd = room.autoDjThreshold - remaining + 1;
-      const candidates = await this.getCandidates(roomId, room.autoDjMode);
+      const candidates = await this.getCandidates(roomId, room.autoDjMode, room);
       if (!candidates.length) {
         this.logger.warn(`[AutoDJ] No candidates for room ${roomId}`);
         await this.disableAutoDj(roomId, '추가할 곡을 찾지 못했습니다. 먼저 곡을 신청해주세요.');
         return;
       }
 
-      const filtered = await this.filterFreshness(candidates, roomId);
+      let filtered = await this.filterFreshness(candidates, roomId);
+      if (!filtered.length && room.autoDjMode === AutoDjMode.Favorites && room.autoDjFavFallbackMixed) {
+        const mixed = await this.getMixedCandidates(roomId);
+        filtered = await this.filterFreshness(mixed, roomId);
+      }
       if (!filtered.length) {
         await this.disableAutoDj(roomId, '최근 재생된 곡만 있어 새 곡을 추가하지 못했습니다.');
         return;
@@ -205,7 +211,7 @@ export class AutoDjService {
     this.systemMessageCallback?.(roomId, `🤖 AutoDJ가 비활성화되었습니다: ${reason}`);
   }
 
-  private async getCandidates(roomId: string, mode: AutoDjMode): Promise<WeightedCandidate[]> {
+  private async getCandidates(roomId: string, mode: AutoDjMode, room: Room): Promise<WeightedCandidate[]> {
     switch (mode) {
       case AutoDjMode.Related:
         return this.getRelatedCandidates(roomId);
@@ -215,6 +221,8 @@ export class AutoDjService {
         return this.getPopularCandidates();
       case AutoDjMode.Mixed:
         return this.getMixedCandidates(roomId);
+      case AutoDjMode.Favorites:
+        return this.getFavoritesCandidates(room);
     }
   }
 
@@ -269,6 +277,16 @@ export class AutoDjService {
       if (!existing || c.weight > existing.weight) map.set(c.track.id, c);
     }
     return [...map.values()];
+  }
+
+  private async getFavoritesCandidates(room: Room): Promise<WeightedCandidate[]> {
+    const where: Record<string, unknown> = { userId: room.hostId };
+    if (room.autoDjFolderId) where.folderId = room.autoDjFolderId;
+    const favs = await this.favoriteRepo.find({ where, relations: ['track'] });
+    if (!favs.length) {
+      return room.autoDjFavFallbackMixed ? this.getMixedCandidates(room.id) : this.getPopularCandidates();
+    }
+    return favs.filter((f) => f.track).map((f) => ({ track: f.track, weight: 1.0 }));
   }
 
   // ─── 신선도 필터 ─────────────────────────────────────────

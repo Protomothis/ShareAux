@@ -31,5 +31,12 @@ export interface Room {
   autoDjEnabled: boolean;
   autoDjMode: RoomAutoDjMode;
   autoDjThreshold: number;
+  /**
+   * AutoDJ 즐겨찾기 모드 폴더 필터 (null=전체)
+   * @nullable
+   */
+  autoDjFolderId?: string | null;
+  /** AutoDJ 즐겨찾기 소진 시 혼합 모드 폴백 */
+  autoDjFavFallbackMixed: boolean;
   createdAt: string;
 }

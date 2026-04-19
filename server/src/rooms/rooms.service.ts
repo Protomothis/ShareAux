@@ -94,6 +94,8 @@ export class RoomsService implements OnModuleInit {
       autoDjEnabled: dto.autoDjEnabled ?? false,
       autoDjMode: dto.autoDjMode ?? AutoDjMode.Related,
       autoDjThreshold: dto.autoDjThreshold ?? 2,
+      autoDjFolderId: dto.autoDjFolderId ?? null,
+      autoDjFavFallbackMixed: dto.autoDjFavFallbackMixed ?? false,
     });
     const saved = await this.roomRepo.save(room);
 
@@ -228,6 +230,8 @@ export class RoomsService implements OnModuleInit {
     if (dto.autoDjEnabled !== undefined) room.autoDjEnabled = dto.autoDjEnabled;
     if (dto.autoDjMode !== undefined) room.autoDjMode = dto.autoDjMode;
     if (dto.autoDjThreshold !== undefined) room.autoDjThreshold = dto.autoDjThreshold;
+    if (dto.autoDjFolderId !== undefined) room.autoDjFolderId = dto.autoDjFolderId ?? null;
+    if (dto.autoDjFavFallbackMixed !== undefined) room.autoDjFavFallbackMixed = dto.autoDjFavFallbackMixed;
     const saved = await this.roomRepo.save(room);
     if (enqueueChanged) {
       const pastDate = new Date(Date.now() - room.enqueueWindowMin * 60_000 - 1000);

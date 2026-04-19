@@ -66,11 +66,16 @@ export class RoomsController {
     // AutoDJ 토글 시 즉시 트리거
     if (dto.autoDjEnabled !== undefined) {
       if (dto.autoDjEnabled) {
+        this.autoDj.resetFailCount(id);
         this.autoDj.trigger(id);
         this.gateway.broadcastSystem(id, WsEvent.SystemMessage, '🤖 AutoDJ가 활성화되었습니다');
       } else {
         this.gateway.broadcastSystem(id, WsEvent.SystemMessage, '🤖 AutoDJ가 비활성화되었습니다');
       }
+    } else if (result.autoDjEnabled && (dto.autoDjMode !== undefined || dto.autoDjFolderId !== undefined)) {
+      // 모드/폴더 변경 시 재트리거
+      this.autoDj.resetFailCount(id);
+      this.autoDj.trigger(id);
     }
     return result;
   }
