@@ -129,7 +129,7 @@ export class PlayerController {
           if (current?.track?.id !== t.id) return;
           this.gateway.broadcastSystem(roomId, WsEvent.LyricsResult, '', {
             status: r?.syncedLyrics ? LyricsStatus.Found : LyricsStatus.NotFound,
-            enhanced: !!r?.enhanced,
+            lyricsType: r?.lyricsType ?? null,
           });
         })
         .catch(async () => {

@@ -115,6 +115,7 @@ export * from './systemStatsResponse';
 export * from './tableSizeItem';
 export * from './track';
 export * from './trackLyricsStatus';
+export * from './trackLyricsType';
 export * from './trackMetaStatus';
 export * from './trackProvider';
 export * from './trackRankingItem';

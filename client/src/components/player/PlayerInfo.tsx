@@ -3,6 +3,7 @@
 import { Loader2 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 
+import { TrackLyricsType } from '@/api/model';
 import type { AutoDjStatus, StreamState, TrackInfo, TrackVoteMap } from '@/types';
 import { LyricsStatus } from '@/types';
 
@@ -19,7 +20,7 @@ interface PlayerInfoProps {
   streamCodec?: string;
   streamBitrate?: number;
   lyricsStatus?: LyricsStatus;
-  lyricsEnhanced?: boolean;
+  lyricsType?: TrackLyricsType;
   trackVotes?: TrackVoteMap;
   autoDjEnabled?: boolean;
   autoDjStatus?: AutoDjStatus;
@@ -34,7 +35,7 @@ export default function PlayerInfo({
   streamCodec,
   streamBitrate,
   lyricsStatus,
-  lyricsEnhanced,
+  lyricsType,
   trackVotes,
   autoDjEnabled,
   autoDjStatus,
@@ -112,7 +113,9 @@ export default function PlayerInfo({
             <div className="mt-1 flex h-4 items-center gap-1">
               {streamCodec ? <InfoTag>{streamCodec}</InfoTag> : null}
               {streamBitrate ? <InfoTag>{streamBitrate}kbps</InfoTag> : null}
-              {lyricsStatus === LyricsStatus.Found ? <InfoTag>{lyricsEnhanced ? 'KLRC' : 'LRC'}</InfoTag> : null}
+              {lyricsStatus === LyricsStatus.Found ? (
+                <InfoTag>{lyricsType === TrackLyricsType.karaoke ? 'KLRC' : 'LRC'}</InfoTag>
+              ) : null}
             </div>
           )}
         </div>

@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import type { RoomQueue, Track } from '@/api/model';
+import type { RoomQueue, Track, TrackLyricsType } from '@/api/model';
 import { useInvalidate } from '@/hooks/useQueries';
 import { debug } from '@/lib/debug';
 import type { AutoDjStatus, ChatMessage, StreamState, TrackVoteMap } from '@/types';
@@ -28,7 +28,7 @@ export function useRoomEvents(
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isPlaying, setPlaying] = useState(false);
   const [lyricsStatus, setLyricsStatus] = useState(LyricsStatus.Searching);
-  const [lyricsEnhanced, setLyricsEnhanced] = useState(false);
+  const [lyricsType, setLyricsType] = useState<TrackLyricsType>(null);
   const [lyricsVersion, setLyricsVersion] = useState(0);
   const [skipVotes, setSkipVotes] = useState(0);
   const [autoDjStatus, setAutoDjStatus] = useState<AutoDjStatus>('idle');
@@ -91,7 +91,7 @@ export function useRoomEvents(
     setLyricsStatus(
       ls === 'found' ? LyricsStatus.Found : ls === 'not_found' ? LyricsStatus.NotFound : LyricsStatus.Searching,
     );
-    setLyricsEnhanced(false);
+    setLyricsType(null);
     setSkipVotes(0);
     setStreamState('preparing');
   }, []);
@@ -196,9 +196,9 @@ export function useRoomEvents(
 
       // 가사
       if (data.event === WsEvent.lyricsResult && data.data) {
-        const { status, enhanced } = data.data as { status: LyricsStatus; enhanced?: boolean };
+        const { status, lyricsType } = data.data as { status: LyricsStatus; lyricsType?: TrackLyricsType };
         setLyricsStatus(status);
-        setLyricsEnhanced(!!enhanced);
+        setLyricsType(lyricsType ?? null);
         return;
       }
       if (data.event === WsEvent.lyricsUpdated && data.data) {
@@ -316,7 +316,7 @@ export function useRoomEvents(
     setPlaying,
     lyricsStatus,
     setLyricsStatus,
-    lyricsEnhanced,
+    lyricsType,
     lyricsVersion,
     skipVotes,
     skipRequired,

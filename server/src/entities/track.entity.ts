@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
 import { Provider } from '../types/provider.enum.js';
+import { LyricsType } from '../types/lyrics-type.enum.js';
 
 @Entity('tracks')
 @Unique(['provider', 'sourceId'])
@@ -78,6 +79,11 @@ export class Track {
   /** 감지된 가사 언어 */
   @Column({ type: 'varchar', nullable: true, name: 'lyrics_lang' })
   lyricsLang!: string | null;
+
+  /** 가사 유형: synced(라인 싱크) / karaoke(워드 레벨) */
+  @ApiProperty({ enum: LyricsType, nullable: true })
+  @Column({ type: 'varchar', nullable: true, name: 'lyrics_type' })
+  lyricsType!: LyricsType | null;
 
   /** 한글 발음 LRC (일본어만) */
   @Column({ type: 'text', nullable: true, name: 'lyrics_ruby', select: false })

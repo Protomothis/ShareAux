@@ -20,6 +20,7 @@ interface LyricsProps {
   lyricsStatus: LyricsStatus;
   trackId?: string;
   lyricsVersion?: number;
+  karaoke?: boolean;
 }
 
 interface LyricsData {
@@ -229,6 +230,7 @@ export default function Lyrics({
   lyricsStatus,
   trackId,
   lyricsVersion = 0,
+  karaoke = false,
 }: LyricsProps) {
   const [offset, setOffset] = useState(0);
   const [showSync, setShowSync] = useState(false);
@@ -263,7 +265,6 @@ export default function Lyrics({
   }, [trackId]);
 
   const lines = useMemo(() => (lyricsData?.synced ? parseLRC(lyricsData.synced) : []), [lyricsData?.synced]);
-  const enhanced = useMemo(() => lines.some((l) => !!l.words), [lines]);
 
   const rubyTexts = useMemo(
     () => (lyricsData?.ruby && lyricsData.lang === 'ja' ? parseLRCTexts(lyricsData.ruby) : []),
@@ -365,7 +366,7 @@ export default function Lyrics({
                     }`}
                     style={{ lineHeight: `${LINE_H}px` }}
                   >
-                    {isActive && enhanced && line.words ? (
+                    {isActive && karaoke && line.words ? (
                       <KaraokeLine
                         words={line.words}
                         elapsedBase={elapsedBase + offset}

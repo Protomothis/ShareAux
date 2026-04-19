@@ -9,6 +9,7 @@ import { promisify } from 'util';
 import { Repository } from 'typeorm';
 
 import { Track } from '../entities/track.entity.js';
+import { LyricsType } from '../types/lyrics-type.enum.js';
 import type { LyricsResult } from '../types/index.js';
 
 const execFileAsync = promisify(execFile);
@@ -32,31 +33,77 @@ export class LyricsService {
     this.ytdlpPath = config.get<string>('YTDLP_PATH', 'yt-dlp');
   }
 
+  /** 노이즈 제거용 정규식 */
+  private static readonly NOISE_RE = new RegExp(
+    [
+      // 영어 노이즈
+      'official\\s*(music\\s*)?video',
+      'official\\s*audio',
+      'official\\s*lyric\\s*video',
+      'official\\s*visualizer',
+      'official\\s*mv',
+      'music\\s*video',
+      'lyric\\s*video',
+      'm\\/?v',
+      'lyrics?',
+      'audio',
+      'video',
+      'visualizer',
+      'performance\\s*video',
+      'dance\\s*practice',
+      'color\\s*coded',
+      'original\\s*mix',
+      'full\\s*ver\\.?',
+      'short\\s*ver\\.?',
+      'ver\\.\\d+',
+      'remaster(ed)?',
+      'hd|hq|4k|1080p',
+      'live',
+      'stage',
+      'teaser',
+      'preview',
+      'track\\s*\\d+',
+      // 한국어 노이즈
+      '가사',
+      '공식',
+      '뮤직비디오',
+      '자막',
+      // 일본어 노이즈
+      '歌ってみた',
+      'MV',
+    ].join('|'),
+    'gi',
+  );
+
+  /** 괄호류 정규식 (CJK 포함) */
+  private static readonly BRACKET_RE = /[【\[（(「『《][^】\]）)」』》]*[】\]）)」』》]/g;
+
   private smartClean(title: string): string {
     const quoted = /['"]([^'"]+)['"]/.exec(title)?.[1];
-    const noBracket = title.replace(/[([{].*?[)\]}]/g, '');
-    const noNoise = noBracket.replace(
-      /official|mv|performance|ver\.\d+|가사|lyrics?|color\s*coded|dance\s*practice|live|stage|\[|\]|_|-|'/gi,
-      '',
-    );
-    const artist = noNoise.replace(/\s+/g, ' ').trim().split("'")[0].trim();
-    return quoted ? `${artist} ${quoted}`.trim() : artist;
+    const noBracket = title
+      .replace(LyricsService.BRACKET_RE, '')
+      .replace(/\s*\/\s*THE FIRST TAKE.*/i, '')
+      .replace(/\s*\/\s*/g, ' ');
+    const noNoise = noBracket.replace(LyricsService.NOISE_RE, '');
+    // feat./ft. 이후 제거
+    const noFeat = noNoise.replace(/\s*(feat\.?|ft\.?)\s*.*/i, '');
+    const cleaned = noFeat.replace(/\s+/g, ' ').trim();
+    return quoted ? `${cleaned} ${quoted}`.trim() : cleaned;
   }
 
   private extractTitle(name: string): string {
     const quoted = /['"]([^'"]+)['"]/.exec(name)?.[1];
     if (quoted) return quoted;
-    const dash = name.split(/\s*[-–—]\s*/);
-    if (dash.length >= 2) {
-      return dash
-        .slice(1)
-        .join(' ')
-        .replace(/[([{].*?[)\]}]/g, '')
-        .trim();
-    }
-    return name
-      .replace(/[([{].*?[)\]}]/g, '')
-      .replace(/official|mv|m\/v|music\s*video/gi, '')
+    const noBracket = name.replace(LyricsService.BRACKET_RE, '');
+    // 구분자: - – — | ~
+    const parts = noBracket.split(/\s*[-–—|~]\s*/);
+    const raw = parts.length >= 2 ? parts.slice(1).join(' ') : noBracket;
+    return raw
+      .replace(/\s*\/\s*THE FIRST TAKE.*/i, '')
+      .replace(/\s*\/\s*/g, ' ')
+      .replace(LyricsService.NOISE_RE, '')
+      .replace(/\s*(feat\.?|ft\.?)\s*.*/i, '')
+      .replace(/\s+/g, ' ')
       .trim();
   }
 
@@ -77,7 +124,7 @@ export class LyricsService {
         .where('t.id = :trackId', { trackId })
         .getOne();
       if (existing?.lyricsStatus === 'found' && existing.lyricsData) {
-        return { syncedLyrics: existing.lyricsData, enhanced: false };
+        return { syncedLyrics: existing.lyricsData, lyricsType: existing.lyricsType ?? LyricsType.SYNCED };
       }
       if (existing?.lyricsStatus === 'not_found') {
         // 24시간 후 재시도 허용
@@ -93,6 +140,7 @@ export class LyricsService {
       await this.trackRepo.update(trackId, {
         lyricsStatus: result?.syncedLyrics ? 'found' : 'not_found',
         lyricsData: result?.syncedLyrics ?? null,
+        lyricsType: result?.lyricsType ?? null,
       });
     }
 
@@ -108,18 +156,16 @@ export class LyricsService {
     songTitle?: string | null,
     songArtist?: string | null,
   ): Promise<LyricsResult | null> {
-    // 1순위: KLRC (enhanced/karaoke) — Musixmatch에서만 제공
+    // 1순위: KLRC (karaoke) — Musixmatch에서만 제공
     const klrcQueries: string[] = [];
     if (songTitle && songArtist) klrcQueries.push(`${songArtist} ${songTitle}`);
     if (artist) klrcQueries.push(`${artist} ${this.extractTitle(trackName)}`);
     klrcQueries.push(this.smartClean(trackName));
     for (const q of [...new Set(klrcQueries.filter((s) => s.length > 2))]) {
-      const enhanced = await this.runSyncedlyrics(q, true);
-      if (enhanced) {
-        const result = { syncedLyrics: enhanced, enhanced: true };
-
+      const klrc = await this.runSyncedlyrics(q, true);
+      if (klrc) {
         this.logger.log(`KLRC found for "${q}"`);
-        return result;
+        return { syncedLyrics: klrc, lyricsType: LyricsType.KARAOKE };
       }
     }
 
@@ -128,12 +174,11 @@ export class LyricsService {
       const ytLyrics = await this.getYouTubeSubtitles(sourceId);
       if (ytLyrics) {
         this.logger.log(`YouTube subtitles found for ${sourceId}`);
-
         return ytLyrics;
       }
     }
 
-    // 3순위: Content ID 기반 LRC
+    // 3순위: Content ID 기반 LRC (innertube 메타에서 추출한 곡명/아티스트)
     if (songTitle && songArtist) {
       const creditQuery = `${songArtist} ${songTitle}`;
       this.logger.log(`Lyrics search (Content ID): "${creditQuery}"`);
@@ -145,14 +190,19 @@ export class LyricsService {
       if (result) return result;
     }
 
-    // 3순위: LRCLIB + syncedlyrics (YouTube 제목 기반)
+    // 4순위: LRCLIB + syncedlyrics (YouTube 제목 기반)
     const title = this.extractTitle(trackName);
     const cleanedFull = this.smartClean(trackName);
 
     const queries: string[] = [];
     if (artist) {
       const cleanArtist = artist
-        .replace(/\s*(VEVO|Official|Records|Music|Entertainment|Labels|HYBE|SM\s*TOWN|YG|JYP)\s*/gi, '')
+        .replace(
+          /\s*(Stone\s*Music\s*Entertainment|HYBE\s*LABELS|SM\s*TOWN|JYP\s*Entertainment|YG\s*Entertainment|Warner\s*Music|Universal\s*Music|Sony\s*Music|Capitol\s*Records)\s*/gi,
+          '',
+        )
+        .replace(/\s*(VEVO|Official|Records|Music|Entertainment|Labels|Channel|Topic)\s*/gi, '')
+        .replace(/\s*\/\s*.*/, '') // 슬래시 뒤 제거 (なとり / natori → なとり)
         .trim();
       queries.push(`${cleanArtist} ${title}`);
     }
@@ -203,7 +253,7 @@ export class LyricsService {
         try {
           const raw = await readFile(filePath, 'utf-8');
           const lrc = this.json3ToLrc(raw);
-          if (lrc) return { syncedLyrics: lrc };
+          if (lrc) return { syncedLyrics: lrc, lyricsType: LyricsType.SYNCED };
         } catch {
           // 해당 언어 파일 없음
         } finally {
@@ -247,13 +297,13 @@ export class LyricsService {
   private async trySearch(query: string): Promise<LyricsResult | null> {
     // LRC만 시도 (KLRC는 getLyrics 1순위에서 이미 시도)
     const synced = await this.runSyncedlyrics(query, false);
-    if (synced) return { syncedLyrics: synced };
+    if (synced) return { syncedLyrics: synced, lyricsType: LyricsType.SYNCED };
     return null;
   }
 
-  private async runSyncedlyrics(query: string, enhanced: boolean): Promise<string | null> {
+  private async runSyncedlyrics(query: string, karaoke: boolean): Promise<string | null> {
     const q = JSON.stringify(query);
-    const opts = enhanced
+    const opts = karaoke
       ? `enhanced=True, synced_only=True, providers=["Musixmatch"]`
       : `synced_only=True, providers=["Musixmatch", "NetEase", "Lrclib"]`;
     try {
@@ -265,7 +315,7 @@ export class LyricsService {
       const lrc = stdout.trim();
       return lrc || null;
     } catch (e) {
-      this.logger.warn(`syncedlyrics fetch failed (enhanced=${enhanced})`, e instanceof Error ? e.message : e);
+      this.logger.warn(`syncedlyrics fetch failed (karaoke=${karaoke})`, e instanceof Error ? e.message : e);
       return null;
     }
   }
@@ -280,9 +330,8 @@ export class LyricsService {
       }[];
       if (!results.length) return null;
       const matched = results.find((r) => r.duration && Math.abs(r.duration - duration) < 5 && r.syncedLyrics);
-      if (matched?.syncedLyrics) return { syncedLyrics: matched.syncedLyrics };
-      const best = results[0];
-      return best.syncedLyrics ? { syncedLyrics: best.syncedLyrics } : null;
+      if (matched?.syncedLyrics) return { syncedLyrics: matched.syncedLyrics, lyricsType: LyricsType.SYNCED };
+      return null;
     } catch (e) {
       this.logger.warn('LRCLIB API failed', e instanceof Error ? e.message : e);
       return null;
