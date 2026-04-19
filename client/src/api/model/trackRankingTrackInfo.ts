@@ -7,6 +7,7 @@
  */
 import type { TrackRankingTrackInfoLyricsStatus } from './trackRankingTrackInfoLyricsStatus';
 import type { TrackRankingTrackInfoMetaStatus } from './trackRankingTrackInfoMetaStatus';
+import type { TrackRankingTrackInfoLyricsType } from './trackRankingTrackInfoLyricsType';
 
 export interface TrackRankingTrackInfo {
   name: string;
@@ -17,4 +18,8 @@ export interface TrackRankingTrackInfo {
   /** @nullable */
   lyricsLang?: string | null;
   metaStatus: TrackRankingTrackInfoMetaStatus;
+  /** @nullable */
+  lyricsType?: TrackRankingTrackInfoLyricsType;
+  /** 번역 가사 존재 여부 */
+  hasTranslation: boolean;
 }

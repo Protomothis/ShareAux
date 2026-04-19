@@ -25,6 +25,11 @@ export function useRoomAudio(
       }
     },
     () => onStallRef.current?.(),
+    () => {
+      debug('[roomAudio] MSE error — stopping listening');
+      listeningRef.current = false;
+      setListening(false);
+    },
   );
 
   const [listening, setListening] = useState(false);

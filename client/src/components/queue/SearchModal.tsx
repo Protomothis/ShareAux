@@ -2,7 +2,7 @@
 
 import { TrackProvider } from '@/api/model';
 
-import { Search, Sparkles, X } from 'lucide-react';
+import { Heart, Search, Sparkles, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -10,17 +10,19 @@ import type { SearchResultItem } from '@/api/model';
 import { queueControllerAddTracks } from '@/api/queue/queue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useFavorites } from '@/hooks/useFavorites';
 import { useSearch } from '@/hooks/useSearch';
 import { cn } from '@/lib/utils';
 
 import Modal from '../common/Modal';
+import FavoritesList from './FavoritesList';
 import SearchResults from './SearchResults';
 import { SearchSelectedBar } from './SearchSelectedBar';
 import SearchShowcase from './SearchShowcase';
 
 import { MAX_QUEUE_SIZE } from '@/lib/constants';
 
-type Tab = 'showcase' | 'search';
+type Tab = 'showcase' | 'search' | 'favorites';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -31,6 +33,7 @@ interface SearchModalProps {
   onTrackAdded?: () => void;
   maxSelectPerAdd?: number;
   isHost?: boolean;
+  isGuest?: boolean;
 }
 
 export default function SearchModal({
@@ -42,6 +45,7 @@ export default function SearchModal({
   onTrackAdded,
   maxSelectPerAdd = 3,
   isHost = false,
+  isGuest = false,
 }: SearchModalProps) {
   const [tab, setTab] = useState<Tab>('showcase');
   const [selected, setSelected] = useState<SearchResultItem[]>([]);
@@ -51,6 +55,7 @@ export default function SearchModal({
   const listRef = useRef<HTMLDivElement>(null);
 
   const search = useSearch(isOpen);
+  const { favoriteIds, loadingIds: favLoadingIds, toggle: toggleFavorite } = useFavorites(isOpen && !isGuest);
   const maxSelect = isHost ? MAX_QUEUE_SIZE : maxSelectPerAdd;
 
   useEffect(() => {
@@ -152,6 +157,19 @@ export default function SearchModal({
             <Search size={14} />
             검색
           </Button>
+          {!isGuest && (
+            <Button
+              variant="ghost"
+              onClick={() => setTab('favorites')}
+              className={cn(
+                'flex-1 gap-1.5 rounded-lg px-3 py-2 text-sm font-medium',
+                tab === 'favorites' ? 'bg-white/10 text-white' : 'text-sa-text-muted hover:text-white',
+              )}
+            >
+              <Heart size={14} />
+              즐겨찾기
+            </Button>
+          )}
         </div>
 
         {tab === 'search' && (
@@ -231,6 +249,10 @@ export default function SearchModal({
               selectedOrder={selected.map((t) => t.sourceId)}
               disabledIds={disabledIds}
               maxReached={selected.length >= maxSelect}
+              favoriteIds={favoriteIds}
+              favLoadingIds={favLoadingIds}
+              onToggleFavorite={toggleFavorite}
+              isGuest={isGuest}
             />
           )}
 
@@ -247,6 +269,23 @@ export default function SearchModal({
               queueTrackIds={queueTrackIds}
               maxSelect={maxSelect}
               onToggleTrack={toggleSelect}
+              favoriteIds={favoriteIds}
+              favLoadingIds={favLoadingIds}
+              onToggleFavorite={toggleFavorite}
+              isGuest={isGuest}
+            />
+          )}
+
+          {tab === 'favorites' && (
+            <FavoritesList
+              onSelectTrack={toggleSelect}
+              selectedIds={selectedIds}
+              selectedOrder={selected.map((t) => t.sourceId)}
+              disabledIds={disabledIds}
+              maxReached={selected.length >= maxSelect}
+              favoriteIds={favoriteIds}
+              favLoadingIds={favLoadingIds}
+              onToggleFavorite={toggleFavorite}
             />
           )}
         </div>

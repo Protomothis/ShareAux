@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import { TrackLyricsType } from '@/api/model';
 import { useAudioControl } from '@/hooks/useAudioControl';
 import type { AutoDjStatus, StreamState, TrackInfo, TrackVoteMap, VisualMode } from '@/types';
 import { LyricsStatus } from '@/types';
@@ -34,7 +35,7 @@ interface PlayerProps {
   streamCodec?: string;
   streamBitrate?: number;
   lyricsStatus?: LyricsStatus;
-  lyricsEnhanced?: boolean;
+  lyricsType?: TrackLyricsType;
   lyricsVersion?: number;
   trackVotes?: TrackVoteMap;
   autoDjEnabled?: boolean;
@@ -65,7 +66,7 @@ export default function Player({
   streamCodec,
   streamBitrate,
   lyricsStatus,
-  lyricsEnhanced,
+  lyricsType,
   lyricsVersion,
   trackVotes,
   autoDjEnabled,
@@ -104,7 +105,7 @@ export default function Player({
         streamCodec={streamCodec}
         streamBitrate={streamBitrate}
         lyricsStatus={lyricsStatus}
-        lyricsEnhanced={lyricsEnhanced}
+        lyricsType={lyricsType}
         trackVotes={trackVotes}
         autoDjEnabled={autoDjEnabled}
         autoDjStatus={autoDjStatus}
@@ -128,6 +129,7 @@ export default function Player({
           lyricsStatus={lyricsStatus ?? LyricsStatus.Searching}
           trackId={track?.id}
           lyricsVersion={lyricsVersion}
+          karaoke={lyricsType === TrackLyricsType.karaoke}
         />
       </div>
 

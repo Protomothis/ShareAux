@@ -14,7 +14,8 @@ const MSE =
     ? ((window as unknown as Record<string, typeof MediaSource>).ManagedMediaSource ?? window.MediaSource)
     : undefined;
 
-export const IS_MMS = typeof window !== 'undefined' && !!(window as unknown as Record<string, unknown>).ManagedMediaSource;
+export const IS_MMS =
+  typeof window !== 'undefined' && !!(window as unknown as Record<string, unknown>).ManagedMediaSource;
 
 export const MSE_SUPPORTED = !!MSE && (typeof MSE.isTypeSupported === 'function' ? MSE.isTypeSupported(MIME) : true);
 

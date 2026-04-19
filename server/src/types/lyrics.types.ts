@@ -1,3 +1,5 @@
+import { LyricsType } from './lyrics-type.enum.js';
+
 export enum LyricsStatus {
   Searching = 'searching',
   Found = 'found',
@@ -6,5 +8,6 @@ export enum LyricsStatus {
 
 export interface LyricsResult {
   syncedLyrics?: string;
-  enhanced?: boolean;
+  lyricsType?: LyricsType;
+  lang?: string | null;
 }

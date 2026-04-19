@@ -4,6 +4,7 @@ import { Music, ThumbsDown, ThumbsUp, TrendingUp } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import type { TrackRankingItem } from '@/api/model';
+import { TrackRankingTrackInfoLyricsStatus, TrackRankingTrackInfoLyricsType } from '@/api/model';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminTable } from '@/components/admin/AdminTable';
 import type { Column } from '@/components/admin/AdminTable';
@@ -70,14 +71,19 @@ const columns: Column<TrackRankingItem>[] = [
   {
     key: 'lyrics',
     header: '가사',
-    width: '5rem',
+    width: '7rem',
     hideOnMobile: true,
     render: (item) => {
       const s = item.track.lyricsStatus;
       const lang = item.track.lyricsLang;
-      return s === 'found' ? (
-        <StatusBadge variant="success">{lang?.toUpperCase() ?? '있음'}</StatusBadge>
-      ) : s === 'not_found' ? (
+      const translated = item.track.hasTranslation;
+      const type = item.track.lyricsType === TrackRankingTrackInfoLyricsType.karaoke ? 'KLRC' : 'LRC';
+      return s === TrackRankingTrackInfoLyricsStatus.found ? (
+        <StatusBadge variant="success">
+          {type} {lang?.toUpperCase() ?? ''}
+          {translated ? ' 번역' : ''}
+        </StatusBadge>
+      ) : s === TrackRankingTrackInfoLyricsStatus.not_found ? (
         <StatusBadge variant="danger">없음</StatusBadge>
       ) : (
         <StatusBadge variant="muted">검색중</StatusBadge>
@@ -99,7 +105,7 @@ const columns: Column<TrackRankingItem>[] = [
 export default function AdminTracksPage() {
   const [search, setSearch] = useState('');
   const [selectedTrack, setSelectedTrack] = useState<TrackRankingItem | null>(null);
-  const { data, isLoading } = useAdminTopTracks({ limit: 50 });
+  const { data, isLoading, refetch } = useAdminTopTracks({ limit: 50 });
 
   const filtered = useMemo(() => {
     if (!search.trim()) return data ?? [];
@@ -124,7 +130,11 @@ export default function AdminTracksPage() {
         maxHeight="calc(100vh - 10rem)"
         onRowClick={setSelectedTrack}
       />
-      <TrackDetailModal track={selectedTrack} onOpenChange={(open) => !open && setSelectedTrack(null)} />
+      <TrackDetailModal
+        track={selectedTrack}
+        onOpenChange={(open) => !open && setSelectedTrack(null)}
+        onDeleted={() => refetch()}
+      />
     </div>
   );
 }

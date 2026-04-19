@@ -8,6 +8,7 @@
 import type { TrackProvider } from './trackProvider';
 import type { TrackMetaStatus } from './trackMetaStatus';
 import type { TrackLyricsStatus } from './trackLyricsStatus';
+import type { TrackLyricsType } from './trackLyricsType';
 
 export interface Track {
   id: string;
@@ -33,6 +34,8 @@ export interface Track {
   bitrateKbps?: number | null;
   metaStatus: TrackMetaStatus;
   lyricsStatus: TrackLyricsStatus;
+  /** @nullable */
+  lyricsType: TrackLyricsType;
   fetchedAt: string;
   /** @nullable */
   lyricsData: string | null;

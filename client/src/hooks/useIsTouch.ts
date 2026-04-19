@@ -8,5 +8,9 @@ const subscribe = (cb: () => void) => {
 
 /** primary input이 터치스크린인지 여부 */
 export function useIsTouch() {
-  return useSyncExternalStore(subscribe, () => !!query?.matches, () => false);
+  return useSyncExternalStore(
+    subscribe,
+    () => !!query?.matches,
+    () => false,
+  );
 }

@@ -1,0 +1,17 @@
+export enum FolderColor {
+  RED = 'red',
+  ORANGE = 'orange',
+  AMBER = 'amber',
+  YELLOW = 'yellow',
+  LIME = 'lime',
+  GREEN = 'green',
+  EMERALD = 'emerald',
+  TEAL = 'teal',
+  CYAN = 'cyan',
+  SKY = 'sky',
+  BLUE = 'blue',
+  INDIGO = 'indigo',
+  VIOLET = 'violet',
+  PURPLE = 'purple',
+  PINK = 'pink',
+}

@@ -1,5 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
+import { LyricsType } from '../../types/lyrics-type.enum.js';
+
 export class TrackRankingTrackInfo {
   @ApiProperty()
   name!: string;
@@ -18,6 +20,12 @@ export class TrackRankingTrackInfo {
 
   @ApiProperty({ enum: ['pending', 'done'] })
   metaStatus!: 'pending' | 'done';
+
+  @ApiPropertyOptional({ enum: LyricsType, nullable: true })
+  lyricsType!: LyricsType | null;
+
+  @ApiProperty({ description: '번역 가사 존재 여부' })
+  hasTranslation!: boolean;
 }
 
 export class TrackRankingItem {
