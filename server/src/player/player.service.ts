@@ -268,22 +268,25 @@ export class PlayerService {
     this.currentAddedBy.delete(roomId);
 
     this.clearVotes(roomId);
-    this.streamState.set(roomId, 'idle');
-
-    // 이전 트랙 정보 클리어 → 클라이언트에 즉시 idle 상태 전달
-    await this.playbackRepo.update(roomId, { isPlaying: false });
-    this.onTrackChangeCallback?.(roomId);
-
     const next = await this.queueRepo.findOne({
       where: { room: { id: roomId }, played: false },
       order: { position: 'ASC' },
       relations: ['track'],
     });
+
     if (next) {
+      // 다음 곡 대기 중 — preparing 상태로 클라이언트에 알림
+      this.streamState.set(roomId, 'preparing');
+      await this.playbackRepo.update(roomId, { isPlaying: false });
+      this.onTrackChangeCallback?.(roomId);
       // 마지막 오디오 프레임이 클라이언트에 도달할 시간 확보
       await new Promise((r) => setTimeout(r, TRACK_END_DELAY_MS));
       await this.queueRepo.update(next.id, { played: true });
       await this.play(roomId, next.track.id);
+    } else {
+      this.streamState.set(roomId, 'idle');
+      await this.playbackRepo.update(roomId, { isPlaying: false });
+      this.onTrackChangeCallback?.(roomId);
     }
   }
 
