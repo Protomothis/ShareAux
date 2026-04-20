@@ -15,6 +15,15 @@ import {
   MSE_SUPPORTED,
 } from '../lib/mse';
 
+/** init segment 중복 감지용 바이트 비교 */
+function bytesEqual(a: ArrayBuffer, b: ArrayBuffer): boolean {
+  if (a.byteLength !== b.byteLength) return false;
+  const va = new Uint8Array(a);
+  const vb = new Uint8Array(b);
+  for (let i = 0; i < va.length; i++) if (va[i] !== vb[i]) return false;
+  return true;
+}
+
 /**
  * useAudio — MSE fMP4 AAC 스트리밍 재생
  *
@@ -292,6 +301,8 @@ export function useAudio(onPlaying?: () => void, onStall?: () => void, onError?:
     audioRef.current?.pause();
   }, []);
 
+  const lastInitRef = useRef<ArrayBuffer | null>(null);
+
   // --- pushFrame: 프레임 수신 처리 ---
   const pushFrame = useCallback(
     (data: Uint8Array) => {
@@ -302,6 +313,11 @@ export function useAudio(onPlaying?: () => void, onStall?: () => void, onError?:
       if (!isInit && !gotInitRef.current) return;
 
       if (isInit) {
+        const buf = copyToArrayBuffer(data);
+        // 같은 init segment 중복 수신 → 무시
+        if (gotInitRef.current && lastInitRef.current && bytesEqual(lastInitRef.current, buf)) return;
+        lastInitRef.current = buf;
+
         if (gotInitRef.current) {
           // 곡 전환: SourceBuffer 클리어 후 init segment 재투입
           debug('[audio] track change, clearing buffer');
