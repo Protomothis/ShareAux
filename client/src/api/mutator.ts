@@ -22,20 +22,60 @@ export class ApiError extends Error {
   }
 }
 
+// 동시 401 발생 시 refresh 요청 공유
+let refreshPromise: Promise<boolean> | null = null;
+
+const SKIP_RETRY_PATHS = ['/api/auth/refresh', '/api/auth/login', '/api/auth/register', '/api/auth/guest'];
+
+const tryRefresh = (): Promise<boolean> => {
+  if (!refreshPromise) {
+    refreshPromise = fetch(`${getBaseUrl()}/api/auth/refresh`, {
+      method: 'POST',
+      credentials: 'include',
+    })
+      .then((r) => r.ok)
+      .catch(() => false)
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+  return refreshPromise;
+};
+
+const handleError = (status: number, body: Record<string, unknown>, url: string, options?: RequestInit) => {
+  if (typeof window !== 'undefined') {
+    const method = (options?.method ?? 'GET').toUpperCase();
+    import('../lib/api-error-toast').then((m) => m.notifyApiError(status, method, url, body)).catch(() => {});
+  }
+  throw new ApiError(status, body, body.message as string);
+};
+
 export const customFetch = async <T>(url: string, options?: RequestInit): Promise<T> => {
   const baseUrl = getBaseUrl();
   const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
 
   const res = await fetch(fullUrl, { ...options, credentials: 'include' });
 
+  // 401 + retry 대상 → refresh 후 1회 재시도
+  if (res.status === 401 && typeof window !== 'undefined' && !SKIP_RETRY_PATHS.some((p) => url.startsWith(p))) {
+    const refreshed = await tryRefresh();
+    if (refreshed) {
+      const retry = await fetch(fullUrl, { ...options, credentials: 'include' });
+      if (!retry.ok) {
+        const body = await retry.json().catch(() => ({}));
+        handleError(retry.status, body, url, options);
+      }
+      const text = await retry.text();
+      return (text ? JSON.parse(text) : null) as T;
+    }
+    // refresh 실패 → 원래 401 에러 throw
+    const body = await res.json().catch(() => ({}));
+    handleError(res.status, body, url, options);
+  }
+
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    if (typeof window !== 'undefined') {
-      const method = (options?.method ?? 'GET').toUpperCase();
-      import('../lib/api-error-toast').then((m) => m.notifyApiError(res.status, method, url, body)).catch(() => {});
-    }
-    const err = new ApiError(res.status, body, body.message as string);
-    throw err;
+    handleError(res.status, body, url, options);
   }
 
   const text = await res.text();
