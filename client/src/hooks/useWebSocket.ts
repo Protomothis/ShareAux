@@ -13,6 +13,7 @@ export function useWebSocket({
   onSystem,
   onReaction,
   onReconnect,
+  prepareResync,
   onTokenExpired,
 }: UseWebSocketOptions) {
   const wsRef = useRef<WebSocket | null>(null);
@@ -26,10 +27,10 @@ export function useWebSocket({
   useEffect(() => {
     urlRef.current = url;
   }, [url]);
-  const callbacksRef = useRef({ onAudio, onChat, onSystem, onReaction, onReconnect, onTokenExpired });
+  const callbacksRef = useRef({ onAudio, onChat, onSystem, onReaction, onReconnect, onTokenExpired, prepareResync });
   useEffect(() => {
-    callbacksRef.current = { onAudio, onChat, onSystem, onReaction, onReconnect, onTokenExpired };
-  }, [onAudio, onChat, onSystem, onReaction, onReconnect, onTokenExpired]);
+    callbacksRef.current = { onAudio, onChat, onSystem, onReaction, onReconnect, onTokenExpired, prepareResync };
+  }, [onAudio, onChat, onSystem, onReaction, onReconnect, onTokenExpired, prepareResync]);
 
   const connectRef = useRef<() => void>(undefined);
 
@@ -81,7 +82,20 @@ export function useWebSocket({
       const type = bytes[0];
 
       if (type === WsOpCode.Audio) {
+        // 오디오 프레임 수신 → resync 완료
+        if (resyncActiveRef.current) {
+          resyncActiveRef.current = false;
+          clearTimeout(resyncTimerRef.current);
+        }
         callbacksRef.current.onAudio?.(bytes.slice(1));
+      } else if (type === WsOpCode.ResyncWait) {
+        // 서버 아직 준비 안 됨 → 2초 후 sendResync만 재시도 (prepareResync 안 함)
+        debug('[WS] resync wait — retrying in 2s');
+        clearTimeout(resyncTimerRef.current);
+        resyncTimerRef.current = setTimeout(() => {
+          resyncActiveRef.current = false;
+          doSendResync();
+        }, 2000);
       } else if (type === WsOpCode.PingMeasure && bytes.byteLength >= 9) {
         // RTT 측정 응답: 1바이트 opcode + 8바이트 Float64 타임스탬프
         const view = new DataView(e.data);
@@ -201,11 +215,34 @@ export function useWebSocket({
     ws.send(frame);
   }, []);
 
-  const sendResync = useCallback(() => {
+  // --- Resync 단일 관리자 ---
+  const resyncActiveRef = useRef(false);
+  const resyncTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  /** 내부: WS로 Resync opcode 전송 (가드 적용) */
+  const doSendResync = useCallback(() => {
     const ws = wsRef.current;
-    debug('[WS] sending resync, readyState:', ws?.readyState);
-    if (ws?.readyState === WebSocket.OPEN) ws.send(new Uint8Array([WsOpCode.Resync]));
+    if (resyncActiveRef.current || ws?.readyState !== WebSocket.OPEN) return;
+    resyncActiveRef.current = true;
+    debug('[WS] sending resync');
+    ws.send(new Uint8Array([WsOpCode.Resync]));
+    // 안전장치: 10초 내 응답 없으면 잠금 해제
+    clearTimeout(resyncTimerRef.current);
+    resyncTimerRef.current = setTimeout(() => {
+      resyncActiveRef.current = false;
+    }, 10_000);
   }, []);
+
+  /** 외부 호출: prepareResync → sendResync (이미 진행 중이면 무시) */
+  const sendResync = useCallback(() => {
+    if (resyncActiveRef.current) return;
+    const prepare = callbacksRef.current.prepareResync;
+    if (prepare) {
+      void prepare().then(() => doSendResync());
+    } else {
+      doSendResync();
+    }
+  }, [doSendResync]);
 
   const sendListening = useCallback((on: boolean) => {
     const ws = wsRef.current;

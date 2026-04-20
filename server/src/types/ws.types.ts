@@ -9,6 +9,7 @@ export const enum WsOpCode {
   ListenerStatus = 0x06,
   Reaction = 0x07,
   PingMeasure = 0x08,
+  ResyncWait = 0x09,
 }
 
 export interface WsClient extends WebSocket {

@@ -114,13 +114,13 @@ export default function RoomClient({ id }: { id: string }) {
   } = events;
 
   // --- Audio ---
-  const roomAudio = useRoomAudio(audioLoadingRef, setAudioLoading, () => wsActionsRef.current?.sendResync());
+  const roomAudio = useRoomAudio(audioLoadingRef, setAudioLoading);
   const { audio, listening, volume, onAudio, handleListenToggle, handleVolumeChange } = roomAudio;
   useEffect(() => {
     if (streamState === 'skipping' || streamState === 'preparing') {
-      void audio.prepareResync().then(() => wsActionsRef.current?.sendResync());
+      wsActionsRef.current?.sendResync();
     }
-  }, [streamState, audio]);
+  }, [streamState]);
   useEffect(() => {
     listeningRef.current = listening;
   }, [listening, listeningRef]);
@@ -161,6 +161,7 @@ export default function RoomClient({ id }: { id: string }) {
     onChat,
     onSystem,
     onReaction,
+    prepareResync: audio.prepareResync,
     onReconnect: useCallback(() => {
       invalidate.player(id);
       invalidate.queue(id);

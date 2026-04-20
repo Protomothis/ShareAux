@@ -113,14 +113,14 @@ export class AudioService {
     if (state) state.synced = false;
   }
 
-  resyncListener(roomId: string, cb: (chunk: Buffer) => void): void {
+  resyncListener(roomId: string, cb: (chunk: Buffer) => void): boolean {
     const room = this.rooms.get(roomId);
     const state = room?.listeners.get(cb);
     if (!state) {
       this.logger.debug(
         `[${roomId}] resync: listener not found (room=${!!room}, listeners=${room?.listeners.size ?? 0})`,
       );
-      return;
+      return false;
     }
 
     if (room!.initSegment) {
@@ -131,14 +131,16 @@ export class AudioService {
         this.logger.log(
           `[${roomId}] resync: sent cached init segment (${room!.initSegment.length}b) + ${room!.recentChunks.length} recent chunks`,
         );
+        return true;
       } catch (e) {
         this.logger.warn(`[${roomId}] resync send failed: ${e}`);
         state.synced = false;
+        return false;
       }
     } else {
-      // init segment 아직 없음 → 다음 broadcastChunk에서 처리
-      this.logger.debug(`[${roomId}] resync: no init segment cached, waiting for next chunk`);
+      this.logger.debug(`[${roomId}] resync: no init segment cached, sending wait`);
       state.synced = false;
+      return false;
     }
   }
 
