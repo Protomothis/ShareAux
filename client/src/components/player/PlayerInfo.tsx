@@ -7,6 +7,7 @@ import { TrackLyricsType } from '@/api/model';
 import type { AutoDjStatus, StreamState, TrackInfo, TrackVoteMap } from '@/types';
 import { LyricsStatus } from '@/types';
 
+import { FavoriteButton } from '../common/FavoriteButton';
 import { InfoTag } from '../common/InfoTag';
 import MarqueeText from '../common/MarqueeText';
 import Thumbnail from '../common/Thumbnail';
@@ -25,6 +26,9 @@ interface PlayerInfoProps {
   autoDjEnabled?: boolean;
   autoDjStatus?: AutoDjStatus;
   streamState?: StreamState;
+  isFavorite?: boolean;
+  favoriteLoading?: boolean;
+  onToggleFavorite?: () => void;
 }
 
 export default function PlayerInfo({
@@ -40,6 +44,9 @@ export default function PlayerInfo({
   autoDjEnabled,
   autoDjStatus,
   streamState,
+  isFavorite,
+  favoriteLoading,
+  onToggleFavorite,
 }: PlayerInfoProps) {
   const statusText =
     streamState === 'skipping'
@@ -68,6 +75,15 @@ export default function PlayerInfo({
             <div className="flex size-14 items-center justify-center rounded-xl bg-white/5 text-xl shadow-lg shadow-black/40">
               🎵
             </div>
+          )}
+          {onToggleFavorite && track && (
+            <FavoriteButton
+              active={!!isFavorite}
+              onClick={onToggleFavorite}
+              loading={favoriteLoading}
+              size={12}
+              className="absolute -left-1 -top-1 z-10"
+            />
           )}
           {isPlaying && track && streamState === 'streaming' && (
             <span className="absolute -bottom-1 -right-1 z-10 flex size-3">

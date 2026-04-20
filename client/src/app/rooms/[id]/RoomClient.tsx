@@ -29,6 +29,7 @@ import { Button } from '@/components/ui/button';
 import { useMyPermissions } from '@/hooks/useMyPermissions';
 import { queryKeys, useInvalidate } from '@/hooks/useQueries';
 import { useReactions } from '@/hooks/useReactions';
+import { useFavorites } from '@/hooks/useFavorites';
 import { useRoomAudio } from '@/hooks/useRoomAudio';
 import { useRoomEvents } from '@/hooks/useRoomEvents';
 import { useWebSocket } from '@/hooks/useWebSocket';
@@ -69,6 +70,11 @@ export default function RoomClient({ id }: { id: string }) {
 
   const isHost = !!(room && userId && room.hostId === userId);
   const { can } = useMyPermissions(id);
+  const { favoriteIds, loadingIds: favLoadingIds, toggle: toggleFavorite } = useFavorites(role !== 'guest');
+  const favorites = useMemo(
+    () => ({ favoriteIds, favLoadingIds, toggleFavorite }),
+    [favoriteIds, favLoadingIds, toggleFavorite],
+  );
 
   // --- Events ---
   const listeningRef = useRef(false);
@@ -127,6 +133,8 @@ export default function RoomClient({ id }: { id: string }) {
       currentTrack
         ? {
             id: currentTrack.id,
+            sourceId: currentTrack.sourceId,
+            provider: currentTrack.provider,
             name: currentTrack.name,
             artist: currentTrack.artist,
             thumbnail: currentTrack.thumbnail,
@@ -286,6 +294,9 @@ export default function RoomClient({ id }: { id: string }) {
     autoDjStatus,
     streamState,
     onSkipError: () => invalidate.player(id),
+    isFavorite: track ? favorites.favoriteIds.has(track.sourceId) : false,
+    favoriteLoading: track ? favorites.favLoadingIds.has(track.sourceId) : false,
+    onToggleFavorite: track && role !== 'guest' ? () => favorites.toggleFavorite(track) : undefined,
   };
 
   const chatProps = {
@@ -380,6 +391,7 @@ export default function RoomClient({ id }: { id: string }) {
             isGuest={role === 'guest'}
             maxSelectPerAdd={room.maxSelectPerAdd}
             trackVotes={trackVotes}
+            favorites={favorites}
           />
         </div>
       </div>
@@ -407,9 +419,10 @@ export default function RoomClient({ id }: { id: string }) {
                 maxSelectPerAdd={room.maxSelectPerAdd}
                 trackVotes={trackVotes}
                 autoDjStatus={autoDjStatus}
+                favorites={favorites}
               />
             )}
-            {mobileTab === 'history' && <HistoryPanel roomId={id} isGuest={role === 'guest'} />}
+            {mobileTab === 'history' && <HistoryPanel roomId={id} isGuest={role === 'guest'} favorites={favorites} />}
             {mobileTab === 'members' && <MemberList {...memberListProps} />}
           </motion.div>
         </AnimatePresence>

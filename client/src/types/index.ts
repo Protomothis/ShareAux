@@ -14,6 +14,7 @@ export type {
   VisualMode,
 } from './player.types';
 export type { MobileTab } from './room.types';
+export type { FavoriteActions } from './favorite.types';
 export type { UseWebSocketOptions } from './ws.types';
 /** swagger 기반 WsEvent (server WsEvent enum) */
 export { WsEnumsSchemaWsEvent as WsEvent } from '@/api/model';

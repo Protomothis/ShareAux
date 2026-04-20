@@ -42,6 +42,9 @@ interface PlayerProps {
   autoDjStatus?: AutoDjStatus;
   streamState?: StreamState;
   onSkipError?: () => void;
+  isFavorite?: boolean;
+  favoriteLoading?: boolean;
+  onToggleFavorite?: () => void;
 }
 
 export default function Player({
@@ -73,6 +76,9 @@ export default function Player({
   autoDjStatus,
   streamState,
   onSkipError,
+  isFavorite,
+  favoriteLoading,
+  onToggleFavorite,
 }: PlayerProps) {
   const { elapsed, muted, effectiveVolume, toggleMute, handleVolumeChange } = useAudioControl({
     elapsedBase,
@@ -89,7 +95,7 @@ export default function Player({
   const progress = duration > 0 && isStreaming ? Math.min(elapsed / duration, 1) : 0;
 
   return (
-    <div className="animate-fade-in relative overflow-x-clip bg-gradient-to-b from-white/[0.06] to-white/[0.02] backdrop-blur-2xl lg:mx-0 lg:mt-0 lg:rounded-2xl lg:border lg:border-white/[0.08]">
+    <div className="animate-fade-in relative select-none overflow-x-clip bg-gradient-to-b from-white/[0.06] to-white/[0.02] backdrop-blur-2xl lg:mx-0 lg:mt-0 lg:rounded-2xl lg:border lg:border-white/[0.08]">
       {/* 썸네일 블러 배경 */}
       {track?.thumbnail && track.thumbnail !== 'NA' && (
         <div
@@ -110,6 +116,9 @@ export default function Player({
         autoDjEnabled={autoDjEnabled}
         autoDjStatus={autoDjStatus}
         streamState={streamState}
+        isFavorite={isFavorite}
+        favoriteLoading={favoriteLoading}
+        onToggleFavorite={onToggleFavorite}
       />
 
       {getAnalyser && (

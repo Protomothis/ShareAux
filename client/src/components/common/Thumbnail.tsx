@@ -52,6 +52,7 @@ export default function Thumbnail({ src, size = 'md', className, alt = '' }: Thu
         alt={alt}
         width={config.width}
         height={config.height}
+        draggable={false}
         className={cn(
           'h-full w-full object-cover transition-opacity duration-200',
           loaded ? 'opacity-100' : 'opacity-0',

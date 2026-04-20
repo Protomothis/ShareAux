@@ -5,6 +5,8 @@ import AudioControl from '@/components/player/AudioControl';
 
 const mockTrack = {
   id: 'mock-track',
+  sourceId: 'mock-source',
+  provider: 'yt' as const,
   name: 'Blinding Lights — The Weeknd (Official Music Video)',
   artist: 'The Weeknd',
   thumbnail: 'https://picsum.photos/200',
