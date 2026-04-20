@@ -141,6 +141,8 @@ src/
 - 곡 전환: `clearBuffer()` — `sb.abort()` + `sb.remove()`. 새 MediaSource 생성 금지
 - `audio.load()` 호출 금지 (재생 상태 리셋, iOS 제스처 토큰 소비)
 - `audio.play()`는 유저 제스처 컨텍스트에서 동기적으로 호출 (await 전에)
+- **resync는 `useWebSocket.sendResync()` 한 곳에서만 호출** — `prepareResync` + WS 전송을 직접 조합하지 말 것. `sendResync`가 내부에서 `prepareResync` → WS 전송 → ResyncWait 재시도를 단일 관리
+- 같은 init segment 중복 수신 시 `bytesEqual`로 무시 — `broadcastInitSegment`와 resync 응답이 동시에 올 수 있음
 
 ---
 
