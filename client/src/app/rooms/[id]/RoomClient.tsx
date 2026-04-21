@@ -57,11 +57,11 @@ export default function RoomClient({ id }: { id: string }) {
     isError: roomError,
     isLoading: roomLoading,
   } = useRoomsControllerFindOne(id, { query: { retry: 1 } });
-  const { data: playerData } = usePlayerControllerGetStatus(id);
+  const { data: playerData } = usePlayerControllerGetStatus(id, { query: { enabled: !roomError } });
   const isTouch = useIsTouch();
   const kbOffset = useKeyboardHeight();
-  const { data: queue = [] } = useQueueControllerGetQueue(id);
-  const { data: history = [] } = useQueueControllerGetHistory(id);
+  const { data: queue = [] } = useQueueControllerGetQueue(id, { query: { enabled: !roomError } });
+  const { data: history = [] } = useQueueControllerGetHistory(id, { query: { enabled: !roomError } });
   const members = room?.members ?? [];
 
   const userId = useAuthStore((s) => s.userId);
@@ -147,7 +147,7 @@ export default function RoomClient({ id }: { id: string }) {
 
   // --- WebSocket ---
   // WS는 same-origin 쿠키 자동 전송. roomId만 query로 전달
-  const wsReady = !!userId;
+  const wsReady = !!userId && !roomError;
   const wsActionsRef = useRef<{ sendListening: (v: boolean) => void; sendResync: () => void }>(null!);
 
   const { sendChat, sendListening, sendReaction, sendResync, getOneWay, wsConnected } = useWebSocket({

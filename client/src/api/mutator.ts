@@ -45,7 +45,10 @@ const tryRefresh = (): Promise<boolean> => {
 const handleError = (status: number, body: Record<string, unknown>, url: string, options?: RequestInit) => {
   if (typeof window !== 'undefined') {
     const method = (options?.method ?? 'GET').toUpperCase();
-    import('../lib/api-error-toast').then((m) => m.notifyApiError(status, method, url, body)).catch(() => {});
+    // GET 404는 react-query가 처리 — 토스트 불필요
+    if (!(method === 'GET' && status === 404)) {
+      import('../lib/api-error-toast').then((m) => m.notifyApiError(status, method, url, body)).catch(() => {});
+    }
   }
   throw new ApiError(status, body, body.message as string);
 };
