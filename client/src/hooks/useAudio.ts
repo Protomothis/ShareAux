@@ -24,7 +24,7 @@ import {
  * - audio.load() 절대 호출 안 함 → autoplay 정책 안 걸림
  * - 모든 프레임은 queue에 쌓고 flush로 순차 append
  */
-export function useAudio(onPlaying?: () => void, onStall?: () => void, onError?: () => void) {
+export function useAudio(onPlaying?: () => void, onError?: () => void) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const msRef = useRef<ManagedMediaSourceLike | null>(null);
   const sbRef = useRef<SourceBuffer | null>(null);
@@ -37,13 +37,11 @@ export function useAudio(onPlaying?: () => void, onStall?: () => void, onError?:
   const resettingRef = useRef(false);
 
   const onPlayingRef = useRef(onPlaying);
-  const onStallRef = useRef(onStall);
   const onErrorRef = useRef(onError);
   useEffect(() => {
     onPlayingRef.current = onPlaying;
-    onStallRef.current = onStall;
     onErrorRef.current = onError;
-  }, [onPlaying, onStall]);
+  }, [onPlaying, onError]);
 
   // --- flush: queue에서 하나씩 SourceBuffer에 append ---
   const resetMSERef = useRef<() => void>(() => {});
@@ -64,7 +62,6 @@ export function useAudio(onPlaying?: () => void, onStall?: () => void, onError?:
   }, []);
 
   const needsFirstPlayRef = useRef(true);
-  const stallTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // --- clearBuffer: SourceBuffer 데이터만 클리어 (MSE/Audio 유지) ---
   const clearBuffer = useCallback((): Promise<void> => {
@@ -212,7 +209,6 @@ export function useAudio(onPlaying?: () => void, onStall?: () => void, onError?:
     audio.addEventListener('timeupdate', () => {
       if (needsFirstPlayRef.current) {
         needsFirstPlayRef.current = false;
-        clearTimeout(stallTimerRef.current);
         onPlayingRef.current?.();
       }
     });
@@ -261,6 +257,7 @@ export function useAudio(onPlaying?: () => void, onStall?: () => void, onError?:
       if (ms.readyState === 'open') {
         setupSb(ms);
         readyRef.current = true;
+        flush();
         resolve();
       } else {
         const timeout = setTimeout(() => {
@@ -273,6 +270,7 @@ export function useAudio(onPlaying?: () => void, onStall?: () => void, onError?:
             clearTimeout(timeout);
             setupSb(ms);
             readyRef.current = true;
+            flush(); // queue에 쌓인 데이터 처리
             resolve();
           },
           { once: true },
@@ -280,10 +278,7 @@ export function useAudio(onPlaying?: () => void, onStall?: () => void, onError?:
       }
     });
 
-    audio.play().catch(() => {
-      /* expected: no data yet */
-    });
-    if (audio.paused) audio.play().catch((e) => debug('[audio] init play retry:', e.message));
+    // play는 updateend에서 버퍼 확보 후 호출 — 여기서 호출하면 빈 MSE에서 ended 전환
   }, [setupSb, clearBuffer]);
 
   // --- pause ---
@@ -299,35 +294,14 @@ export function useAudio(onPlaying?: () => void, onStall?: () => void, onError?:
 
       const isInit = isInitSegment(data);
 
-      if (!isInit && !gotInitRef.current) return;
-
-      if (isInit) {
-        if (gotInitRef.current) {
-          // 곡 전환: SourceBuffer 클리어 후 init segment 재투입
-          debug('[audio] track change, clearing buffer');
-          void clearBuffer().then(() => {
-            gotInitRef.current = true;
-            if (audioRef.current) audioRef.current.currentTime = 0;
-            queueRef.current.push(copyToArrayBuffer(data));
-            flush();
-            // 5초 내 재생 안 시작되면 stall 콜백
-            clearTimeout(stallTimerRef.current);
-            stallTimerRef.current = setTimeout(() => {
-              if (needsFirstPlayRef.current) {
-                debug('[audio] stall detected, requesting resync');
-                onStallRef.current?.();
-              }
-            }, 3000);
-          });
-          return;
-        }
-        gotInitRef.current = true;
-      }
+      if (!isInit && !gotInitRef.current) return; // init 전 chunk 무시
+      if (isInit && gotInitRef.current) return; // 중복 init 무시
+      if (isInit) gotInitRef.current = true;
 
       queueRef.current.push(copyToArrayBuffer(data));
       if (readyRef.current && msRef.current?.readyState === 'open' && sbRef.current && !resettingRef.current) flush();
     },
-    [flush, clearBuffer],
+    [flush],
   );
 
   const setVolume = useCallback((v: number) => {
@@ -361,7 +335,6 @@ export function useAudio(onPlaying?: () => void, onStall?: () => void, onError?:
       return Promise.resolve();
     }
     gotInitRef.current = false;
-    clearTimeout(stallTimerRef.current);
     return clearBuffer();
   }, [clearBuffer]);
 

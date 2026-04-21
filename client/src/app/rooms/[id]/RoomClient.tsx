@@ -81,7 +81,8 @@ export default function RoomClient({ id }: { id: string }) {
   const trackRef = useRef<Track | null>(null);
   const getOneWayRef = useRef<() => number>(() => 0);
   const getCurrentTimeRef = useRef<() => number>(() => 0);
-  const events = useRoomEvents(id, listeningRef, trackRef, getOneWayRef, getCurrentTimeRef);
+  const onResyncNeededRef = useRef<(action: 'prepare' | 'send') => void>(() => {});
+  const events = useRoomEvents(id, listeningRef, trackRef, getOneWayRef, getCurrentTimeRef, onResyncNeededRef);
   const {
     messages,
     isPlaying,
@@ -114,13 +115,8 @@ export default function RoomClient({ id }: { id: string }) {
   } = events;
 
   // --- Audio ---
-  const roomAudio = useRoomAudio(audioLoadingRef, setAudioLoading, () => wsActionsRef.current?.sendResync());
+  const roomAudio = useRoomAudio(audioLoadingRef, setAudioLoading);
   const { audio, listening, volume, onAudio, handleListenToggle, handleVolumeChange } = roomAudio;
-  useEffect(() => {
-    if (streamState === 'skipping' || streamState === 'preparing') {
-      void audio.prepareResync().then(() => wsActionsRef.current?.sendResync());
-    }
-  }, [streamState, audio]);
   useEffect(() => {
     listeningRef.current = listening;
   }, [listening, listeningRef]);
@@ -173,11 +169,16 @@ export default function RoomClient({ id }: { id: string }) {
       }
     }, [id, invalidate]),
   });
+  // 렌더 중 즉시 할당 — useEffect보다 먼저 실행되어야 WS 이벤트에서 사용 가능
+  wsActionsRef.current = { sendListening, sendResync };
+  onResyncNeededRef.current = (action) => {
+    if (action === 'prepare') void audio.prepareResync();
+    else sendResync();
+  };
   useEffect(() => {
-    wsActionsRef.current = { sendListening, sendResync };
     getOneWayRef.current = getOneWay;
     getCurrentTimeRef.current = audio.getCurrentTime;
-  }, [sendListening, sendResync, getOneWay, audio.getCurrentTime]);
+  }, [getOneWay, audio.getCurrentTime]);
 
   // --- Room join ---
   const joinRoom = useCallback(
@@ -210,6 +211,7 @@ export default function RoomClient({ id }: { id: string }) {
     if (!playerData?.isPlaying || !playerData.track) return;
     setPlaying(true);
     setTrack(playerData.track);
+    trackRef.current = playerData.track;
     setElapsedBase((playerData.elapsedMs ?? 0) + (getOneWayRef.current() ?? 0));
     setSyncTime(Date.now());
     if (playerData.streamState) setStreamState(playerData.streamState as StreamState);
@@ -271,7 +273,11 @@ export default function RoomClient({ id }: { id: string }) {
     track,
     canVoteSkip: can('voteSkip'),
     onVolumeChange: handleVolumeChange,
-    onListenToggle: () => handleListenToggle(sendListening, sendResync),
+    onListenToggle: async () => {
+      await handleListenToggle(sendListening);
+      // 이미 streaming 중이면 즉시 resync (중간 입장)
+      if (streamState === 'streaming') sendResync();
+    },
     listening,
     audioLoading,
     volume,
