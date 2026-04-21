@@ -71,9 +71,11 @@ export const customFetch = async <T>(url: string, options?: RequestInit): Promis
       const text = await retry.text();
       return (text ? JSON.parse(text) : null) as T;
     }
-    // refresh 실패 → 원래 401 에러 throw
-    const body = await res.json().catch(() => ({}));
-    handleError(res.status, body, url, options);
+    // refresh 실패 → 세션 만료 안내 후 로그인 페이지로 이동
+    const { toast } = await import('sonner');
+    toast.error('세션이 만료되었습니다', { description: '다시 로그인해주세요' });
+    setTimeout(() => (window.location.href = '/login'), 1500);
+    return new Promise<never>(() => {});
   }
 
   if (!res.ok) {
