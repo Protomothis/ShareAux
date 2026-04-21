@@ -76,7 +76,8 @@ export class QueueController {
           this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue: refreshed });
           // 재생 중인 곡의 메타데이터가 갱신됐으면 클라이언트에 알림
           if (status?.track) {
-            const enriched = needsEnrich.find((t) => t.id === status.track.id);
+            const currentTrack = status.track;
+            const enriched = needsEnrich.find((t) => t.id === currentTrack.id);
             if (enriched) {
               const fresh = refreshed.find((q) => q.track.id === enriched.id)?.track;
               if (fresh?.songTitle) {

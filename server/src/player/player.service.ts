@@ -284,7 +284,12 @@ export class PlayerService {
       await this.play(roomId, next.track.id);
     } else {
       this.streamState.set(roomId, 'idle');
-      await this.playbackRepo.update(roomId, { isPlaying: false });
+      const pb = await this.playbackRepo.findOneBy({ roomId });
+      if (pb) {
+        pb.isPlaying = false;
+        pb.track = null;
+        await this.playbackRepo.save(pb);
+      }
       this.onTrackChangeCallback?.(roomId);
     }
   }

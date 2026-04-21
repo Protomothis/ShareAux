@@ -18,7 +18,7 @@ export class RoomPlayback {
   @ApiProperty({ type: () => Track, required: false, nullable: true })
   @ManyToOne(() => Track, { nullable: true })
   @JoinColumn({ name: 'track_id' })
-  track!: Track;
+  track!: Track | null;
 
   @ApiProperty({ default: false })
   @Column({ default: false, name: 'is_playing' })
