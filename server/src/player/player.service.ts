@@ -274,7 +274,6 @@ export class PlayerService {
 
     if (next) {
       this.streamState.set(roomId, 'preparing');
-      await this.playbackRepo.update(roomId, { isPlaying: false });
       this.onTrackChangeCallback?.(roomId);
       // 자연 종료 시에만 마지막 버퍼 재생 대기 (스킵은 즉시 전환)
       if (!wasSkipped) {
