@@ -20,6 +20,7 @@ export function useRoomEvents(
   _trackRef: React.MutableRefObject<Track | null>,
   getOneWayRef?: React.MutableRefObject<() => number>,
   getCurrentTimeRef?: React.MutableRefObject<() => number>,
+  onResyncNeededRef?: React.MutableRefObject<(action: 'prepare' | 'send') => void>,
 ) {
   const router = useRouter();
   const invalidate = useInvalidate();
@@ -80,21 +81,32 @@ export function useRoomEvents(
         setStreamState(ss as StreamState);
         setElapsedBase(0);
         setSyncTime(0);
+        // preparing: 버퍼 정리만 (서버에 init segment 아직 없음)
+        if (listeningRef.current) onResyncNeededRef?.current('prepare');
+      }
+      if (ss === 'streaming') {
+        setStreamState('streaming');
+        // streaming: 서버에 init segment 확보됨 → resync 요청
+        if (listeningRef.current) onResyncNeededRef?.current('send');
       }
     },
-    [listeningRef],
+    [listeningRef, onResyncNeededRef],
   );
 
   // ─── Playback: track change (lyrics/skip reset) ──────
-  const handleTrackChange = useCallback((track: Track | undefined) => {
-    const ls = track?.lyricsStatus;
-    setLyricsStatus(
-      ls === 'found' ? LyricsStatus.Found : ls === 'not_found' ? LyricsStatus.NotFound : LyricsStatus.Searching,
-    );
-    setLyricsType(null);
-    setSkipVotes(0);
-    setStreamState('preparing');
-  }, []);
+  const handleTrackChange = useCallback(
+    (track: Track | undefined) => {
+      const ls = track?.lyricsStatus;
+      setLyricsStatus(
+        ls === 'found' ? LyricsStatus.Found : ls === 'not_found' ? LyricsStatus.NotFound : LyricsStatus.Searching,
+      );
+      setLyricsType(null);
+      setSkipVotes(0);
+      setStreamState('preparing');
+      if (listeningRef.current) onResyncNeededRef?.current('prepare');
+    },
+    [listeningRef, onResyncNeededRef],
+  );
 
   // ─── Playback: time sync ──────────────────────────────
   const handleTimeSync = useCallback(
@@ -146,6 +158,7 @@ export function useRoomEvents(
       const trackChanged = d.track?.id !== _trackRef.current?.id;
 
       if (trackChanged) {
+        _trackRef.current = d.track ?? null;
         handleTrackChange(d.track);
       } else if (d.track?.lyricsStatus === 'found') {
         setLyricsStatus(LyricsStatus.Found);
@@ -159,12 +172,24 @@ export function useRoomEvents(
           setAudioLoading(true);
         }
         if (d.streamState) setStreamState(d.streamState as StreamState);
+        // streaming 전환: init segment 확보됨 → resync 요청
+        if (d.streamState === 'streaming' && listeningRef.current) {
+          onResyncNeededRef?.current('send');
+        }
       } else {
         handleStopped();
       }
       setPlaying(!!d.isPlaying);
     },
-    [_trackRef, listeningRef, handleStreamStateOnly, handleTrackChange, handleTimeSync, handleStopped],
+    [
+      _trackRef,
+      listeningRef,
+      onResyncNeededRef,
+      handleStreamStateOnly,
+      handleTrackChange,
+      handleTimeSync,
+      handleStopped,
+    ],
   );
 
   // ─── System event dispatcher ──────────────────────────

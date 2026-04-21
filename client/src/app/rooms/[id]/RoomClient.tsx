@@ -29,6 +29,7 @@ import { Button } from '@/components/ui/button';
 import { useMyPermissions } from '@/hooks/useMyPermissions';
 import { queryKeys, useInvalidate } from '@/hooks/useQueries';
 import { useReactions } from '@/hooks/useReactions';
+import { useFavorites } from '@/hooks/useFavorites';
 import { useRoomAudio } from '@/hooks/useRoomAudio';
 import { useRoomEvents } from '@/hooks/useRoomEvents';
 import { useWebSocket } from '@/hooks/useWebSocket';
@@ -56,11 +57,11 @@ export default function RoomClient({ id }: { id: string }) {
     isError: roomError,
     isLoading: roomLoading,
   } = useRoomsControllerFindOne(id, { query: { retry: 1 } });
-  const { data: playerData } = usePlayerControllerGetStatus(id);
+  const { data: playerData } = usePlayerControllerGetStatus(id, { query: { enabled: !roomError } });
   const isTouch = useIsTouch();
   const kbOffset = useKeyboardHeight();
-  const { data: queue = [] } = useQueueControllerGetQueue(id);
-  const { data: history = [] } = useQueueControllerGetHistory(id);
+  const { data: queue = [] } = useQueueControllerGetQueue(id, { query: { enabled: !roomError } });
+  const { data: history = [] } = useQueueControllerGetHistory(id, { query: { enabled: !roomError } });
   const members = room?.members ?? [];
 
   const userId = useAuthStore((s) => s.userId);
@@ -69,13 +70,19 @@ export default function RoomClient({ id }: { id: string }) {
 
   const isHost = !!(room && userId && room.hostId === userId);
   const { can } = useMyPermissions(id);
+  const { favoriteIds, loadingIds: favLoadingIds, toggle: toggleFavorite } = useFavorites(role !== 'guest');
+  const favorites = useMemo(
+    () => ({ favoriteIds, favLoadingIds, toggleFavorite }),
+    [favoriteIds, favLoadingIds, toggleFavorite],
+  );
 
   // --- Events ---
   const listeningRef = useRef(false);
   const trackRef = useRef<Track | null>(null);
   const getOneWayRef = useRef<() => number>(() => 0);
   const getCurrentTimeRef = useRef<() => number>(() => 0);
-  const events = useRoomEvents(id, listeningRef, trackRef, getOneWayRef, getCurrentTimeRef);
+  const onResyncNeededRef = useRef<(action: 'prepare' | 'send') => void>(() => {});
+  const events = useRoomEvents(id, listeningRef, trackRef, getOneWayRef, getCurrentTimeRef, onResyncNeededRef);
   const {
     messages,
     isPlaying,
@@ -108,13 +115,8 @@ export default function RoomClient({ id }: { id: string }) {
   } = events;
 
   // --- Audio ---
-  const roomAudio = useRoomAudio(audioLoadingRef, setAudioLoading, () => wsActionsRef.current?.sendResync());
+  const roomAudio = useRoomAudio(audioLoadingRef, setAudioLoading);
   const { audio, listening, volume, onAudio, handleListenToggle, handleVolumeChange } = roomAudio;
-  useEffect(() => {
-    if (streamState === 'skipping' || streamState === 'preparing') {
-      void audio.prepareResync().then(() => wsActionsRef.current?.sendResync());
-    }
-  }, [streamState, audio]);
   useEffect(() => {
     listeningRef.current = listening;
   }, [listening, listeningRef]);
@@ -127,6 +129,8 @@ export default function RoomClient({ id }: { id: string }) {
       currentTrack
         ? {
             id: currentTrack.id,
+            sourceId: currentTrack.sourceId,
+            provider: currentTrack.provider,
             name: currentTrack.name,
             artist: currentTrack.artist,
             thumbnail: currentTrack.thumbnail,
@@ -143,7 +147,7 @@ export default function RoomClient({ id }: { id: string }) {
 
   // --- WebSocket ---
   // WS는 same-origin 쿠키 자동 전송. roomId만 query로 전달
-  const wsReady = !!userId;
+  const wsReady = !!userId && !roomError;
   const wsActionsRef = useRef<{ sendListening: (v: boolean) => void; sendResync: () => void }>(null!);
 
   const { sendChat, sendListening, sendReaction, sendResync, getOneWay, wsConnected } = useWebSocket({
@@ -165,11 +169,16 @@ export default function RoomClient({ id }: { id: string }) {
       }
     }, [id, invalidate]),
   });
+  // 렌더 중 즉시 할당 — useEffect보다 먼저 실행되어야 WS 이벤트에서 사용 가능
+  wsActionsRef.current = { sendListening, sendResync };
+  onResyncNeededRef.current = (action) => {
+    if (action === 'prepare') void audio.prepareResync();
+    else sendResync();
+  };
   useEffect(() => {
-    wsActionsRef.current = { sendListening, sendResync };
     getOneWayRef.current = getOneWay;
     getCurrentTimeRef.current = audio.getCurrentTime;
-  }, [sendListening, sendResync, getOneWay, audio.getCurrentTime]);
+  }, [getOneWay, audio.getCurrentTime]);
 
   // --- Room join ---
   const joinRoom = useCallback(
@@ -202,6 +211,7 @@ export default function RoomClient({ id }: { id: string }) {
     if (!playerData?.isPlaying || !playerData.track) return;
     setPlaying(true);
     setTrack(playerData.track);
+    trackRef.current = playerData.track;
     setElapsedBase((playerData.elapsedMs ?? 0) + (getOneWayRef.current() ?? 0));
     setSyncTime(Date.now());
     if (playerData.streamState) setStreamState(playerData.streamState as StreamState);
@@ -263,7 +273,11 @@ export default function RoomClient({ id }: { id: string }) {
     track,
     canVoteSkip: can('voteSkip'),
     onVolumeChange: handleVolumeChange,
-    onListenToggle: () => handleListenToggle(sendListening, sendResync),
+    onListenToggle: async () => {
+      await handleListenToggle(sendListening);
+      // 이미 streaming 중이면 즉시 resync (중간 입장)
+      if (streamState === 'streaming') sendResync();
+    },
     listening,
     audioLoading,
     volume,
@@ -286,6 +300,9 @@ export default function RoomClient({ id }: { id: string }) {
     autoDjStatus,
     streamState,
     onSkipError: () => invalidate.player(id),
+    isFavorite: track ? favorites.favoriteIds.has(track.sourceId) : false,
+    favoriteLoading: track ? favorites.favLoadingIds.has(track.sourceId) : false,
+    onToggleFavorite: track && role !== 'guest' ? () => favorites.toggleFavorite(track) : undefined,
   };
 
   const chatProps = {
@@ -380,6 +397,7 @@ export default function RoomClient({ id }: { id: string }) {
             isGuest={role === 'guest'}
             maxSelectPerAdd={room.maxSelectPerAdd}
             trackVotes={trackVotes}
+            favorites={favorites}
           />
         </div>
       </div>
@@ -407,9 +425,10 @@ export default function RoomClient({ id }: { id: string }) {
                 maxSelectPerAdd={room.maxSelectPerAdd}
                 trackVotes={trackVotes}
                 autoDjStatus={autoDjStatus}
+                favorites={favorites}
               />
             )}
-            {mobileTab === 'history' && <HistoryPanel roomId={id} isGuest={role === 'guest'} />}
+            {mobileTab === 'history' && <HistoryPanel roomId={id} isGuest={role === 'guest'} favorites={favorites} />}
             {mobileTab === 'members' && <MemberList {...memberListProps} />}
           </motion.div>
         </AnimatePresence>

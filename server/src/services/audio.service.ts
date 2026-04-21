@@ -11,8 +11,6 @@ import {
 } from '../constants.js';
 import type { ListenerState, ParsedInitSegment, RoomAudio, StreamInfo } from '../types/index.js';
 
-const MOOF_MARKER = Buffer.from([0x6d, 0x6f, 0x6f, 0x66]);
-
 @Injectable()
 export class AudioService {
   private readonly logger = new Logger(AudioService.name);
@@ -113,33 +111,35 @@ export class AudioService {
     if (state) state.synced = false;
   }
 
-  resyncListener(roomId: string, cb: (chunk: Buffer) => void): void {
+  resyncListener(roomId: string, cb: (chunk: Buffer) => void): boolean {
     const room = this.rooms.get(roomId);
     const state = room?.listeners.get(cb);
     if (!state) {
       this.logger.debug(
         `[${roomId}] resync: listener not found (room=${!!room}, listeners=${room?.listeners.size ?? 0})`,
       );
-      return;
+      return false;
     }
 
     if (room!.initSegment) {
       try {
         state.cb(room!.initSegment);
-        for (const chunk of room!.recentChunks) state.cb(chunk);
         state.synced = true;
-        this.logger.log(
-          `[${roomId}] resync: sent cached init segment (${room!.initSegment.length}b) + ${room!.recentChunks.length} recent chunks`,
-        );
+        this.logger.log(`[${roomId}] resync: sent init (${room!.initSegment.length}b)`);
+        return true;
       } catch (e) {
         this.logger.warn(`[${roomId}] resync send failed: ${e}`);
         state.synced = false;
+        return false;
       }
-    } else {
-      // init segment 아직 없음 → 다음 broadcastChunk에서 처리
-      this.logger.debug(`[${roomId}] resync: no init segment cached, waiting for next chunk`);
-      state.synced = false;
     }
+
+    // idle(playing=false) → 대기할 필요 없음
+    if (!room!.playing) return true;
+    // 재생 중인데 init segment 아직 없음 → ResyncWait
+    this.logger.debug(`[${roomId}] resync: no init segment yet`);
+    state.synced = false;
+    return false;
   }
 
   // --- Internal ---
@@ -240,11 +240,10 @@ export class AudioService {
 
     const flushBurst = () => {
       if (!room.initSegment) return;
-      this.broadcastInitSegment(room, room.initSegment, Buffer.alloc(0));
       for (const c of burstBuffer) this.broadcastChunk(room, c);
       burstBuffer.length = 0;
       burstDone = true;
-      this.logger.log(`[${roomId}] burst: sent init + ${STREAM_BUFFER_CHUNKS} chunks`);
+      this.logger.log(`[${roomId}] burst: ${STREAM_BUFFER_CHUNKS} chunks (init via resync)`);
       if (startCb) {
         const cb = startCb;
         startCb = null;
@@ -322,38 +321,12 @@ export class AudioService {
     return { segment: buf.subarray(0, initEnd), rest: buf.subarray(initEnd) };
   }
 
-  private broadcastInitSegment(room: RoomAudio, initSeg: Buffer, rest: Buffer): void {
-    this.logger.log(
-      `Broadcasting init segment (${initSeg.length}b) + rest (${rest.length}b) to ${room.listeners.size} listeners`,
-    );
-    let sent = 0;
-    for (const state of room.listeners.values()) {
-      try {
-        state.cb(initSeg);
-        if (rest.length) state.cb(rest);
-        state.synced = true;
-        sent++;
-      } catch (e) {
-        this.logger.warn(`Failed to send init segment to listener: ${e}`);
-      }
-    }
-    this.logger.log(`Init segment sent to ${sent}/${room.listeners.size} listeners`);
-  }
-
   private broadcastChunk(room: RoomAudio, chunk: Buffer): void {
-    const hasMoof = chunk.indexOf(MOOF_MARKER);
     room.recentChunks.push(chunk);
     if (room.recentChunks.length > FFMPEG_RECENT_CHUNKS) room.recentChunks.shift();
 
     for (const state of room.listeners.values()) {
-      if (state.synced) {
-        state.cb(chunk);
-      } else if (hasMoof !== -1) {
-        const segStart = hasMoof - 4 >= 0 ? hasMoof - 4 : hasMoof;
-        state.cb(room.initSegment!);
-        state.cb(chunk.subarray(segStart));
-        state.synced = true;
-      }
+      if (state.synced) state.cb(chunk);
     }
   }
 }

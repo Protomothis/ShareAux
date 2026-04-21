@@ -15,9 +15,8 @@ import EmptyState from '@/components/common/EmptyState';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useInvalidate } from '@/hooks/useQueries';
 import { useQueueDnd } from '@/hooks/useQueueDnd';
-import { useFavorites } from '@/hooks/useFavorites';
 import { MAX_QUEUE_SIZE } from '@/lib/constants';
-import type { AutoDjStatus, TrackVoteMap } from '@/types';
+import type { AutoDjStatus, FavoriteActions, TrackVoteMap } from '@/types';
 
 import QueueTrackItem from './QueueTrackItem';
 import SearchModal from './SearchModal';
@@ -47,6 +46,7 @@ interface QueueProps {
   maxSelectPerAdd?: number;
   trackVotes?: TrackVoteMap;
   autoDjStatus?: AutoDjStatus;
+  favorites: FavoriteActions;
 }
 
 export default function Queue({
@@ -59,13 +59,14 @@ export default function Queue({
   maxSelectPerAdd = 3,
   trackVotes,
   autoDjStatus = 'idle',
+  favorites,
 }: QueueProps) {
   const { data: queue = [] } = useQueueControllerGetQueue(roomId);
   const { data: quota } = useQueueControllerGetMyQuota(roomId);
   const invalidate = useInvalidate();
   const queryClient = useQueryClient();
   const [searchOpen, setSearchOpen] = useState(false);
-  const { favoriteIds, loadingIds: favLoadingIds, toggle: toggleFavorite } = useFavorites(!isGuest);
+  const { favoriteIds, favLoadingIds, toggleFavorite } = favorites;
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
   // 이미 본 아이템 ID 추적 — shimmer/stagger는 처음 나타날 때만
@@ -236,6 +237,7 @@ export default function Queue({
         maxSelectPerAdd={maxSelectPerAdd}
         isHost={isHost}
         isGuest={isGuest}
+        favorites={favorites}
       />
 
       <Dialog open={!!confirmRemoveId} onOpenChange={(open) => !open && setConfirmRemoveId(null)}>

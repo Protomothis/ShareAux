@@ -9,8 +9,18 @@ import {
   favoritesControllerRemove,
   getFavoritesControllerListQueryKey,
 } from '@/api/favorites/favorites';
-import type { SearchResultItem } from '@/api/model';
+import type { AddFavoriteBodyProvider } from '@/api/model';
 import { TrackProvider } from '@/api/model';
+
+/** toggle()에 전달할 수 있는 최소 트랙 정보 */
+export interface FavoriteTarget {
+  sourceId: string;
+  provider: AddFavoriteBodyProvider | TrackProvider | string;
+  name: string;
+  artist?: string | null;
+  thumbnail?: string | null;
+  durationMs: number;
+}
 
 export function useFavorites(enabled: boolean) {
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
@@ -25,7 +35,7 @@ export function useFavorites(enabled: boolean) {
   }, [enabled]);
 
   const toggle = useCallback(
-    async (track: SearchResultItem) => {
+    async (track: FavoriteTarget) => {
       const id = track.sourceId;
       const was = favoriteIds.has(id);
       // optimistic
@@ -41,7 +51,7 @@ export function useFavorites(enabled: boolean) {
           await favoritesControllerRemove(id);
         } else {
           await favoritesControllerAdd({
-            provider: (track.provider as unknown as string) === 'yt' ? TrackProvider.yt : TrackProvider.yt,
+            provider: TrackProvider.yt,
             sourceId: track.sourceId,
             name: track.name,
             artist: track.artist ?? undefined,
