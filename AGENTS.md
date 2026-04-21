@@ -57,16 +57,17 @@ npx tsc --noEmit
 [본문 (선택)]
 ```
 
-| 타입 | 용도 |
-|------|------|
-| `feat` | 새 기능 |
-| `fix` | 버그 수정 |
+| 타입       | 용도                      |
+| ---------- | ------------------------- |
+| `feat`     | 새 기능                   |
+| `fix`      | 버그 수정                 |
 | `refactor` | 리팩토링 (기능 변경 없음) |
-| `docs` | 문서 |
-| `chore` | 빌드, 설정, 의존성 |
-| `style` | 코드 스타일 (포매팅 등) |
+| `docs`     | 문서                      |
+| `chore`    | 빌드, 설정, 의존성        |
+| `style`    | 코드 스타일 (포매팅 등)   |
 
 예시:
+
 ```
 feat: 투표 스킵 기능 추가
 fix: 곡 전환 시 init segment 누락 수정
@@ -140,9 +141,17 @@ src/
 - `audio` + `MediaSource` + `SourceBuffer`는 `useAudio.init()`에서 1회 생성, 재생성 금지
 - 곡 전환: `clearBuffer()` — `sb.abort()` + `sb.remove()`. 새 MediaSource 생성 금지
 - `audio.load()` 호출 금지 (재생 상태 리셋, iOS 제스처 토큰 소비)
-- `audio.play()`는 유저 제스처 컨텍스트에서 동기적으로 호출 (await 전에)
-- **resync는 `useWebSocket.sendResync()` 한 곳에서만 호출** — `prepareResync` + WS 전송을 직접 조합하지 말 것. `sendResync`가 내부에서 `prepareResync` → WS 전송 → ResyncWait 재시도를 단일 관리
-- 같은 init segment 중복 수신 시 `bytesEqual`로 무시 — `broadcastInitSegment`와 resync 응답이 동시에 올 수 있음
+- `audio.play()`는 `updateend`에서 버퍼 확보 후 호출 — `init()`에서 조기 호출 금지 (빈 MSE → `ended` 전환)
+
+#### init segment 전송 규칙 (중요!)
+
+- **서버**: init segment는 `resyncListener`에서만 전송. `broadcastChunk`는 `synced === true`인 리스너에게만 chunk 전송
+- **서버**: resync 응답에 `recentChunks` 포함 금지 — moof boundary 불일치로 SourceBuffer 파싱 에러 발생
+- **서버**: init segment 미준비 시 `ResyncWait`(0x09) 응답 → 클라이언트가 2초 후 재시도
+- **클라이언트**: `sendResync`는 `streaming` 전환 시에만 호출 — `preparing`에서는 `prepareResync`(버퍼 정리)만
+- **클라이언트**: 중간 입장(이미 streaming)은 `handleListenToggle`에서 `sendResync` 호출
+- **클라이언트**: 가드는 `gotInitRef`(init 수신 여부) + `resettingRef`(clearBuffer 중) 두 개만 — useWebSocket에 가드 넣지 말 것
+- **클라이언트**: REST API 초기 상태에서 `trackRef` 즉시 세팅 — WS 이벤트 중복 trackChanged 판정 방지
 
 ---
 
