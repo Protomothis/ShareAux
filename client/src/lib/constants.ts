@@ -10,6 +10,7 @@ export const WsOpCode = {
   ListenerStatus: 0x06,
   Reaction: 0x07,
   PingMeasure: 0x08,
+  ResyncWait: 0x09,
 } as const;
 
 // ─── WebSocket Close Code ────────────────────────────────

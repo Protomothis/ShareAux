@@ -155,13 +155,23 @@ export class TranslationService implements OnModuleInit {
 
     const format = includeReading ? 'N|한국어번역|한글발음' : 'N|한국어번역';
     const readingRule = includeReading
-      ? '\n- 한글발음: 원문 발음을 한글로 표기 (외래어 표기법, 영문/기호 그대로)\n- 반드시 번역|발음 두 칸 모두 채울 것'
+      ? `
+- 한글발음: 원문 발음을 한글로 표기 (외래어 표기법)
+- 영어/기호는 발음란에 원문 그대로 유지
+- 한자 읽기는 곡 전체에서 동일 단어는 같은 음독/훈독으로 통일
+- 반드시 번역|발음 두 칸 모두 채울 것`
       : '';
     const example = includeReading
-      ? '\n예시:\n1|砂を払えば → 1|모래를 털면|스나오 하라에바\n2|I love you → 2|널 사랑해|I love you'
+      ? '\n예시:\n1|砂を払えば → 1|모래를 털면|스나오 하라에바\n2|I love you → 2|널 사랑해|I love you\n3|La la la → 3|La la la|La la la'
       : '';
 
-    const prompt = `${langName}→한국어 가사 번역. ${lines.length}줄 유지. 가사체 직역. ${format} 형식만.${readingRule}${example}
+    const prompt = `${langName}→한국어 가사 번역.
+규칙:
+- 정확히 ${lines.length}줄 출력. 절대 생략하지 말 것
+- ${format} 형식만 출력. 설명/주석 금지
+- 가사체 직역. 의역 최소화
+- 감탄사/의성어(oh, yeah, la la 등)는 번역하지 않고 원문 유지
+- 영어 가사는 한국어로 번역하되, 발음란에는 영어 원문 유지${readingRule}${example}
 
 ${numbered}`;
 
@@ -187,13 +197,58 @@ ${numbered}`;
       }
 
       if (translations.size < lines.length * 0.8) {
-        this.logger.warn(`Translation line mismatch: expected ${lines.length}, got ${translations.size}`);
-        return null;
+        this.logger.warn(`Translation incomplete: ${translations.size}/${lines.length}, requesting missing lines`);
+        const missing = lines.map((l, i) => ({ idx: i + 1, text: l.text })).filter((m) => !translations.has(m.idx));
+        const partial = await this.callGeminiPartial(missing, lang, includeReading);
+        if (partial) {
+          for (const [k, v] of partial.translations) translations.set(k, v);
+          for (const [k, v] of partial.readings) readings.set(k, v);
+        }
       }
 
       return { translations, readings };
     } catch (e) {
       this.logger.error(`Gemini error: ${(e as Error).message}`);
+      return null;
+    }
+  }
+
+  /** 누락된 줄만 보충 번역 요청 */
+  private async callGeminiPartial(
+    missing: { idx: number; text: string }[],
+    lang: string,
+    includeReading: boolean,
+  ): Promise<{ translations: Map<number, string>; readings: Map<number, string> } | null> {
+    if (!missing.length) return null;
+    const langName = lang === 'ja' ? '일본어' : lang === 'zh' ? '중국어' : '영어';
+    const format = includeReading ? 'N|한국어번역|한글발음' : 'N|한국어번역';
+    const numbered = missing.map((m) => `${m.idx}|${m.text}`).join('\n');
+
+    const prompt = `${langName}→한국어 가사 번역. 누락된 ${missing.length}줄만 번역. ${format} 형식만. 번호 유지.\n\n${numbered}`;
+
+    try {
+      const result = await this.geminiModel!.generateContent(prompt);
+      const text = result.response.text();
+      this.dailyCount++;
+
+      const translations = new Map<number, string>();
+      const readings = new Map<number, string>();
+
+      for (const line of text.split('\n')) {
+        if (includeReading) {
+          const m = line.match(/^(\d+)\|([^|]*)\|(.+)/);
+          if (m) {
+            translations.set(Number(m[1]), m[2].trim());
+            readings.set(Number(m[1]), m[3].trim());
+            continue;
+          }
+        }
+        const m2 = line.match(/^(\d+)\|(.+)/);
+        if (m2) translations.set(Number(m2[1]), m2[2].trim());
+      }
+      return { translations, readings };
+    } catch (e) {
+      this.logger.warn(`Gemini partial error: ${(e as Error).message}`);
       return null;
     }
   }

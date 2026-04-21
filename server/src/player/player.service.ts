@@ -274,7 +274,6 @@ export class PlayerService {
 
     if (next) {
       this.streamState.set(roomId, 'preparing');
-      await this.playbackRepo.update(roomId, { isPlaying: false });
       this.onTrackChangeCallback?.(roomId);
       // 자연 종료 시에만 마지막 버퍼 재생 대기 (스킵은 즉시 전환)
       if (!wasSkipped) {
@@ -284,7 +283,12 @@ export class PlayerService {
       await this.play(roomId, next.track.id);
     } else {
       this.streamState.set(roomId, 'idle');
-      await this.playbackRepo.update(roomId, { isPlaying: false });
+      const pb = await this.playbackRepo.findOneBy({ roomId });
+      if (pb) {
+        pb.isPlaying = false;
+        pb.track = null;
+        await this.playbackRepo.save(pb);
+      }
       this.onTrackChangeCallback?.(roomId);
     }
   }

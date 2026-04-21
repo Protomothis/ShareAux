@@ -82,6 +82,15 @@ export function useWebSocket({
 
       if (type === WsOpCode.Audio) {
         callbacksRef.current.onAudio?.(bytes.slice(1));
+      } else if (type === WsOpCode.ResyncWait) {
+        debug('[WS] resync wait — retrying in 2s');
+        clearTimeout(resyncTimerRef.current);
+        resyncTimerRef.current = setTimeout(() => {
+          if (resyncRetriesRef.current < 5) {
+            resyncRetriesRef.current++;
+            sendResyncRaw();
+          }
+        }, 2000);
       } else if (type === WsOpCode.PingMeasure && bytes.byteLength >= 9) {
         // RTT 측정 응답: 1바이트 opcode + 8바이트 Float64 타임스탬프
         const view = new DataView(e.data);
@@ -181,6 +190,7 @@ export function useWebSocket({
     return () => {
       clearTimeout(id);
       clearTimeout(timerRef.current);
+      clearTimeout(resyncTimerRef.current);
       document.removeEventListener('visibilitychange', onVisibility);
       clearInterval(heartbeatRef.current);
       retriesRef.current = WS_MAX_RETRIES;
@@ -201,11 +211,23 @@ export function useWebSocket({
     ws.send(frame);
   }, []);
 
-  const sendResync = useCallback(() => {
+  // --- Resync ---
+  const resyncTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const resyncRetriesRef = useRef(0);
+
+  const sendResyncRaw = useCallback(() => {
     const ws = wsRef.current;
-    debug('[WS] sending resync, readyState:', ws?.readyState);
-    if (ws?.readyState === WebSocket.OPEN) ws.send(new Uint8Array([WsOpCode.Resync]));
+    if (ws?.readyState !== WebSocket.OPEN) return;
+    debug('[WS] sending resync');
+    ws.send(new Uint8Array([WsOpCode.Resync]));
   }, []);
+
+  /** 외부 호출: 재시도 카운터 리셋 + WS 전송 */
+  const sendResync = useCallback(() => {
+    resyncRetriesRef.current = 0;
+    clearTimeout(resyncTimerRef.current);
+    sendResyncRaw();
+  }, [sendResyncRaw]);
 
   const sendListening = useCallback((on: boolean) => {
     const ws = wsRef.current;

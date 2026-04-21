@@ -7,7 +7,7 @@ import { useState } from 'react';
 import type { TabItem } from '@/components/common/TabBar';
 import TabBar from '@/components/common/TabBar';
 
-import type { TrackVoteMap } from '@/types';
+import type { FavoriteActions, TrackVoteMap } from '@/types';
 
 import HistoryPanel from './HistoryPanel';
 import Queue from './Queue';
@@ -28,6 +28,7 @@ interface DesktopQueuePanelProps {
   isGuest?: boolean;
   maxSelectPerAdd?: number;
   trackVotes?: TrackVoteMap;
+  favorites: FavoriteActions;
 }
 
 export default function DesktopQueuePanel(props: DesktopQueuePanelProps) {
@@ -47,7 +48,11 @@ export default function DesktopQueuePanel(props: DesktopQueuePanelProps) {
           transition={{ duration: 0.12 }}
           className="min-h-0 flex-1 overflow-hidden"
         >
-          {tab === 'queue' ? <Queue {...props} /> : <HistoryPanel roomId={props.roomId} isGuest={props.isGuest} />}
+          {tab === 'queue' ? (
+            <Queue {...props} />
+          ) : (
+            <HistoryPanel roomId={props.roomId} isGuest={props.isGuest} favorites={props.favorites} />
+          )}
         </motion.div>
       </AnimatePresence>
     </div>

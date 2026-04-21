@@ -3,7 +3,10 @@ import type { PlaybackStatusStreamState } from '@/api/model';
 import type { WsEnumsSchemaAutoDjStatus } from '@/api/model';
 
 /** Track 정보 중 플레이어 UI에 필요한 필드만 추출 */
-export type TrackInfo = Pick<Track, 'id' | 'name' | 'artist' | 'thumbnail' | 'durationMs' | 'songTitle' | 'songArtist'>;
+export type TrackInfo = Pick<
+  Track,
+  'id' | 'sourceId' | 'provider' | 'name' | 'artist' | 'thumbnail' | 'durationMs' | 'songTitle' | 'songArtist'
+>;
 
 export type VisualMode = 'bars' | 'wave' | 'mirror' | 'dots';
 

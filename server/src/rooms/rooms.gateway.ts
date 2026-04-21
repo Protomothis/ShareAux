@@ -184,7 +184,6 @@ export class RoomsGateway {
         if (!client.data) return;
         const data = Buffer.isBuffer(raw) ? raw : Buffer.from(raw);
         if (data.length < 1) return;
-
         if (data[0] === WsOpCode.Chat && data.length > 1) {
           if (!client.data.permissions.includes(Permission.Chat)) return;
           try {
@@ -249,7 +248,10 @@ export class RoomsGateway {
         } else if (data[0] === WsOpCode.Heartbeat) {
           this.lastHeartbeat.set(`${client.data.userId}:${client.data.roomId}`, Date.now());
         } else if (data[0] === WsOpCode.Resync) {
-          this.audio.resyncListener(client.data.roomId, client.data.audioCallback);
+          const ok = this.audio.resyncListener(client.data.roomId, client.data.audioCallback);
+          if (!ok && client.readyState === WebSocket.OPEN) {
+            client.send(Buffer.from([WsOpCode.ResyncWait]));
+          }
         } else if (data[0] === WsOpCode.ListenerStatus && data.length >= 2) {
           client.data.listening = data[1] === 1;
           // 듣기 끄면 synced 해제 → 다음 resync에서 init segment 재전송

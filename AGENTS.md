@@ -57,16 +57,17 @@ npx tsc --noEmit
 [본문 (선택)]
 ```
 
-| 타입 | 용도 |
-|------|------|
-| `feat` | 새 기능 |
-| `fix` | 버그 수정 |
+| 타입       | 용도                      |
+| ---------- | ------------------------- |
+| `feat`     | 새 기능                   |
+| `fix`      | 버그 수정                 |
 | `refactor` | 리팩토링 (기능 변경 없음) |
-| `docs` | 문서 |
-| `chore` | 빌드, 설정, 의존성 |
-| `style` | 코드 스타일 (포매팅 등) |
+| `docs`     | 문서                      |
+| `chore`    | 빌드, 설정, 의존성        |
+| `style`    | 코드 스타일 (포매팅 등)   |
 
 예시:
+
 ```
 feat: 투표 스킵 기능 추가
 fix: 곡 전환 시 init segment 누락 수정
@@ -76,6 +77,28 @@ refactor: Modal compound component 패턴으로 전환
 ### 커밋/푸시/배포
 
 사용자가 명시적으로 요청할 때만 수행. 자동으로 하지 않음.
+
+### CHANGELOG
+
+- `CHANGELOG.md`는 **유저 친화적**으로 작성 — 기술 용어(opcode, SourceBuffer, moof 등) 사용 금지
+- 사용자가 체감할 수 있는 변화 중심으로 기술 (예: "첫 곡 재생 시 소리가 안 나오는 문제 해결")
+- 이슈 번호 참조 (`#N`)
+
+### 이슈 & 마일스톤 워크플로우
+
+**이슈 우선 원칙**: 버그 수정이든 기능 개선이든, 코드 수정 전에 반드시 GitHub 이슈를 먼저 작성한다.
+
+1. 문제/개선 사항 파악 → **이슈 작성** (문제 설명, 개선 방향, 관련 파일)
+2. 이슈 기반으로 코드 수정/개선
+3. 커밋 후 해당 이슈에 **커밋 참조 코멘트** 추가
+4. 완료 시 이슈 close
+
+**마일스톤 규칙**:
+
+- 버전 올릴 때 `v{major}.{minor}.{patch}` 마일스톤 생성 (예: `v0.1.6`)
+- 해당 버전에 포함되는 모든 이슈를 마일스톤에 연결
+- 릴리스 브랜치는 `feat/v{version}` 형식 (예: `feat/v0.1.6`)
+- 릴리스 완료 시 마일스톤 close + `develop` → `main` 머지 + 태그
 
 ---
 
@@ -124,7 +147,17 @@ src/
 - `audio` + `MediaSource` + `SourceBuffer`는 `useAudio.init()`에서 1회 생성, 재생성 금지
 - 곡 전환: `clearBuffer()` — `sb.abort()` + `sb.remove()`. 새 MediaSource 생성 금지
 - `audio.load()` 호출 금지 (재생 상태 리셋, iOS 제스처 토큰 소비)
-- `audio.play()`는 유저 제스처 컨텍스트에서 동기적으로 호출 (await 전에)
+- `audio.play()`는 `updateend`에서 버퍼 확보 후 호출 — `init()`에서 조기 호출 금지 (빈 MSE → `ended` 전환)
+
+#### init segment 전송 규칙 (중요!)
+
+- **서버**: init segment는 `resyncListener`에서만 전송. `broadcastChunk`는 `synced === true`인 리스너에게만 chunk 전송
+- **서버**: resync 응답에 `recentChunks` 포함 금지 — moof boundary 불일치로 SourceBuffer 파싱 에러 발생
+- **서버**: init segment 미준비 시 `ResyncWait`(0x09) 응답 → 클라이언트가 2초 후 재시도
+- **클라이언트**: `sendResync`는 `streaming` 전환 시에만 호출 — `preparing`에서는 `prepareResync`(버퍼 정리)만
+- **클라이언트**: 중간 입장(이미 streaming)은 `handleListenToggle`에서 `sendResync` 호출
+- **클라이언트**: 가드는 `gotInitRef`(init 수신 여부) + `resettingRef`(clearBuffer 중) 두 개만 — useWebSocket에 가드 넣지 말 것
+- **클라이언트**: REST API 초기 상태에서 `trackRef` 즉시 세팅 — WS 이벤트 중복 trackChanged 판정 방지
 
 ---
 

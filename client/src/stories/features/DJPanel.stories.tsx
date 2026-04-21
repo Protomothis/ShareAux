@@ -4,6 +4,8 @@ import DJPanel from '@/components/player/DJPanel';
 
 const mockTrack = {
   id: 'mock-track',
+  sourceId: 'mock-source',
+  provider: 'yt' as const,
   name: 'Blinding Lights',
   artist: 'The Weeknd',
   thumbnail: 'https://picsum.photos/200',

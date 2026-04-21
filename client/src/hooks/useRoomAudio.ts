@@ -1,21 +1,12 @@
 'use client';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { debug } from '@/lib/debug';
 
 import { useAudio } from './useAudio';
 
-export function useRoomAudio(
-  audioLoadingRef: React.MutableRefObject<boolean>,
-  setAudioLoading: (v: boolean) => void,
-  onStall?: () => void,
-) {
-  const onStallRef = useRef(onStall);
-  useEffect(() => {
-    onStallRef.current = onStall;
-  }, [onStall]);
-
+export function useRoomAudio(audioLoadingRef: React.MutableRefObject<boolean>, setAudioLoading: (v: boolean) => void) {
   const audio = useAudio(
     () => {
       if (audioLoadingRef.current) {
@@ -24,7 +15,6 @@ export function useRoomAudio(
         setAudioLoading(false);
       }
     },
-    () => onStallRef.current?.(),
     () => {
       debug('[roomAudio] MSE error — stopping listening');
       listeningRef.current = false;
@@ -56,7 +46,7 @@ export function useRoomAudio(
   );
 
   const handleListenToggle = useCallback(
-    async (sendListening: (v: boolean) => void, sendResync?: () => void) => {
+    async (sendListening: (v: boolean) => void) => {
       debug('[roomAudio] toggle listening:', listening, '→', !listening);
       if (!listening) {
         if (!audio.supported) {
@@ -70,8 +60,6 @@ export function useRoomAudio(
         setAudioReady(true);
         setListening(true);
         sendListening(true);
-        // clearBuffer 완료 후 다음 마이크로태스크에서 resync
-        void audio.prepareResync().then(() => sendResync?.());
       } else {
         audio.pause();
         setListening(false);

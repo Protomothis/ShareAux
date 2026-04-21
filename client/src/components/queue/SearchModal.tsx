@@ -10,9 +10,9 @@ import type { SearchResultItem } from '@/api/model';
 import { queueControllerAddTracks } from '@/api/queue/queue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useFavorites } from '@/hooks/useFavorites';
 import { useSearch } from '@/hooks/useSearch';
 import { cn } from '@/lib/utils';
+import type { FavoriteActions } from '@/types';
 
 import Modal from '../common/Modal';
 import FavoritesList from './FavoritesList';
@@ -34,6 +34,7 @@ interface SearchModalProps {
   maxSelectPerAdd?: number;
   isHost?: boolean;
   isGuest?: boolean;
+  favorites: FavoriteActions;
 }
 
 export default function SearchModal({
@@ -46,6 +47,7 @@ export default function SearchModal({
   maxSelectPerAdd = 3,
   isHost = false,
   isGuest = false,
+  favorites,
 }: SearchModalProps) {
   const [tab, setTab] = useState<Tab>('showcase');
   const [selected, setSelected] = useState<SearchResultItem[]>([]);
@@ -55,7 +57,7 @@ export default function SearchModal({
   const listRef = useRef<HTMLDivElement>(null);
 
   const search = useSearch(isOpen);
-  const { favoriteIds, loadingIds: favLoadingIds, toggle: toggleFavorite } = useFavorites(isOpen && !isGuest);
+  const { favoriteIds, favLoadingIds, toggleFavorite } = favorites;
   const maxSelect = isHost ? MAX_QUEUE_SIZE : maxSelectPerAdd;
 
   useEffect(() => {
