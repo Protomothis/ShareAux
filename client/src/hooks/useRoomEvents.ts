@@ -282,8 +282,23 @@ export function useRoomEvents(
         return;
       }
 
-      // 기타 시스템 메시지
-      if (!data.detail) return;
+      // 기타 시스템 메시지 → 채팅에 표시
+      const CHAT_EVENTS = new Set([
+        'userJoined',
+        'userLeft',
+        'trackSkipped',
+        'trackPrevious',
+        'roomClosed',
+        'hostChanged',
+        'autoDjEnabled',
+        'autoDjDisabled',
+        'enqueueCountsReset',
+        'userKicked',
+        'trackAdded',
+        'trackUnavailable',
+        'voteSkipPassed',
+      ]);
+      if (!CHAT_EVENTS.has(data.event)) return;
       setMessages((prev) =>
         prev.slice(-200).concat({
           userId: '',
