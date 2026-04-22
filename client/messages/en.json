@@ -173,5 +173,30 @@
   "history": {
     "emptyTitle": "No tracks played yet",
     "emptyDescription": "Played tracks will appear here"
+  },
+  "chat": {
+    "muted": "Chat restricted ({seconds}s)",
+    "placeholder": "Type a message...",
+    "noPermission": "No chat permission",
+    "inputLabel": "Chat message",
+    "send": "Send",
+    "firstMessage": "Send the first message",
+    "anonymous": "Anonymous",
+    "reactionLabel": "Reaction",
+    "reactionTooltip": "Long press to change",
+    "system": {
+      "userJoined": " joined",
+      "userLeft": " left",
+      "trackSkipped": " skipped the track",
+      "trackPrevious": " went to previous track",
+      "roomClosed": "Room closed"
+    }
+  },
+  "members": {
+    "title": "👥 Members ({count})",
+    "empty": "No members yet",
+    "unknown": "Unknown",
+    "managePermission": "Manage permissions",
+    "report": "Report"
   }
 }

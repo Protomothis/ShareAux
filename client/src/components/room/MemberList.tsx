@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 import type { MemberWithPermission } from '@/api/model';
 import type { DisplayRole } from '@/lib/roles';
@@ -22,6 +23,7 @@ interface MemberListProps {
 type ModalState = { type: 'menu' } | { type: 'permissions' } | { type: 'report' } | null;
 
 export default function MemberList({ members, hostId, roomId, isHost, userId }: MemberListProps) {
+  const t = useTranslations('members');
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [modal, setModal] = useState<ModalState>(null);
 
@@ -53,12 +55,12 @@ export default function MemberList({ members, hostId, roomId, isHost, userId }: 
 
   return (
     <div className="p-4">
-      <h3 className="mb-3 text-sm font-semibold text-sa-text-secondary">👥 멤버 ({members.length})</h3>
+      <h3 className="mb-3 text-sm font-semibold text-sa-text-secondary">{t('title', { count: members.length })}</h3>
       <div className="space-y-1" role="list">
         {members.length === 0 ? (
           <div className="py-4 text-center">
             <p className="mb-1 text-2xl">👥</p>
-            <p className="text-xs text-sa-text-muted">아직 참여자가 없습니다</p>
+            <p className="text-xs text-sa-text-muted">{t('empty')}</p>
           </div>
         ) : (
           sorted.map((m) => (
@@ -101,7 +103,7 @@ export default function MemberList({ members, hostId, roomId, isHost, userId }: 
           open
           onClose={handleClose}
           targetId={selectedMember.userId}
-          targetNickname={selectedMember.user?.nickname ?? '알 수 없음'}
+          targetNickname={selectedMember.user?.nickname ?? t('unknown')}
         />
       )}
     </div>
