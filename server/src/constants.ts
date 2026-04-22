@@ -7,7 +7,7 @@ export const THROTTLE_LIMIT_QUEUE_ADD = 10;
 
 // ─── WebSocket ──────────────────────────────────────────
 export const WS_HEARTBEAT_INTERVAL_MS = 60_000;
-export const WS_GRACE_MS = 5_000;
+export const WS_GRACE_MS = 30_000;
 export const WS_CLOSE_KICKED = 4003;
 export const WS_CLOSE_ROOM_GONE = 4004;
 export const WS_CLOSE_BANNED = 4005;
