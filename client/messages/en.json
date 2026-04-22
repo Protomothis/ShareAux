@@ -12,5 +12,58 @@
     "registerDescription": "Create an account with invite code",
     "guestTitle": "Guest access",
     "guestDescription": "Join instantly with invite code"
+  },
+  "auth": {
+    "backToMethods": "← Back to login methods",
+    "loginForm": {
+      "title": "Log in",
+      "subtitle": "Sign in with your username and password",
+      "usernameLabel": "Username",
+      "usernamePlaceholder": "Enter your username",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "usernameRequired": "Please enter your username",
+      "passwordRequired": "Please enter your password",
+      "submitButton": "Log in",
+      "errorFallback": "Login failed",
+      "orDivider": "or",
+      "googleLogin": "Sign in with Google",
+      "googleLinkedOnly": "Linked accounts only"
+    },
+    "registerForm": {
+      "title": "Sign up",
+      "subtitle": "Create an account with an invite code",
+      "codeLabel": "Invite code",
+      "codePlaceholder": "Enter invite code",
+      "codeRequired": "Please enter an invite code",
+      "usernameLabel": "Username",
+      "usernamePlaceholder": "Lowercase, numbers, underscore (4–20)",
+      "usernameMinLength": "Username must be at least {min} characters",
+      "usernameMaxLength": "Username must be at most {max} characters",
+      "usernamePattern": "Only lowercase letters, numbers, and underscores allowed",
+      "nicknameLabel": "Nickname",
+      "nicknamePlaceholder": "Display name in rooms (2–20)",
+      "nicknameMinLength": "Nickname must be at least {min} characters",
+      "nicknameMaxLength": "Nickname must be at most {max} characters",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "At least 8 characters",
+      "passwordMinLength": "Password must be at least {min} characters",
+      "confirmPasswordLabel": "Confirm password",
+      "confirmPasswordPlaceholder": "Re-enter your password",
+      "confirmPasswordMismatch": "Passwords do not match",
+      "submitButton": "Sign up",
+      "errorFallback": "Registration failed"
+    },
+    "guestForm": {
+      "title": "Guest access",
+      "subtitleWithCode": "Just enter a nickname to join",
+      "subtitleWithoutCode": "Enter an invite code and nickname",
+      "codeLabel": "Invite code",
+      "codePlaceholder": "6–12 digit code",
+      "nicknameLabel": "Nickname",
+      "nicknamePlaceholder": "Display name in room",
+      "submitButton": "Join",
+      "errorFallback": "Failed to join"
+    }
   }
 }
