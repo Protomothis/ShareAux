@@ -18,22 +18,23 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 
 const navItems = [
-  { href: '/admin', label: '대시보드', icon: LayoutDashboard },
-  { href: '/admin/users', label: '유저 관리', icon: Users },
-  { href: '/admin/rooms', label: '방 관리', icon: DoorOpen },
-  { href: '/admin/tracks', label: '인기 트랙', icon: Music },
-  { href: '/admin/invite-codes', label: '초대코드', icon: Ticket },
-  { href: '/admin/settings', label: '시스템 설정', icon: Settings },
-  { href: '/admin/cleanup', label: 'DB 정리', icon: Trash2 },
-  { href: '/admin/audit-logs', label: '감사 로그', icon: ClipboardList },
-  { href: '/admin/reports', label: '신고 관리', icon: ShieldAlert },
-  { href: '/admin/ip-bans', label: 'IP 차단', icon: Shield },
-  { href: '/admin/errors', label: '에러 로그', icon: AlertTriangle },
+  { href: '/admin', labelKey: 'dashboard', icon: LayoutDashboard },
+  { href: '/admin/users', labelKey: 'users', icon: Users },
+  { href: '/admin/rooms', labelKey: 'rooms', icon: DoorOpen },
+  { href: '/admin/tracks', labelKey: 'tracks', icon: Music },
+  { href: '/admin/invite-codes', labelKey: 'inviteCodes', icon: Ticket },
+  { href: '/admin/settings', labelKey: 'settings', icon: Settings },
+  { href: '/admin/cleanup', labelKey: 'cleanup', icon: Trash2 },
+  { href: '/admin/audit-logs', labelKey: 'auditLogs', icon: ClipboardList },
+  { href: '/admin/reports', labelKey: 'reports', icon: ShieldAlert },
+  { href: '/admin/ip-bans', labelKey: 'ipBans', icon: Shield },
+  { href: '/admin/errors', labelKey: 'errors', icon: AlertTriangle },
 ];
 
 function NavLink({
@@ -68,6 +69,7 @@ function NavLink({
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const tn = useTranslations('admin.nav');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // 페이지 이동 시 사이드바 닫기
@@ -87,7 +89,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             className="mt-1 hidden items-center gap-1 text-xs text-sa-text-muted transition hover:text-sa-accent lg:flex"
           >
             <ArrowLeft size={12} />
-            서비스로 돌아가기
+            {tn('backToService')}
           </Link>
         </div>
         <nav className="flex flex-1 flex-col gap-1">
@@ -95,11 +97,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <span key={item.href}>
               {/* md: icon-only */}
               <span className="block lg:hidden">
-                <NavLink {...item} active={pathname === item.href} collapsed />
+                <NavLink
+                  href={item.href}
+                  label={tn(item.labelKey)}
+                  icon={item.icon}
+                  active={pathname === item.href}
+                  collapsed
+                />
               </span>
               {/* lg: full */}
               <span className="hidden lg:block">
-                <NavLink {...item} active={pathname === item.href} />
+                <NavLink href={item.href} label={tn(item.labelKey)} icon={item.icon} active={pathname === item.href} />
               </span>
             </span>
           ))}
@@ -129,12 +137,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 className="mt-1 flex items-center gap-1 text-xs text-sa-text-muted transition hover:text-sa-accent"
               >
                 <ArrowLeft size={12} />
-                서비스로 돌아가기
+                {tn('backToService')}
               </Link>
             </div>
             <nav className="flex flex-1 flex-col gap-1">
               {navItems.map((item) => (
-                <NavLink key={item.href} {...item} active={pathname === item.href} />
+                <NavLink
+                  key={item.href}
+                  href={item.href}
+                  label={tn(item.labelKey)}
+                  icon={item.icon}
+                  active={pathname === item.href}
+                />
               ))}
             </nav>
           </aside>
@@ -149,7 +163,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Menu size={20} />
           </Button>
           <span className="text-sm font-medium text-white">
-            {navItems.find((n) => n.href === pathname)?.label ?? 'Admin'}
+            {navItems.find((n) => n.href === pathname)?.labelKey
+              ? tn(navItems.find((n) => n.href === pathname)!.labelKey)
+              : 'Admin'}
           </span>
         </div>
         {children}

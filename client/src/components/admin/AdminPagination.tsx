@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { useTranslations } from 'next-intl';
 
 interface AdminPaginationProps {
   page: number;
@@ -7,6 +8,7 @@ interface AdminPaginationProps {
 }
 
 export function AdminPagination({ page, totalPages, onPageChange }: AdminPaginationProps) {
+  const t = useTranslations('admin.common');
   if (totalPages <= 1) return null;
 
   return (

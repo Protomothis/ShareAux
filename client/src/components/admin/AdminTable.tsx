@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 
 export interface Column<T> {
   key: string;
@@ -32,11 +33,12 @@ export function AdminTable<T>({
   loading,
   skeletonRows = 5,
   rowKey,
-  emptyMessage = '데이터가 없습니다',
+  emptyMessage,
   maxHeight,
   onRowClick,
   indexOffset = 0,
 }: AdminTableProps<T>) {
+  const tc = useTranslations('admin.common');
   if (loading) {
     return (
       <div className="overflow-hidden rounded-2xl border border-white/5 bg-white/[0.03]">
@@ -57,7 +59,7 @@ export function AdminTable<T>({
   if (data.length === 0) {
     return (
       <div className="rounded-2xl border border-white/5 bg-white/[0.03] px-5 py-12 text-center text-sm text-sa-text-muted">
-        {emptyMessage}
+        {emptyMessage ?? tc('noData')}
       </div>
     );
   }
