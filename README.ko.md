@@ -5,7 +5,11 @@
 셀프호스팅 실시간 음악 공유 플랫폼. 방을 만들고, 함께 음악을 검색하고, WebSocket 기반 실시간 스트리밍으로 모든 참여자가 같은 순간을 공유합니다. 싱크 가사, 채팅, 리액션까지.
 
 <p align="center">
-  <img src="docs/images/login-desktop.png" alt="ShareAux" width="720" />
+  <img src="docs/images/login-desktop.png" alt="ShareAux 로그인" width="720" />
+</p>
+
+<p align="center">
+  <img src="docs/images/room-desktop.png" alt="ShareAux 방" width="720" />
 </p>
 
 ## 주요 기능
