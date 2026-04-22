@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { RegisterForm } from '@/components/common/RegisterForm';
@@ -8,6 +9,7 @@ import { getApiUrl } from '@/lib/urls';
 
 export default function SetupPage() {
   const router = useRouter();
+  const t = useTranslations('common.setup');
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -31,10 +33,10 @@ export default function SetupPage() {
       <div className="mb-8 flex flex-col items-center gap-4 text-center">
         <span className="text-6xl">🎉</span>
         <h1 className="font-[family-name:var(--font-outfit)] text-3xl font-bold text-white md:text-4xl">
-          ShareAux 초기 설정
+          {t('title')}
         </h1>
-        <p className="text-lg text-sa-text-secondary">첫 번째 계정이 관리자로 등록됩니다.</p>
-        <p className="text-sm text-sa-text-secondary/70">초대코드 없이 가입할 수 있습니다.</p>
+        <p className="text-lg text-sa-text-secondary">{t('subtitle')}</p>
+        <p className="text-sm text-sa-text-secondary/70">{t('hint')}</p>
       </div>
 
       <RegisterForm onSuccess={() => router.push('/rooms')} onBack={() => {}} skipInviteCode />

@@ -9,6 +9,7 @@ import { AdminPagination } from '@/components/admin/AdminPagination';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAdminErrors, useErrorFile, useErrorFiles } from '@/hooks/admin/useAdminErrors';
+import { useTranslations } from 'next-intl';
 
 type Tab = 'memory' | 'files';
 type StatusFilter = 'all' | '4xx' | '5xx';
@@ -68,18 +69,19 @@ function ErrorRow({ item }: { item: ErrorLogItem }) {
 }
 
 function ErrorTable({ items }: { items: ErrorLogItem[] }) {
+  const t = useTranslations('admin.errors');
   if (!items.length) {
-    return <p className="py-12 text-center text-sm text-sa-text-muted">에러 로그가 없습니다</p>;
+    return <p className="py-12 text-center text-sm text-sa-text-muted">{t('empty')}</p>;
   }
   return (
     <div className="overflow-x-auto rounded-xl border border-white/5">
       <table className="w-full text-left">
         <thead>
           <tr className="border-b border-white/5 bg-white/[0.02]">
-            <th className="px-3 py-2 text-xs font-medium text-sa-text-muted">시간</th>
-            <th className="px-3 py-2 text-xs font-medium text-sa-text-muted">경로</th>
-            <th className="px-3 py-2 text-xs font-medium text-sa-text-muted">상태</th>
-            <th className="px-3 py-2 text-xs font-medium text-sa-text-muted">메시지</th>
+            <th className="px-3 py-2 text-xs font-medium text-sa-text-muted">{t('time')}</th>
+            <th className="px-3 py-2 text-xs font-medium text-sa-text-muted">{t('path')}</th>
+            <th className="px-3 py-2 text-xs font-medium text-sa-text-muted">{t('statusCode')}</th>
+            <th className="px-3 py-2 text-xs font-medium text-sa-text-muted">{t('message')}</th>
             <th className="w-8 px-3 py-2" />
           </tr>
         </thead>
@@ -104,6 +106,7 @@ function Filters({
   pathSearch: string;
   onPathChange: (v: string) => void;
 }) {
+  const t = useTranslations('admin.errors');
   return (
     <div className="flex flex-wrap items-center gap-2">
       <div className="flex gap-1">
@@ -115,7 +118,7 @@ function Filters({
             onClick={() => onStatusChange(v)}
             className={statusFilter !== v ? 'text-sa-text-muted' : ''}
           >
-            {v === 'all' ? '전체' : v}
+            {v === 'all' ? t('all') : v}
           </Button>
         ))}
       </div>
@@ -124,7 +127,7 @@ function Filters({
         <Input
           value={pathSearch}
           onChange={(e) => onPathChange(e.target.value)}
-          placeholder="경로 검색"
+          placeholder={t('pathSearch')}
           className="h-7 w-48 pl-8 text-xs"
         />
       </div>
@@ -156,6 +159,7 @@ function MemoryTab() {
 }
 
 function FileTab() {
+  const t = useTranslations('admin.errors');
   const { data: files } = useErrorFiles();
   const [selected, setSelected] = useState('');
   const [page, setPage] = useState(1);
@@ -174,7 +178,7 @@ function FileTab() {
   if (!selected) {
     return (
       <div className="space-y-2">
-        {!files?.length && <p className="py-12 text-center text-sm text-sa-text-muted">로그 파일이 없습니다</p>}
+        {!files?.length && <p className="py-12 text-center text-sm text-sa-text-muted">{t('noFiles')}</p>}
         {files?.map((f) => (
           <button
             key={f.filename}
@@ -185,7 +189,7 @@ function FileTab() {
             <div className="flex-1">
               <p className="text-sm text-white">{f.filename}</p>
               <p className="text-xs text-sa-text-muted">
-                {f.errorCount}건 · {(f.sizeBytes / 1024).toFixed(1)}KB
+                {t('items', { count: f.errorCount })} · {(f.sizeBytes / 1024).toFixed(1)}KB
               </p>
             </div>
           </button>
@@ -198,7 +202,7 @@ function FileTab() {
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="xs" onClick={() => setSelected('')} className="text-sa-text-muted">
-          ← 파일 목록
+          {t('backToFiles')}
         </Button>
         <span className="text-xs text-white">{selected}</span>
       </div>
@@ -215,17 +219,18 @@ function FileTab() {
 }
 
 export default function AdminErrorsPage() {
+  const t = useTranslations('admin.errors');
   const [tab, setTab] = useState<Tab>('memory');
 
   return (
     <div className="space-y-6">
-      <AdminPageHeader title="에러 로그" />
+      <AdminPageHeader title={t('title')} />
 
       <div className="flex gap-1 rounded-xl bg-white/[0.03] p-1">
         {(
           [
-            ['memory', '에러 로그'],
-            ['files', '파일 로그'],
+            ['memory', t('memoryTab')],
+            ['files', t('filesTab')],
           ] as const
         ).map(([key, label]) => (
           <Button

@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import NumberStepper from '@/components/ui/number-stepper';
 import { Switch } from '@/components/ui/switch';
 import { useAdminSettings, useUpdateSettings } from '@/hooks/admin/useAdminSettings';
+import { useTranslations } from 'next-intl';
 
 interface SettingDef {
   key: string;
@@ -29,15 +30,15 @@ interface SettingCategory {
 
 const CATEGORIES: SettingCategory[] = [
   {
-    title: '인증',
+    title: 'authSection',
     icon: '🔐',
     items: [
-      { key: 'auth.guestEnabled', label: '게스트 로그인', description: '게스트 계정 허용 여부', type: 'boolean' },
-      { key: 'auth.googleEnabled', label: 'Google OAuth', description: 'Google 로그인 허용 여부', type: 'boolean' },
+      { key: 'auth.guestEnabled', label: 'guestLogin', description: 'guestLoginDesc', type: 'boolean' },
+      { key: 'auth.googleEnabled', label: 'googleOAuth', description: 'googleOAuthDesc', type: 'boolean' },
       {
         key: 'auth.guestMaxAge',
-        label: '게스트 만료 시간 (시간)',
-        description: '게스트 계정 자동 만료까지의 시간',
+        label: 'guestExpiry',
+        description: 'guestExpiryDesc',
         type: 'number',
         min: 1,
         max: 720,
@@ -45,21 +46,21 @@ const CATEGORIES: SettingCategory[] = [
     ],
   },
   {
-    title: '방',
+    title: 'roomSection',
     icon: '🚪',
     items: [
       {
         key: 'room.maxMembers',
-        label: '최대 인원',
-        description: '방당 최대 참여 인원',
+        label: 'maxMembers',
+        description: 'maxMembersDesc',
         type: 'number',
         min: 2,
         max: 100,
       },
       {
         key: 'room.maxRoomsPerUser',
-        label: '유저당 최대 방',
-        description: '한 유저가 생성할 수 있는 최대 방 수',
+        label: 'maxRoomsPerUser',
+        description: 'maxRoomsPerUserDesc',
         type: 'number',
         min: 1,
         max: 10,
@@ -67,26 +68,26 @@ const CATEGORIES: SettingCategory[] = [
     ],
   },
   {
-    title: 'AutoDJ',
+    title: 'autoDjEnabled',
     icon: '🤖',
-    items: [{ key: 'autodj.enabled', label: 'AutoDJ 활성화', description: '자동 DJ 기능 허용', type: 'boolean' }],
+    items: [{ key: 'autodj.enabled', label: 'autoDjEnabled', description: 'autoDjEnabledDesc', type: 'boolean' }],
   },
   {
-    title: '큐',
+    title: 'queueSection',
     icon: '📋',
     items: [
       {
         key: 'queue.maxPerUser',
-        label: '유저당 최대 큐',
-        description: '한 유저가 추가할 수 있는 최대 큐 수',
+        label: 'maxQueuePerUser',
+        description: 'maxQueuePerUserDesc',
         type: 'number',
         min: 1,
         max: 50,
       },
       {
         key: 'queue.maxDuration',
-        label: '최대 트랙 길이 (분)',
-        description: '큐에 추가 가능한 최대 트랙 길이',
+        label: 'maxTrackLength',
+        description: 'maxTrackLengthDesc',
         type: 'number',
         min: 1,
         max: 60,
@@ -94,19 +95,19 @@ const CATEGORIES: SettingCategory[] = [
     ],
   },
   {
-    title: '스트리밍',
+    title: 'streamSection',
     icon: '🎵',
     items: [
       {
         key: 'stream.maxBitrateEnabled',
-        label: '최대 비트레이트 제한',
-        description: '활성화 시 원본이 설정값보다 높으면 제한',
+        label: 'maxBitrateEnabled',
+        description: 'maxBitrateEnabledDesc',
         type: 'boolean',
       },
       {
         key: 'stream.maxBitrate',
-        label: '최대 비트레이트 (kbps)',
-        description: '원본 비트레이트가 이 값을 초과하면 트랜스코딩',
+        label: 'maxBitrate',
+        description: 'maxBitrateDesc',
         type: 'number',
         min: 64,
         max: 320,
@@ -114,22 +115,27 @@ const CATEGORIES: SettingCategory[] = [
     ],
   },
   {
-    title: '번역',
+    title: 'translationSection',
     icon: '🌐',
     items: [
-      { key: 'translation.enabled', label: '번역 기능', description: '가사 자동 번역 활성화', type: 'boolean' },
+      {
+        key: 'translation.enabled',
+        label: 'translationEnabled',
+        description: 'translationEnabledDesc',
+        type: 'boolean',
+      },
       {
         key: 'translation.dailyLimit',
-        label: '일일 한도',
-        description: '하루 최대 번역 요청 수',
+        label: 'dailyLimit',
+        description: 'dailyLimitDesc',
         type: 'number',
         min: 10,
         max: 1000,
       },
       {
         key: 'translation.model',
-        label: 'Gemini 모델',
-        description: 'flash-lite (빠름) / flash (정확)',
+        label: 'geminiModel',
+        description: 'geminiModelDesc',
         type: 'string',
       },
     ],
@@ -137,6 +143,7 @@ const CATEGORIES: SettingCategory[] = [
 ];
 
 export default function AdminSettingsPage() {
+  const t = useTranslations('admin.settings');
   const { data: settings, isLoading } = useAdminSettings();
   const updateSettings = useUpdateSettings();
   const [draft, setDraft] = useState<Record<string, string>>({});
@@ -163,13 +170,13 @@ export default function AdminSettingsPage() {
       if (draft[k] !== orig[k]) changed[k] = draft[k];
     }
     if (Object.keys(changed).length === 0) return;
-    updateSettings.mutate({ data: { settings: changed } }, { onSuccess: () => toast.success('설정이 저장되었습니다') });
+    updateSettings.mutate({ data: { settings: changed } }, { onSuccess: () => toast.success(t('saved')) });
   }, [draft, settings, updateSettings]);
 
   if (isLoading) {
     return (
       <div>
-        <AdminPageHeader title="⚙️ 시스템 설정" />
+        <AdminPageHeader title={t('title')} />
         <div className="space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="h-32 animate-pulse rounded-2xl bg-white/5" />
@@ -181,36 +188,36 @@ export default function AdminSettingsPage() {
 
   return (
     <div>
-      <AdminPageHeader title="⚙️ 시스템 설정">
+      <AdminPageHeader title={t('title')}>
         <Button onClick={handleSave} disabled={!hasChanges || updateSettings.isPending} variant="accent" size="sm">
           {updateSettings.isPending ? (
             <Loader2 size={14} className="mr-1.5 animate-spin" />
           ) : (
             <Save size={14} className="mr-1.5" />
           )}
-          저장
+          {t('save')}
         </Button>
       </AdminPageHeader>
 
       <div className="space-y-6">
         {CATEGORIES.map((cat) => (
-          <section key={cat.title} className="rounded-2xl border border-white/5 bg-white/[0.03] p-4">
+          <section key={t(cat.title)} className="rounded-2xl border border-white/5 bg-white/[0.03] p-4">
             <h3 className="mb-4 text-sm font-medium text-white">
-              {cat.icon} {cat.title}
+              {cat.icon} {t(cat.title)}
             </h3>
             <div className="space-y-4">
               {cat.items.map((item) => {
                 const val = draft[item.key] ?? '';
                 if (item.type === 'boolean') {
                   return (
-                    <FormField key={item.key} label={item.label} description={item.description} inline>
+                    <FormField key={item.key} label={t(item.label)} description={t(item.description)} inline>
                       <Switch checked={val === 'true'} onCheckedChange={(v) => setValue(item.key, String(v))} />
                     </FormField>
                   );
                 }
                 if (item.type === 'number') {
                   return (
-                    <FormField key={item.key} label={item.label} description={item.description} inline>
+                    <FormField key={item.key} label={t(item.label)} description={t(item.description)} inline>
                       <NumberStepper
                         value={Number(val) || 0}
                         onChange={(v) => setValue(item.key, String(v))}
@@ -222,7 +229,7 @@ export default function AdminSettingsPage() {
                   );
                 }
                 return (
-                  <FormField key={item.key} label={item.label} description={item.description}>
+                  <FormField key={item.key} label={t(item.label)} description={t(item.description)}>
                     <Input value={val} onChange={(e) => setValue(item.key, e.target.value)} />
                   </FormField>
                 );

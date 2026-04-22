@@ -1,6 +1,7 @@
 'use client';
 
 import { Loader2, Ticket } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { PCaptcha } from '@/components/common/PCaptcha';
 import { useEffect, useState } from 'react';
 
@@ -20,6 +21,7 @@ interface GuestLoginFormProps {
 }
 
 export function GuestLoginForm({ onSuccess, onBack, initialCode }: GuestLoginFormProps) {
+  const t = useTranslations('auth');
   const [code, setCode] = useState(initialCode ?? '');
   const [nickname, setNickname] = useState('');
   const [error, setError] = useState('');
@@ -44,7 +46,7 @@ export function GuestLoginForm({ onSuccess, onBack, initialCode }: GuestLoginFor
       if (err instanceof ApiError && err.code) {
         setError((err.body.description ?? err.body.title ?? err.message) as string);
       } else {
-        setError('입장에 실패했습니다');
+        setError(t('guestForm.errorFallback'));
       }
       captcha.reset();
     } finally {
@@ -60,19 +62,19 @@ export function GuestLoginForm({ onSuccess, onBack, initialCode }: GuestLoginFor
             <Ticket size={18} className="text-sa-accent" />
           </div>
           <div>
-            <p className="font-semibold text-white">게스트 입장</p>
+            <p className="font-semibold text-white">{t('guestForm.title')}</p>
             <p className="text-xs text-sa-text-muted">
-              {initialCode ? '닉네임만 입력하면 바로 입장할 수 있습니다' : '초대코드와 닉네임을 입력하세요'}
+              {initialCode ? t('guestForm.subtitleWithCode') : t('guestForm.subtitleWithoutCode')}
             </p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <FormField label="초대코드">
+          <FormField label={t('guestForm.codeLabel')}>
             <Input
               value={code}
               onChange={(e) => !initialCode && setCode(e.target.value)}
-              placeholder="6~12자리 코드"
+              placeholder={t('guestForm.codePlaceholder')}
               maxLength={12}
               required
               readOnly={!!initialCode}
@@ -83,11 +85,11 @@ export function GuestLoginForm({ onSuccess, onBack, initialCode }: GuestLoginFor
               )}
             />
           </FormField>
-          <FormField label="닉네임">
+          <FormField label={t('guestForm.nicknameLabel')}>
             <Input
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
-              placeholder="방에서 사용할 이름"
+              placeholder={t('guestForm.nicknamePlaceholder')}
               maxLength={30}
               required
               autoFocus={!!initialCode}
@@ -107,13 +109,13 @@ export function GuestLoginForm({ onSuccess, onBack, initialCode }: GuestLoginFor
             disabled={loading || !code || !nickname || (captcha.enabled && !captcha.solved)}
             className="mt-1 py-2.5"
           >
-            {loading ? <Loader2 size={16} className="animate-spin" /> : '입장하기'}
+            {loading ? <Loader2 size={16} className="animate-spin" /> : t('guestForm.submitButton')}
           </Button>
         </form>
       </div>
 
       <Button variant="ghost" onClick={onBack} className="mt-4 w-full text-sa-text-muted hover:text-white">
-        ← 다른 방법으로 로그인
+        {t('backToMethods')}
       </Button>
     </div>
   );

@@ -9,12 +9,14 @@ import type { UserDetailResponse } from '@/api/model';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { useDeleteUser } from '@/hooks/admin/useAdminUserDetail';
+import { useTranslations } from 'next-intl';
 
 interface UserDeleteSectionProps {
   user: UserDetailResponse;
 }
 
 export function UserDeleteSection({ user }: UserDeleteSectionProps) {
+  const t = useTranslations('admin.userDetail');
   const [open, setOpen] = useState(false);
   const deleteUser = useDeleteUser(user.id);
   const router = useRouter();
@@ -26,7 +28,7 @@ export function UserDeleteSection({ user }: UserDeleteSectionProps) {
       { id: user.id },
       {
         onSuccess: () => {
-          toast.success('계정이 삭제되었습니다');
+          toast.success(t('accountDeleted'));
           router.push('/admin/users');
         },
       },
@@ -38,18 +40,18 @@ export function UserDeleteSection({ user }: UserDeleteSectionProps) {
   return (
     <div className="mt-4 rounded-2xl border border-red-500/10 bg-red-500/[0.03] p-4 sm:p-6">
       <h3 className="mb-3 flex items-center gap-2 text-sm font-medium text-red-400">
-        <Trash2 size={16} /> 계정 삭제
+        <Trash2 size={16} /> {t('accountDelete')}
       </h3>
-      <p className="mb-3 text-xs text-sa-text-muted">삭제된 계정은 복구할 수 없습니다. 재생 기록은 보존됩니다.</p>
+      <p className="mb-3 text-xs text-sa-text-muted">{t('deleteHint')}</p>
       <Button variant="destructive" className="gap-1.5" onClick={() => setOpen(true)}>
-        <Trash2 size={14} /> 계정 삭제
+        <Trash2 size={14} /> {t('accountDelete')}
       </Button>
       <ConfirmDialog
         open={open}
         onOpenChange={setOpen}
-        title="계정 삭제"
-        description={`${user.nickname} 계정을 영구 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
-        confirmLabel="삭제"
+        title={t('accountDelete')}
+        description={t('deleteConfirmDesc', { nickname: user.nickname })}
+        confirmLabel={t('delete')}
         variant="destructive"
         onConfirm={handleDelete}
         loading={deleteUser.isPending}

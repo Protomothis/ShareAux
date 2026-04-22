@@ -6,10 +6,10 @@
  * OpenAPI spec version: 1.0
  */
 
-export type ErrorResponseDtoCode = (typeof ErrorResponseDtoCode)[keyof typeof ErrorResponseDtoCode];
+export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const ErrorResponseDtoCode = {
+export const ErrorCode = {
   AUTH_001: 'AUTH_001',
   AUTH_002: 'AUTH_002',
   AUTH_003: 'AUTH_003',

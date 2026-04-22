@@ -1,21 +1,15 @@
 import type { ExternalToast } from 'sonner';
 import { toast } from 'sonner';
 
-import { ErrorResponseDtoCode } from '@/api/model';
+import { ErrorCode } from '@/api/model';
 import type { ServerErrorBody } from '@/types';
+
+import { getErrorTranslator } from './i18n-error';
 
 const isDev = process.env.NODE_ENV === 'development';
 
 /** 토큰 만료/폐기 — 세션 만료 흐름에서 처리하므로 토스트 불필요 */
-const TOKEN_EXPIRED_CODES: string[] = [ErrorResponseDtoCode.AUTH_013, ErrorResponseDtoCode.AUTH_014];
-
-const FALLBACK_MESSAGES: Record<number, string> = {
-  400: '요청이 올바르지 않습니다',
-  403: '권한이 없습니다',
-  404: '요청한 리소스를 찾을 수 없습니다',
-  409: '이미 처리된 요청입니다',
-  429: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요',
-};
+const TOKEN_EXPIRED_CODES: string[] = [ErrorCode.AUTH_013, ErrorCode.AUTH_014];
 
 function devSuffix(code: string | undefined, method: string, path: string): string {
   if (!isDev) return '';
@@ -24,18 +18,23 @@ function devSuffix(code: string | undefined, method: string, path: string): stri
 
 /** 서버 구조화 에러 또는 fallback toast */
 export function notifyApiError(status: number, method: string, path: string, body: ServerErrorBody): void {
-  // 토큰 만료만 무시 — 나머지 401(로그인 실패, 초대코드 오류 등)은 토스트 표시
   if (status === 401 && (!body.code || TOKEN_EXPIRED_CODES.includes(body.code))) return;
 
-  // 서버 메타 기반 (code + title 존재)
-  if (body.code && body.title) {
-    const description = (body.description ?? '') + devSuffix(body.code, method, path);
-    toast.error(body.title, { description: description || undefined } satisfies ExternalToast);
-    return;
+  const t = getErrorTranslator();
+
+  // 에러 코드 기반 번역
+  if (body.code) {
+    const title = t(`${body.code}.title`);
+    const desc = t(`${body.code}.description`);
+    if (title) {
+      const description = desc + devSuffix(body.code, method, path);
+      toast.error(title, { description: description || undefined } satisfies ExternalToast);
+      return;
+    }
   }
 
   // fallback
-  const title = status >= 500 ? '서버 오류가 발생했습니다' : (FALLBACK_MESSAGES[status] ?? '요청 처리에 실패했습니다');
+  const title = status >= 500 ? t('_fallback.serverError') : t(`_fallback.${status}`) || t('_fallback.default');
   const fallbackMsg = body.message ?? `Error ${status}`;
   const description = isDev ? `${status} ${method} ${path}\n${fallbackMsg}` : status >= 500 ? fallbackMsg : undefined;
   toast.error(title, { description } satisfies ExternalToast);

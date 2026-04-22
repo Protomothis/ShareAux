@@ -1,6 +1,7 @@
 'use client';
 
 import { Loader2, Pause, Play, Volume2, VolumeX } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { useAudioControl } from '@/hooks/useAudioControl';
 import { formatDuration } from '@/lib/format';
@@ -34,6 +35,7 @@ export default function AudioControl({
   isPlaying,
   audioLoading,
 }: AudioControlProps) {
+  const t = useTranslations('player');
   const { elapsed, muted, effectiveVolume, toggleMute, handleVolumeChange } = useAudioControl({
     elapsedBase,
     syncTime,
@@ -53,7 +55,7 @@ export default function AudioControl({
           onClick={onListenToggle}
           disabled={audioLoading}
           className={listening ? '' : 'bg-white/10 hover:bg-white/20'}
-          aria-label={audioLoading ? '로딩 중' : listening ? '일시정지' : '재생'}
+          aria-label={audioLoading ? t('loading') : listening ? t('pause') : t('play')}
         >
           {audioLoading ? (
             <Loader2 size={18} className="animate-spin" />
@@ -73,7 +75,7 @@ export default function AudioControl({
           {track?.name ? (
             <MarqueeText text={track.name} className="text-sm font-medium text-white" />
           ) : (
-            <p className="text-sm font-medium text-white">재생 대기 중...</p>
+            <p className="text-sm font-medium text-white">{t('idle')}</p>
           )}
           <p className="truncate text-xs text-sa-text-secondary">{track?.artist ?? ''}</p>
         </div>
@@ -83,7 +85,7 @@ export default function AudioControl({
           size="icon-sm"
           onClick={toggleMute}
           className="shrink-0 text-sa-text-secondary hover:text-white"
-          aria-label={muted ? '음소거 해제' : '음소거'}
+          aria-label={muted ? t('unmute') : t('mute')}
         >
           {muted || volume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
         </Button>

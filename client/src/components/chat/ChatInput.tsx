@@ -2,6 +2,7 @@
 
 import { Send } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 import { MAX_CHAT_LENGTH } from '@/lib/constants';
 
@@ -16,6 +17,7 @@ interface ChatInputProps {
 }
 
 export default function ChatInput({ onSend, canChat, mutedUntil }: ChatInputProps) {
+  const t = useTranslations('chat');
   const [input, setInput] = useState('');
   const [muteRemaining, setMuteRemaining] = useState(0);
 
@@ -48,11 +50,7 @@ export default function ChatInput({ onSend, canChat, mutedUntil }: ChatInputProp
     setInput('');
   };
 
-  const placeholder = isMuted
-    ? `채팅이 제한되었습니다 (${muteRemaining}초)`
-    : canChat
-      ? '메시지를 입력하세요...'
-      : '채팅 권한이 없습니다';
+  const placeholder = isMuted ? t('muted', { seconds: muteRemaining }) : canChat ? t('placeholder') : t('noPermission');
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-1 gap-2">
@@ -62,7 +60,7 @@ export default function ChatInput({ onSend, canChat, mutedUntil }: ChatInputProp
         placeholder={placeholder}
         maxLength={MAX_CHAT_LENGTH}
         disabled={disabled}
-        aria-label="채팅 메시지"
+        aria-label={t('inputLabel')}
         className={cn(
           'flex-1 rounded-xl border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-sa-text-muted focus-visible:border-sa-accent/50 focus-visible:ring-0',
           disabled && 'cursor-not-allowed opacity-50',
@@ -74,7 +72,7 @@ export default function ChatInput({ onSend, canChat, mutedUntil }: ChatInputProp
         size="icon"
         disabled={disabled}
         className="shrink-0 rounded-xl disabled:opacity-40"
-        aria-label="전송"
+        aria-label={t('send')}
       >
         <Send size={16} />
       </Button>

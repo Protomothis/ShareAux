@@ -1,6 +1,7 @@
 'use client';
 
 import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -29,11 +30,12 @@ export function ConfirmDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = '확인',
+  confirmLabel,
   variant = 'default',
   onConfirm,
   loading,
 }: ConfirmDialogProps) {
+  const t = useTranslations('admin.common');
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -42,10 +44,10 @@ export function ConfirmDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <DialogClose render={<Button variant="outline" />}>취소</DialogClose>
+          <DialogClose render={<Button variant="outline" />}>{t('cancel')}</DialogClose>
           <Button variant={variant === 'destructive' ? 'destructive' : 'accent'} onClick={onConfirm} disabled={loading}>
             {loading && <Loader2 size={14} className="mr-1.5 animate-spin" />}
-            {confirmLabel}
+            {confirmLabel ?? t('confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>

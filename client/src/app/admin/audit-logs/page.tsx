@@ -8,23 +8,14 @@ import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminPagination } from '@/components/admin/AdminPagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAdminAuditLogs } from '@/hooks/admin/useAdminAuditLogs';
-
-const ACTION_OPTIONS = [
-  { value: '', label: '전체 액션' },
-  { value: 'settings_update', label: '설정 변경' },
-  { value: 'cleanup', label: '데이터 정리' },
-  { value: 'report_resolve', label: '신고 처리' },
-  { value: 'role_change', label: '역할 변경' },
-  { value: 'ban', label: '밴' },
-  { value: 'unban', label: '밴 해제' },
-];
+import { useTranslations } from 'next-intl';
 
 const TARGET_OPTIONS = [
-  { value: '', label: '전체 대상' },
-  { value: 'system', label: '시스템' },
-  { value: 'user', label: '유저' },
-  { value: 'room', label: '방' },
-  { value: 'report', label: '신고' },
+  { value: '', label: 'allTargets' },
+  { value: 'system', label: 'system' },
+  { value: 'user', label: 'user' },
+  { value: 'room', label: 'room' },
+  { value: 'report', label: 'report' },
 ];
 
 const ACTION_ICONS: Record<string, string> = {
@@ -77,6 +68,17 @@ function LogEntry({ log }: { log: AuditLogItem }) {
 }
 
 export default function AdminAuditLogsPage() {
+  const t = useTranslations('admin.auditLogs');
+  const ACTION_OPTIONS = [
+    { value: '', label: 'allActions' },
+    { value: 'settings_update', label: 'settingsUpdate' },
+    { value: 'cleanup', label: 'cleanupAction' },
+    { value: 'report_resolve', label: 'reportResolve' },
+    { value: 'role_change', label: 'roleChange' },
+    { value: 'ban', label: 'ban' },
+    { value: 'unban', label: 'unban' },
+  ];
+
   const [page, setPage] = useState(1);
   const [action, setAction] = useState('');
   const [targetType, setTargetType] = useState('');
@@ -97,29 +99,29 @@ export default function AdminAuditLogsPage() {
 
   return (
     <div>
-      <AdminPageHeader title="📋 감사 로그">
+      <AdminPageHeader title={t('title')}>
         <div className="flex items-center gap-2">
           <Filter size={14} className="text-sa-text-muted" />
           <Select value={action} onValueChange={handleFilterChange(setAction)}>
             <SelectTrigger size="sm" className="w-36">
-              <SelectValue placeholder="전체 액션" />
+              <SelectValue placeholder={t('allActions')} />
             </SelectTrigger>
             <SelectContent>
               {ACTION_OPTIONS.map((o) => (
                 <SelectItem key={o.value} value={o.value}>
-                  {o.label}
+                  {t(o.label)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           <Select value={targetType} onValueChange={handleFilterChange(setTargetType)}>
             <SelectTrigger size="sm" className="w-32">
-              <SelectValue placeholder="전체 대상" />
+              <SelectValue placeholder={t('allTargets')} />
             </SelectTrigger>
             <SelectContent>
               {TARGET_OPTIONS.map((o) => (
                 <SelectItem key={o.value} value={o.value}>
-                  {o.label}
+                  {t(o.label)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -134,7 +136,7 @@ export default function AdminAuditLogsPage() {
             ))
           : data?.items.map((log) => <LogEntry key={log.id} log={log} />)}
         {!isLoading && data?.items.length === 0 && (
-          <p className="py-12 text-center text-sm text-sa-text-muted">감사 로그가 없습니다</p>
+          <p className="py-12 text-center text-sm text-sa-text-muted">{t('empty')}</p>
         )}
       </div>
 

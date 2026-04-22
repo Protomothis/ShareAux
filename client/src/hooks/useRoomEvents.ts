@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { SystemChatEvent } from '@/api/model';
 import type { RoomQueue, Track, TrackLyricsType } from '@/api/model';
 import { useInvalidate } from '@/hooks/useQueries';
 import { debug } from '@/lib/debug';
@@ -282,15 +283,17 @@ export function useRoomEvents(
         return;
       }
 
-      // 기타 시스템 메시지
-      if (!data.detail) return;
+      // 기타 시스템 메시지 → 채팅에 표시
+      const CHAT_EVENTS = new Set<string>(Object.values(SystemChatEvent));
+      if (!CHAT_EVENTS.has(data.event)) return;
       setMessages((prev) =>
         prev.slice(-200).concat({
           userId: '',
-          nickname: '',
-          message: data.detail || data.event,
+          nickname: (data.data as { nickname?: string })?.nickname ?? '',
+          message: data.event,
           timestamp: new Date().toISOString(),
           type: 'system',
+          data: data.data as { nickname?: string; trackName?: string; count?: number } | undefined,
         }),
       );
     },

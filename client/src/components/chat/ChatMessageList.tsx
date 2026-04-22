@@ -1,3 +1,6 @@
+import { useTranslations } from 'next-intl';
+import { SystemChatEvent } from '@/api/model';
+
 import { getAvatar } from '@/lib/avatar';
 import { getDisplayRole, ROLE_CONFIG } from '@/lib/roles';
 import type { ChatMessage } from '@/types';
@@ -7,14 +10,6 @@ function userTag(userId: string): string {
   return `#${userId.slice(-4)}`;
 }
 
-const SYSTEM_LABELS: Record<string, string> = {
-  userJoined: '님이 입장했습니다',
-  userLeft: '님이 퇴장했습니다',
-  trackSkipped: '님이 곡을 스킵했습니다',
-  trackPrevious: '님이 이전 곡으로 돌아갔습니다',
-  roomClosed: '방이 종료되었습니다',
-};
-
 interface ChatMessageListProps {
   messages: ChatMessage[];
   bottomRef: React.RefObject<HTMLDivElement | null>;
@@ -22,13 +17,61 @@ interface ChatMessageListProps {
 }
 
 export default function ChatMessageList({ messages, bottomRef, hostId }: ChatMessageListProps) {
+  const t = useTranslations('chat');
+  const sysLabel = (msg: ChatMessage): string => {
+    const nick = msg.data?.nickname ?? msg.nickname ?? '';
+    const track = msg.data?.trackName ?? '';
+    switch (msg.message) {
+      // nickname + 접미사
+      case SystemChatEvent.userJoined:
+        return `${nick}${t('system.userJoined')}`;
+      case SystemChatEvent.userLeft:
+        return `${nick}${t('system.userLeft')}`;
+      case SystemChatEvent.trackSkipped:
+        return `${nick}${t('system.trackSkipped')}`;
+      case SystemChatEvent.trackPrevious:
+        return `${nick}${t('system.trackPrevious')}`;
+      case SystemChatEvent.hostChanged:
+        return `${nick}${t('system.hostChanged')}`;
+
+      // trackName 포함
+      case SystemChatEvent.trackAdded:
+        return t('system.trackAdded', { trackName: track });
+      case SystemChatEvent.trackUnavailable:
+        return t('system.trackUnavailable', { trackName: track });
+
+      // 유저 곡 추가
+      case SystemChatEvent.userTrackAdded:
+        return (msg.data?.count ?? 1) > 1
+          ? t('system.userTrackAdded', { nickname: nick, trackName: track, count: (msg.data?.count ?? 1) - 1 })
+          : t('system.userTrackAddedSingle', { nickname: nick, trackName: track });
+
+      // 단독 메시지
+      case SystemChatEvent.roomClosed:
+        return t('system.roomClosed');
+      case SystemChatEvent.userKicked:
+        return t('system.userKicked');
+      case SystemChatEvent.voteSkipPassed:
+        return t('system.voteSkipPassed');
+      case SystemChatEvent.autoDjEnabled:
+        return t('system.autoDjEnabled');
+      case SystemChatEvent.autoDjDisabled:
+        return t('system.autoDjDisabled');
+      case SystemChatEvent.enqueueCountsReset:
+        return t('system.enqueueCountsReset');
+
+      default:
+        return msg.message;
+    }
+  };
+
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3" role="log" aria-live="polite">
       {messages.length === 0 && (
         <div className="flex h-full items-center justify-center">
           <div className="text-center">
             <p className="mb-1 text-2xl">💬</p>
-            <p className="text-xs text-sa-text-muted">첫 메시지를 보내보세요</p>
+            <p className="text-xs text-sa-text-muted">{t('firstMessage')}</p>
           </div>
         </div>
       )}
@@ -38,15 +81,17 @@ export default function ChatMessageList({ messages, bottomRef, hostId }: ChatMes
             <div key={`msg-${i}`} className="animate-fade-in flex items-center gap-2 py-0.5">
               <div className="h-px flex-1 bg-white/[0.06]" />
               <span className="text-center text-[11px] leading-tight text-white/25 line-clamp-3 break-keep">
-                {m.nickname
-                  ? `${m.nickname}${SYSTEM_LABELS[m.message] ?? m.message}`
-                  : (SYSTEM_LABELS[m.message] ?? m.message)}
+                {sysLabel(m)}
               </span>
               <div className="h-px flex-1 bg-white/[0.06]" />
             </div>
           ) : (
             <div key={`msg-${i}`} className="flex animate-fade-in gap-2 text-sm">
-              <img src={getAvatar(m.nickname || '익명')} alt="" className="mt-0.5 size-5 shrink-0 rounded-full" />
+              <img
+                src={getAvatar(m.nickname || t('anonymous'))}
+                alt=""
+                className="mt-0.5 size-5 shrink-0 rounded-full"
+              />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1">
                   {(() => {
@@ -55,7 +100,7 @@ export default function ChatMessageList({ messages, bottomRef, hostId }: ChatMes
                     return (
                       <>
                         {cfg.badge && <span className="text-[10px]">{cfg.badge}</span>}
-                        <span className={`shrink-0 font-medium ${cfg.color}`}>{m.nickname || '익명'}</span>
+                        <span className={`shrink-0 font-medium ${cfg.color}`}>{m.nickname || t('anonymous')}</span>
                       </>
                     );
                   })()}

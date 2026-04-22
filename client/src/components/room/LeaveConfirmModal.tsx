@@ -2,6 +2,7 @@
 
 import Modal from '@/components/common/Modal';
 import { Button } from '@/components/ui/button';
+import { useTranslations } from 'next-intl';
 
 interface LeaveConfirmModalProps {
   open: boolean;
@@ -10,14 +11,15 @@ interface LeaveConfirmModalProps {
 }
 
 export default function LeaveConfirmModal({ open, onConfirm, onClose }: LeaveConfirmModalProps) {
+  const t = useTranslations('leave');
   return (
     <Modal open={open} onClose={onClose}>
       <Modal.Header>
-        <Modal.Title>정말 나가시겠습니까?</Modal.Title>
+        <Modal.Title>{t('title')}</Modal.Title>
       </Modal.Header>
       <Modal.Footer>
         <Button variant="outline" onClick={onClose}>
-          취소
+          {t('cancel')}
         </Button>
         <Button
           variant="destructive"
@@ -26,7 +28,7 @@ export default function LeaveConfirmModal({ open, onConfirm, onClose }: LeaveCon
             onConfirm();
           }}
         >
-          나가기
+          {t('confirm')}
         </Button>
       </Modal.Footer>
     </Modal>

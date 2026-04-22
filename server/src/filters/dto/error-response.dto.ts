@@ -6,7 +6,7 @@ export class ErrorResponseDto {
   @ApiProperty({ example: false })
   success!: boolean;
 
-  @ApiProperty({ enum: ErrorCode })
+  @ApiProperty({ enum: ErrorCode, enumName: 'ErrorCode' })
   code!: ErrorCode;
 
   @ApiProperty()

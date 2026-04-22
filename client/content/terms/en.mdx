@@ -1,0 +1,68 @@
+## 1. Service Overview
+
+ShareAux is a real-time music sharing platform that allows users to create rooms, search for music together, and stream in real-time as a self-hosted service.
+
+## 2. Eligibility
+
+- You can use the service with a Google account or a guest nickname.
+- Guest accounts may require an invite code and may have limited functionality.
+
+## 3. User Obligations
+
+- Offensive chat messages or nicknames are prohibited.
+- Actions that interfere with normal service operation are prohibited.
+- Mass requests or crawling using automated tools are prohibited.
+- Room host policies must be respected.
+
+## 4. Service Provision and Limitations
+
+- The service is provided "as-is" without availability guarantees.
+- The operator may temporarily suspend the service for maintenance or updates.
+- Users who violate usage rules may be restricted (kicked, IP banned) without warning.
+
+## 5. Content and Copyright
+
+- ShareAux does not store music files; it streams in real-time through external media services.
+- Music copyrights belong to their respective rights holders. ShareAux only supports personal, non-commercial streaming.
+- Lyrics data is provided by external services and their terms of use apply.
+
+## 6. Account and Deletion
+
+- Google login users can request account deletion from the administrator; all data is immediately destroyed upon request.
+- Guest accounts are automatically deleted upon logout or session expiry.
+
+## 7. Project Nature
+
+ShareAux is an open-source project developed for **educational and portfolio purposes**. It was created to learn and demonstrate web technologies such as real-time audio streaming, WebSocket communication, and MSE (Media Source Extensions), and is not a commercial music streaming service.
+
+## 8. Disclaimer
+
+- ShareAux is provided as-is, and we are not responsible for any direct or indirect damages from service use.
+- We are not responsible for service interruptions due to external service (Google, etc.) failures.
+- **Copyright responsibility**: The ShareAux software itself does not store or distribute music files. Compliance with copyright law for content usage in self-hosted environments is the **responsibility of the instance operator**. The project developer is not responsible for copyright infringement on instances operated by third parties.
+- **No commercial use**: Operating a large-scale commercial music streaming service using this software is beyond its intended scope, and the project developer bears no responsibility for legal issues arising from such use.
+- This software is designed for small-scale personal, non-commercial, and educational use.
+- **Private operation recommended**: Public-facing service operation is discouraged; private, personal use through invite codes is strongly recommended.
+
+## 9. Security
+
+ShareAux implements the following security measures:
+
+- JWT-based authentication and session management
+- Password bcrypt hashing (room passwords)
+- API request rate limiting (ThrottlerGuard)
+- IP ban system
+- PoW (Proof of Work) based CAPTCHA
+- Helmet security headers
+- Input validation (class-validator, whitelist filtering)
+- CORS policy
+
+Despite these measures, ShareAux is an open-source project with publicly available source code, which means vulnerability discovery and exploitation attempts through code analysis are possible. Self-hosting operators are recommended to apply **additional security measures** (firewall configuration, access control, regular updates, etc.) appropriate for their environment. The project developer is not responsible for security incidents.
+
+## 10. Terms Changes
+
+These terms may be changed as needed for service operation, and changes will be announced within the service.
+
+## 11. Contact
+
+For terms-related inquiries, please contact the service administrator.

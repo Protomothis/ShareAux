@@ -97,13 +97,12 @@ export class QueueController {
       this.player.updateCodecInfo(t);
     }
 
-    const nickname = req.user.nickname || '누군가';
-    const msg =
-      entries.length === 1
-        ? `${nickname}님이 "${addedTracks[0]?.name ?? '곡'}"을(를) 추가했습니다`
-        : `${nickname}님이 ${entries.length}곡을 추가했습니다`;
     this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue: updatedQueue });
-    this.gateway.broadcastSystem(roomId, WsEvent.TrackAdded, msg);
+    this.gateway.broadcastSystem(roomId, WsEvent.UserTrackAdded, '', {
+      nickname: req.user.nickname ?? '',
+      trackName: addedTracks[0]?.name ?? '',
+      count: entries.length,
+    });
     this.player.triggerPreload(roomId);
     this.autoPlayIfIdle(roomId, entries[0]?.track?.id ?? addedTracks[0]?.id);
     return entries;

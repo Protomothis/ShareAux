@@ -2,6 +2,7 @@
 
 import { Loader2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import type { ResetBansResponse, SanctionItem, SanctionsResponse } from '@/api/model';
@@ -74,6 +75,7 @@ export default function RoomSettingsModal({
   });
   const [bans, setBans] = useState<SanctionItem[]>([]);
   const [mutes, setMutes] = useState<SanctionItem[]>([]);
+  const t = useTranslations('settings');
   const [saving, setSaving] = useState(false);
   const [resettingEnqueue, setResettingEnqueue] = useState(false);
   const [resettingBans, setResettingBans] = useState(false);
@@ -82,7 +84,7 @@ export default function RoomSettingsModal({
 
   const rules = useMemo(
     () => ({
-      name: (v: string) => !v.trim() && '방 이름을 입력하세요',
+      name: (v: string) => !v.trim() && t('nameRequired'),
     }),
     [],
   );
@@ -160,7 +162,7 @@ export default function RoomSettingsModal({
         autoDjFavFallbackMixed: values.autoDjFavFallbackMixed,
       });
       onSaved();
-      toast.success('설정이 저장되었습니다');
+      toast.success(t('saved'));
       onClose();
     } catch {
     } finally {
@@ -173,7 +175,7 @@ export default function RoomSettingsModal({
     setResettingEnqueue(true);
     try {
       await roomsControllerResetEnqueueCounts(roomId);
-      toast.success('신청 횟수가 초기화되었습니다');
+      toast.success(t('resetEnqueueDone'));
     } catch {
     } finally {
       setResettingEnqueue(false);
@@ -185,7 +187,7 @@ export default function RoomSettingsModal({
     setResettingBans(true);
     try {
       const res = await roomsControllerResetBans(roomId);
-      toast.success(`제재 목록이 초기화되었습니다 (${res.cleared}명)`);
+      toast.success(t('sanctionsCleared', { count: res.cleared }));
       setBans([]);
       setMutes([]);
     } catch {
@@ -200,7 +202,7 @@ export default function RoomSettingsModal({
     try {
       await roomsControllerUnban(roomId, userId);
       setBans((prev) => prev.filter((b) => b.userId !== userId));
-      toast.success('추방이 해제되었습니다');
+      toast.success(t('unbanDone'));
     } catch {
     } finally {
       setUnbanningId(null);
@@ -213,7 +215,7 @@ export default function RoomSettingsModal({
     try {
       await roomsControllerMuteUser(roomId, userId);
       setMutes((prev) => prev.filter((m) => m.userId !== userId));
-      toast.success('채팅 제한이 해제되었습니다');
+      toast.success(t('unmuteDone'));
     } catch {
     } finally {
       setUnmutingId(null);
@@ -223,7 +225,7 @@ export default function RoomSettingsModal({
   return (
     <Modal open={open} onClose={onClose} className="max-w-sm sm:max-w-lg">
       <Modal.Header>
-        <Modal.Title>⚙️ 방 설정</Modal.Title>
+        <Modal.Title>{t('roomTitle')}</Modal.Title>
       </Modal.Header>
 
       <Modal.Body>
@@ -238,15 +240,15 @@ export default function RoomSettingsModal({
             onClick={handleResetEnqueue}
             disabled={resettingEnqueue}
           >
-            {resettingEnqueue ? <Loader2 size={14} className="animate-spin" /> : '신청 횟수 초기화'}
+            {resettingEnqueue ? <Loader2 size={14} className="animate-spin" /> : t('resetEnqueue')}
           </Button>
         </div>
 
         {/* 제재 관리 */}
         <div className="mt-4 border-t border-white/10 pt-4">
-          <FormSection title="제재 관리">
+          <FormSection title={t('sanctions')}>
             {bans.length === 0 && mutes.length === 0 ? (
-              <p className="py-2 text-center text-xs text-muted-foreground">제재된 멤버가 없습니다</p>
+              <p className="py-2 text-center text-xs text-muted-foreground">{t('noSanctions')}</p>
             ) : (
               <>
                 <div className="max-h-36 space-y-1 overflow-y-auto">
@@ -258,7 +260,7 @@ export default function RoomSettingsModal({
                       <div className="min-w-0 flex-1">
                         <span className="truncate text-sm">{m.nickname}</span>
                         <span className="ml-1.5 text-xs text-muted-foreground">
-                          🔇 채팅 제한 ({Math.ceil((m.remainingSec ?? 0) / 60)}분 남음)
+                          {t('chatMuted', { min: Math.ceil((m.remainingSec ?? 0) / 60) })}
                         </span>
                       </div>
                       <Button
@@ -268,7 +270,7 @@ export default function RoomSettingsModal({
                         onClick={() => handleUnmute(m.userId)}
                         disabled={unmutingId === m.userId}
                       >
-                        {unmutingId === m.userId ? <Loader2 size={12} className="animate-spin" /> : '해제'}
+                        {unmutingId === m.userId ? <Loader2 size={12} className="animate-spin" /> : t('release')}
                       </Button>
                     </div>
                   ))}
@@ -279,7 +281,7 @@ export default function RoomSettingsModal({
                     >
                       <div className="min-w-0 flex-1">
                         <span className="truncate text-sm">{b.nickname}</span>
-                        <span className="ml-1.5 text-xs text-muted-foreground">🚫 추방됨</span>
+                        <span className="ml-1.5 text-xs text-muted-foreground">{t('banned')}</span>
                       </div>
                       <Button
                         variant="link"
@@ -288,7 +290,7 @@ export default function RoomSettingsModal({
                         onClick={() => handleUnban(b.userId)}
                         disabled={unbanningId === b.userId}
                       >
-                        {unbanningId === b.userId ? <Loader2 size={12} className="animate-spin" /> : '해제'}
+                        {unbanningId === b.userId ? <Loader2 size={12} className="animate-spin" /> : t('release')}
                       </Button>
                     </div>
                   ))}
@@ -300,7 +302,7 @@ export default function RoomSettingsModal({
                   onClick={handleResetBans}
                   disabled={resettingBans}
                 >
-                  {resettingBans ? <Loader2 size={12} className="animate-spin" /> : '전체 해제'}
+                  {resettingBans ? <Loader2 size={12} className="animate-spin" /> : t('releaseAll')}
                 </Button>
               </>
             )}
@@ -310,7 +312,7 @@ export default function RoomSettingsModal({
 
       <Modal.Footer>
         <Button className="w-full" onClick={handleSave} disabled={saving}>
-          {saving ? <Loader2 size={16} className="animate-spin" /> : '저장'}
+          {saving ? <Loader2 size={16} className="animate-spin" /> : t('save')}
         </Button>
       </Modal.Footer>
     </Modal>

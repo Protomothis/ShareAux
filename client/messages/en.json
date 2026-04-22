@@ -1,0 +1,1138 @@
+{
+  "common": {
+    "privacyPolicy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "back": "← Back",
+    "lastUpdated": "Last updated",
+    "updatedDate": "April 16, 2026",
+    "setup": {
+      "title": "ShareAux Initial Setup",
+      "subtitle": "The first account will be registered as admin.",
+      "hint": "No invite code required."
+    },
+    "serverStatus": {
+      "connecting": "Connecting to server…",
+      "disconnected": "Unable to connect to server",
+      "autoRetry": "Retrying automatically soon",
+      "retryNow": "Retry now"
+    },
+    "errorBoundary": {
+      "message": "Something went wrong",
+      "reload": "Reload"
+    },
+    "wsDisconnect": {
+      "message": "Disconnected from server — reconnecting…"
+    },
+    "modal": {
+      "close": "Close"
+    },
+    "captcha": {
+      "idle": "I am human",
+      "solving": "Verifying...",
+      "solved": "Verified"
+    }
+  },
+  "login": {
+    "tagline": "Listen together, build playlists together",
+    "invitedTo": "You've been invited to {roomName}",
+    "loginTitle": "Log in",
+    "loginDescription": "Sign in with your credentials",
+    "registerTitle": "Sign up",
+    "registerDescription": "Create an account with invite code",
+    "guestTitle": "Guest access",
+    "guestDescription": "Join instantly with invite code"
+  },
+  "auth": {
+    "backToMethods": "← Back to login methods",
+    "loginForm": {
+      "title": "Log in",
+      "subtitle": "Sign in with your username and password",
+      "usernameLabel": "Username",
+      "usernamePlaceholder": "Enter your username",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "usernameRequired": "Please enter your username",
+      "passwordRequired": "Please enter your password",
+      "submitButton": "Log in",
+      "errorFallback": "Login failed",
+      "orDivider": "or",
+      "googleLogin": "Sign in with Google",
+      "googleLinkedOnly": "Linked accounts only"
+    },
+    "registerForm": {
+      "title": "Sign up",
+      "subtitle": "Create an account with an invite code",
+      "codeLabel": "Invite code",
+      "codePlaceholder": "Enter invite code",
+      "codeRequired": "Please enter an invite code",
+      "usernameLabel": "Username",
+      "usernamePlaceholder": "Lowercase, numbers, underscore (4–20)",
+      "usernameMinLength": "Username must be at least {min} characters",
+      "usernameMaxLength": "Username must be at most {max} characters",
+      "usernamePattern": "Only lowercase letters, numbers, and underscores allowed",
+      "nicknameLabel": "Nickname",
+      "nicknamePlaceholder": "Display name in rooms (2–20)",
+      "nicknameMinLength": "Nickname must be at least {min} characters",
+      "nicknameMaxLength": "Nickname must be at most {max} characters",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "At least 8 characters",
+      "passwordMinLength": "Password must be at least {min} characters",
+      "confirmPasswordLabel": "Confirm password",
+      "confirmPasswordPlaceholder": "Re-enter your password",
+      "confirmPasswordMismatch": "Passwords do not match",
+      "submitButton": "Sign up",
+      "errorFallback": "Registration failed"
+    },
+    "guestForm": {
+      "title": "Guest access",
+      "subtitleWithCode": "Just enter a nickname to join",
+      "subtitleWithoutCode": "Enter an invite code and nickname",
+      "codeLabel": "Invite code",
+      "codePlaceholder": "6–12 digit code",
+      "nicknameLabel": "Nickname",
+      "nicknamePlaceholder": "Display name in room",
+      "submitButton": "Join",
+      "errorFallback": "Failed to join"
+    }
+  },
+  "rooms": {
+    "list": {
+      "refresh": "Refresh",
+      "createRoom": "Create room",
+      "emptyTitle": "No active rooms yet",
+      "emptyDescription": "Create the first room!",
+      "wrongPassword": "Wrong password",
+      "joinFailed": "Failed to join"
+    },
+    "card": {
+      "idle": "Idle",
+      "unknownHost": "Unknown"
+    },
+    "createModal": {
+      "title": "Create room",
+      "nameRequired": "Enter a room name",
+      "passwordRequired": "Enter a password",
+      "submit": "Create"
+    },
+    "profile": {
+      "settings": "Settings",
+      "admin": "Admin",
+      "logout": "Log out"
+    }
+  },
+  "player": {
+    "loading": "Loading",
+    "play": "Play",
+    "pause": "Pause",
+    "prevTrack": "Previous track",
+    "nextTrack": "Next track",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "visualMode": "Change visual mode",
+    "lyricsToggle": "Toggle lyrics",
+    "skipping": "Skipping...",
+    "preparing": "Preparing next track...",
+    "idle": "Waiting for tracks...",
+    "idleHint": "Add a track to start playing",
+    "djControl": "🎧 DJ Controls"
+  },
+  "queue": {
+    "title": "📋 Queue",
+    "enqueueDisabled": "🚫 Enqueue disabled",
+    "quota": "{used}/{limit} tracks ({windowMin}min)",
+    "addTrack": "Add track",
+    "emptyTitle": "No tracks in queue",
+    "emptyDescription": "Search and add tracks to play them in order.\nYou can pick multiple tracks at once!",
+    "autoDjThinking": "AutoDJ is finding tracks...",
+    "autoDjAdding": "AutoDJ is adding a track...",
+    "deleteConfirm": "Remove from queue?",
+    "cancel": "Cancel",
+    "delete": "Remove",
+    "queueFull": "Queue is full (max {max} tracks)",
+    "addedToast": "🎵 Added to queue",
+    "addedExtra": " and {count} more"
+  },
+  "search": {
+    "title": "Add tracks",
+    "showcase": {
+      "emptyTitle": "No play history yet",
+      "emptyHint": "Add tracks from the search tab",
+      "popular": "Popular",
+      "myHistory": "My Requests",
+      "recentPlays": "Recent Plays",
+      "recommended": "Recommended"
+    },
+    "searchTab": "Search",
+    "favorites": "Favorites",
+    "placeholder": "Song title or artist...",
+    "emptyHint": "Search by song title or artist",
+    "noResults": "No results found",
+    "noResultsHint": "No results for \"{query}\".\nTry different keywords.",
+    "playlist": {
+      "trackCount": "{count} tracks",
+      "loadError": "Failed to load playlist",
+      "retry": "Retry",
+      "noTracks": "No playable tracks",
+      "loadMore": "Load more ({loaded}/{total})"
+    },
+    "showcaseTab": "Showcase"
+  },
+  "favorites": {
+    "loading": "Loading...",
+    "manageFolder": "Manage folders",
+    "empty": "No favorite tracks",
+    "searchPlaceholder": "Search...",
+    "sortRecent": "Recent",
+    "sortOldest": "Oldest",
+    "sortName": "Title",
+    "sortArtist": "Artist",
+    "done": "Done",
+    "edit": "Edit",
+    "selected": "{count} selected",
+    "moved": "Moved",
+    "movedCount": "{count} tracks moved",
+    "moveTo": "Move to...",
+    "uncategorized": "Uncategorized",
+    "removedCount": "{count} tracks unfavorited",
+    "removeFavorite": "Unfavorite",
+    "trackCount": "{count} tracks",
+    "inQueue": "Already in queue"
+  },
+  "history": {
+    "emptyTitle": "No tracks played yet",
+    "emptyDescription": "Played tracks will appear here"
+  },
+  "chat": {
+    "muted": "Chat restricted ({seconds}s)",
+    "placeholder": "Type a message...",
+    "noPermission": "No chat permission",
+    "inputLabel": "Chat message",
+    "send": "Send",
+    "firstMessage": "Send the first message",
+    "anonymous": "Anonymous",
+    "reactionLabel": "Reaction",
+    "reactionTooltip": "Long press to change",
+    "system": {
+      "userJoined": " joined",
+      "userLeft": " left",
+      "trackSkipped": " skipped the track",
+      "trackPrevious": " went to previous track",
+      "roomClosed": "Room closed",
+      "hostChanged": " is the new host",
+      "autoDjEnabled": "🤖 AutoDJ enabled",
+      "autoDjDisabled": "🤖 AutoDJ disabled",
+      "enqueueCountsReset": "Enqueue counts reset",
+      "userKicked": "A member was kicked",
+      "trackAdded": "🤖 AutoDJ added \"{trackName}\"",
+      "trackUnavailable": "\"{trackName}\" unavailable — skipping",
+      "voteSkipPassed": "Skip vote passed",
+      "userTrackAdded": "{nickname} added \"{trackName}\" and {count} more",
+      "userTrackAddedSingle": "{nickname} added \"{trackName}\""
+    }
+  },
+  "members": {
+    "title": "👥 Members ({count})",
+    "empty": "No members yet",
+    "unknown": "Unknown",
+    "managePermission": "Manage permissions",
+    "report": "Report"
+  },
+  "settings": {
+    "roomTitle": "⚙️ Room Settings",
+    "nameRequired": "Enter a room name",
+    "saved": "Settings saved",
+    "save": "Save",
+    "resetEnqueue": "Reset enqueue count",
+    "resetEnqueueDone": "Enqueue count reset",
+    "sanctions": "Sanctions",
+    "noSanctions": "No sanctioned members",
+    "chatMuted": "🔇 Chat muted ({min}min left)",
+    "banned": "🚫 Banned",
+    "release": "Release",
+    "releaseAll": "Release all",
+    "sanctionsCleared": "Sanctions cleared ({count} members)",
+    "unbanDone": "Ban released",
+    "unmuteDone": "Chat mute released",
+    "basicInfo": "Basic Info",
+    "roomName": "Room name",
+    "roomNamePlaceholder": "Enter a party name",
+    "maxMembers": "Max members",
+    "privateRoom": "Private room",
+    "passwordPlaceholder": "Enter password",
+    "playback": "Playback",
+    "crossfade": "Crossfade",
+    "crossfadeDesc": "Fade between tracks",
+    "enqueueDefault": "Allow enqueue",
+    "enqueueDefaultDesc": "Default for new members",
+    "voteSkipDefault": "Allow vote skip",
+    "voteSkipDefaultDesc": "Default for new members",
+    "enqueueSection": "Enqueue",
+    "maxSelectPerAdd": "Tracks per add",
+    "enqueueWindowMin": "Window (min)",
+    "enqueueLimitPerWindow": "Max per window",
+    "enqueueSummary": "Max {limit} tracks per {windowMin}min, {maxSelect} per add (DJ exempt)",
+    "replayCooldown": "Replay cooldown",
+    "replayNone": "No limit",
+    "replay30": "30 min",
+    "replay60": "60 min",
+    "replay90": "90 min",
+    "replayForever": "Until room closes",
+    "replayHintForever": "Same track cannot be re-queued until room closes (DJ exempt)",
+    "replayHintMin": "Same track cannot be re-queued for {min}min after playing (DJ exempt)",
+    "autoDjDescription": "Auto-add tracks when queue is empty",
+    "autoDjMode": "Mode",
+    "autoDjModePlaceholder": "Select mode",
+    "autoDjRelated": "🔗 Related",
+    "autoDjHistory": "📜 History",
+    "autoDjPopular": "🔥 Popular",
+    "autoDjMixed": "🎲 Mixed",
+    "autoDjFavorites": "❤️ Favorites",
+    "autoDjFavEmpty": " (empty)",
+    "autoDjThreshold": "Trigger threshold",
+    "autoDjThresholdValue": "{n} or fewer remaining",
+    "autoDjFolder": "Folder filter",
+    "autoDjFolderAll": "All",
+    "autoDjFolderItem": "{name} ({count} tracks)",
+    "autoDjFavFallback": "Switch to mixed mode when favorites run out"
+  },
+  "profile": {
+    "title": "Profile Settings",
+    "nickname": "Change nickname",
+    "password": "Change password",
+    "passwordDesc": "Account password",
+    "google": "Google link",
+    "googleNotLinked": "Not linked",
+    "googleLinked": "Linked",
+    "googleHint": "Link your Google account to also sign in with Google.",
+    "googleLink": "Link Google account",
+    "deleteAccount": "Delete account",
+    "nicknameLabel": "Nickname",
+    "nicknamePlaceholder": "Nickname",
+    "nicknameRequired": "Enter a nickname",
+    "nicknameMin": "At least 2 characters",
+    "nicknameSaved": "Nickname changed",
+    "curPassword": "Current password",
+    "curPasswordPlaceholder": "Current password",
+    "curPasswordRequired": "Enter current password",
+    "newPassword": "New password",
+    "newPasswordPlaceholder": "8+ characters",
+    "newPasswordRequired": "Enter new password",
+    "newPasswordMin": "At least 8 characters",
+    "confirmPassword": "Confirm password",
+    "confirmPasswordPlaceholder": "Confirm password",
+    "confirmRequired": "Enter confirmation",
+    "confirmMismatch": "Passwords don't match",
+    "passwordSaved": "Password changed",
+    "change": "Change",
+    "deleteWarning": "Deleting your account will permanently remove all data and cannot be undone.",
+    "deletePasswordRequired": "Enter your password",
+    "deleteFailed": "Deletion failed",
+    "deleteConfirmTitle": "Are you sure you want to delete your account?",
+    "deleteConfirmDesc": "This action cannot be undone.",
+    "deleteSubmit": "Delete account",
+    "cancel": "Cancel"
+  },
+  "permission": {
+    "dj": "🎧 DJ",
+    "self": "Me",
+    "guest": "Guest",
+    "member": "Member",
+    "permissionSaved": "Permissions updated",
+    "djTransferred": "DJ transferred",
+    "kicked": "Member kicked",
+    "accountRestricted": "Account restricted",
+    "roomRestricted": "Room restricted",
+    "guestHint": "💡 Guest accounts can only use permissions set by the invite code. Room permissions are limited by account permissions.",
+    "transferDj": "🎧 Transfer DJ",
+    "kick": "👋 Kick"
+  },
+  "leave": {
+    "title": "Are you sure you want to leave?",
+    "cancel": "Cancel",
+    "confirm": "Leave"
+  },
+  "report": {
+    "title": "🚨 Report",
+    "description": "Report {nickname}",
+    "detailPlaceholder": "Details (optional)",
+    "cancel": "Cancel",
+    "submit": "Report",
+    "submitting": "Submitting...",
+    "done": "Report submitted",
+    "inappropriate": "Inappropriate behavior",
+    "spam": "Spam",
+    "offensiveName": "Offensive nickname",
+    "other": "Other"
+  },
+  "passwordModal": {
+    "title": "🔒 Enter Password",
+    "description": "This room requires a password",
+    "label": "Password",
+    "placeholder": "Password",
+    "join": "Join",
+    "back": "Go back"
+  },
+  "joinPassword": {
+    "title": "Enter Password",
+    "label": "Password",
+    "placeholder": "Enter password",
+    "join": "Join"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "fallback": "An unexpected error occurred",
+    "retry": "Try again",
+    "notFound": "Page not found",
+    "notFoundDesc": "The page you requested does not exist",
+    "backToRooms": "Back to rooms",
+    "roomError": "Error connecting to room",
+    "roomErrorFallback": "The connection was lost or the room may have ended",
+    "roomNotFound": "Room not found",
+    "roomNotFoundDesc": "This room has ended or does not exist"
+  },
+  "meta": {
+    "description": "Self-hosted real-time music sharing platform. Create a room and listen together.",
+    "shortDescription": "Self-hosted real-time music sharing platform",
+    "rooms": "Rooms",
+    "login": "Login",
+    "setup": "Initial Setup",
+    "admin": "Admin"
+  },
+  "admin": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "users": "Users",
+      "rooms": "Rooms",
+      "tracks": "Popular Tracks",
+      "inviteCodes": "Invite Codes",
+      "settings": "System Settings",
+      "cleanup": "DB Cleanup",
+      "auditLogs": "Audit Logs",
+      "reports": "Reports",
+      "ipBans": "IP Bans",
+      "errors": "Error Logs",
+      "backToService": "Back to service"
+    },
+    "common": {
+      "save": "Save",
+      "saving": "Saving...",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "release": "Release",
+      "prev": "Previous",
+      "next": "Next",
+      "noData": "No data",
+      "saved": "Saved"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "totalUsers": "Total Users",
+      "activeRooms": "Active Rooms",
+      "totalRooms": "Total Rooms",
+      "quickActions": "Quick Actions",
+      "inviteCodeManage": "Invite Codes",
+      "inviteCodeManageDesc": "Create and manage invite codes",
+      "userManage": "Users",
+      "userManageDesc": "User list and permissions",
+      "popularTracks": "Popular Tracks",
+      "popularTracksDesc": "Track rankings",
+      "roomManage": "Rooms",
+      "roomManageDesc": "Manage active rooms",
+      "guestCleanup": "Guest Cleanup",
+      "guestCleanupDesc": "Delete expired guest accounts",
+      "serverResources": "Server Resources",
+      "ffmpegProcesses": "ffmpeg Processes",
+      "preloadMemory": "Preload Memory",
+      "heapUsage": "Heap Usage",
+      "uptime": "Uptime",
+      "realtimeConnections": "Realtime Connections",
+      "memoryUsage": "Memory Usage",
+      "dailyPlays": "Daily Plays (7d)",
+      "userDistribution": "User Distribution",
+      "collecting": "Collecting data...",
+      "noChartData": "No data",
+      "loading": "Loading...",
+      "hourMin": "{h}h {m}m",
+      "min": "{m}m"
+    },
+    "users": {
+      "title": "User Management",
+      "searchPlaceholder": "Search nickname or username...",
+      "allRoles": "All Roles",
+      "allProviders": "All Providers",
+      "allStatus": "All Status",
+      "active": "Active",
+      "banned": "Banned",
+      "nickname": "Nickname",
+      "username": "Username",
+      "email": "Email",
+      "provider": "Provider",
+      "googleLinked": "Google Linked",
+      "role": "Role",
+      "guest": "Guest",
+      "createdAt": "Joined",
+      "status": "Status",
+      "backToList": "User List",
+      "roles": {
+        "user": "User",
+        "admin": "Admin",
+        "superAdmin": "Super Admin",
+        "guest": "Guest"
+      },
+      "providers": {
+        "google": "Google",
+        "local": "Local",
+        "invite": "Invite Code"
+      }
+    },
+    "rooms": {
+      "title": "Room Management",
+      "roomName": "Room Name",
+      "host": "Host",
+      "members": "Members",
+      "status": "Status",
+      "stream": "Stream",
+      "createdAt": "Created",
+      "empty": "No active rooms",
+      "deleted": "Room deleted",
+      "deleteTitle": "Delete Room",
+      "deleteDesc": "Delete this room? This cannot be undone.",
+      "roomDetail": "Room Details",
+      "settingsLabel": "Settings",
+      "private": "Private",
+      "crossfadeLabel": "Crossfade",
+      "defaultEnqueue": "Default Enqueue",
+      "defaultVoteSkip": "Default Vote Skip",
+      "delete": "Delete"
+    },
+    "tracks": {
+      "title": "🎵 Popular Tracks",
+      "searchPlaceholder": "Search tracks...",
+      "track": "Track",
+      "plays": "Plays",
+      "votes": "Votes",
+      "users": "Users",
+      "lyrics": "Lyrics",
+      "translated": " Translated",
+      "noLyrics": "None",
+      "searching": "Searching",
+      "score": "Score",
+      "empty": "No play history",
+      "original": "Original",
+      "channel": "Channel",
+      "album": "Album",
+      "lyricsLabel": "Lyrics",
+      "lyricsLoading": "Loading lyrics...",
+      "lyricsDelete": "Delete Lyrics",
+      "lyricsDeleteConfirm": "Delete lyrics? Will re-search on next play.",
+      "lyricsDeleted": "Lyrics deleted",
+      "lyricsOriginal": "Original",
+      "lyricsTranslation": "Translation",
+      "contentId": "Content ID Match",
+      "contentIdDone": "Done",
+      "contentIdPending": "Pending",
+      "contentIdDeleteConfirm": "Delete Content ID match? Will re-match on next play.",
+      "contentIdDeleted": "Content ID deleted",
+      "contentIdDelete": "Delete Content ID",
+      "trackDelete": "Delete Track",
+      "trackDeleteConfirm": "Delete this track? Related queue/stats will also be deleted.",
+      "trackDeleted": "Track deleted"
+    },
+    "inviteCodes": {
+      "title": "Invite Code Management",
+      "new": "New Invite Code",
+      "empty": "No invite codes",
+      "deleteTitle": "Delete Invite Code",
+      "deactivateTitle": "Deactivate Invite Code",
+      "deleteDesc": "Permanently delete this invite code? This cannot be undone.",
+      "deactivateDesc": "Deactivate this invite code?",
+      "deactivate": "Deactivate",
+      "deactivated": "Deactivated",
+      "deleted": "Deleted",
+      "linkCopied": "Invite link copied",
+      "expired": "Expired",
+      "until": "until",
+      "noExpiry": "No expiry",
+      "activeStatus": "Active",
+      "inactiveStatus": "Inactive",
+      "used": "Used",
+      "registration": "Registration",
+      "createTitle": "New Invite Code",
+      "createDesc": "Create an invite code to invite guests",
+      "codeLabel": "Code (leave empty for auto)",
+      "codeMinLength": "At least 6 characters",
+      "maxUses": "Max Uses",
+      "expiresAt": "Expires (optional)",
+      "expiresPlaceholder": "No expiry",
+      "accountPermissions": "Account Permissions",
+      "permissionHint": "Applies to both guests and users registered with this code",
+      "allowRegistration": "Allow Registration",
+      "allowRegistrationDesc": "Allow creating a full account with this code (permissions apply to account)",
+      "created": "Invite code created",
+      "creating": "Creating...",
+      "create": "Create",
+      "usersTitle": "Invite Code Users",
+      "noUsers": "No users registered with this code",
+      "deleteGuests": "Delete {count} guests",
+      "deleteGuestsTitle": "Delete Guests",
+      "deleteGuestsDesc": "Delete all {count} guests who joined with this invite code. Regular members are not affected.",
+      "guestsDeleted": "{count} guests deleted",
+      "delete": "Delete"
+    },
+    "settings": {
+      "title": "⚙️ System Settings",
+      "saved": "Settings saved",
+      "authSection": "Authentication",
+      "guestLogin": "Guest Login",
+      "guestLoginDesc": "Allow guest accounts",
+      "googleOAuth": "Google OAuth",
+      "googleOAuthDesc": "Allow Google login",
+      "guestExpiry": "Guest Expiry (hours)",
+      "guestExpiryDesc": "Hours until guest account expires",
+      "roomSection": "Rooms",
+      "maxMembers": "Max Members",
+      "maxMembersDesc": "Max members per room",
+      "maxRoomsPerUser": "Max Rooms per User",
+      "maxRoomsPerUserDesc": "Max rooms a user can create",
+      "autoDjEnabled": "AutoDJ Enabled",
+      "autoDjEnabledDesc": "Allow AutoDJ feature",
+      "queueSection": "Queue",
+      "maxQueuePerUser": "Max Queue per User",
+      "maxQueuePerUserDesc": "Max queue items per user",
+      "maxTrackLength": "Max Track Length (min)",
+      "maxTrackLengthDesc": "Max track length for queue",
+      "streamSection": "Streaming",
+      "maxBitrateEnabled": "Max Bitrate Limit",
+      "maxBitrateEnabledDesc": "Limit when source exceeds setting",
+      "maxBitrate": "Max Bitrate (kbps)",
+      "maxBitrateDesc": "Transcode when source bitrate exceeds this",
+      "translationSection": "Translation",
+      "translationEnabled": "Translation",
+      "translationEnabledDesc": "Enable auto lyrics translation",
+      "dailyLimit": "Daily Limit",
+      "dailyLimitDesc": "Max translation requests per day",
+      "geminiModel": "Gemini Model",
+      "geminiModelDesc": "flash-lite (fast) / flash (accurate)",
+      "save": "Save"
+    },
+    "cleanup": {
+      "title": "🧹 DB Cleanup",
+      "done": "Cleanup complete",
+      "totalTracks": "Total Tracks",
+      "totalPlayHistories": "Total Play History",
+      "activeRooms": "Active Rooms",
+      "inactiveRooms": "Inactive Rooms",
+      "totalUsers": "Total Users",
+      "guests": "Guests",
+      "queueItems": "Queue Items",
+      "lyricsFound": "With Lyrics",
+      "tableSize": "Table Sizes",
+      "totalSize": "Total {size}",
+      "items": "{count} items",
+      "clean": "Clean",
+      "cleanTitle": "Data Cleanup",
+      "cleanDesc": "Delete {label} items? This cannot be undone.",
+      "unplayedTracks": "Unplayed Tracks",
+      "unplayedTracksDesc": "Delete tracks never played",
+      "oldTracks": "Old Tracks (30d)",
+      "oldTracksDesc": "Delete tracks not played for 30+ days",
+      "oldHistory": "Play History (30d)",
+      "oldHistoryDesc": "Delete play history older than 30 days",
+      "inactiveRoomsClean": "Inactive Rooms (7d)",
+      "inactiveRoomsCleanDesc": "Delete rooms inactive for 7+ days",
+      "emptyRooms": "Empty Inactive Rooms",
+      "emptyRoomsDesc": "Delete inactive rooms with no queue",
+      "expiredGuests": "Expired Guests",
+      "expiredGuestsDesc": "Delete guests older than 12 hours",
+      "inactiveGuests": "Inactive Guests (30d)",
+      "inactiveGuestsDesc": "Delete guests inactive for 30+ days",
+      "delete": "Delete"
+    },
+    "auditLogs": {
+      "title": "📋 Audit Logs",
+      "empty": "No audit logs",
+      "allActions": "All Actions",
+      "settingsUpdate": "Settings Update",
+      "cleanupAction": "Data Cleanup",
+      "reportResolve": "Report Resolve",
+      "roleChange": "Role Change",
+      "ban": "Ban",
+      "unban": "Unban",
+      "allTargets": "All Targets",
+      "system": "System",
+      "user": "User",
+      "room": "Room",
+      "report": "Report"
+    },
+    "reports": {
+      "title": "🚨 Reports",
+      "hint": "Review reports and take action (ban/warn) from user details if needed. \"Resolve\" means action taken, \"Dismiss\" means no action needed.",
+      "empty": "No reports",
+      "pending": "Pending",
+      "resolved": "Resolved",
+      "dismissed": "Dismissed",
+      "unknown": "Unknown",
+      "resolve": "Resolve",
+      "dismiss": "Dismiss",
+      "resolveTitle": "Resolve Report",
+      "dismissTitle": "Dismiss Report",
+      "resolveDesc": "Mark this report as reviewed and action taken.",
+      "dismissDesc": "Mark this report as invalid or no action needed.",
+      "resolvedToast": "Report resolved",
+      "dismissedToast": "Report dismissed"
+    },
+    "ipBans": {
+      "title": "IP Ban Management",
+      "addBan": "Ban IP",
+      "empty": "No banned IPs",
+      "reason": "Reason",
+      "bannedBy": "Banned By",
+      "expiresAt": "Expires",
+      "permanent": "Permanent",
+      "bannedAt": "Banned At",
+      "banned": "IP banned",
+      "released": "Ban released",
+      "releaseTitle": "Release IP Ban",
+      "releaseDesc": "Release this IP ban?",
+      "dialogTitle": "Ban IP",
+      "dialogDesc": "Enter IP address to ban",
+      "ipLabel": "IP Address",
+      "reasonLabel": "Reason (optional)",
+      "reasonPlaceholder": "Spam, abuse, etc.",
+      "expiresLabel": "Expires (optional)",
+      "expiresPlaceholder": "Permanent",
+      "banning": "Banning...",
+      "ban": "Ban",
+      "release": "Release"
+    },
+    "errors": {
+      "title": "Error Logs",
+      "empty": "No error logs",
+      "noFiles": "No log files",
+      "time": "Time",
+      "path": "Path",
+      "statusCode": "Status",
+      "message": "Message",
+      "all": "All",
+      "pathSearch": "Search path",
+      "items": "{count} items",
+      "memoryTab": "Error Logs",
+      "filesTab": "File Logs",
+      "backToFiles": "← File List"
+    },
+    "userDetail": {
+      "accountBan": "Account Ban",
+      "cannotBanSuperAdmin": "Cannot ban SuperAdmin accounts",
+      "bannedDate": "Banned Date",
+      "unban": "Unban",
+      "banConfirmTitle": "Ban Account",
+      "banConfirmDesc": "Ban {nickname}? Banned users cannot log in or access the service.",
+      "banLabel": "Ban",
+      "unbanned": "Account unbanned",
+      "accountBanned": "Account banned",
+      "accountDelete": "Delete Account",
+      "deleteHint": "Deleted accounts cannot be recovered. Play history is preserved.",
+      "deleteConfirmTitle": "Delete Account",
+      "deleteConfirmDesc": "Permanently delete {nickname}? This cannot be undone.",
+      "accountDeleted": "Account deleted",
+      "totalPlays": "Total Plays",
+      "roomCount": "Rooms Joined",
+      "trackCount": "Tracks",
+      "recentHistory": "Recent Play History",
+      "noHistory": "No play history",
+      "playCount": "{count} plays",
+      "accountSettings": "Account Settings",
+      "roleLabel": "Role",
+      "superAdminFixed": "superAdmin (cannot change)",
+      "accountPermissions": "Account Permissions",
+      "adminAllPerms": "Admins have all permissions",
+      "providerLabel": "Provider",
+      "googleLinked": "Google Linked",
+      "joinDate": "Joined",
+      "backToList": "User List",
+      "delete": "Delete",
+      "saved": "Saved",
+      "saving": "Saving...",
+      "save": "Save",
+      "banned": "Banned",
+      "providers": {
+        "google": "Google",
+        "local": "Local",
+        "invite": "Invite Code"
+      },
+      "roles": {
+        "user": "User",
+        "admin": "Admin",
+        "superAdmin": "Super Admin",
+        "guest": "Guest"
+      }
+    },
+    "charts": {
+      "connections": "Connections",
+      "plays": "Plays",
+      "providerTitle": "Provider",
+      "roleTitle": "Role"
+    }
+  },
+  "folders": {
+    "title": "Manage Folders",
+    "count": "{count}/20 folders",
+    "created": "Folder created",
+    "updated": "Folder updated",
+    "deleteConfirm": "Delete this folder? Tracks will be moved to uncategorized.",
+    "deleted": "Folder deleted",
+    "save": "Save",
+    "create": "Create",
+    "newFolder": "New folder",
+    "placeholder": "Folder name (2–20 chars)",
+    "cancel": "Cancel",
+    "trackCount": "{count} tracks"
+  },
+  "room": {
+    "chat": "Chat",
+    "queue": "Queue",
+    "history": "History",
+    "members": "Members"
+  },
+  "authCallback": {
+    "loginFailed": "Login failed",
+    "defaultTitle": "Login Failed",
+    "defaultDesc": "An unknown error occurred. Please try again.",
+    "notLinkedTitle": "Account not found",
+    "googleDisabledTitle": "Google login unavailable",
+    "googleDisabledDesc": "Google login is currently disabled.",
+    "alreadyLinkedTitle": "Link failed",
+    "backToLogin": "Back to login",
+    "processing": "Signing in",
+    "wait": "Please wait..."
+  },
+  "apiError": {
+    "400": "Invalid request",
+    "403": "Permission denied",
+    "404": "Resource not found",
+    "409": "Already processed",
+    "429": "Too many requests. Please try again later",
+    "serverError": "Server error",
+    "fallback": "Request failed"
+  },
+  "errorCode": {
+    "AUTH_001": {
+      "title": "Login failed",
+      "description": "Invalid username or password"
+    },
+    "AUTH_002": {
+      "title": "Account suspended",
+      "description": "This account has been suspended"
+    },
+    "AUTH_003": {
+      "title": "Invalid invite code",
+      "description": "The invite code is invalid"
+    },
+    "AUTH_004": {
+      "title": "Invite code expired",
+      "description": "The invite code has expired"
+    },
+    "AUTH_005": {
+      "title": "Invite code limit",
+      "description": "Invite code usage limit exceeded"
+    },
+    "AUTH_006": {
+      "title": "Invite code unavailable",
+      "description": "Registration is not allowed with this invite code"
+    },
+    "AUTH_007": {
+      "title": "Invite code required",
+      "description": "Please enter an invite code"
+    },
+    "AUTH_008": {
+      "title": "Username taken",
+      "description": "This username is already in use"
+    },
+    "AUTH_009": {
+      "title": "Wrong password",
+      "description": "The password is incorrect"
+    },
+    "AUTH_010": {
+      "title": "Cannot change password",
+      "description": "Password change is not supported for this account"
+    },
+    "AUTH_011": {
+      "title": "Wrong current password",
+      "description": "The current password is incorrect"
+    },
+    "AUTH_012": {
+      "title": "User not found",
+      "description": "User not found"
+    },
+    "AUTH_013": {
+      "title": "Invalid refresh token",
+      "description": "The refresh token is invalid"
+    },
+    "AUTH_014": {
+      "title": "Revoked refresh token",
+      "description": "The refresh token has been revoked"
+    },
+    "AUTH_015": {
+      "title": "Google OAuth not configured",
+      "description": "Google OAuth is not configured"
+    },
+    "AUTH_016": {
+      "title": "Google not linked",
+      "description": "Google account is not linked"
+    },
+    "AUTH_017": {
+      "title": "Google already linked",
+      "description": "This Google account is already linked to another account"
+    },
+    "AUTH_018": {
+      "title": "Cannot delete",
+      "description": "SuperAdmin cannot be deleted"
+    },
+    "AUTH_019": {
+      "title": "Wrong password",
+      "description": "Deletion confirmation password is incorrect"
+    },
+    "ROOM_001": {
+      "title": "Room not found",
+      "description": "Room not found"
+    },
+    "ROOM_002": {
+      "title": "Room full",
+      "description": "The room is full"
+    },
+    "ROOM_003": {
+      "title": "Banned",
+      "description": "You have been banned from this room"
+    },
+    "ROOM_004": {
+      "title": "No permission",
+      "description": "Only the host can edit room settings"
+    },
+    "ROOM_005": {
+      "title": "No permission",
+      "description": "Only the host can change permissions"
+    },
+    "ROOM_006": {
+      "title": "No permission",
+      "description": "Only the DJ can transfer host"
+    },
+    "ROOM_007": {
+      "title": "No permission",
+      "description": "Only the DJ can kick members"
+    },
+    "ROOM_008": {
+      "title": "No permission",
+      "description": "Only the DJ can reset bans"
+    },
+    "ROOM_009": {
+      "title": "No permission",
+      "description": "Only the DJ can unban members"
+    },
+    "ROOM_010": {
+      "title": "No permission",
+      "description": "Only the host can delete the room"
+    },
+    "ROOM_011": {
+      "title": "No permission",
+      "description": "Only the host can reset the room"
+    },
+    "ROOM_012": {
+      "title": "Cannot kick self",
+      "description": "You cannot kick yourself"
+    },
+    "ROOM_013": {
+      "title": "Member not found",
+      "description": "Member not found"
+    },
+    "ROOM_014": {
+      "title": "Cannot transfer",
+      "description": "Cannot transfer to a member without host permission"
+    },
+    "ROOM_015": {
+      "title": "Insufficient permission",
+      "description": "Insufficient account permissions"
+    },
+    "ROOM_016": {
+      "title": "Access denied",
+      "description": "You do not have permission for this action"
+    },
+    "ROOM_017": {
+      "title": "Wrong password",
+      "description": "Room password is incorrect"
+    },
+    "PLAYER_001": {
+      "title": "No track playing",
+      "description": "No track is currently playing"
+    },
+    "PLAYER_002": {
+      "title": "No next track",
+      "description": "There is no next track"
+    },
+    "PLAYER_003": {
+      "title": "No previous track",
+      "description": "There is no previous track"
+    },
+    "PLAYER_004": {
+      "title": "Track transitioning",
+      "description": "Track is transitioning. Please try again shortly"
+    },
+    "PLAYER_005": {
+      "title": "Skip cooldown",
+      "description": "Please wait a moment after playback starts"
+    },
+    "PLAYER_006": {
+      "title": "No skip permission",
+      "description": "You do not have skip vote permission"
+    },
+    "PLAYER_007": {
+      "title": "No audio info",
+      "description": "Audio information not found"
+    },
+    "PLAYER_008": {
+      "title": "No audio URL",
+      "description": "Audio URL not found"
+    },
+    "QUEUE_001": {
+      "title": "Queue item not found",
+      "description": "Queue item not found"
+    },
+    "QUEUE_002": {
+      "title": "Duplicate track",
+      "description": "This track is already in the queue"
+    },
+    "QUEUE_003": {
+      "title": "All duplicates",
+      "description": "All tracks are already in the queue"
+    },
+    "QUEUE_004": {
+      "title": "Queue limit",
+      "description": "Maximum 50 tracks in queue"
+    },
+    "QUEUE_005": {
+      "title": "Personal limit",
+      "description": "Maximum 10 tracks per person"
+    },
+    "QUEUE_006": {
+      "title": "Version conflict",
+      "description": "Queue was modified by another user. Please refresh and try again"
+    },
+    "QUEUE_007": {
+      "title": "Batch limit",
+      "description": "Exceeded maximum tracks per add"
+    },
+    "QUEUE_008": {
+      "title": "Replay cooldown",
+      "description": "This track was recently played. Please try again later"
+    },
+    "SEARCH_001": {
+      "title": "Query required",
+      "description": "Search query or continuation parameter is required"
+    },
+    "ADMIN_001": {
+      "title": "Admin required",
+      "description": "Admin permission required"
+    },
+    "ADMIN_002": {
+      "title": "User not found",
+      "description": "User not found"
+    },
+    "ADMIN_003": {
+      "title": "Invite code not found",
+      "description": "Invite code not found"
+    },
+    "ADMIN_004": {
+      "title": "Report not found",
+      "description": "Report not found"
+    },
+    "ADMIN_005": {
+      "title": "Cannot change role",
+      "description": "SuperAdmin role cannot be changed"
+    },
+    "ADMIN_006": {
+      "title": "Cannot ban",
+      "description": "SuperAdmin cannot be banned"
+    },
+    "ADMIN_007": {
+      "title": "Invalid cleanup type",
+      "description": "Unknown cleanup type"
+    },
+    "ADMIN_008": {
+      "title": "Invalid status",
+      "description": "Status must be resolved or dismissed"
+    },
+    "CAPTCHA_001": {
+      "title": "CAPTCHA required",
+      "description": "CAPTCHA verification required"
+    },
+    "CAPTCHA_002": {
+      "title": "CAPTCHA failed",
+      "description": "CAPTCHA verification failed"
+    },
+    "COMMON_001": {
+      "title": "Access denied",
+      "description": "This action is not allowed"
+    },
+    "COMMON_002": {
+      "title": "Track not found",
+      "description": "Track not found"
+    },
+    "COMMON_003": {
+      "title": "No vote record",
+      "description": "No vote record found"
+    },
+    "FAV_001": {
+      "title": "Favorites limit",
+      "description": "Maximum 200 favorites"
+    },
+    "FAV_002": {
+      "title": "Guests not allowed",
+      "description": "Favorites are only available for registered users"
+    },
+    "FAV_003": {
+      "title": "Folder limit",
+      "description": "Maximum 20 folders"
+    },
+    "FAV_004": {
+      "title": "Folder not found",
+      "description": "Folder not found"
+    }
+  },
+  "permissions": {
+    "listen": {
+      "label": "Listen",
+      "emoji": "🎵",
+      "description": "Listen to music in the room"
+    },
+    "chat": {
+      "label": "Chat",
+      "emoji": "💬",
+      "description": "Send chat messages"
+    },
+    "reaction": {
+      "label": "Reaction",
+      "emoji": "🎉",
+      "description": "Send emoji reactions"
+    },
+    "search": {
+      "label": "Search",
+      "emoji": "🔍",
+      "description": "Search for music"
+    },
+    "addQueue": {
+      "label": "Add to Queue",
+      "emoji": "📋",
+      "description": "Add tracks to the queue"
+    },
+    "voteSkip": {
+      "label": "Vote Skip",
+      "emoji": "⏭️",
+      "description": "Participate in skip votes"
+    },
+    "host": {
+      "label": "Host",
+      "emoji": "🏠",
+      "description": "Create/manage rooms, reorder, kick"
+    }
+  }
+}

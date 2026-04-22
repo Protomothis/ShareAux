@@ -10,6 +10,7 @@ import Thumbnail from '@/components/common/Thumbnail';
 import { Button } from '@/components/ui/button';
 import { formatDuration } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 interface SearchShowcaseProps {
   roomId: string;
@@ -147,6 +148,7 @@ export default function SearchShowcase({
   onToggleFavorite,
   isGuest,
 }: SearchShowcaseProps) {
+  const t = useTranslations('search');
   const { data: showcaseData, isLoading: showcaseLoading } = useSearchControllerGetShowcase(roomId);
   const {
     data: recData,
@@ -205,8 +207,8 @@ export default function SearchShowcase({
     return (
       <div className="py-16 text-center">
         <Music size={32} className="mx-auto mb-3 text-white/10" />
-        <p className="text-sm text-sa-text-muted">아직 재생 기록이 없습니다</p>
-        <p className="mt-1 text-xs text-sa-text-muted">검색 탭에서 곡을 추가해보세요</p>
+        <p className="text-sm text-sa-text-muted">{t('showcase.emptyTitle')}</p>
+        <p className="mt-1 text-xs text-sa-text-muted">{t('showcase.emptyHint')}</p>
       </div>
     );
   }
@@ -225,17 +227,17 @@ export default function SearchShowcase({
       ) : (
         <>
           {popular.length > 0 && (
-            <Section icon={<Flame size={14} className="text-orange-400" />} title="인기곡">
+            <Section icon={<Flame size={14} className="text-orange-400" />} title={t('showcase.popular')}>
               {grid(popular.map(toSearchItem))}
             </Section>
           )}
           {myHistory.length > 0 && (
-            <Section icon={<Music size={14} className="text-sa-accent" />} title="내 신청 기록">
+            <Section icon={<Music size={14} className="text-sa-accent" />} title={t('showcase.myHistory')}>
               {grid(myHistory.map(toSearchItem))}
             </Section>
           )}
           {recent.length > 0 && (
-            <Section icon={<History size={14} className="text-sa-text-muted" />} title="최근 재생">
+            <Section icon={<History size={14} className="text-sa-text-muted" />} title={t('showcase.recentPlays')}>
               {grid(recent.map(toSearchItem))}
             </Section>
           )}
@@ -254,7 +256,7 @@ export default function SearchShowcase({
       ) : recommended.length > 0 ? (
         <Section
           icon={<Radio size={14} className="text-green-400" />}
-          title="추천곡"
+          title={t('showcase.recommended')}
           onRefresh={() => recRefetch()}
           refreshing={recFetching}
         >

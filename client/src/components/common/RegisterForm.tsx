@@ -1,6 +1,7 @@
 'use client';
 
 import { Loader2, UserPlus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { PCaptcha } from '@/components/common/PCaptcha';
 import { useEffect, useState } from 'react';
 
@@ -38,24 +39,28 @@ interface RegisterValues {
   nickname: string;
 }
 
-const rules = {
-  code: (v: string) => !v.trim() && '초대코드를 입력하세요',
+const getRules = (t: ReturnType<typeof useTranslations<'auth'>>) => ({
+  code: (v: string) => !v.trim() && t('registerForm.codeRequired'),
   username: (v: string) => {
-    if (v.length < AUTH_USERNAME_MIN) return `아이디는 ${AUTH_USERNAME_MIN}자 이상이어야 합니다`;
-    if (v.length > AUTH_USERNAME_MAX) return `아이디는 ${AUTH_USERNAME_MAX}자 이하여야 합니다`;
-    if (!AUTH_USERNAME_REGEX.test(v)) return '영소문자, 숫자, 밑줄(_)만 사용할 수 있습니다';
+    if (v.length < AUTH_USERNAME_MIN) return t('registerForm.usernameMinLength', { min: AUTH_USERNAME_MIN });
+    if (v.length > AUTH_USERNAME_MAX) return t('registerForm.usernameMaxLength', { max: AUTH_USERNAME_MAX });
+    if (!AUTH_USERNAME_REGEX.test(v)) return t('registerForm.usernamePattern');
     return false;
   },
-  password: (v: string) => v.length < AUTH_PASSWORD_MIN && `비밀번호는 ${AUTH_PASSWORD_MIN}자 이상이어야 합니다`,
-  confirmPassword: (v: string, vals: RegisterValues) => v !== vals.password && '비밀번호가 일치하지 않습니다',
+  password: (v: string) =>
+    v.length < AUTH_PASSWORD_MIN && t('registerForm.passwordMinLength', { min: AUTH_PASSWORD_MIN }),
+  confirmPassword: (v: string, vals: RegisterValues) =>
+    v !== vals.password && t('registerForm.confirmPasswordMismatch'),
   nickname: (v: string) => {
-    if (v.length < AUTH_NICKNAME_MIN) return `닉네임은 ${AUTH_NICKNAME_MIN}자 이상이어야 합니다`;
-    if (v.length > AUTH_NICKNAME_MAX) return `닉네임은 ${AUTH_NICKNAME_MAX}자 이하여야 합니다`;
+    if (v.length < AUTH_NICKNAME_MIN) return t('registerForm.nicknameMinLength', { min: AUTH_NICKNAME_MIN });
+    if (v.length > AUTH_NICKNAME_MAX) return t('registerForm.nicknameMaxLength', { max: AUTH_NICKNAME_MAX });
     return false;
   },
-};
+});
 
 export function RegisterForm({ onSuccess, onBack, initialCode, skipInviteCode }: RegisterFormProps) {
+  const t = useTranslations('auth');
+  const rules = getRules(t);
   const [values, setValues] = useState<RegisterValues>({
     code: initialCode ?? '',
     username: '',
@@ -104,7 +109,7 @@ export function RegisterForm({ onSuccess, onBack, initialCode, skipInviteCode }:
         if (field) setError(field, err.body.description as string);
         else setServerError((err.body.description ?? err.body.title ?? err.message) as string);
       } else {
-        setServerError('회원가입에 실패했습니다');
+        setServerError(t('registerForm.errorFallback'));
       }
       captcha.reset();
     } finally {
@@ -120,18 +125,18 @@ export function RegisterForm({ onSuccess, onBack, initialCode, skipInviteCode }:
             <UserPlus size={18} className="text-sa-accent" />
           </div>
           <div>
-            <p className="font-semibold text-white">회원가입</p>
-            <p className="text-xs text-sa-text-muted">초대코드로 계정을 만드세요</p>
+            <p className="font-semibold text-white">{t('registerForm.title')}</p>
+            <p className="text-xs text-sa-text-muted">{t('registerForm.subtitle')}</p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           {!skipInviteCode && (
-            <FormField label="초대코드" error={errors.code}>
+            <FormField label={t('registerForm.codeLabel')} error={errors.code}>
               <Input
                 value={values.code}
                 onChange={(e) => onChange('code', e.target.value)}
-                placeholder="초대코드를 입력하세요"
+                placeholder={t('registerForm.codePlaceholder')}
                 required
                 readOnly={!!initialCode}
                 autoFocus={!initialCode}
@@ -139,38 +144,38 @@ export function RegisterForm({ onSuccess, onBack, initialCode, skipInviteCode }:
               />
             </FormField>
           )}
-          <FormField label="아이디" error={errors.username}>
+          <FormField label={t('registerForm.usernameLabel')} error={errors.username}>
             <Input
               value={values.username}
               onChange={(e) => onChange('username', e.target.value)}
-              placeholder="영소문자, 숫자, 밑줄 (4~20자)"
+              placeholder={t('registerForm.usernamePlaceholder')}
               maxLength={AUTH_USERNAME_MAX}
               required
               autoFocus={!!initialCode || skipInviteCode}
             />
           </FormField>
-          <FormField label="닉네임" error={errors.nickname}>
+          <FormField label={t('registerForm.nicknameLabel')} error={errors.nickname}>
             <Input
               value={values.nickname}
               onChange={(e) => onChange('nickname', e.target.value)}
-              placeholder="방에서 사용할 이름 (2~20자)"
+              placeholder={t('registerForm.nicknamePlaceholder')}
               maxLength={AUTH_NICKNAME_MAX}
               required
             />
           </FormField>
-          <FormField label="비밀번호" error={errors.password}>
+          <FormField label={t('registerForm.passwordLabel')} error={errors.password}>
             <PasswordInput
               value={values.password}
               onChange={(e) => onChange('password', e.target.value)}
-              placeholder="8자 이상"
+              placeholder={t('registerForm.passwordPlaceholder')}
               required
             />
           </FormField>
-          <FormField label="비밀번호 확인" error={errors.confirmPassword}>
+          <FormField label={t('registerForm.confirmPasswordLabel')} error={errors.confirmPassword}>
             <PasswordInput
               value={values.confirmPassword}
               onChange={(e) => onChange('confirmPassword', e.target.value)}
-              placeholder="비밀번호를 다시 입력하세요"
+              placeholder={t('registerForm.confirmPasswordPlaceholder')}
               required
             />
           </FormField>
@@ -187,14 +192,14 @@ export function RegisterForm({ onSuccess, onBack, initialCode, skipInviteCode }:
             disabled={loading || (captcha.enabled && !captcha.solved)}
             className="mt-1 py-2.5"
           >
-            {loading ? <Loader2 size={16} className="animate-spin" /> : '가입하기'}
+            {loading ? <Loader2 size={16} className="animate-spin" /> : t('registerForm.submitButton')}
           </Button>
         </form>
       </div>
 
       {!skipInviteCode && (
         <Button variant="ghost" onClick={onBack} className="mt-4 w-full text-sa-text-muted hover:text-white">
-          ← 다른 방법으로 로그인
+          {t('backToMethods')}
         </Button>
       )}
     </div>

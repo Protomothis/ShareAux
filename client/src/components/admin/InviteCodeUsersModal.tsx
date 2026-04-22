@@ -10,6 +10,7 @@ import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import Modal from '@/components/common/Modal';
 import { Button } from '@/components/ui/button';
 import { adminControllerDeleteInviteCodeGuests, useAdminControllerGetInviteCodeUsers } from '@/api/admin/admin';
+import { useTranslations } from 'next-intl';
 
 interface InviteCodeUsersModalProps {
   inviteCodeId: string | null;
@@ -17,7 +18,9 @@ interface InviteCodeUsersModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function InviteCodeUsersModal({ inviteCodeId, code, onOpenChange }: InviteCodeUsersModalProps) {
+export function InviteCodeUsersModal({
+  inviteCodeId, code, onOpenChange }: InviteCodeUsersModalProps) {
+  const t = useTranslations('admin.inviteCodes');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const qc = useQueryClient();
@@ -33,7 +36,7 @@ export function InviteCodeUsersModal({ inviteCodeId, code, onOpenChange }: Invit
     setDeleting(true);
     try {
       await adminControllerDeleteInviteCodeGuests(inviteCodeId);
-      toast.success(`게스트 ${guestCount}명 삭제 완료`);
+      toast.success(t('guestsDeleted', { count: guestCount }));
       setConfirmOpen(false);
       await qc.invalidateQueries({ queryKey: ['admin', 'invite-codes'] });
     } catch {
@@ -47,7 +50,7 @@ export function InviteCodeUsersModal({ inviteCodeId, code, onOpenChange }: Invit
     <Modal open={!!inviteCodeId} onOpenChange={onOpenChange} className="sm:max-w-md">
       <Modal.Header>
         <Modal.Title className="flex items-center gap-2">
-          <Users size={16} /> 초대코드 유저 — {code}
+          <Users size={16} /> {t('usersTitle')} — {code}
         </Modal.Title>
       </Modal.Header>
 
@@ -57,7 +60,7 @@ export function InviteCodeUsersModal({ inviteCodeId, code, onOpenChange }: Invit
             <Loader2 size={20} className="animate-spin text-sa-text-muted" />
           </div>
         ) : users.length === 0 ? (
-          <p className="py-6 text-center text-sm text-sa-text-muted">이 코드로 가입한 유저가 없습니다</p>
+          <p className="py-6 text-center text-sm text-sa-text-muted">{t('noUsers')}</p>
         ) : (
           <div className="space-y-1.5">
             {users.map((u) => (
@@ -76,14 +79,14 @@ export function InviteCodeUsersModal({ inviteCodeId, code, onOpenChange }: Invit
       {guestCount > 0 && (
         <Modal.Footer>
           <Button variant="destructive" className="gap-1.5" onClick={() => setConfirmOpen(true)}>
-            <Trash2 size={14} /> 게스트 {guestCount}명 일괄 삭제
+            <Trash2 size={14} /> {t('deleteGuests', { count: guestCount })}
           </Button>
           <ConfirmDialog
             open={confirmOpen}
             onOpenChange={setConfirmOpen}
-            title="게스트 일괄 삭제"
-            description={`이 초대코드로 입장한 게스트 ${guestCount}명을 모두 삭제합니다. 일반 회원은 영향받지 않습니다.`}
-            confirmLabel="삭제"
+            title={t('deleteGuestsTitle')}
+            description={t('deleteGuestsDesc', { count: guestCount })}
+            confirmLabel={t('delete')}
             variant="destructive"
             onConfirm={handleDeleteGuests}
             loading={deleting}

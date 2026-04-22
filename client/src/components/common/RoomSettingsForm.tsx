@@ -2,6 +2,7 @@
 
 import { FormField, FormSection } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { useTranslations } from 'next-intl';
 import NumberStepper from '@/components/ui/number-stepper';
 import { SettingCard } from '@/components/ui/setting-card';
 import type { AutoDjMode } from '@/types';
@@ -66,22 +67,24 @@ export default function RoomSettingsForm({
     set(key, value);
   };
 
+  const t = useTranslations('settings');
+
   return (
     <div className="space-y-5">
       {/* ─── 기본 정보 ─── */}
-      <FormSection title="기본 정보">
-        <FormField label="방 이름" htmlFor="name" error={errors?.name}>
+      <FormSection title={t('basicInfo')}>
+        <FormField label={t('roomName')} htmlFor="name" error={errors?.name}>
           <Input
             id="name"
             value={v.name}
             onChange={(e) => change('name', e.target.value)}
-            placeholder="파티 이름을 입력하세요"
+            placeholder={t('roomNamePlaceholder')}
             autoFocus={mode === 'create'}
           />
         </FormField>
         {mode === 'create' && (
           <>
-            <FormField label="최대 인원" error={errors?.maxMembers}>
+            <FormField label={t('maxMembers')} error={errors?.maxMembers}>
               <NumberStepper
                 size="sm"
                 value={v.maxMembers}
@@ -92,7 +95,7 @@ export default function RoomSettingsForm({
             </FormField>
             <SettingCard
               icon="🔒"
-              label="비밀방"
+              label={t('privateRoom')}
               htmlFor="isPrivate"
               checked={v.isPrivate}
               onCheckedChange={(c) => change('isPrivate', c)}
@@ -101,7 +104,7 @@ export default function RoomSettingsForm({
                 type="password"
                 value={v.password}
                 onChange={(e) => change('password', e.target.value)}
-                placeholder="비밀번호 입력"
+                placeholder={t('passwordPlaceholder')}
               />
               {errors?.password && <p className="mt-1 text-xs text-destructive">{errors.password}</p>}
             </SettingCard>
@@ -110,28 +113,28 @@ export default function RoomSettingsForm({
       </FormSection>
 
       {/* ─── 권한 & 재생 ─── */}
-      <FormSection title="재생 설정">
+      <FormSection title={t('playback')}>
         <div className="grid gap-2 sm:grid-cols-2">
           <SettingCard
             icon="🔀"
-            label="크로스페이드"
-            description="곡 전환 시 페이드"
+            label={t('crossfade')}
+            description={t('crossfadeDesc')}
             htmlFor="crossfade"
             checked={v.crossfade}
             onCheckedChange={(c) => change('crossfade', c)}
           />
           <SettingCard
             icon="🎵"
-            label="곡 신청 허용"
-            description="새 멤버 기본 권한"
+            label={t('enqueueDefault')}
+            description={t('enqueueDefaultDesc')}
             htmlFor="defaultEnqueue"
             checked={v.defaultEnqueueEnabled}
             onCheckedChange={(c) => change('defaultEnqueueEnabled', c)}
           />
           <SettingCard
             icon="⏭️"
-            label="스킵 투표 허용"
-            description="새 멤버 기본 권한"
+            label={t('voteSkipDefault')}
+            description={t('enqueueDefaultDesc')}
             htmlFor="defaultVoteSkip"
             checked={v.defaultVoteSkipEnabled}
             onCheckedChange={(c) => change('defaultVoteSkipEnabled', c)}
@@ -140,9 +143,9 @@ export default function RoomSettingsForm({
       </FormSection>
 
       {/* ─── 곡 신청 ─── */}
-      <FormSection title="곡 신청">
+      <FormSection title={t('enqueueSection')}>
         <div className="grid gap-3 sm:grid-cols-3">
-          <FormField label="1회 추가 곡 수" error={errors?.maxSelectPerAdd}>
+          <FormField label={t('maxSelectPerAdd')} error={errors?.maxSelectPerAdd}>
             <NumberStepper
               size="sm"
               value={v.maxSelectPerAdd}
@@ -151,7 +154,7 @@ export default function RoomSettingsForm({
               max={10}
             />
           </FormField>
-          <FormField label="제한 시간 (분)" error={errors?.enqueueWindowMin}>
+          <FormField label={t('enqueueWindowMin')} error={errors?.enqueueWindowMin}>
             <NumberStepper
               size="sm"
               value={v.enqueueWindowMin}
@@ -160,7 +163,7 @@ export default function RoomSettingsForm({
               max={120}
             />
           </FormField>
-          <FormField label="시간당 최대 곡" error={errors?.enqueueLimitPerWindow}>
+          <FormField label={t('enqueueLimitPerWindow')} error={errors?.enqueueLimitPerWindow}>
             <NumberStepper
               size="sm"
               value={v.enqueueLimitPerWindow}
@@ -171,27 +174,29 @@ export default function RoomSettingsForm({
           </FormField>
         </div>
         <p className="text-[11px] text-muted-foreground">
-          {v.enqueueWindowMin}분 동안 멤버당 최대 {v.enqueueLimitPerWindow}곡, 1회 {v.maxSelectPerAdd}곡 (DJ 제외)
+          {t('enqueueSummary', {
+            windowMin: v.enqueueWindowMin,
+            limit: v.enqueueLimitPerWindow,
+            maxSelect: v.maxSelectPerAdd,
+          })}
         </p>
         <div className="mt-3 border-t border-white/5 pt-3">
-          <FormField label="재신청 제한">
+          <FormField label={t('replayCooldown')}>
             <select
               className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-white"
               value={v.replayCooldownMin}
               onChange={(e) => change('replayCooldownMin', Number(e.target.value))}
             >
-              <option value={0}>제한 없음</option>
-              <option value={30}>30분</option>
-              <option value={60}>60분</option>
-              <option value={90}>90분</option>
-              <option value={-1}>방 종료까지</option>
+              <option value={0}>{t('replayNone')}</option>
+              <option value={30}>{t('replay30')}</option>
+              <option value={60}>{t('replay60')}</option>
+              <option value={90}>{t('replay90')}</option>
+              <option value={-1}>{t('replayForever')}</option>
             </select>
           </FormField>
           {v.replayCooldownMin !== 0 && (
             <p className="mt-1 text-[11px] text-muted-foreground">
-              {v.replayCooldownMin === -1
-                ? '같은 곡은 방이 종료될 때까지 재신청 불가 (DJ 제외)'
-                : `같은 곡은 재생 후 ${v.replayCooldownMin}분간 재신청 불가 (DJ 제외)`}
+              {v.replayCooldownMin === -1 ? t('replayHintForever') : t('replayHintMin', { min: v.replayCooldownMin })}
             </p>
           )}
         </div>

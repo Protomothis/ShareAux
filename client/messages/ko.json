@@ -1,0 +1,1138 @@
+{
+  "common": {
+    "privacyPolicy": "개인정보처리방침",
+    "terms": "이용약관",
+    "back": "← 돌아가기",
+    "lastUpdated": "최종 수정일",
+    "updatedDate": "2026년 4월 16일",
+    "setup": {
+      "title": "ShareAux 초기 설정",
+      "subtitle": "첫 번째 계정이 관리자로 등록됩니다.",
+      "hint": "초대코드 없이 가입할 수 있습니다."
+    },
+    "serverStatus": {
+      "connecting": "서버에 연결하는 중...",
+      "disconnected": "서버에 연결할 수 없습니다",
+      "autoRetry": "잠시 후 자동으로 재시도합니다",
+      "retryNow": "지금 재시도"
+    },
+    "errorBoundary": {
+      "message": "문제가 발생했습니다",
+      "reload": "새로고침"
+    },
+    "wsDisconnect": {
+      "message": "서버와 연결이 끊어졌습니다 — 재연결 시도 중..."
+    },
+    "modal": {
+      "close": "닫기"
+    },
+    "captcha": {
+      "idle": "사람입니다",
+      "solving": "확인 중...",
+      "solved": "확인 완료"
+    }
+  },
+  "login": {
+    "tagline": "함께 듣는 음악, 함께 만드는 플레이리스트",
+    "invitedTo": "{roomName} 방에서 초대받았습니다",
+    "loginTitle": "로그인",
+    "loginDescription": "아이디와 비밀번호로 로그인",
+    "registerTitle": "회원가입",
+    "registerDescription": "초대코드로 계정 만들기",
+    "guestTitle": "게스트 입장",
+    "guestDescription": "초대코드로 바로 참여하기"
+  },
+  "auth": {
+    "backToMethods": "← 다른 방법으로 로그인",
+    "loginForm": {
+      "title": "로그인",
+      "subtitle": "아이디와 비밀번호로 로그인하세요",
+      "usernameLabel": "아이디",
+      "usernamePlaceholder": "아이디를 입력하세요",
+      "passwordLabel": "비밀번호",
+      "passwordPlaceholder": "비밀번호를 입력하세요",
+      "usernameRequired": "아이디를 입력하세요",
+      "passwordRequired": "비밀번호를 입력하세요",
+      "submitButton": "로그인",
+      "errorFallback": "로그인에 실패했습니다",
+      "orDivider": "또는",
+      "googleLogin": "Google로 로그인",
+      "googleLinkedOnly": "연동된 계정만 가능"
+    },
+    "registerForm": {
+      "title": "회원가입",
+      "subtitle": "초대코드로 계정을 만드세요",
+      "codeLabel": "초대코드",
+      "codePlaceholder": "초대코드를 입력하세요",
+      "codeRequired": "초대코드를 입력하세요",
+      "usernameLabel": "아이디",
+      "usernamePlaceholder": "영소문자, 숫자, 밑줄 (4~20자)",
+      "usernameMinLength": "아이디는 {min}자 이상이어야 합니다",
+      "usernameMaxLength": "아이디는 {max}자 이하여야 합니다",
+      "usernamePattern": "영소문자, 숫자, 밑줄(_)만 사용할 수 있습니다",
+      "nicknameLabel": "닉네임",
+      "nicknamePlaceholder": "방에서 사용할 이름 (2~20자)",
+      "nicknameMinLength": "닉네임은 {min}자 이상이어야 합니다",
+      "nicknameMaxLength": "닉네임은 {max}자 이하여야 합니다",
+      "passwordLabel": "비밀번호",
+      "passwordPlaceholder": "8자 이상",
+      "passwordMinLength": "비밀번호는 {min}자 이상이어야 합니다",
+      "confirmPasswordLabel": "비밀번호 확인",
+      "confirmPasswordPlaceholder": "비밀번호를 다시 입력하세요",
+      "confirmPasswordMismatch": "비밀번호가 일치하지 않습니다",
+      "submitButton": "가입하기",
+      "errorFallback": "회원가입에 실패했습니다"
+    },
+    "guestForm": {
+      "title": "게스트 입장",
+      "subtitleWithCode": "닉네임만 입력하면 바로 입장할 수 있습니다",
+      "subtitleWithoutCode": "초대코드와 닉네임을 입력하세요",
+      "codeLabel": "초대코드",
+      "codePlaceholder": "6~12자리 코드",
+      "nicknameLabel": "닉네임",
+      "nicknamePlaceholder": "방에서 사용할 이름",
+      "submitButton": "입장하기",
+      "errorFallback": "입장에 실패했습니다"
+    }
+  },
+  "rooms": {
+    "list": {
+      "refresh": "새로고침",
+      "createRoom": "방 만들기",
+      "emptyTitle": "아직 활성 방이 없습니다",
+      "emptyDescription": "첫 번째 방을 만들어보세요!",
+      "wrongPassword": "비밀번호가 틀렸습니다",
+      "joinFailed": "입장에 실패했습니다"
+    },
+    "card": {
+      "idle": "재생 대기 중",
+      "unknownHost": "알 수 없음"
+    },
+    "createModal": {
+      "title": "방 만들기",
+      "nameRequired": "방 이름을 입력하세요",
+      "passwordRequired": "비밀번호를 입력하세요",
+      "submit": "만들기"
+    },
+    "profile": {
+      "settings": "설정",
+      "admin": "관리자 페이지",
+      "logout": "로그아웃"
+    }
+  },
+  "player": {
+    "loading": "로딩 중",
+    "play": "재생",
+    "pause": "일시정지",
+    "prevTrack": "이전곡",
+    "nextTrack": "다음곡",
+    "mute": "음소거",
+    "unmute": "음소거 해제",
+    "visualMode": "비주얼 모드 변경",
+    "lyricsToggle": "가사 토글",
+    "skipping": "곡을 넘기는 중...",
+    "preparing": "다음 곡 준비 중...",
+    "idle": "재생 대기 중...",
+    "idleHint": "곡을 신청하면 자동으로 재생됩니다",
+    "djControl": "🎧 DJ 컨트롤"
+  },
+  "queue": {
+    "title": "📋 신청곡",
+    "enqueueDisabled": "🚫 신청 금지",
+    "quota": "{used}/{limit}곡 ({windowMin}분)",
+    "addTrack": "신청하기",
+    "emptyTitle": "아직 신청곡이 없어요",
+    "emptyDescription": "곡을 검색해서 추가하면 순서대로 자동 재생됩니다.\n여러 곡을 한 번에 골라 넣을 수도 있어요!",
+    "autoDjThinking": "AutoDJ가 곡을 찾고 있어요...",
+    "autoDjAdding": "AutoDJ가 곡을 추가하고 있어요...",
+    "deleteConfirm": "신청곡에서 삭제할까요?",
+    "cancel": "취소",
+    "delete": "삭제",
+    "queueFull": "신청곡이 가득 찼습니다 (최대 {max}곡)",
+    "addedToast": "🎵 신청 완료",
+    "addedExtra": " 외 {count}곡"
+  },
+  "search": {
+    "title": "곡 추가",
+    "showcase": {
+      "emptyTitle": "아직 재생 기록이 없습니다",
+      "emptyHint": "검색 탭에서 곡을 추가해보세요",
+      "popular": "인기곡",
+      "myHistory": "내 신청 기록",
+      "recentPlays": "최근 재생",
+      "recommended": "추천곡"
+    },
+    "searchTab": "검색",
+    "favorites": "즐겨찾기",
+    "placeholder": "곡 제목 또는 아티스트...",
+    "emptyHint": "곡 제목이나 아티스트를 검색하세요",
+    "noResults": "검색 결과가 없습니다",
+    "noResultsHint": "\"{query}\"에 대한 결과를 찾지 못했어요.\n다른 키워드로 검색해 보세요.",
+    "playlist": {
+      "trackCount": "{count}곡",
+      "loadError": "플레이리스트를 불러올 수 없습니다",
+      "retry": "다시 시도",
+      "noTracks": "재생 가능한 곡이 없습니다",
+      "loadMore": "더 보기 ({loaded}/{total})"
+    },
+    "showcaseTab": "추천"
+  },
+  "favorites": {
+    "loading": "불러오는 중...",
+    "manageFolder": "폴더 관리",
+    "empty": "즐겨찾기한 곡이 없습니다",
+    "searchPlaceholder": "검색...",
+    "sortRecent": "최근",
+    "sortOldest": "오래된",
+    "sortName": "곡명",
+    "sortArtist": "아티스트",
+    "done": "완료",
+    "edit": "편집",
+    "selected": "{count}곡 선택됨",
+    "moved": "이동 완료",
+    "movedCount": "{count}곡 이동 완료",
+    "moveTo": "이동...",
+    "uncategorized": "미분류",
+    "removedCount": "{count}곡 즐겨찾기 해제",
+    "removeFavorite": "즐겨찾기 해제",
+    "trackCount": "{count}곡",
+    "inQueue": "재신청 불가"
+  },
+  "history": {
+    "emptyTitle": "아직 재생된 곡이 없습니다",
+    "emptyDescription": "곡이 재생되면 여기에 기록됩니다"
+  },
+  "chat": {
+    "muted": "채팅이 제한되었습니다 ({seconds}초)",
+    "placeholder": "메시지를 입력하세요...",
+    "noPermission": "채팅 권한이 없습니다",
+    "inputLabel": "채팅 메시지",
+    "send": "전송",
+    "firstMessage": "첫 메시지를 보내보세요",
+    "anonymous": "익명",
+    "reactionLabel": "리액션",
+    "reactionTooltip": "길게 눌러 변경",
+    "system": {
+      "userJoined": "님이 입장했습니다",
+      "userLeft": "님이 퇴장했습니다",
+      "trackSkipped": "님이 곡을 스킵했습니다",
+      "trackPrevious": "님이 이전 곡으로 돌아갔습니다",
+      "roomClosed": "방이 종료되었습니다",
+      "hostChanged": "님이 새 호스트가 되었습니다",
+      "autoDjEnabled": "🤖 AutoDJ가 활성화되었습니다",
+      "autoDjDisabled": "🤖 AutoDJ가 비활성화되었습니다",
+      "enqueueCountsReset": "곡 신청 횟수가 초기화되었습니다",
+      "userKicked": "멤버가 추방되었습니다",
+      "trackAdded": "🤖 AutoDJ가 \"{trackName}\"을(를) 추가했습니다",
+      "trackUnavailable": "\"{trackName}\" 재생 불가 — 건너뜁니다",
+      "voteSkipPassed": "스킵 투표가 통과되어 곡이 넘어갑니다",
+      "userTrackAdded": "{nickname}님이 \"{trackName}\" 외 {count}곡을 추가했습니다",
+      "userTrackAddedSingle": "{nickname}님이 \"{trackName}\"을(를) 추가했습니다"
+    }
+  },
+  "members": {
+    "title": "👥 멤버 ({count})",
+    "empty": "아직 참여자가 없습니다",
+    "unknown": "알 수 없음",
+    "managePermission": "권한 관리",
+    "report": "신고하기"
+  },
+  "settings": {
+    "roomTitle": "⚙️ 방 설정",
+    "nameRequired": "방 이름을 입력하세요",
+    "saved": "설정이 저장되었습니다",
+    "save": "저장",
+    "resetEnqueue": "신청 횟수 초기화",
+    "resetEnqueueDone": "신청 횟수가 초기화되었습니다",
+    "sanctions": "제재 관리",
+    "noSanctions": "제재된 멤버가 없습니다",
+    "chatMuted": "🔇 채팅 제한 ({min}분 남음)",
+    "banned": "🚫 추방됨",
+    "release": "해제",
+    "releaseAll": "전체 해제",
+    "sanctionsCleared": "제재 목록이 초기화되었습니다 ({count}명)",
+    "unbanDone": "추방이 해제되었습니다",
+    "unmuteDone": "채팅 제한이 해제되었습니다",
+    "basicInfo": "기본 정보",
+    "roomName": "방 이름",
+    "roomNamePlaceholder": "파티 이름을 입력하세요",
+    "maxMembers": "최대 인원",
+    "privateRoom": "비밀방",
+    "passwordPlaceholder": "비밀번호 입력",
+    "playback": "재생 설정",
+    "crossfade": "크로스페이드",
+    "crossfadeDesc": "곡 전환 시 페이드",
+    "enqueueDefault": "곡 신청 허용",
+    "enqueueDefaultDesc": "새 멤버 기본 권한",
+    "voteSkipDefault": "스킵 투표 허용",
+    "voteSkipDefaultDesc": "새 멤버 기본 권한",
+    "enqueueSection": "곡 신청",
+    "maxSelectPerAdd": "1회 추가 곡 수",
+    "enqueueWindowMin": "제한 시간 (분)",
+    "enqueueLimitPerWindow": "시간당 최대 곡",
+    "enqueueSummary": "{windowMin}분 동안 멤버당 최대 {limit}곡, 1회 {maxSelect}곡 (DJ 제외)",
+    "replayCooldown": "재신청 제한",
+    "replayNone": "제한 없음",
+    "replay30": "30분",
+    "replay60": "60분",
+    "replay90": "90분",
+    "replayForever": "방 종료까지",
+    "replayHintForever": "같은 곡은 방이 종료될 때까지 재신청 불가 (DJ 제외)",
+    "replayHintMin": "같은 곡은 재생 후 {min}분간 재신청 불가 (DJ 제외)",
+    "autoDjDescription": "큐가 비면 자동으로 곡 추가",
+    "autoDjMode": "모드",
+    "autoDjModePlaceholder": "모드 선택",
+    "autoDjRelated": "🔗 관련곡",
+    "autoDjHistory": "📜 히스토리",
+    "autoDjPopular": "🔥 인기곡",
+    "autoDjMixed": "🎲 혼합",
+    "autoDjFavorites": "❤️ 즐겨찾기",
+    "autoDjFavEmpty": " (곡 없음)",
+    "autoDjThreshold": "트리거 기준",
+    "autoDjThresholdValue": "남은 {n}곡 이하",
+    "autoDjFolder": "폴더 필터",
+    "autoDjFolderAll": "전체",
+    "autoDjFolderItem": "{name} ({count}곡)",
+    "autoDjFavFallback": "즐겨찾기 곡 소진 시 혼합 모드로 전환"
+  },
+  "profile": {
+    "title": "프로필 설정",
+    "nickname": "닉네임 변경",
+    "password": "비밀번호 변경",
+    "passwordDesc": "계정 비밀번호",
+    "google": "Google 연동",
+    "googleNotLinked": "미연동",
+    "googleLinked": "연동됨",
+    "googleHint": "Google 계정을 연동하면 Google로도 로그인할 수 있습니다.",
+    "googleLink": "Google 계정 연동하기",
+    "deleteAccount": "회원 탈퇴",
+    "nicknameLabel": "닉네임",
+    "nicknamePlaceholder": "닉네임",
+    "nicknameRequired": "닉네임을 입력해주세요",
+    "nicknameMin": "2자 이상",
+    "nicknameSaved": "닉네임이 변경되었습니다",
+    "curPassword": "현재 비밀번호",
+    "curPasswordPlaceholder": "현재 비밀번호",
+    "curPasswordRequired": "현재 비밀번호를 입력해주세요",
+    "newPassword": "새 비밀번호",
+    "newPasswordPlaceholder": "8자 이상",
+    "newPasswordRequired": "새 비밀번호를 입력해주세요",
+    "newPasswordMin": "8자 이상",
+    "confirmPassword": "비밀번호 확인",
+    "confirmPasswordPlaceholder": "비밀번호 확인",
+    "confirmRequired": "확인을 입력해주세요",
+    "confirmMismatch": "비밀번호 불일치",
+    "passwordSaved": "비밀번호가 변경되었습니다",
+    "change": "변경",
+    "deleteWarning": "계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.",
+    "deletePasswordRequired": "비밀번호를 입력해주세요",
+    "deleteFailed": "탈퇴 실패",
+    "deleteConfirmTitle": "정말 탈퇴하시겠습니까?",
+    "deleteConfirmDesc": "이 작업은 되돌릴 수 없습니다.",
+    "deleteSubmit": "탈퇴하기",
+    "cancel": "취소"
+  },
+  "permission": {
+    "dj": "🎧 DJ",
+    "self": "나",
+    "guest": "게스트",
+    "member": "멤버",
+    "permissionSaved": "권한이 변경되었습니다",
+    "djTransferred": "DJ가 위임되었습니다",
+    "kicked": "추방되었습니다",
+    "accountRestricted": "계정 제한",
+    "roomRestricted": "방 제한",
+    "guestHint": "💡 게스트 계정은 초대 코드에 설정된 권한까지만 사용할 수 있습니다. 방 권한이 있어도 계정 권한에 없으면 제한됩니다.",
+    "transferDj": "🎧 DJ 위임",
+    "kick": "👋 추방"
+  },
+  "leave": {
+    "title": "정말 나가시겠습니까?",
+    "cancel": "취소",
+    "confirm": "나가기"
+  },
+  "report": {
+    "title": "🚨 신고하기",
+    "description": "{nickname}님을 신고합니다",
+    "detailPlaceholder": "상세 내용 (선택)",
+    "cancel": "취소",
+    "submit": "신고",
+    "submitting": "접수 중...",
+    "done": "신고가 접수되었습니다",
+    "inappropriate": "부적절한 행동",
+    "spam": "스팸/도배",
+    "offensiveName": "불쾌한 닉네임",
+    "other": "기타"
+  },
+  "passwordModal": {
+    "title": "🔒 비밀번호 입력",
+    "description": "이 방은 비밀번호가 필요합니다",
+    "label": "비밀번호",
+    "placeholder": "비밀번호",
+    "join": "입장",
+    "back": "돌아가기"
+  },
+  "joinPassword": {
+    "title": "비밀번호 입력",
+    "label": "비밀번호",
+    "placeholder": "비밀번호를 입력하세요",
+    "join": "입장"
+  },
+  "error": {
+    "title": "문제가 발생했습니다",
+    "fallback": "예상치 못한 오류가 발생했습니다",
+    "retry": "다시 시도",
+    "notFound": "페이지를 찾을 수 없습니다",
+    "notFoundDesc": "요청하신 페이지가 존재하지 않습니다",
+    "backToRooms": "방 목록으로",
+    "roomError": "방 접속에 문제가 발생했습니다",
+    "roomErrorFallback": "연결이 끊겼거나 방이 종료되었을 수 있습니다",
+    "roomNotFound": "방을 찾을 수 없습니다",
+    "roomNotFoundDesc": "종료되었거나 존재하지 않는 방입니다"
+  },
+  "meta": {
+    "description": "자체 호스팅 실시간 음악 공유 플랫폼. 방을 만들고 함께 음악을 들어보세요.",
+    "shortDescription": "자체 호스팅 실시간 음악 공유 플랫폼",
+    "rooms": "방 목록",
+    "login": "로그인",
+    "setup": "초기 설정",
+    "admin": "관리자"
+  },
+  "admin": {
+    "nav": {
+      "dashboard": "대시보드",
+      "users": "유저 관리",
+      "rooms": "방 관리",
+      "tracks": "인기 트랙",
+      "inviteCodes": "초대코드",
+      "settings": "시스템 설정",
+      "cleanup": "DB 정리",
+      "auditLogs": "감사 로그",
+      "reports": "신고 관리",
+      "ipBans": "IP 차단",
+      "errors": "에러 로그",
+      "backToService": "서비스로 돌아가기"
+    },
+    "common": {
+      "save": "저장",
+      "saving": "저장 중...",
+      "delete": "삭제",
+      "cancel": "취소",
+      "confirm": "확인",
+      "release": "해제",
+      "prev": "이전",
+      "next": "다음",
+      "noData": "데이터가 없습니다",
+      "saved": "저장되었습니다"
+    },
+    "dashboard": {
+      "title": "대시보드",
+      "totalUsers": "총 유저",
+      "activeRooms": "활성 방",
+      "totalRooms": "총 방",
+      "quickActions": "빠른 작업",
+      "inviteCodeManage": "초대코드 관리",
+      "inviteCodeManageDesc": "초대코드 생성 및 관리",
+      "userManage": "유저 관리",
+      "userManageDesc": "유저 목록 및 권한 관리",
+      "popularTracks": "인기 트랙",
+      "popularTracksDesc": "트랙 순위 확인",
+      "roomManage": "방 관리",
+      "roomManageDesc": "활성 방 관리 및 삭제",
+      "guestCleanup": "게스트 정리",
+      "guestCleanupDesc": "만료된 게스트 계정 삭제",
+      "serverResources": "서버 리소스",
+      "ffmpegProcesses": "ffmpeg 프로세스",
+      "preloadMemory": "프리로드 메모리",
+      "heapUsage": "Heap 사용",
+      "uptime": "업타임",
+      "realtimeConnections": "실시간 접속자",
+      "memoryUsage": "메모리 사용량",
+      "dailyPlays": "일별 재생 수 (7일)",
+      "userDistribution": "유저 분포",
+      "collecting": "데이터 수집 중...",
+      "noChartData": "데이터 없음",
+      "loading": "로딩 중...",
+      "hourMin": "{h}시간 {m}분",
+      "min": "{m}분"
+    },
+    "users": {
+      "title": "유저 관리",
+      "searchPlaceholder": "닉네임 또는 유저네임 검색...",
+      "allRoles": "전체 역할",
+      "allProviders": "전체 가입",
+      "allStatus": "전체 상태",
+      "active": "정상",
+      "banned": "정지됨",
+      "nickname": "닉네임",
+      "username": "유저네임",
+      "email": "이메일",
+      "provider": "가입/연동",
+      "googleLinked": "Google 연동",
+      "role": "역할",
+      "guest": "게스트",
+      "createdAt": "가입일",
+      "status": "상태",
+      "backToList": "유저 목록",
+      "roles": {
+        "user": "일반",
+        "admin": "관리자",
+        "superAdmin": "최고 관리자",
+        "guest": "게스트"
+      },
+      "providers": {
+        "google": "Google",
+        "local": "일반",
+        "invite": "초대코드"
+      }
+    },
+    "rooms": {
+      "title": "방 관리",
+      "roomName": "방 이름",
+      "host": "호스트",
+      "members": "멤버",
+      "status": "상태",
+      "stream": "스트림",
+      "createdAt": "생성일",
+      "empty": "활성 방이 없습니다",
+      "deleted": "방이 삭제되었습니다",
+      "deleteTitle": "방 삭제",
+      "deleteDesc": "이 방을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+      "roomDetail": "방 상세 정보",
+      "settingsLabel": "설정",
+      "private": "비공개",
+      "crossfadeLabel": "크로스페이드",
+      "defaultEnqueue": "기본 큐 추가",
+      "defaultVoteSkip": "기본 투표 스킵",
+      "delete": "삭제"
+    },
+    "tracks": {
+      "title": "🎵 인기 트랙",
+      "searchPlaceholder": "트랙 검색...",
+      "track": "트랙",
+      "plays": "재생",
+      "votes": "투표",
+      "users": "유저",
+      "lyrics": "가사",
+      "translated": " 번역",
+      "noLyrics": "없음",
+      "searching": "검색중",
+      "score": "점수",
+      "empty": "재생 기록이 없습니다",
+      "original": "원본",
+      "channel": "채널",
+      "album": "앨범",
+      "lyricsLabel": "가사",
+      "lyricsLoading": "가사 불러오는 중...",
+      "lyricsDelete": "가사 삭제",
+      "lyricsDeleteConfirm": "가사 정보를 삭제하시겠습니까? 다음 재생 시 재검색됩니다.",
+      "lyricsDeleted": "가사 삭제 완료",
+      "lyricsOriginal": "원문",
+      "lyricsTranslation": "번역",
+      "contentId": "Content ID 매칭",
+      "contentIdDone": "완료",
+      "contentIdPending": "대기",
+      "contentIdDeleteConfirm": "Content ID 매칭 정보를 삭제하시겠습니까? 다음 재생 시 재매칭됩니다.",
+      "contentIdDeleted": "Content ID 삭제 완료",
+      "contentIdDelete": "Content ID 삭제",
+      "trackDelete": "트랙 삭제",
+      "trackDeleteConfirm": "이 트랙을 삭제하시겠습니까? 관련 큐/통계도 함께 삭제됩니다.",
+      "trackDeleted": "트랙 삭제 완료"
+    },
+    "inviteCodes": {
+      "title": "초대코드 관리",
+      "new": "새 초대코드",
+      "empty": "초대코드가 없습니다",
+      "deleteTitle": "초대코드 삭제",
+      "deactivateTitle": "초대코드 비활성화",
+      "deleteDesc": "이 초대코드를 완전히 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+      "deactivateDesc": "이 초대코드를 비활성화하시겠습니까?",
+      "deactivate": "비활성화",
+      "deactivated": "비활성화되었습니다",
+      "deleted": "삭제되었습니다",
+      "linkCopied": "초대 링크가 복사되었습니다",
+      "expired": "만료됨",
+      "until": "까지",
+      "noExpiry": "무기한",
+      "activeStatus": "활성",
+      "inactiveStatus": "비활성",
+      "used": "사용",
+      "registration": "회원가입",
+      "createTitle": "새 초대코드",
+      "createDesc": "초대코드를 생성하여 게스트를 초대하세요",
+      "codeLabel": "코드 (비우면 자동 생성)",
+      "codeMinLength": "6자 이상 입력해주세요",
+      "maxUses": "최대 사용 횟수",
+      "expiresAt": "만료일 (선택)",
+      "expiresPlaceholder": "무기한",
+      "accountPermissions": "계정 권한",
+      "permissionHint": "게스트 및 이 코드로 회원가입한 유저 모두에게 적용됩니다",
+      "allowRegistration": "회원가입 허용",
+      "allowRegistrationDesc": "이 코드로 정식 계정 생성 가능 (위 권한이 계정에 적용됨)",
+      "created": "초대코드가 생성되었습니다",
+      "creating": "생성 중...",
+      "create": "생성",
+      "usersTitle": "초대코드 유저",
+      "noUsers": "이 코드로 가입한 유저가 없습니다",
+      "deleteGuests": "게스트 {count}명 일괄 삭제",
+      "deleteGuestsTitle": "게스트 일괄 삭제",
+      "deleteGuestsDesc": "이 초대코드로 입장한 게스트 {count}명을 모두 삭제합니다. 일반 회원은 영향받지 않습니다.",
+      "guestsDeleted": "게스트 {count}명 삭제 완료",
+      "delete": "삭제"
+    },
+    "settings": {
+      "title": "⚙️ 시스템 설정",
+      "saved": "설정이 저장되었습니다",
+      "authSection": "인증",
+      "guestLogin": "게스트 로그인",
+      "guestLoginDesc": "게스트 계정 허용 여부",
+      "googleOAuth": "Google OAuth",
+      "googleOAuthDesc": "Google 로그인 허용 여부",
+      "guestExpiry": "게스트 만료 시간 (시간)",
+      "guestExpiryDesc": "게스트 계정 자동 만료까지의 시간",
+      "roomSection": "방",
+      "maxMembers": "최대 인원",
+      "maxMembersDesc": "방당 최대 참여 인원",
+      "maxRoomsPerUser": "유저당 최대 방",
+      "maxRoomsPerUserDesc": "한 유저가 생성할 수 있는 최대 방 수",
+      "autoDjEnabled": "AutoDJ 활성화",
+      "autoDjEnabledDesc": "자동 DJ 기능 허용",
+      "queueSection": "큐",
+      "maxQueuePerUser": "유저당 최대 큐",
+      "maxQueuePerUserDesc": "한 유저가 추가할 수 있는 최대 큐 수",
+      "maxTrackLength": "최대 트랙 길이 (분)",
+      "maxTrackLengthDesc": "큐에 추가 가능한 최대 트랙 길이",
+      "streamSection": "스트리밍",
+      "maxBitrateEnabled": "최대 비트레이트 제한",
+      "maxBitrateEnabledDesc": "활성화 시 원본이 설정값보다 높으면 제한",
+      "maxBitrate": "최대 비트레이트 (kbps)",
+      "maxBitrateDesc": "원본 비트레이트가 이 값을 초과하면 트랜스코딩",
+      "translationSection": "번역",
+      "translationEnabled": "번역 기능",
+      "translationEnabledDesc": "가사 자동 번역 활성화",
+      "dailyLimit": "일일 한도",
+      "dailyLimitDesc": "하루 최대 번역 요청 수",
+      "geminiModel": "Gemini 모델",
+      "geminiModelDesc": "flash-lite (빠름) / flash (정확)",
+      "save": "저장"
+    },
+    "cleanup": {
+      "title": "🧹 DB 정리",
+      "done": "정리가 완료되었습니다",
+      "totalTracks": "총 트랙",
+      "totalPlayHistories": "총 재생 이력",
+      "activeRooms": "활성 방",
+      "inactiveRooms": "비활성 방",
+      "totalUsers": "총 유저",
+      "guests": "게스트",
+      "queueItems": "큐 아이템",
+      "lyricsFound": "가사 보유",
+      "tableSize": "테이블별 용량",
+      "totalSize": "전체 {size}",
+      "items": "{count}건",
+      "clean": "정리",
+      "cleanTitle": "데이터 정리",
+      "cleanDesc": "{label} 항목을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+      "unplayedTracks": "미재생 트랙",
+      "unplayedTracksDesc": "한 번도 재생되지 않은 트랙 삭제",
+      "oldTracks": "오래된 트랙 (30일)",
+      "oldTracksDesc": "30일 이상 재생되지 않은 트랙 삭제",
+      "oldHistory": "재생 이력 (30일)",
+      "oldHistoryDesc": "30일 이전 재생 이력 삭제",
+      "inactiveRoomsClean": "비활성 방 (7일)",
+      "inactiveRoomsCleanDesc": "7일 이상 비활성 방 삭제",
+      "emptyRooms": "빈 비활성 방",
+      "emptyRoomsDesc": "큐가 없는 비활성 방 삭제",
+      "expiredGuests": "만료 게스트",
+      "expiredGuestsDesc": "12시간 이상 된 게스트 삭제",
+      "inactiveGuests": "비활성 게스트 (30일)",
+      "inactiveGuestsDesc": "30일 이상 비활성 게스트 삭제",
+      "delete": "삭제"
+    },
+    "auditLogs": {
+      "title": "📋 감사 로그",
+      "empty": "감사 로그가 없습니다",
+      "allActions": "전체 액션",
+      "settingsUpdate": "설정 변경",
+      "cleanupAction": "데이터 정리",
+      "reportResolve": "신고 처리",
+      "roleChange": "역할 변경",
+      "ban": "밴",
+      "unban": "밴 해제",
+      "allTargets": "전체 대상",
+      "system": "시스템",
+      "user": "유저",
+      "room": "방",
+      "report": "신고"
+    },
+    "reports": {
+      "title": "🚨 신고 관리",
+      "hint": "신고 내용을 확인 후 필요 시 유저 상세에서 제재(밴/경고)를 진행하세요. \"처리\"는 조치 완료, \"무시\"는 조치 불필요를 의미합니다.",
+      "empty": "신고가 없습니다",
+      "pending": "대기중",
+      "resolved": "처리됨",
+      "dismissed": "무시됨",
+      "unknown": "알 수 없음",
+      "resolve": "처리",
+      "dismiss": "무시",
+      "resolveTitle": "신고 처리",
+      "dismissTitle": "신고 무시",
+      "resolveDesc": "이 신고를 확인하고 조치를 완료했음을 표시합니다.",
+      "dismissDesc": "이 신고를 부당하거나 조치 불필요로 처리합니다.",
+      "resolvedToast": "신고가 처리되었습니다",
+      "dismissedToast": "신고가 무시되었습니다"
+    },
+    "ipBans": {
+      "title": "IP 차단 관리",
+      "addBan": "IP 차단",
+      "empty": "차단된 IP가 없습니다",
+      "reason": "사유",
+      "bannedBy": "차단자",
+      "expiresAt": "만료일",
+      "permanent": "영구",
+      "bannedAt": "차단일",
+      "banned": "IP가 차단되었습니다",
+      "released": "차단이 해제되었습니다",
+      "releaseTitle": "IP 차단 해제",
+      "releaseDesc": "이 IP의 차단을 해제하시겠습니까?",
+      "dialogTitle": "IP 차단",
+      "dialogDesc": "차단할 IP 주소를 입력하세요",
+      "ipLabel": "IP 주소",
+      "reasonLabel": "사유 (선택)",
+      "reasonPlaceholder": "스팸, 악용 등",
+      "expiresLabel": "만료일 (선택)",
+      "expiresPlaceholder": "영구 차단",
+      "banning": "차단 중...",
+      "ban": "차단",
+      "release": "해제"
+    },
+    "errors": {
+      "title": "에러 로그",
+      "empty": "에러 로그가 없습니다",
+      "noFiles": "로그 파일이 없습니다",
+      "time": "시간",
+      "path": "경로",
+      "statusCode": "상태",
+      "message": "메시지",
+      "all": "전체",
+      "pathSearch": "경로 검색",
+      "items": "{count}건",
+      "memoryTab": "에러 로그",
+      "filesTab": "파일 로그",
+      "backToFiles": "← 파일 목록"
+    },
+    "userDetail": {
+      "accountBan": "계정 정지",
+      "cannotBanSuperAdmin": "SuperAdmin 계정은 정지할 수 없습니다",
+      "bannedDate": "정지일",
+      "unban": "정지 해제",
+      "banConfirmTitle": "계정 정지",
+      "banConfirmDesc": "{nickname} 계정을 정지하시겠습니까? 정지된 사용자는 로그인 및 접속이 차단됩니다.",
+      "banLabel": "정지",
+      "unbanned": "정지가 해제되었습니다",
+      "accountBanned": "계정이 정지되었습니다",
+      "accountDelete": "계정 삭제",
+      "deleteHint": "삭제된 계정은 복구할 수 없습니다. 재생 기록은 보존됩니다.",
+      "deleteConfirmTitle": "계정 삭제",
+      "deleteConfirmDesc": "{nickname} 계정을 영구 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+      "accountDeleted": "계정이 삭제되었습니다",
+      "totalPlays": "총 재생",
+      "roomCount": "참여 방",
+      "trackCount": "트랙 수",
+      "recentHistory": "최근 재생 기록",
+      "noHistory": "재생 기록이 없습니다",
+      "playCount": "{count}회",
+      "accountSettings": "계정 설정",
+      "roleLabel": "역할",
+      "superAdminFixed": "superAdmin (변경 불가)",
+      "accountPermissions": "계정 권한",
+      "adminAllPerms": "관리자는 모든 권한을 가집니다",
+      "providerLabel": "가입 방식",
+      "googleLinked": "Google 연동",
+      "joinDate": "가입",
+      "backToList": "유저 목록",
+      "delete": "삭제",
+      "saved": "저장되었습니다",
+      "saving": "저장 중...",
+      "save": "저장",
+      "banned": "정지됨",
+      "providers": {
+        "google": "Google",
+        "local": "일반",
+        "invite": "초대코드"
+      },
+      "roles": {
+        "user": "일반",
+        "admin": "관리자",
+        "superAdmin": "최고 관리자",
+        "guest": "게스트"
+      }
+    },
+    "charts": {
+      "connections": "접속자",
+      "plays": "재생 수",
+      "providerTitle": "가입 경로",
+      "roleTitle": "역할"
+    }
+  },
+  "folders": {
+    "title": "폴더 관리",
+    "count": "{count}/20 폴더",
+    "created": "폴더 생성 완료",
+    "updated": "폴더 수정 완료",
+    "deleteConfirm": "폴더를 삭제하시겠습니까? 곡은 미분류로 이동됩니다.",
+    "deleted": "폴더 삭제 완료",
+    "save": "저장",
+    "create": "만들기",
+    "newFolder": "새 폴더",
+    "placeholder": "폴더 이름 (2~20자)",
+    "cancel": "취소",
+    "trackCount": "{count}곡"
+  },
+  "room": {
+    "chat": "채팅",
+    "queue": "신청곡",
+    "history": "기록",
+    "members": "멤버"
+  },
+  "authCallback": {
+    "loginFailed": "로그인에 실패했습니다",
+    "defaultTitle": "로그인 실패",
+    "defaultDesc": "알 수 없는 오류가 발생했습니다. 다시 시도해주세요.",
+    "notLinkedTitle": "계정을 찾을 수 없음",
+    "googleDisabledTitle": "Google 로그인 불가",
+    "googleDisabledDesc": "Google 로그인이 현재 비활성화되어 있습니다.",
+    "alreadyLinkedTitle": "연동 실패",
+    "backToLogin": "로그인으로 돌아가기",
+    "processing": "로그인 처리 중",
+    "wait": "잠시만 기다려주세요..."
+  },
+  "apiError": {
+    "400": "요청이 올바르지 않습니다",
+    "403": "권한이 없습니다",
+    "404": "요청한 리소스를 찾을 수 없습니다",
+    "409": "이미 처리된 요청입니다",
+    "429": "요청이 너무 많습니다. 잠시 후 다시 시도해주세요",
+    "serverError": "서버 오류가 발생했습니다",
+    "fallback": "요청 처리에 실패했습니다"
+  },
+  "errorCode": {
+    "AUTH_001": {
+      "title": "로그인 실패",
+      "description": "아이디 또는 비밀번호가 올바르지 않습니다"
+    },
+    "AUTH_002": {
+      "title": "계정 정지",
+      "description": "정지된 계정입니다"
+    },
+    "AUTH_003": {
+      "title": "초대코드 오류",
+      "description": "유효하지 않은 초대코드입니다"
+    },
+    "AUTH_004": {
+      "title": "초대코드 만료",
+      "description": "만료된 초대코드입니다"
+    },
+    "AUTH_005": {
+      "title": "초대코드 한도 초과",
+      "description": "초대코드 사용 한도를 초과했습니다"
+    },
+    "AUTH_006": {
+      "title": "초대코드 사용 불가",
+      "description": "이 초대코드로는 회원가입할 수 없습니다"
+    },
+    "AUTH_007": {
+      "title": "초대코드 필요",
+      "description": "초대코드를 입력하세요"
+    },
+    "AUTH_008": {
+      "title": "아이디 중복",
+      "description": "이미 사용 중인 아이디입니다"
+    },
+    "AUTH_009": {
+      "title": "비밀번호 오류",
+      "description": "비밀번호가 올바르지 않습니다"
+    },
+    "AUTH_010": {
+      "title": "비밀번호 변경 불가",
+      "description": "비밀번호 변경을 지원하지 않는 계정입니다"
+    },
+    "AUTH_011": {
+      "title": "현재 비밀번호 불일치",
+      "description": "현재 비밀번호가 올바르지 않습니다"
+    },
+    "AUTH_012": {
+      "title": "사용자 없음",
+      "description": "사용자를 찾을 수 없습니다"
+    },
+    "AUTH_013": {
+      "title": "리프레시 토큰 오류",
+      "description": "유효하지 않은 리프레시 토큰입니다"
+    },
+    "AUTH_014": {
+      "title": "리프레시 토큰 폐기",
+      "description": "폐기된 리프레시 토큰입니다"
+    },
+    "AUTH_015": {
+      "title": "Google OAuth 미설정",
+      "description": "Google OAuth가 설정되지 않았습니다"
+    },
+    "AUTH_016": {
+      "title": "Google 계정 미연동",
+      "description": "Google 계정이 연동되지 않았습니다"
+    },
+    "AUTH_017": {
+      "title": "Google 계정 중복",
+      "description": "이미 다른 계정에 연동된 Google 계정입니다"
+    },
+    "AUTH_018": {
+      "title": "탈퇴 불가",
+      "description": "SuperAdmin은 탈퇴할 수 없습니다"
+    },
+    "AUTH_019": {
+      "title": "비밀번호 오류",
+      "description": "탈퇴 확인 비밀번호가 올바르지 않습니다"
+    },
+    "ROOM_001": {
+      "title": "방 없음",
+      "description": "방을 찾을 수 없습니다"
+    },
+    "ROOM_002": {
+      "title": "방 인원 초과",
+      "description": "방이 가득 찼습니다"
+    },
+    "ROOM_003": {
+      "title": "입장 차단",
+      "description": "이 방에서 추방되어 입장할 수 없습니다"
+    },
+    "ROOM_004": {
+      "title": "권한 없음",
+      "description": "호스트만 방 정보를 수정할 수 있습니다"
+    },
+    "ROOM_005": {
+      "title": "권한 없음",
+      "description": "호스트만 권한을 변경할 수 있습니다"
+    },
+    "ROOM_006": {
+      "title": "권한 없음",
+      "description": "DJ만 호스트를 위임할 수 있습니다"
+    },
+    "ROOM_007": {
+      "title": "권한 없음",
+      "description": "DJ만 강퇴할 수 있습니다"
+    },
+    "ROOM_008": {
+      "title": "권한 없음",
+      "description": "DJ만 차단 목록을 초기화할 수 있습니다"
+    },
+    "ROOM_009": {
+      "title": "권한 없음",
+      "description": "DJ만 차단을 해제할 수 있습니다"
+    },
+    "ROOM_010": {
+      "title": "권한 없음",
+      "description": "호스트만 방을 삭제할 수 있습니다"
+    },
+    "ROOM_011": {
+      "title": "권한 없음",
+      "description": "호스트만 방을 초기화할 수 있습니다"
+    },
+    "ROOM_012": {
+      "title": "자기 강퇴 불가",
+      "description": "자기 자신을 강퇴할 수 없습니다"
+    },
+    "ROOM_013": {
+      "title": "멤버 없음",
+      "description": "멤버를 찾을 수 없습니다"
+    },
+    "ROOM_014": {
+      "title": "위임 불가",
+      "description": "호스트 권한이 없는 멤버에게 위임할 수 없습니다"
+    },
+    "ROOM_015": {
+      "title": "권한 부족",
+      "description": "계정 권한이 부족합니다"
+    },
+    "ROOM_016": {
+      "title": "접근 거부",
+      "description": "해당 작업에 대한 권한이 없습니다"
+    },
+    "ROOM_017": {
+      "title": "비밀번호 오류",
+      "description": "방 비밀번호가 올바르지 않습니다"
+    },
+    "PLAYER_001": {
+      "title": "재생 중인 곡 없음",
+      "description": "현재 재생 중인 곡이 없습니다"
+    },
+    "PLAYER_002": {
+      "title": "다음 곡 없음",
+      "description": "다음 곡이 없습니다"
+    },
+    "PLAYER_003": {
+      "title": "이전 곡 없음",
+      "description": "이전 곡이 없습니다"
+    },
+    "PLAYER_004": {
+      "title": "곡 전환 중",
+      "description": "곡 전환 중입니다. 잠시 후 다시 시도하세요"
+    },
+    "PLAYER_005": {
+      "title": "스킵 대기",
+      "description": "재생 시작 후 잠시 뒤에 가능합니다"
+    },
+    "PLAYER_006": {
+      "title": "스킵 투표 권한 없음",
+      "description": "스킵 투표 권한이 없습니다"
+    },
+    "PLAYER_007": {
+      "title": "오디오 정보 없음",
+      "description": "오디오 정보를 찾을 수 없습니다"
+    },
+    "PLAYER_008": {
+      "title": "오디오 URL 없음",
+      "description": "오디오 URL을 찾을 수 없습니다"
+    },
+    "QUEUE_001": {
+      "title": "큐 항목 없음",
+      "description": "큐 항목을 찾을 수 없습니다"
+    },
+    "QUEUE_002": {
+      "title": "중복 곡",
+      "description": "이미 큐에 있는 곡입니다"
+    },
+    "QUEUE_003": {
+      "title": "전체 중복",
+      "description": "모든 곡이 이미 큐에 있습니다"
+    },
+    "QUEUE_004": {
+      "title": "큐 한도 초과",
+      "description": "큐에 최대 50곡까지 추가할 수 있습니다"
+    },
+    "QUEUE_005": {
+      "title": "개인 한도 초과",
+      "description": "1인당 최대 10곡까지 추가할 수 있습니다"
+    },
+    "QUEUE_006": {
+      "title": "버전 충돌",
+      "description": "다른 사용자가 큐를 수정했습니다. 새로고침 후 다시 시도하세요"
+    },
+    "QUEUE_007": {
+      "title": "일괄 추가 한도 초과",
+      "description": "한 번에 추가할 수 있는 곡 수를 초과했습니다"
+    },
+    "QUEUE_008": {
+      "title": "재신청 쿨다운",
+      "description": "최근 재생된 곡입니다. 잠시 후 다시 신청해주세요"
+    },
+    "SEARCH_001": {
+      "title": "검색어 필요",
+      "description": "검색어 또는 continuation 파라미터가 필요합니다"
+    },
+    "ADMIN_001": {
+      "title": "관리자 권한 필요",
+      "description": "관리자 권한이 필요합니다"
+    },
+    "ADMIN_002": {
+      "title": "사용자 없음",
+      "description": "사용자를 찾을 수 없습니다"
+    },
+    "ADMIN_003": {
+      "title": "초대코드 없음",
+      "description": "초대코드를 찾을 수 없습니다"
+    },
+    "ADMIN_004": {
+      "title": "신고 없음",
+      "description": "신고를 찾을 수 없습니다"
+    },
+    "ADMIN_005": {
+      "title": "역할 변경 불가",
+      "description": "SuperAdmin 역할은 변경할 수 없습니다"
+    },
+    "ADMIN_006": {
+      "title": "밴 불가",
+      "description": "SuperAdmin은 밴할 수 없습니다"
+    },
+    "ADMIN_007": {
+      "title": "정리 유형 오류",
+      "description": "알 수 없는 정리 유형입니다"
+    },
+    "ADMIN_008": {
+      "title": "상태 오류",
+      "description": "상태는 resolved 또는 dismissed여야 합니다"
+    },
+    "CAPTCHA_001": {
+      "title": "CAPTCHA 필요",
+      "description": "CAPTCHA 인증이 필요합니다"
+    },
+    "CAPTCHA_002": {
+      "title": "CAPTCHA 실패",
+      "description": "CAPTCHA 인증에 실패했습니다"
+    },
+    "COMMON_001": {
+      "title": "접근 거부",
+      "description": "허용되지 않은 작업입니다"
+    },
+    "COMMON_002": {
+      "title": "트랙 없음",
+      "description": "트랙을 찾을 수 없습니다"
+    },
+    "COMMON_003": {
+      "title": "투표 기록 없음",
+      "description": "투표 기록이 없습니다"
+    },
+    "FAV_001": {
+      "title": "즐겨찾기 초과",
+      "description": "즐겨찾기는 최대 200곡까지 가능합니다"
+    },
+    "FAV_002": {
+      "title": "게스트 사용 불가",
+      "description": "즐겨찾기는 로그인 회원만 사용할 수 있습니다"
+    },
+    "FAV_003": {
+      "title": "폴더 초과",
+      "description": "폴더는 최대 20개까지 생성할 수 있습니다"
+    },
+    "FAV_004": {
+      "title": "폴더 없음",
+      "description": "해당 폴더를 찾을 수 없습니다"
+    }
+  },
+  "permissions": {
+    "listen": {
+      "label": "음악 듣기",
+      "emoji": "🎵",
+      "description": "방에서 음악을 들을 수 있습니다"
+    },
+    "chat": {
+      "label": "채팅",
+      "emoji": "💬",
+      "description": "채팅 메시지를 보낼 수 있습니다"
+    },
+    "reaction": {
+      "label": "리액션",
+      "emoji": "🎉",
+      "description": "이모지 리액션을 보낼 수 있습니다"
+    },
+    "search": {
+      "label": "검색",
+      "emoji": "🔍",
+      "description": "음악을 검색할 수 있습니다"
+    },
+    "addQueue": {
+      "label": "큐 추가",
+      "emoji": "📋",
+      "description": "큐에 곡을 추가할 수 있습니다"
+    },
+    "voteSkip": {
+      "label": "투표 스킵",
+      "emoji": "⏭️",
+      "description": "곡 스킵 투표에 참여할 수 있습니다"
+    },
+    "host": {
+      "label": "호스트",
+      "emoji": "🏠",
+      "description": "방 생성 · 관리 · 순서 변경 · 강퇴"
+    }
+  }
+}

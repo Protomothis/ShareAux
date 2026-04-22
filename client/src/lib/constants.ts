@@ -58,6 +58,12 @@ export const PROVIDER_LABELS: Record<string, { label: string; variant: 'accent' 
   invite: { label: '초대', variant: 'muted' },
 };
 
+export const PROVIDER_VARIANT: Record<string, 'accent' | 'success' | 'muted'> = {
+  google: 'accent',
+  local: 'success',
+  invite: 'muted',
+};
+
 /** @deprecated 서버 /permissions/meta API 사용 권장 — usePermissionMeta() 훅 참조 */
 export const PERM_FALLBACK: Record<string, { label: string; emoji: string }> = {
   listen: { label: '음악 듣기', emoji: '🎵' },

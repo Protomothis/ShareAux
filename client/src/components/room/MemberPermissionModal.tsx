@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import type { MemberWithPermission } from '@/api/model';
@@ -16,7 +17,7 @@ import Modal from '@/components/common/Modal';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { useInvalidate } from '@/hooks/useQueries';
-import { usePermissionMeta } from '@/hooks/usePermissionMeta';
+import { usePermissionMeta, usePermLookup } from '@/hooks/usePermissionMeta';
 import { getAvatar } from '@/lib/avatar';
 
 /** 방 내 멤버에게 보여줄 권한 (host 제외 — 방 권한이 아닌 계정 권한) */
@@ -46,10 +47,12 @@ export default function MemberPermissionModal({
   const invalidate = useInvalidate();
   const canEdit = isHost && !isHostUser && !isSelf;
   const isGuest = member.user?.role === UserRole.guest;
+  const t = useTranslations('permission');
 
   // 자기 자신일 때만 my-permissions API로 account/room 분리 정보 가져옴
   const { data: myPermsData } = useRoomsControllerGetMyPermissions(roomId, { query: { enabled: isSelf } });
   const { data: permMeta } = usePermissionMeta();
+  const perm = usePermLookup();
   const visiblePerms = (permMeta ?? []).filter((m) => ROOM_VISIBLE_KEYS.has(m.key));
 
   const togglePermission = async (perm: RoomPermissionPermissionsItem) => {
@@ -68,7 +71,7 @@ export default function MemberPermissionModal({
       }
       await roomsControllerUpdatePermissions(roomId, member.userId, { permissions: updated });
       invalidate.room(roomId);
-      toast.success('권한이 변경되었습니다');
+      toast.success(t('permissionSaved'));
     } catch {}
     setSaving(false);
   };
@@ -76,7 +79,7 @@ export default function MemberPermissionModal({
   const handleTransfer = async () => {
     try {
       await roomsControllerTransferHost(roomId, member.userId);
-      toast.success('DJ가 위임되었습니다');
+      toast.success(t('djTransferred'));
       invalidate.room(roomId);
       onClose();
     } catch {}
@@ -85,7 +88,7 @@ export default function MemberPermissionModal({
   const handleKick = async () => {
     try {
       await roomsControllerKick(roomId, member.userId);
-      toast.success('추방되었습니다');
+      toast.success(t('kicked'));
       invalidate.room(roomId);
       onClose();
     } catch {}
@@ -115,7 +118,7 @@ export default function MemberPermissionModal({
           <div className="min-w-0">
             <p className="truncate text-base">{member.user?.nickname ?? 'Unknown'}</p>
             <p className="text-xs font-normal text-muted-foreground">
-              {isHostUser ? '🎧 DJ' : isSelf ? '나' : isGuest ? '게스트' : '멤버'}
+              {isHostUser ? t('dj') : isSelf ? t('self') : isGuest ? t('guest') : t('member')}
             </p>
           </div>
         </Modal.Title>
@@ -130,14 +133,16 @@ export default function MemberPermissionModal({
             return (
               <div key={key} className="flex items-center justify-between rounded-lg px-2 py-1.5">
                 <div className="flex items-center gap-2">
-                  <span className={`text-sm ${effective ? '' : 'opacity-40'}`}>
-                    {meta.emoji} {meta.label}
-                  </span>
+                  <span className={`text-sm ${effective ? '' : 'opacity-40'}`}>{perm.full(key)}</span>
                   {status === 'blocked-account' && (
-                    <span className="rounded bg-yellow-500/20 px-1.5 py-0.5 text-[9px] text-yellow-400">계정 제한</span>
+                    <span className="rounded bg-yellow-500/20 px-1.5 py-0.5 text-[9px] text-yellow-400">
+                      {t('accountRestricted')}
+                    </span>
                   )}
                   {status === 'blocked-room' && !canEdit && (
-                    <span className="rounded bg-red-500/20 px-1.5 py-0.5 text-[9px] text-red-400">방 제한</span>
+                    <span className="rounded bg-red-500/20 px-1.5 py-0.5 text-[9px] text-red-400">
+                      {t('roomRestricted')}
+                    </span>
                   )}
                 </div>
                 {canEdit ? (
@@ -157,10 +162,7 @@ export default function MemberPermissionModal({
         {isSelf && isGuest && (
           <>
             <Separator />
-            <p className="text-[11px] text-muted-foreground">
-              💡 게스트 계정은 초대 코드에 설정된 권한까지만 사용할 수 있습니다. 방 권한이 있어도 계정 권한에 없으면
-              제한됩니다.
-            </p>
+            <p className="text-[11px] text-muted-foreground">{t('guestHint')}</p>
           </>
         )}
 
@@ -168,7 +170,7 @@ export default function MemberPermissionModal({
           <div className="flex gap-2 pt-2">
             {!isGuest && (
               <Button variant="accent-ghost" size="sm" className="flex-1 text-xs" onClick={handleTransfer}>
-                🎧 DJ 위임
+                {t('transferDj')}
               </Button>
             )}
             <Button
@@ -177,7 +179,7 @@ export default function MemberPermissionModal({
               className="flex-1 text-xs text-red-400 bg-red-500/20 hover:bg-red-500/30"
               onClick={handleKick}
             >
-              👋 추방
+              {t('kick')}
             </Button>
           </div>
         )}

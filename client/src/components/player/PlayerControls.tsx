@@ -1,6 +1,7 @@
 'use client';
 
 import { Loader2, Pause, Play, SkipBack, SkipForward, Type, Volume2, VolumeX } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { playerControllerPrevious, playerControllerSkip } from '@/api/player/player';
@@ -66,6 +67,7 @@ export default function PlayerControls({
   streamState,
   onSkipError,
 }: PlayerControlsProps) {
+  const t = useTranslations('player');
   const [skipping, setSkipping] = useState<'prev' | 'next' | false>(false);
   const cooldown = elapsedMs < SKIP_COOLDOWN_MS;
   const transitioning = streamState === 'preparing' || streamState === 'skipping';
@@ -103,7 +105,7 @@ export default function PlayerControls({
         onClick={onListenToggle}
         disabled={audioLoading}
         className={listening ? 'size-9' : 'size-9 bg-white/[0.08] text-white/70 hover:bg-white/[0.12] hover:text-white'}
-        aria-label={audioLoading ? '로딩 중' : listening ? '일시정지' : '재생'}
+        aria-label={audioLoading ? t('loading') : listening ? t('pause') : t('play')}
       >
         {audioLoading ? (
           <Loader2 size={16} className="animate-spin" />
@@ -123,7 +125,7 @@ export default function PlayerControls({
             onClick={handlePrev}
             disabled={!hasPrev || !!skipping || cooldown || transitioning}
             className="size-8 rounded-full text-white/40"
-            aria-label="이전곡"
+            aria-label={t('prevTrack')}
           >
             {skipping === 'prev' ? (
               <Loader2 size={15} className="animate-spin text-sa-accent" />
@@ -137,7 +139,7 @@ export default function PlayerControls({
             onClick={handleSkip}
             disabled={!hasNext || !!skipping || cooldown || transitioning}
             className="size-8 rounded-full text-white/40"
-            aria-label="다음곡"
+            aria-label={t('nextTrack')}
           >
             {skipping === 'next' ? (
               <Loader2 size={15} className="animate-spin text-sa-accent" />
@@ -169,7 +171,7 @@ export default function PlayerControls({
           size="icon-sm"
           onClick={onToggleMute}
           className="shrink-0 text-white/30 hover:text-white/70"
-          aria-label={muted ? '음소거 해제' : '음소거'}
+          aria-label={muted ? t('unmute') : t('mute')}
         >
           {muted || volume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
         </Button>
@@ -182,7 +184,7 @@ export default function PlayerControls({
           variant="ghost-muted"
           size="circle-sm"
           onClick={onCycleVisual}
-          aria-label="비주얼 모드 변경"
+          aria-label={t('visualMode')}
           title={visualMode}
           className="hidden mouse:inline-flex"
         >
@@ -196,7 +198,7 @@ export default function PlayerControls({
         size="circle-sm"
         onClick={onToggleLyrics}
         className={showLyrics ? 'text-sa-accent' : 'text-white/30'}
-        aria-label="가사 토글"
+        aria-label={t('lyricsToggle')}
       >
         <Type size={14} />
       </Button>

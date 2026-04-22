@@ -1,6 +1,7 @@
 'use client';
 
 import { Flag, Settings2, UserRound } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import type { MemberWithPermission } from '@/api/model';
 import Modal from '@/components/common/Modal';
@@ -16,7 +17,8 @@ interface MemberActionMenuProps {
 }
 
 export function MemberActionMenu({ open, onClose, member, isHost, onPermissions, onReport }: MemberActionMenuProps) {
-  const nickname = member.user?.nickname ?? '알 수 없음';
+  const t = useTranslations('members');
+  const nickname = member.user?.nickname ?? t('unknown');
 
   return (
     <Modal open={open} onOpenChange={(v) => !v && onClose()} className="sm:max-w-xs">
@@ -30,7 +32,7 @@ export function MemberActionMenu({ open, onClose, member, isHost, onPermissions,
         {isHost && (
           <Button variant="ghost" className="justify-start gap-2" onClick={() => onPermissions()}>
             <Settings2 className="size-4" />
-            권한 관리
+            {t('managePermission')}
           </Button>
         )}
         <Button
@@ -39,7 +41,7 @@ export function MemberActionMenu({ open, onClose, member, isHost, onPermissions,
           onClick={() => onReport()}
         >
           <Flag className="size-4" />
-          신고하기
+          {t('report')}
         </Button>
       </Modal.Body>
     </Modal>

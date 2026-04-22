@@ -2,6 +2,7 @@
 
 import { Lock, Music, Users } from 'lucide-react';
 import { memo } from 'react';
+import { useTranslations } from 'next-intl';
 
 import type { RoomListItem } from '@/api/model';
 import MarqueeText from '@/components/common/MarqueeText';
@@ -15,6 +16,7 @@ interface RoomCardProps {
 }
 
 export default memo(function RoomCard({ room, onClick }: RoomCardProps) {
+  const t = useTranslations('rooms');
   const track = room.playback?.track;
   const thumbnail = track?.thumbnail && track.thumbnail !== 'NA' ? track.thumbnail : null;
   const isPlaying = !!track;
@@ -83,7 +85,7 @@ export default memo(function RoomCard({ room, onClick }: RoomCardProps) {
           {isPlaying ? (
             <MarqueeText text={`${track.name} — ${track.artist}`} className="mt-0.5 text-xs text-sa-accent" />
           ) : (
-            <p className="mt-0.5 text-xs text-sa-text-muted">재생 대기 중</p>
+            <p className="mt-0.5 text-xs text-sa-text-muted">{t('card.idle')}</p>
           )}
 
           <div className="mt-2 flex items-center gap-3 text-xs text-sa-text-muted">
@@ -91,7 +93,7 @@ export default memo(function RoomCard({ room, onClick }: RoomCardProps) {
               <Users size={12} />
               {room.memberCount ?? 0}/{room.maxMembers}
             </span>
-            <span className="truncate">{room.host?.nickname ?? '알 수 없음'}</span>
+            <span className="truncate">{room.host?.nickname ?? t('card.unknownHost')}</span>
           </div>
         </div>
       </div>

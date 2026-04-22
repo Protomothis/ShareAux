@@ -11,8 +11,9 @@ import { AdminTable } from '@/components/admin/AdminTable';
 import type { Column } from '@/components/admin/AdminTable';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { PROVIDER_LABELS, ROLE_LABELS } from '@/lib/constants';
+import { PROVIDER_VARIANT } from '@/lib/constants';
 import { useAdminUsers, useUpdateUserRole } from '@/hooks/admin/useAdminUsers';
+import { useTranslations } from 'next-intl';
 
 const LIMIT = 20;
 const DEBOUNCE_MS = 300;
@@ -25,16 +26,17 @@ interface FilterSelectProps {
 }
 
 function FilterSelect({ value, onValueChange, placeholder, options }: FilterSelectProps) {
+  const t = useTranslations('admin.users');
   const selectedLabel = options.find((o) => o.value === value)?.label ?? placeholder;
   return (
     <Select value={value} onValueChange={(v) => v && onValueChange(v)}>
       <SelectTrigger className="h-8 w-28 border-white/10 bg-white/5 text-xs">
-        <SelectValue placeholder={placeholder}>{selectedLabel}</SelectValue>
+        <SelectValue placeholder={placeholder}>{t(selectedLabel as 'allRoles')}</SelectValue>
       </SelectTrigger>
       <SelectContent>
         {options.map((o) => (
           <SelectItem key={o.value} value={o.value}>
-            {o.label}
+            {t(o.label as 'allRoles')}
           </SelectItem>
         ))}
       </SelectContent>
@@ -43,26 +45,27 @@ function FilterSelect({ value, onValueChange, placeholder, options }: FilterSele
 }
 
 const ROLE_FILTER_OPTIONS = [
-  { value: 'all', label: '전체 역할' },
-  { value: 'user', label: ROLE_LABELS.user },
-  { value: 'admin', label: ROLE_LABELS.admin },
-  { value: 'guest', label: ROLE_LABELS.guest },
+  { value: 'all', label: 'allRoles' },
+  { value: 'user', label: 'roles.user' },
+  { value: 'admin', label: 'roles.admin' },
+  { value: 'guest', label: 'roles.guest' },
 ];
 
 const PROVIDER_FILTER_OPTIONS = [
-  { value: 'all', label: '전체 가입' },
-  { value: 'local', label: PROVIDER_LABELS.local.label },
-  { value: 'google', label: PROVIDER_LABELS.google.label },
-  { value: 'invite', label: PROVIDER_LABELS.invite.label },
+  { value: 'all', label: 'allProviders' },
+  { value: 'local', label: 'providers.local' },
+  { value: 'google', label: 'providers.google' },
+  { value: 'invite', label: 'providers.invite' },
 ];
 
 const STATUS_FILTER_OPTIONS = [
-  { value: 'all', label: '전체 상태' },
-  { value: 'active', label: '정상' },
-  { value: 'banned', label: '정지됨' },
+  { value: 'all', label: 'allStatus' },
+  { value: 'active', label: 'active' },
+  { value: 'banned', label: 'banned' },
 ];
 
 export default function AdminUsersPage() {
+  const t = useTranslations('admin.users');
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -113,7 +116,7 @@ export default function AdminUsersPage() {
   const columns: Column<User>[] = [
     {
       key: 'nickname',
-      header: '닉네임',
+      header: t('nickname'),
       render: (user) => (
         <Link href={`/admin/users/${user.id}`} className="font-medium text-white hover:text-sa-accent">
           {user.nickname}
@@ -122,35 +125,38 @@ export default function AdminUsersPage() {
     },
     {
       key: 'username',
-      header: '유저네임',
+      header: t('username'),
       hideOnMobile: true,
       render: (user) => <span className="text-sa-text-muted">{user.username ? `@${user.username}` : '-'}</span>,
     },
     {
       key: 'email',
-      header: '이메일',
+      header: t('email'),
       hideOnMobile: true,
       render: (user) => <span className="text-sa-text-muted">{user.email ?? '-'}</span>,
     },
     {
       key: 'provider',
-      header: '가입/연동',
+      header: t('provider'),
       render: (user) => {
-        const info = PROVIDER_LABELS[user.provider] ?? { label: user.provider, variant: 'muted' as const };
+        const variant = PROVIDER_VARIANT[user.provider] ?? ('muted' as const);
+        const label = t(`providers.${user.provider}` as 'providers.google');
         return (
           <div className="flex flex-wrap gap-1">
-            <StatusBadge variant={info.variant}>{info.label}</StatusBadge>
-            {user.googleId && user.provider !== 'google' && <StatusBadge variant="accent">Google 연동</StatusBadge>}
+            <StatusBadge variant={variant}>{label}</StatusBadge>
+            {user.googleId && user.provider !== 'google' && (
+              <StatusBadge variant="accent">{t('googleLinked')}</StatusBadge>
+            )}
           </div>
         );
       },
     },
     {
       key: 'role',
-      header: '역할',
+      header: t('role'),
       render: (user) => {
-        if (user.role === UserRole.superAdmin) return <StatusBadge variant="accent">superAdmin</StatusBadge>;
-        if (user.role === UserRole.guest) return <StatusBadge variant="muted">게스트</StatusBadge>;
+        if (user.role === UserRole.superAdmin) return <StatusBadge variant="accent">{t('roles.superAdmin')}</StatusBadge>;
+        if (user.role === UserRole.guest) return <StatusBadge variant="muted">{t('guest')}</StatusBadge>;
         return (
           <Select value={user.role} onValueChange={(v) => handleRoleChange(user.id, v as UpdateRoleDtoRole)}>
             <SelectTrigger className="h-8 w-28 border-white/10 bg-white/5 text-sm">
@@ -159,7 +165,7 @@ export default function AdminUsersPage() {
             <SelectContent>
               {Object.values(UpdateRoleDtoRole).map((r) => (
                 <SelectItem key={r} value={r}>
-                  {ROLE_LABELS[r] ?? r}
+                  {t(`roles.${r}` as 'roles.user')}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -169,7 +175,7 @@ export default function AdminUsersPage() {
     },
     {
       key: 'createdAt',
-      header: '가입일',
+      header: t('createdAt'),
       hideOnMobile: true,
       render: (user) => (
         <span className="text-sa-text-muted">{new Date(user.createdAt).toLocaleDateString('ko-KR')}</span>
@@ -177,12 +183,12 @@ export default function AdminUsersPage() {
     },
     {
       key: 'status',
-      header: '상태',
+      header: t('status'),
       render: (user) =>
         user.bannedAt ? (
-          <StatusBadge variant="danger">정지됨</StatusBadge>
+          <StatusBadge variant="danger">{t('banned')}</StatusBadge>
         ) : (
-          <StatusBadge variant="success">정상</StatusBadge>
+          <StatusBadge variant="success">{t('active')}</StatusBadge>
         ),
     },
   ];
@@ -190,8 +196,8 @@ export default function AdminUsersPage() {
   return (
     <div>
       <AdminPageHeader
-        title="유저 관리"
-        search={{ value: search, onChange: handleSearch, placeholder: '닉네임 또는 유저네임 검색...' }}
+        title={t('title')}
+        search={{ value: search, onChange: handleSearch, placeholder: t('searchPlaceholder') }}
       />
 
       {/* 필터 */}
@@ -199,19 +205,19 @@ export default function AdminUsersPage() {
         <FilterSelect
           value={roleFilter}
           onValueChange={handleFilterChange(setRoleFilter)}
-          placeholder="역할"
+          placeholder={t('role')}
           options={ROLE_FILTER_OPTIONS}
         />
         <FilterSelect
           value={providerFilter}
           onValueChange={handleFilterChange(setProviderFilter)}
-          placeholder="가입 방식"
+          placeholder={t('allProviders')}
           options={PROVIDER_FILTER_OPTIONS}
         />
         <FilterSelect
           value={statusFilter}
           onValueChange={handleFilterChange(setStatusFilter)}
-          placeholder="상태"
+          placeholder={t('status')}
           options={STATUS_FILTER_OPTIONS}
         />
       </div>

@@ -4,6 +4,7 @@ import { TrackProvider } from '@/api/model';
 
 import { Heart, Search, Sparkles, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import type { SearchResultItem } from '@/api/model';
@@ -49,6 +50,8 @@ export default function SearchModal({
   isGuest = false,
   favorites,
 }: SearchModalProps) {
+  const tq = useTranslations('queue');
+  const ts = useTranslations('search');
   const [tab, setTab] = useState<Tab>('showcase');
   const [selected, setSelected] = useState<SearchResultItem[]>([]);
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
@@ -90,7 +93,7 @@ export default function SearchModal({
   const handleAdd = async () => {
     if (!selected.length || adding) return;
     if (queueTrackIds.length + selected.length > MAX_QUEUE_SIZE) {
-      toast.error(`신청곡이 가득 찼습니다 (최대 ${MAX_QUEUE_SIZE}곡)`);
+      toast.error(tq('queueFull', { max: MAX_QUEUE_SIZE }));
       return;
     }
     setAdding(true);
@@ -107,8 +110,8 @@ export default function SearchModal({
       });
       for (const track of selected) setAddedIds((prev) => new Set(prev).add(track.sourceId));
       const names = selected.map((t) => t.name).slice(0, 2);
-      const label = names.join(', ') + (selected.length > 2 ? ` 외 ${selected.length - 2}곡` : '');
-      toast.success('🎵 신청 완료', { description: label });
+      const label = names.join(', ') + (selected.length > 2 ? tq('addedExtra', { count: selected.length - 2 }) : '');
+      toast.success(tq('addedToast'), { description: label });
       onTrackAdded?.();
       onClose();
     } catch {
@@ -130,7 +133,7 @@ export default function SearchModal({
     >
       <Modal.Header className="border-0 pb-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">곡 추가</h2>
+          <h2 className="text-lg font-semibold text-white">{ts('title')}</h2>
           <Button variant="ghost" size="icon" onClick={onClose} className="text-sa-text-muted hover:text-white">
             <X size={20} />
           </Button>
@@ -146,7 +149,7 @@ export default function SearchModal({
             )}
           >
             <Sparkles size={14} />
-            추천
+            {ts('showcaseTab')}
           </Button>
           <Button
             variant="ghost"
@@ -157,7 +160,7 @@ export default function SearchModal({
             )}
           >
             <Search size={14} />
-            검색
+            {ts('searchTab')}
           </Button>
           {!isGuest && (
             <Button
@@ -169,7 +172,7 @@ export default function SearchModal({
               )}
             >
               <Heart size={14} />
-              즐겨찾기
+              {ts('favorites')}
             </Button>
           )}
         </div>
@@ -205,7 +208,7 @@ export default function SearchModal({
                   search.suggestions.length > 0 && !search.debouncedQuery && search.setShowSuggestions(true)
                 }
                 onBlur={() => setTimeout(() => search.setShowSuggestions(false), 150)}
-                placeholder="곡 제목 또는 아티스트..."
+                placeholder={ts('placeholder')}
                 className="w-full rounded-xl border-white/10 bg-white/5 py-2.5 pl-9 pr-3 text-sm text-white placeholder:text-sa-text-muted focus-visible:border-sa-accent/50 focus-visible:ring-2 focus-visible:ring-sa-accent/20"
               />
             </div>

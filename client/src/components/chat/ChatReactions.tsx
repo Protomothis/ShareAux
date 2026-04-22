@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -12,6 +13,7 @@ interface ChatReactionsProps {
 }
 
 export default function ChatReactions({ onReaction }: ChatReactionsProps) {
+  const t = useTranslations('chat');
   const [selectedReaction, setSelectedReaction] = useState(0);
   const [showPicker, setShowPicker] = useState(false);
   const longPressRef = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -31,11 +33,11 @@ export default function ChatReactions({ onReaction }: ChatReactionsProps) {
           }}
           onTouchEnd={() => clearTimeout(longPressRef.current)}
           className="flex size-8 shrink-0 select-none touch-manipulation items-center justify-center rounded-xl bg-white/5 text-lg transition hover:scale-110 hover:bg-white/10 active:scale-90"
-          aria-label="리액션"
+          aria-label={t('reactionLabel')}
         >
           {REACTIONS[selectedReaction]}
         </TooltipTrigger>
-        <TooltipContent>길게 눌러 변경</TooltipContent>
+        <TooltipContent>{t('reactionTooltip')}</TooltipContent>
       </Tooltip>
 
       {showPicker && (

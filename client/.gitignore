@@ -41,3 +41,4 @@ yarn-error.log*
 next-env.d.ts
 storybook-staticswagger.json
 storybook-static/
+messages/*.d.json.ts

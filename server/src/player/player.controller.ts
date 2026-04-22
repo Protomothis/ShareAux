@@ -59,7 +59,7 @@ export class PlayerController {
     });
 
     this.playerService.onPlayFail((roomId, trackTitle) => {
-      this.gateway.broadcastSystem(roomId, WsEvent.SystemMessage, `'${trackTitle}' 재생 불가 — 건너뜁니다`);
+      this.gateway.broadcastSystem(roomId, WsEvent.SystemMessage, '', { trackName: trackTitle });
     });
 
     // AutoDJ 상태 → WS 브로드캐스트
@@ -70,7 +70,7 @@ export class PlayerController {
 
     // AutoDJ 곡 추가 → 시스템 메시지
     this.autoDjService.onTrackAdded((roomId, track) => {
-      this.gateway.broadcastSystem(roomId, WsEvent.TrackAdded, `🤖 AutoDJ가 "${track.name}"을(를) 추가했습니다`);
+      this.gateway.broadcastSystem(roomId, WsEvent.TrackAdded, '', { trackName: track.name });
     });
 
     // AutoDJ 시스템 메시지 (실패 등)
@@ -195,7 +195,7 @@ export class PlayerController {
   async skip(@Param('roomId', ParseUUIDPipe) roomId: string, @Req() req: AuthenticatedRequest) {
     this.gateway.broadcastSystem(roomId, WsEvent.PlaybackUpdated, '', { streamState: 'skipping' });
     const r = await this.playerService.skip(roomId);
-    this.gateway.broadcastSystem(roomId, WsEvent.TrackSkipped, `${req.user.nickname ?? ''}님이 곡을 스킵했습니다`);
+    this.gateway.broadcastSystem(roomId, WsEvent.TrackSkipped, '', { nickname: req.user.nickname ?? '' });
     await this.broadcastPlayback(roomId);
     return r;
   }
@@ -241,7 +241,7 @@ export class PlayerController {
 
     if (r.skipped) {
       this.gateway.broadcastSystem(roomId, WsEvent.PlaybackUpdated, '', { streamState: 'skipping' });
-      this.gateway.broadcastSystem(roomId, WsEvent.VoteSkipPassed, '스킵 투표가 통과되어 곡이 넘어갑니다');
+      this.gateway.broadcastSystem(roomId, WsEvent.VoteSkipPassed, '');
     }
 
     await this.broadcastPlayback(roomId);

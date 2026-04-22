@@ -2,6 +2,7 @@
 
 import { ArrowLeft, ChevronRight, KeyRound, Link2, Loader2, Trash2, User as UserIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -74,6 +75,7 @@ function SubHeader({ title, onBack }: { title: string; onBack: () => void }) {
 // ─── Main Component ─────────────────────────────────────
 
 export default function ProfileSettingsModal({ open, onClose }: ProfileSettingsModalProps) {
+  const t = useTranslations('profile');
   const [page, setPage] = useState<Page>('menu');
   const [me, setMe] = useState<User | null>(null);
   const role = useAuthStore((s) => s.role);
@@ -111,33 +113,34 @@ export default function ProfileSettingsModal({ open, onClose }: ProfileSettingsM
 // ─── Pages ──────────────────────────────────────────────
 
 function MenuPage({ setPage, me, role }: { setPage: (p: Page) => void; me: User | null; role?: string }) {
+  const t = useTranslations('profile');
   const authConfig = useAuthConfig();
   const isGuest = role === 'guest';
   return (
     <>
       <Modal.Header>
-        <Modal.Title>프로필 설정</Modal.Title>
+        <Modal.Title>{t('title')}</Modal.Title>
       </Modal.Header>
       <Modal.Body className="-mx-0 space-y-0.5">
         <MenuItem
           icon={<UserIcon size={16} />}
-          label="닉네임 변경"
+          label={t('nickname')}
           description={me?.nickname}
           onClick={() => setPage('nickname')}
         />
         {!isGuest && (
           <MenuItem
             icon={<KeyRound size={16} />}
-            label="비밀번호 변경"
-            description="계정 비밀번호"
+            label={t('password')}
+            description={t('passwordDesc')}
             onClick={() => setPage('password')}
           />
         )}
         {!isGuest && authConfig.google && (
           <MenuItem
             icon={<Link2 size={16} />}
-            label="Google 연동"
-            description={me?.email ?? '미연동'}
+            label={t('google')}
+            description={me?.email ?? t('googleNotLinked')}
             onClick={() => setPage('google')}
           />
         )}
@@ -146,7 +149,7 @@ function MenuPage({ setPage, me, role }: { setPage: (p: Page) => void; me: User 
             <div className="my-1 h-px bg-white/[0.06]" />
             <MenuItem
               icon={<Trash2 size={14} />}
-              label="회원 탈퇴"
+              label={t('deleteAccount')}
               variant="danger"
               onClick={() => setPage('delete')}
             />
@@ -158,10 +161,11 @@ function MenuPage({ setPage, me, role }: { setPage: (p: Page) => void; me: User 
 }
 
 function NicknamePage({ me, onBack, onDone }: { me: User | null; onBack: () => void; onDone: (msg: string) => void }) {
+  const t = useTranslations('profile');
   const [value, setValue] = useState(me?.nickname ?? '');
   const [loading, setLoading] = useState(false);
   const { errors, validate, clearError } = useFormValidation<{ nickname: string }>({
-    nickname: (v) => (!v.trim() ? '닉네임을 입력해주세요' : v.trim().length < 2 ? '2자 이상' : false),
+    nickname: (v) => (!v.trim() ? t('nicknameRequired') : v.trim().length < 2 ? t('nicknameMin') : false),
   });
 
   const handleSave = async () => {
@@ -170,7 +174,7 @@ function NicknamePage({ me, onBack, onDone }: { me: User | null; onBack: () => v
     try {
       await authControllerUpdateNickname({ nickname: value.trim() });
       useAuthStore.setState({ nickname: value.trim() });
-      onDone('닉네임이 변경되었습니다');
+      onDone(t('nicknameSaved'));
     } catch (e) {
     } finally {
       setLoading(false);
@@ -180,17 +184,17 @@ function NicknamePage({ me, onBack, onDone }: { me: User | null; onBack: () => v
   return (
     <>
       <Modal.Header>
-        <SubHeader title="닉네임 변경" onBack={onBack} />
+        <SubHeader title={t('nickname')} onBack={onBack} />
       </Modal.Header>
       <Modal.Body>
-        <FormField label="닉네임" error={errors.nickname}>
+        <FormField label={t('nicknameLabel')} error={errors.nickname}>
           <Input
             value={value}
             onChange={(e) => {
               setValue(e.target.value);
               clearError('nickname');
             }}
-            placeholder="닉네임"
+            placeholder={t('nicknamePlaceholder')}
             maxLength={20}
             autoFocus
           />
@@ -198,7 +202,7 @@ function NicknamePage({ me, onBack, onDone }: { me: User | null; onBack: () => v
       </Modal.Body>
       <Modal.Footer>
         <Button className="w-full" onClick={handleSave} disabled={loading}>
-          {loading ? <Loader2 size={14} className="animate-spin" /> : '저장'}
+          {loading ? <Loader2 size={14} className="animate-spin" /> : t('change')}
         </Button>
       </Modal.Footer>
     </>
@@ -206,14 +210,15 @@ function NicknamePage({ me, onBack, onDone }: { me: User | null; onBack: () => v
 }
 
 function PasswordPage({ onBack, onDone }: { onBack: () => void; onDone: (msg: string) => void }) {
+  const t = useTranslations('profile');
   const [cur, setCur] = useState('');
   const [next, setNext] = useState('');
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
   const { errors, validate, clearError } = useFormValidation<{ cur: string; next: string; confirm: string }>({
-    cur: (v) => !v && '현재 비밀번호를 입력해주세요',
-    next: (v) => (!v ? '새 비밀번호를 입력해주세요' : v.length < 8 ? '8자 이상' : false),
-    confirm: (v, vals) => (!v ? '확인을 입력해주세요' : v !== vals.next ? '비밀번호 불일치' : false),
+    cur: (v) => !v && t('curPasswordRequired'),
+    next: (v) => (!v ? t('newPasswordRequired') : v.length < 8 ? t('newPasswordMin') : false),
+    confirm: (v, vals) => (!v ? t('confirmRequired') : v !== vals.next ? t('confirmMismatch') : false),
   });
 
   const handleSave = async () => {
@@ -221,7 +226,7 @@ function PasswordPage({ onBack, onDone }: { onBack: () => void; onDone: (msg: st
     setLoading(true);
     try {
       await authControllerUpdatePassword({ currentPassword: cur, newPassword: next });
-      onDone('비밀번호가 변경되었습니다');
+      onDone(t('passwordSaved'));
     } catch (e) {
     } finally {
       setLoading(false);
@@ -231,44 +236,44 @@ function PasswordPage({ onBack, onDone }: { onBack: () => void; onDone: (msg: st
   return (
     <>
       <Modal.Header>
-        <SubHeader title="비밀번호 변경" onBack={onBack} />
+        <SubHeader title={t('password')} onBack={onBack} />
       </Modal.Header>
       <Modal.Body className="space-y-3">
-        <FormField label="현재 비밀번호" error={errors.cur}>
+        <FormField label={t('curPassword')} error={errors.cur}>
           <PasswordInput
             value={cur}
             onChange={(e) => {
               setCur(e.target.value);
               clearError('cur');
             }}
-            placeholder="현재 비밀번호"
+            placeholder={t('curPasswordPlaceholder')}
             autoFocus
           />
         </FormField>
-        <FormField label="새 비밀번호" error={errors.next}>
+        <FormField label={t('newPassword')} error={errors.next}>
           <PasswordInput
             value={next}
             onChange={(e) => {
               setNext(e.target.value);
               clearError('next');
             }}
-            placeholder="8자 이상"
+            placeholder={t('newPasswordPlaceholder')}
           />
         </FormField>
-        <FormField label="비밀번호 확인" error={errors.confirm}>
+        <FormField label={t('confirmPassword')} error={errors.confirm}>
           <PasswordInput
             value={confirm}
             onChange={(e) => {
               setConfirm(e.target.value);
               clearError('confirm');
             }}
-            placeholder="비밀번호 확인"
+            placeholder={t('confirmPasswordPlaceholder')}
           />
         </FormField>
       </Modal.Body>
       <Modal.Footer>
         <Button className="w-full" onClick={handleSave} disabled={loading}>
-          {loading ? <Loader2 size={14} className="animate-spin" /> : '변경'}
+          {loading ? <Loader2 size={14} className="animate-spin" /> : t('change')}
         </Button>
       </Modal.Footer>
     </>
@@ -276,11 +281,12 @@ function PasswordPage({ onBack, onDone }: { onBack: () => void; onDone: (msg: st
 }
 
 function GooglePage({ me, onBack }: { me: User | null; onBack: () => void }) {
+  const t = useTranslations('profile');
   const linked = !!me?.email;
   return (
     <>
       <Modal.Header>
-        <SubHeader title="Google 연동" onBack={onBack} />
+        <SubHeader title={t('google')} onBack={onBack} />
       </Modal.Header>
       <Modal.Body>
         {linked ? (
@@ -305,12 +311,12 @@ function GooglePage({ me, onBack }: { me: User | null; onBack: () => void }) {
             </svg>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-white">{me?.email}</p>
-              <p className="text-[11px] text-green-400">연동됨</p>
+              <p className="text-[11px] text-green-400">{t('googleLinked')}</p>
             </div>
           </div>
         ) : (
           <div className="space-y-3">
-            <p className="text-xs text-muted-foreground">Google 계정을 연동하면 Google로도 로그인할 수 있습니다.</p>
+            <p className="text-xs text-muted-foreground">{t('googleHint')}</p>
             <Button
               variant="outline"
               className="w-full"
@@ -318,7 +324,7 @@ function GooglePage({ me, onBack }: { me: User | null; onBack: () => void }) {
                 window.location.href = `${window.location.origin}/api/auth/link-google`;
               }}
             >
-              Google 계정 연동하기
+              {t('googleLink')}
             </Button>
           </div>
         )}
@@ -328,6 +334,7 @@ function GooglePage({ me, onBack }: { me: User | null; onBack: () => void }) {
 }
 
 function DeletePage({ onBack, router }: { onBack: () => void; router: ReturnType<typeof useRouter> }) {
+  const t = useTranslations('profile');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -335,7 +342,7 @@ function DeletePage({ onBack, router }: { onBack: () => void; router: ReturnType
 
   const handleDelete = async () => {
     if (!password) {
-      setError('비밀번호를 입력해주세요');
+      setError(t('deletePasswordRequired'));
       return;
     }
     setLoading(true);
@@ -345,7 +352,7 @@ function DeletePage({ onBack, router }: { onBack: () => void; router: ReturnType
       useAuthStore.getState().clear();
       router.push('/login');
     } catch (e) {
-      setError((e as ApiError).message || '탈퇴 실패');
+      setError((e as ApiError).message || t('deleteFailed'));
     } finally {
       setLoading(false);
     }
@@ -354,20 +361,20 @@ function DeletePage({ onBack, router }: { onBack: () => void; router: ReturnType
   return (
     <>
       <Modal.Header>
-        <SubHeader title="회원 탈퇴" onBack={onBack} />
+        <SubHeader title={t('deleteAccount')} onBack={onBack} />
       </Modal.Header>
       <Modal.Body className="space-y-3">
         <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-3">
-          <p className="text-xs text-red-400">계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.</p>
+          <p className="text-xs text-red-400">{t('deleteWarning')}</p>
         </div>
-        <FormField label="비밀번호 확인" error={error}>
+        <FormField label={t('confirmPassword')} error={error}>
           <PasswordInput
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
               setError('');
             }}
-            placeholder="현재 비밀번호"
+            placeholder={t('curPasswordPlaceholder')}
           />
         </FormField>
       </Modal.Body>
@@ -379,15 +386,15 @@ function DeletePage({ onBack, router }: { onBack: () => void; router: ReturnType
 
       <Modal open={confirmOpen} onClose={() => setConfirmOpen(false)} className="sm:max-w-xs">
         <Modal.Header>
-          <Modal.Title>정말 탈퇴하시겠습니까?</Modal.Title>
-          <Modal.Description>이 작업은 되돌릴 수 없습니다.</Modal.Description>
+          <Modal.Title>{t('deleteConfirmTitle')}</Modal.Title>
+          <Modal.Description>{t('deleteConfirmDesc')}</Modal.Description>
         </Modal.Header>
         <Modal.Footer>
           <Button variant="outline" onClick={() => setConfirmOpen(false)}>
             취소
           </Button>
           <Button variant="destructive" onClick={handleDelete} disabled={loading}>
-            {loading ? <Loader2 size={14} className="animate-spin" /> : '탈퇴하기'}
+            {loading ? <Loader2 size={14} className="animate-spin" /> : t('deleteSubmit')}
           </Button>
         </Modal.Footer>
       </Modal>

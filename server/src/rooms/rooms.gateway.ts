@@ -327,7 +327,7 @@ export class RoomsGateway {
       client.on('close', (code: number) => this.handleDisconnect(client, code));
 
       if (!wasReconnect) {
-        this.broadcastSystem(roomId, WsEvent.UserJoined, `${nickname}님이 입장했습니다`);
+        this.broadcastSystem(roomId, WsEvent.UserJoined, '', { nickname });
       }
       // Send chat history to this client only
       const history = this.chatHistory.get(roomId);
@@ -406,7 +406,7 @@ export class RoomsGateway {
     if (reconnected) return;
 
     await this.rooms.removeMember(roomId, userId).catch(() => {});
-    this.broadcastSystem(roomId, WsEvent.UserLeft, `${nickname}님이 퇴장했습니다`);
+    this.broadcastSystem(roomId, WsEvent.UserLeft, '', { nickname });
 
     const count = await this.rooms.getMemberCount(roomId).catch(() => 0);
     if (count === 0) {
@@ -417,8 +417,7 @@ export class RoomsGateway {
       const wasHost = await this.rooms.isHost(roomId, userId).catch(() => false);
       if (wasHost) {
         const newHost = await this.rooms.transferHost(roomId).catch(() => null);
-        if (newHost)
-          this.broadcastSystem(roomId, WsEvent.HostChanged, `${newHost.nickname}님이 새 호스트가 되었습니다`);
+        if (newHost) this.broadcastSystem(roomId, WsEvent.HostChanged, '', { nickname: newHost.nickname });
       }
     }
     this.broadcastListenerCount(roomId);

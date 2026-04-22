@@ -1,88 +1,90 @@
-# 배포 가이드
+[🇰🇷 한국어](./deployment.ko.md)
 
-## Docker Compose (권장)
+# Deployment Guide
 
-### 사전 준비
+## Docker Compose (Recommended)
 
-- Docker 및 Docker Compose 설치
-- (선택) 도메인 + 리버스 프록시 (nginx 등)
+### Prerequisites
 
-### 1. 프로젝트 클론
+- Docker and Docker Compose installed
+- (Optional) Domain + reverse proxy (nginx, etc.)
+
+### 1. Clone the Project
 
 ```bash
 git clone https://github.com/Protomothis/ShareAux.git
 cd ShareAux
 ```
 
-### 2. 환경 변수 설정
+### 2. Configure Environment Variables
 
 ```bash
 cp .env.example .env
 ```
 
-`.env` 파일을 열어 아래 항목을 설정합니다.
+Open the `.env` file and configure the following.
 
-#### 필수 항목
+#### Required
 
-| 변수 | 설명 | 예시 |
-|------|------|------|
-| `DATABASE_URL` | PostgreSQL 연결 문자열 | `postgres://spotiparty:password@db:5432/spotiparty` |
-| `JWT_SECRET` | JWT 서명 시크릿 (랜덤 문자열) | `openssl rand -hex 32` 로 생성 |
-| `CLIENT_URL` | 클라이언트 접속 URL | `http://localhost:3001` |
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DATABASE_URL` | PostgreSQL connection string | `postgres://spotiparty:password@db:5432/spotiparty` |
+| `JWT_SECRET` | JWT signing secret (random string) | Generate with `openssl rand -hex 32` |
+| `CLIENT_URL` | Client access URL | `http://localhost:3001` |
 
-#### 선택 항목
+#### Optional
 
-| 변수 | 설명 | 기본값 |
-|------|------|--------|
-| `GOOGLE_CLIENT_ID` | Google OAuth 클라이언트 ID | 미설정 시 Google 로그인 비활성 |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth 클라이언트 시크릿 | |
-| `GOOGLE_CALLBACK_URL` | OAuth 콜백 URL | `{CLIENT_URL}/api/auth/google/callback` |
-| `GEMINI_API_KEY` | Gemini API 키 | 미설정 시 가사 번역 비활성 |
-| `CAPTCHA_ENABLED` | PoW CAPTCHA 활성화 | `false` |
-| `DB_PASSWORD` | PostgreSQL 비밀번호 | `spotiparty123` |
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID | Google login disabled if unset |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | |
+| `GOOGLE_CALLBACK_URL` | OAuth callback URL | `{CLIENT_URL}/api/auth/google/callback` |
+| `GEMINI_API_KEY` | Gemini API key | Lyrics translation disabled if unset |
+| `CAPTCHA_ENABLED` | PoW CAPTCHA enabled | `false` |
+| `DB_PASSWORD` | PostgreSQL password | `spotiparty123` |
 
-### 3. 실행
+### 3. Run
 
 ```bash
 docker compose up -d
 ```
 
-세 개의 컨테이너가 실행됩니다:
+Three containers will start:
 
-| 컨테이너 | 포트 | 설명 |
-|----------|------|------|
+| Container | Port | Description |
+|-----------|------|-------------|
 | `shareaux-db` | 5432 | PostgreSQL |
 | `shareaux-server` | 3000 | NestJS API + WebSocket |
-| `shareaux-client` | 3001 | Next.js 프론트엔드 |
+| `shareaux-client` | 3001 | Next.js frontend |
 
-브라우저에서 `http://localhost:3001`로 접속합니다.
+Access `http://localhost:3001` in your browser.
 
-### 4. 초기 설정
+### 4. Initial Setup
 
-첫 접속 시 `/setup` 페이지로 이동합니다. 관리자 계정을 생성하세요.
+On first visit, you'll be redirected to `/setup`. Create an admin account.
 
-### 5. 개인정보처리방침 / 이용약관
+### 5. Privacy Policy / Terms of Service
 
-ShareAux는 `/privacy` (개인정보처리방침)와 `/terms` (이용약관) 페이지를 기본 제공합니다. 셀프호스팅 시 운영 환경에 맞게 내용을 수정하세요.
+ShareAux provides default `/privacy` and `/terms` pages. When self-hosting, modify the content to match your environment.
 
-- 파일 위치: `client/src/app/privacy/page.tsx`, `client/src/app/terms/page.tsx`
-- 운영자 연락처, 데이터 보관 정책, 관할 법률 등을 실제 운영에 맞게 변경해야 합니다
-- Google OAuth를 사용하는 경우, Google API 심사에서 개인정보처리방침 URL 제출이 필요할 수 있습니다. 배포된 인스턴스의 `/privacy` URL을 사용하세요
+- File locations: `client/content/privacy/`, `client/content/terms/` (locale-specific MDX files)
+- Update operator contact info, data retention policies, and applicable laws
+- If using Google OAuth, you may need to submit a privacy policy URL for Google API review. Use your deployed instance's `/privacy` URL
 
 ---
 
-## GHCR 이미지 사용
+## GHCR Images
 
-소스를 빌드하지 않고 미리 빌드된 이미지를 사용할 수 있습니다.
+Use pre-built images without building from source.
 
 ```
-ghcr.io/protomothis/shareaux-server:latest   # 최신 버전
-ghcr.io/protomothis/shareaux-server:0.1.0    # 특정 버전
+ghcr.io/protomothis/shareaux-server:latest   # Latest version
+ghcr.io/protomothis/shareaux-server:0.1.0    # Specific version
 ghcr.io/protomothis/shareaux-client:latest
 ghcr.io/protomothis/shareaux-client:0.1.0
 ```
 
-안정적인 운영을 위해 `latest` 대신 특정 버전 태그 사용을 권장합니다.
+For stable operation, use specific version tags instead of `latest`.
 
 ```yaml
 # docker-compose.yml
@@ -134,31 +136,31 @@ docker compose up -d
 
 ---
 
-## 리버스 프록시
+## Reverse Proxy
 
-ShareAux는 클라이언트(Next.js)와 서버(NestJS)가 별도 포트로 동작합니다. 리버스 프록시로 하나의 도메인에서 서비스하려면 아래 경로 규칙을 따르세요.
+ShareAux runs the client (Next.js) and server (NestJS) on separate ports. To serve from a single domain via reverse proxy, follow these routing rules.
 
-### 경로 구조
+### Route Structure
 
-| 경로 | 대상 | 설명 |
-|------|------|------|
-| `/` | 클라이언트 (:3001) | Next.js 페이지 |
-| `/api/*` | 서버 (:3000) | REST API |
-| `/ws` | 서버 (:3000) | WebSocket (오디오 스트리밍 + 실시간 이벤트) |
+| Path | Target | Description |
+|------|--------|-------------|
+| `/` | Client (:3001) | Next.js pages |
+| `/api/*` | Server (:3000) | REST API |
+| `/ws` | Server (:3000) | WebSocket (audio streaming + real-time events) |
 
-> ⚠️ 클라이언트는 `window.location.origin`을 기준으로 API/WS URL을 자동 생성합니다.
-> 따라서 `/api`와 `/ws`가 같은 도메인에서 접근 가능해야 합니다.
+> ⚠️ The client auto-generates API/WS URLs based on `window.location.origin`.
+> Therefore `/api` and `/ws` must be accessible from the same domain.
 
-### 환경 변수 설정
+### Environment Variables
 
-리버스 프록시 사용 시 `.env`에서 아래 값을 실제 도메인으로 변경하세요:
+When using a reverse proxy, update these values in `.env` to your actual domain:
 
 ```env
 CLIENT_URL=https://aux.example.com
 GOOGLE_CALLBACK_URL=https://aux.example.com/api/auth/google/callback
 ```
 
-### nginx 예시
+### nginx Example
 
 ```nginx
 server {
@@ -168,7 +170,7 @@ server {
     ssl_certificate /path/to/cert.pem;
     ssl_certificate_key /path/to/key.pem;
 
-    # WebSocket (오디오 스트리밍) — 반드시 /ws를 별도로 처리
+    # WebSocket (audio streaming) — must handle /ws separately
     location /ws {
         proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
@@ -188,7 +190,7 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # 클라이언트 (Next.js) — 나머지 모든 경로
+    # Client (Next.js) — all other paths
     location / {
         proxy_pass http://localhost:3001;
         proxy_set_header Host $host;
@@ -199,7 +201,7 @@ server {
 }
 ```
 
-### Traefik 예시 (라벨 기반)
+### Traefik Example (Label-based)
 
 ```yaml
 services:
@@ -213,61 +215,61 @@ services:
       - "traefik.http.services.shareaux-client.loadbalancer.server.port=3001"
 ```
 
-### 주의사항
+### Notes
 
-- `/ws` 경로에 `proxy_read_timeout`을 충분히 길게 설정하세요 (오디오 스트리밍은 장시간 연결 유지)
-- HTTPS 사용 시 WebSocket은 자동으로 `wss://`로 연결됩니다
-- Cloudflare 등 CDN 사용 시 WebSocket 지원을 활성화해야 합니다
+- Set `proxy_read_timeout` long enough for `/ws` (audio streaming maintains long-lived connections)
+- When using HTTPS, WebSocket automatically connects via `wss://`
+- Enable WebSocket support when using CDNs like Cloudflare
 
 ---
 
-## 업데이트
+## Updates
 
 ```bash
-# GHCR 이미지 사용 시
+# Using GHCR images
 docker compose pull
 docker compose up -d
 
-# 소스 빌드 시
+# Building from source
 git pull
 docker compose build
 docker compose up -d
 ```
 
-### DB 마이그레이션이 필요한 버전
+### Versions Requiring DB Migration
 
-일부 버전은 DB 스키마가 변경되어 마이그레이션이 필요합니다. `migrations/` 디렉토리에 SQL 스크립트가 제공됩니다.
+Some versions include DB schema changes that require migration. SQL scripts are provided in the `migrations/` directory.
 
 ```bash
-# 1. 반드시 백업
+# 1. Always backup first
 docker compose exec db pg_dump -U spotiparty spotiparty > backup.sql
 
-# 2. 마이그레이션 실행 (예: v0.1.2 → v0.1.3)
+# 2. Run migration (e.g., v0.1.2 → v0.1.3)
 docker compose exec -T db psql -U spotiparty < migrations/v0.1.2-to-v0.1.3.sql
 
-# 3. 이미지 업데이트
+# 3. Update images
 docker compose pull && docker compose up -d
 ```
 
-> ⚠️ 마이그레이션 없이 업데이트하면 `synchronize: true`가 새 컬럼을 추가하지만, 기존 데이터가 유실될 수 있습니다.
+> ⚠️ Updating without migration may cause `synchronize: true` to add new columns, but existing data could be lost.
 
 ---
 
-## 문제 해결
+## Troubleshooting
 
-### 서버 로그 확인
+### Check Server Logs
 
 ```bash
 docker logs shareaux-server -f --tail 50
 ```
 
-### DB 초기화
+### Reset Database
 
 ```bash
-docker compose down -v   # 볼륨 포함 삭제
-docker compose up -d     # 재생성
+docker compose down -v   # Delete including volumes
+docker compose up -d     # Recreate
 ```
 
-### 포트 충돌
+### Port Conflicts
 
-기본 포트(3000, 3001, 5432)가 사용 중이면 `docker-compose.yml`에서 포트 매핑을 변경하세요.
+If default ports (3000, 3001, 5432) are in use, change the port mappings in `docker-compose.yml`.

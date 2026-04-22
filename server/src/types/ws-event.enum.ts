@@ -18,6 +18,7 @@ export enum WsEvent {
   TrackSkipped = 'trackSkipped',
   TrackPrevious = 'trackPrevious',
   TrackAdded = 'trackAdded',
+  UserTrackAdded = 'userTrackAdded',
 
   // 큐
   QueueUpdated = 'queueUpdated',
@@ -34,6 +35,8 @@ export enum WsEvent {
 
   // AutoDJ
   AutoDjStatus = 'autoDjStatus',
+  AutoDjEnabled = 'autoDjEnabled',
+  AutoDjDisabled = 'autoDjDisabled',
 
   // 기타
   SystemMessage = 'systemMessage',
