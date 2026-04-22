@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
 import type { InviteCode } from '@/api/model';
-import { buildPermLookup, usePermissionMeta } from '@/hooks/usePermissionMeta';
+import { usePermissionMeta, usePermLookup } from '@/hooks/usePermissionMeta';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminPagination } from '@/components/admin/AdminPagination';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
@@ -32,7 +32,7 @@ export default function AdminInviteCodesPage() {
 
   const { data, isLoading } = useAdminInviteCodes({ page, limit: LIMIT });
   const { data: permMeta } = usePermissionMeta();
-  const perm = buildPermLookup(permMeta);
+  const perm = usePermLookup();
   const deactivate = useDeactivateInviteCode();
   const deleteCode = useDeleteInviteCode();
   const [deleting, setDeleting] = useState(false);

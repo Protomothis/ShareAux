@@ -1085,5 +1085,42 @@
       "title": "폴더 없음",
       "description": "해당 폴더를 찾을 수 없습니다"
     }
+  },
+  "permissions": {
+    "listen": {
+      "label": "음악 듣기",
+      "emoji": "🎵",
+      "description": "방에서 음악을 들을 수 있습니다"
+    },
+    "chat": {
+      "label": "채팅",
+      "emoji": "💬",
+      "description": "채팅 메시지를 보낼 수 있습니다"
+    },
+    "reaction": {
+      "label": "리액션",
+      "emoji": "🎉",
+      "description": "이모지 리액션을 보낼 수 있습니다"
+    },
+    "search": {
+      "label": "검색",
+      "emoji": "🔍",
+      "description": "음악을 검색할 수 있습니다"
+    },
+    "addQueue": {
+      "label": "큐 추가",
+      "emoji": "📋",
+      "description": "큐에 곡을 추가할 수 있습니다"
+    },
+    "voteSkip": {
+      "label": "투표 스킵",
+      "emoji": "⏭️",
+      "description": "곡 스킵 투표에 참여할 수 있습니다"
+    },
+    "host": {
+      "label": "호스트",
+      "emoji": "🏠",
+      "description": "방 생성 · 관리 · 순서 변경 · 강퇴"
+    }
   }
 }

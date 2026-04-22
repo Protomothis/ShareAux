@@ -17,7 +17,7 @@ import Modal from '@/components/common/Modal';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { useInvalidate } from '@/hooks/useQueries';
-import { usePermissionMeta } from '@/hooks/usePermissionMeta';
+import { usePermissionMeta, usePermLookup } from '@/hooks/usePermissionMeta';
 import { getAvatar } from '@/lib/avatar';
 
 /** 방 내 멤버에게 보여줄 권한 (host 제외 — 방 권한이 아닌 계정 권한) */
@@ -52,6 +52,7 @@ export default function MemberPermissionModal({
   // 자기 자신일 때만 my-permissions API로 account/room 분리 정보 가져옴
   const { data: myPermsData } = useRoomsControllerGetMyPermissions(roomId, { query: { enabled: isSelf } });
   const { data: permMeta } = usePermissionMeta();
+  const perm = usePermLookup();
   const visiblePerms = (permMeta ?? []).filter((m) => ROOM_VISIBLE_KEYS.has(m.key));
 
   const togglePermission = async (perm: RoomPermissionPermissionsItem) => {
@@ -132,9 +133,7 @@ export default function MemberPermissionModal({
             return (
               <div key={key} className="flex items-center justify-between rounded-lg px-2 py-1.5">
                 <div className="flex items-center gap-2">
-                  <span className={`text-sm ${effective ? '' : 'opacity-40'}`}>
-                    {meta.emoji} {meta.label}
-                  </span>
+                  <span className={`text-sm ${effective ? '' : 'opacity-40'}`}>{perm.full(key)}</span>
                   {status === 'blocked-account' && (
                     <span className="rounded bg-yellow-500/20 px-1.5 py-0.5 text-[9px] text-yellow-400">
                       {t('accountRestricted')}

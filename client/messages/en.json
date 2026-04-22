@@ -1085,5 +1085,42 @@
       "title": "Folder not found",
       "description": "Folder not found"
     }
+  },
+  "permissions": {
+    "listen": {
+      "label": "Listen",
+      "emoji": "🎵",
+      "description": "Listen to music in the room"
+    },
+    "chat": {
+      "label": "Chat",
+      "emoji": "💬",
+      "description": "Send chat messages"
+    },
+    "reaction": {
+      "label": "Reaction",
+      "emoji": "🎉",
+      "description": "Send emoji reactions"
+    },
+    "search": {
+      "label": "Search",
+      "emoji": "🔍",
+      "description": "Search for music"
+    },
+    "addQueue": {
+      "label": "Add to Queue",
+      "emoji": "📋",
+      "description": "Add tracks to the queue"
+    },
+    "voteSkip": {
+      "label": "Vote Skip",
+      "emoji": "⏭️",
+      "description": "Participate in skip votes"
+    },
+    "host": {
+      "label": "Host",
+      "emoji": "🏠",
+      "description": "Create/manage rooms, reorder, kick"
+    }
   }
 }

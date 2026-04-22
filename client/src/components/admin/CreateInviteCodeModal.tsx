@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import NumberStepper from '@/components/ui/number-stepper';
 import { Switch } from '@/components/ui/switch';
 import { useCreateInviteCode } from '@/hooks/admin/useAdminInviteCodes';
-import { usePermissionMeta } from '@/hooks/usePermissionMeta';
+import { usePermissionMeta, usePermLookup } from '@/hooks/usePermissionMeta';
 import { useTranslations } from 'next-intl';
 
 interface CreateInviteCodeModalProps {
@@ -21,8 +21,7 @@ interface CreateInviteCodeModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function CreateInviteCodeModal({
-  open, onOpenChange }: CreateInviteCodeModalProps) {
+export function CreateInviteCodeModal({ open, onOpenChange }: CreateInviteCodeModalProps) {
   const t = useTranslations('admin.inviteCodes');
   const [code, setCode] = useState('');
   const [maxUses, setMaxUses] = useState(10);
@@ -32,9 +31,10 @@ export function CreateInviteCodeModal({
 
   const createCode = useCreateInviteCode();
   const { data: permMeta } = usePermissionMeta();
+  const pl = usePermLookup();
   const permOptions = (permMeta ?? []).map((m) => ({
     key: m.key,
-    label: `${m.emoji} ${m.label}`,
+    label: pl.full(m.key),
     disabled: m.key === 'listen',
   }));
 
@@ -103,7 +103,12 @@ export function CreateInviteCodeModal({
               <DatePicker value={expiresAt} onChange={setExpiresAt} placeholder={t('noExpiry')} />
             </FormField>
           </div>
-          <CheckboxGroup label={t('accountPermissions')} options={permOptions} selected={permissions} onChange={togglePerm} />
+          <CheckboxGroup
+            label={t('accountPermissions')}
+            options={permOptions}
+            selected={permissions}
+            onChange={togglePerm}
+          />
           <p className="text-[11px] text-sa-text-muted">{t('permissionHint')}</p>
           <div className="flex items-center justify-between">
             <div>

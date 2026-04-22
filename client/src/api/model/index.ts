@@ -80,6 +80,7 @@ export * from './paginatedReportsResponse';
 export * from './paginatedRoomsResponse';
 export * from './paginatedTrackRankingResponse';
 export * from './paginatedUsersResponse';
+export * from './permission';
 export * from './permissionMeta';
 export * from './playbackStatus';
 export * from './playbackStatusStreamState';

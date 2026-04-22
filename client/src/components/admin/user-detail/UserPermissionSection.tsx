@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import type { UpdatePermissionsBodyPermissionsItem, UserDetailResponse } from '@/api/model';
 import { UpdateRoleDtoRole } from '@/api/model';
 import { ROLE_LABELS } from '@/lib/constants';
-import { usePermissionMeta } from '@/hooks/usePermissionMeta';
+import { usePermissionMeta, usePermLookup } from '@/hooks/usePermissionMeta';
 import { CheckboxGroup } from '@/components/admin/CheckboxGroup';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { Button } from '@/components/ui/button';
@@ -30,9 +30,10 @@ export function UserPermissionSection({ user }: UserPermissionSectionProps) {
   const updateRole = useUpdateUserDetailRole(user.id);
   const updatePermissions = useUpdateUserPermissions(user.id);
   const { data: permMeta } = usePermissionMeta();
+  const pl = usePermLookup();
   const baseOptions = (permMeta ?? []).map((m) => ({
     key: m.key,
-    label: `${m.emoji} ${m.label}`,
+    label: pl.full(m.key),
     disabled: m.key === 'listen',
   }));
 
