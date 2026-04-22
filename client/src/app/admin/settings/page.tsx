@@ -34,7 +34,7 @@ const CATEGORIES: SettingCategory[] = [
     icon: '🔐',
     items: [
       { key: 'auth.guestEnabled', label: 'guestLogin', description: 'guestLoginDesc', type: 'boolean' },
-      { key: 'auth.googleEnabled', label: 'Google OAuth', description: 'googleOAuthDesc', type: 'boolean' },
+      { key: 'auth.googleEnabled', label: 'googleOAuth', description: 'googleOAuthDesc', type: 'boolean' },
       {
         key: 'auth.guestMaxAge',
         label: 'guestExpiry',
@@ -68,7 +68,7 @@ const CATEGORIES: SettingCategory[] = [
     ],
   },
   {
-    title: 'AutoDJ',
+    title: 'autoDjEnabled',
     icon: '🤖',
     items: [{ key: 'autodj.enabled', label: 'autoDjEnabled', description: 'autoDjEnabledDesc', type: 'boolean' }],
   },
