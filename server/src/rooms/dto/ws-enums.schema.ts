@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import type { AutoDjStatus } from '../../types/index.js';
-import { WsEvent } from '../../types/index.js';
+import { Language, WsEvent } from '../../types/index.js';
 
 /** Swagger에 WS 관련 enum을 노출하기 위한 스키마 DTO */
 export class WsEnumsSchema {
@@ -10,4 +10,7 @@ export class WsEnumsSchema {
 
   @ApiProperty({ enum: ['idle', 'thinking', 'adding'], description: 'AutoDJ 상태' })
   autoDjStatus!: AutoDjStatus;
+
+  @ApiProperty({ enum: Language, description: '지원 언어' })
+  language!: Language;
 }

@@ -1,14 +1,16 @@
 import { cookies } from 'next/headers';
 import { getRequestConfig } from 'next-intl/server';
 
-export const SUPPORTED_LOCALES = ['ko', 'en'] as const;
-export type Locale = (typeof SUPPORTED_LOCALES)[number];
-export const DEFAULT_LOCALE: Locale = 'ko';
+import { WsEnumsSchemaLanguage } from '@/api/model';
+
+const SUPPORTED_LOCALES = Object.values(WsEnumsSchemaLanguage);
+export type Locale = WsEnumsSchemaLanguage;
+export const DEFAULT_LOCALE = WsEnumsSchemaLanguage.ko;
 
 export default getRequestConfig(async () => {
   const store = await cookies();
   const raw = store.get('locale')?.value;
-  const locale: Locale = SUPPORTED_LOCALES.includes(raw as Locale) ? (raw as Locale) : DEFAULT_LOCALE;
+  const locale = SUPPORTED_LOCALES.includes(raw as Locale) ? (raw as Locale) : DEFAULT_LOCALE;
 
   return {
     locale,

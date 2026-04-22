@@ -7,10 +7,13 @@
  */
 import type { WsEnumsSchemaWsEvent } from './wsEnumsSchemaWsEvent';
 import type { WsEnumsSchemaAutoDjStatus } from './wsEnumsSchemaAutoDjStatus';
+import type { WsEnumsSchemaLanguage } from './wsEnumsSchemaLanguage';
 
 export interface WsEnumsSchema {
   /** WebSocket system event name */
   wsEvent: WsEnumsSchemaWsEvent;
   /** AutoDJ 상태 */
   autoDjStatus: WsEnumsSchemaAutoDjStatus;
+  /** 지원 언어 */
+  language: WsEnumsSchemaLanguage;
 }

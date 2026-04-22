@@ -172,4 +172,5 @@ export * from './voteResponse';
 export * from './voteSkipResponse';
 export * from './wsEnumsSchema';
 export * from './wsEnumsSchemaAutoDjStatus';
+export * from './wsEnumsSchemaLanguage';
 export * from './wsEnumsSchemaWsEvent';

@@ -3,11 +3,13 @@ import { NextResponse } from 'next/server';
 
 import { decodeJwt } from 'jose';
 
+import { WsEnumsSchemaLanguage } from '@/api/model';
+
 const SAT_COOKIE = 'sat';
 const AUTH_INFO_COOKIE = '_sa_auth';
 const LOCALE_COOKIE = 'locale';
-const SUPPORTED_LOCALES = ['ko', 'en'];
-const DEFAULT_LOCALE = 'ko';
+const SUPPORTED_LOCALES = Object.values(WsEnumsSchemaLanguage);
+const DEFAULT_LOCALE = WsEnumsSchemaLanguage.ko;
 
 /** 인증 불필요 경로 */
 const PUBLIC_PATHS = ['/login', '/auth/callback', '/setup', '/privacy', '/terms'];
@@ -16,11 +18,11 @@ function isPublic(pathname: string): boolean {
   return pathname === '/' || PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
-function detectLocale(req: NextRequest): string {
+function detectLocale(req: NextRequest): WsEnumsSchemaLanguage {
   const accept = req.headers.get('accept-language') ?? '';
   for (const part of accept.split(',')) {
     const lang = part.split(';')[0].trim().split('-')[0];
-    if (SUPPORTED_LOCALES.includes(lang)) return lang;
+    if (SUPPORTED_LOCALES.includes(lang as WsEnumsSchemaLanguage)) return lang as WsEnumsSchemaLanguage;
   }
   return DEFAULT_LOCALE;
 }
