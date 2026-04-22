@@ -122,5 +122,56 @@
     "idle": "Waiting for tracks...",
     "idleHint": "Add a track to start playing",
     "djControl": "🎧 DJ Controls"
+  },
+  "queue": {
+    "title": "📋 Queue",
+    "enqueueDisabled": "🚫 Enqueue disabled",
+    "quota": "{used}/{limit} tracks ({windowMin}min)",
+    "addTrack": "Add track",
+    "emptyTitle": "No tracks in queue",
+    "emptyDescription": "Search and add tracks to play them in order.\nYou can pick multiple tracks at once!",
+    "autoDjThinking": "AutoDJ is finding tracks...",
+    "autoDjAdding": "AutoDJ is adding a track...",
+    "deleteConfirm": "Remove from queue?",
+    "cancel": "Cancel",
+    "delete": "Remove",
+    "queueFull": "Queue is full (max {max} tracks)",
+    "addedToast": "🎵 Added to queue",
+    "addedExtra": " and {count} more"
+  },
+  "search": {
+    "title": "Add tracks",
+    "showcase": "Showcase",
+    "searchTab": "Search",
+    "favorites": "Favorites",
+    "placeholder": "Song title or artist...",
+    "emptyHint": "Search by song title or artist",
+    "noResults": "No results found",
+    "noResultsHint": "No results for \"{query}\".\nTry different keywords."
+  },
+  "favorites": {
+    "loading": "Loading...",
+    "manageFolder": "Manage folders",
+    "empty": "No favorite tracks",
+    "searchPlaceholder": "Search...",
+    "sortRecent": "Recent",
+    "sortOldest": "Oldest",
+    "sortName": "Title",
+    "sortArtist": "Artist",
+    "done": "Done",
+    "edit": "Edit",
+    "selected": "{count} selected",
+    "moved": "Moved",
+    "movedCount": "{count} tracks moved",
+    "moveTo": "Move to...",
+    "uncategorized": "Uncategorized",
+    "removedCount": "{count} tracks unfavorited",
+    "removeFavorite": "Unfavorite",
+    "trackCount": "{count} tracks",
+    "inQueue": "Already in queue"
+  },
+  "history": {
+    "emptyTitle": "No tracks played yet",
+    "emptyDescription": "Played tracks will appear here"
   }
 }

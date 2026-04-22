@@ -1,6 +1,7 @@
 import type { PlaylistResult } from '@/api/model';
 import type { SearchResultItem } from '@/api/model';
 import EmptyState from '@/components/common/EmptyState';
+import { useTranslations } from 'next-intl';
 
 import { SearchPlaylistItem } from './SearchPlaylistItem';
 import SearchSkeleton from './SearchSkeleton';
@@ -41,6 +42,8 @@ export default function SearchResults({
   onToggleFavorite,
   isGuest,
 }: SearchResultsProps) {
+  const t = useTranslations('search');
+
   if (loading) {
     return (
       <div className="space-y-0.5">
@@ -52,17 +55,11 @@ export default function SearchResults({
   }
 
   if (!debouncedQuery) {
-    return <EmptyState icon="🔍" title="곡 제목이나 아티스트를 검색하세요" />;
+    return <EmptyState icon="🔍" title={t('emptyHint')} />;
   }
 
   if (results.length === 0 && playlists.length === 0) {
-    return (
-      <EmptyState
-        icon="😶"
-        title="검색 결과가 없습니다"
-        description={`"${debouncedQuery}"에 대한 결과를 찾지 못했어요.\n다른 키워드로 검색해 보세요.`}
-      />
-    );
+    return <EmptyState icon="😶" title={t('noResults')} description={t('noResultsHint', { query: debouncedQuery })} />;
   }
 
   return (

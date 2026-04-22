@@ -13,6 +13,7 @@ import {
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { ChevronDown, ChevronRight, FolderOpen, GripVertical, Heart, Search, Trash2 } from 'lucide-react';
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import {
@@ -84,6 +85,7 @@ export default function FavoritesList({
 }: FavoritesListProps) {
   const { data: favorites, isLoading, refetch } = useFavoritesControllerList();
   const { data: folders = [], refetch: refetchFolders } = useFavoritesControllerListFolders();
+  const t = useTranslations('favorites');
   const [filter, setFilter] = useState('');
   const [sort, setSort] = useState<SortKey>('recent');
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
@@ -150,11 +152,11 @@ export default function FavoritesList({
     await favoritesControllerMoveFavorite(sourceId, { folderId: targetFolderId });
     refetch();
     refetchFolders();
-    toast.success('이동 완료');
+    toast.success(t('moved'));
   };
 
   if (isLoading) {
-    return <p className="py-12 text-center text-sm text-sa-text-muted">불러오는 중...</p>;
+    return <p className="py-12 text-center text-sm text-sa-text-muted">{t('loading')}</p>;
   }
 
   if (!favorites?.length && !folders.length) {
@@ -168,12 +170,12 @@ export default function FavoritesList({
             className="h-8 gap-1 px-2 text-xs"
           >
             <FolderOpen size={12} />
-            폴더 관리
+            {t('manageFolder')}
           </Button>
         </div>
         <div className="flex flex-col items-center gap-2 py-12 text-sa-text-muted">
           <Heart size={32} className="text-white/10" />
-          <p className="text-sm">즐겨찾기한 곡이 없습니다</p>
+          <p className="text-sm">{t('empty')}</p>
         </div>
         {showFolderManager && (
           <FolderManager
@@ -202,7 +204,7 @@ export default function FavoritesList({
             <Input
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              placeholder="검색..."
+              placeholder={t('searchPlaceholder')}
               className="h-8 rounded-lg border-white/10 bg-white/5 pl-8 text-xs"
             />
           </div>
@@ -211,10 +213,10 @@ export default function FavoritesList({
             onChange={(e) => setSort(e.target.value as SortKey)}
             className="h-8 rounded-lg border border-white/10 bg-white/5 px-2 text-xs text-white"
           >
-            <option value="recent">최근</option>
-            <option value="oldest">오래된</option>
-            <option value="name">곡명</option>
-            <option value="artist">아티스트</option>
+            <option value="recent">{t('sortRecent')}</option>
+            <option value="oldest">{t('sortOldest')}</option>
+            <option value="name">{t('sortName')}</option>
+            <option value="artist">{t('sortArtist')}</option>
           </select>
           <Button variant="ghost" size="sm" onClick={() => setShowFolderManager(true)} className="h-8 px-2 text-xs">
             <FolderOpen size={12} />
@@ -228,14 +230,14 @@ export default function FavoritesList({
             }}
             className="h-8 px-2 text-xs"
           >
-            {editMode ? '완료' : '편집'}
+            {editMode ? t('done') : t('edit')}
           </Button>
         </div>
 
         {/* 편집 모드 액션 바 */}
         {editMode && removeSet.size > 0 && (
           <div className="flex shrink-0 items-center justify-between rounded-lg bg-white/5 px-3 py-2">
-            <span className="text-xs text-sa-text-secondary">{removeSet.size}곡 선택됨</span>
+            <span className="text-xs text-sa-text-secondary">{t('selected', { count: removeSet.size })}</span>
             <div className="flex items-center gap-1.5">
               {folders.length > 0 && (
                 <select
@@ -247,16 +249,16 @@ export default function FavoritesList({
                     setEditMode(false);
                     refetch();
                     refetchFolders();
-                    toast.success(`${count}곡 이동 완료`);
+                    toast.success(t('movedCount', { count }));
                     e.target.value = '';
                   }}
                   defaultValue=""
                   className="h-7 rounded-lg border border-white/10 bg-white/5 px-2 text-xs text-white"
                 >
                   <option value="" disabled>
-                    이동...
+                    {t('moveTo')}
                   </option>
-                  <option value="__none__">미분류</option>
+                  <option value="__none__">{t('uncategorized')}</option>
                   {folders.map((f) => (
                     <option key={f.id} value={f.id}>
                       {f.name}
@@ -272,14 +274,14 @@ export default function FavoritesList({
                   const count = removeSet.size;
                   setRemoveSet(new Set());
                   setEditMode(false);
-                  toast.success(`${count}곡 즐겨찾기 해제`);
+                  toast.success(t('removedCount', { count }));
                   refetch();
                   refetchFolders();
                 }}
                 className="h-7 gap-1 px-2 text-xs text-red-400 hover:text-red-300"
               >
                 <Trash2 size={12} />
-                즐겨찾기 해제
+                {t('removeFavorite')}
               </Button>
             </div>
           </div>
@@ -324,7 +326,7 @@ export default function FavoritesList({
 
           <FolderSection
             folderId="__uncategorized__"
-            folderName="미분류"
+            folderName={t('uncategorized')}
             folderColor={null}
             items={grouped.uncategorized}
             isCollapsed={collapsed.has('__uncategorized__')}
@@ -403,6 +405,7 @@ function FolderSection({
   onSelectTrack,
   onToggleRemove,
 }: FolderSectionProps) {
+  const t = useTranslations('favorites');
   const dropId = `${DROP_PREFIX}${folderId}`;
   const { setNodeRef, isOver } = useDroppable({ id: dropId });
 
@@ -424,7 +427,7 @@ function FolderSection({
             <FolderOpen size={14} className="text-sa-text-muted" />
           )}
           <span className="flex-1 truncate text-xs font-medium text-white">{folderName}</span>
-          <span className="text-[10px] text-sa-text-muted">{items.length}곡</span>
+          <span className="text-[10px] text-sa-text-muted">{t('trackCount', { count: items.length })}</span>
         </button>
       </div>
 
@@ -484,6 +487,7 @@ function FavItem({
   onToggleFavorite: () => void;
   onClick: () => void;
 }) {
+  const t = useTranslations('favorites');
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: fav.sourceId });
   const widthRef = useRef(0);
   const nodeRef = useCallback(
@@ -560,7 +564,7 @@ function FavItem({
           {order}
         </span>
       )}
-      {inQueue && <span className="shrink-0 text-[10px] text-sa-text-muted">재신청 불가</span>}
+      {inQueue && <span className="shrink-0 text-[10px] text-sa-text-muted">{t('inQueue')}</span>}
     </div>
   );
 }

@@ -122,5 +122,56 @@
     "idle": "재생 대기 중...",
     "idleHint": "곡을 신청하면 자동으로 재생됩니다",
     "djControl": "🎧 DJ 컨트롤"
+  },
+  "queue": {
+    "title": "📋 신청곡",
+    "enqueueDisabled": "🚫 신청 금지",
+    "quota": "{used}/{limit}곡 ({windowMin}분)",
+    "addTrack": "신청하기",
+    "emptyTitle": "아직 신청곡이 없어요",
+    "emptyDescription": "곡을 검색해서 추가하면 순서대로 자동 재생됩니다.\n여러 곡을 한 번에 골라 넣을 수도 있어요!",
+    "autoDjThinking": "AutoDJ가 곡을 찾고 있어요...",
+    "autoDjAdding": "AutoDJ가 곡을 추가하고 있어요...",
+    "deleteConfirm": "신청곡에서 삭제할까요?",
+    "cancel": "취소",
+    "delete": "삭제",
+    "queueFull": "신청곡이 가득 찼습니다 (최대 {max}곡)",
+    "addedToast": "🎵 신청 완료",
+    "addedExtra": " 외 {count}곡"
+  },
+  "search": {
+    "title": "곡 추가",
+    "showcase": "추천",
+    "searchTab": "검색",
+    "favorites": "즐겨찾기",
+    "placeholder": "곡 제목 또는 아티스트...",
+    "emptyHint": "곡 제목이나 아티스트를 검색하세요",
+    "noResults": "검색 결과가 없습니다",
+    "noResultsHint": "\"{query}\"에 대한 결과를 찾지 못했어요.\n다른 키워드로 검색해 보세요."
+  },
+  "favorites": {
+    "loading": "불러오는 중...",
+    "manageFolder": "폴더 관리",
+    "empty": "즐겨찾기한 곡이 없습니다",
+    "searchPlaceholder": "검색...",
+    "sortRecent": "최근",
+    "sortOldest": "오래된",
+    "sortName": "곡명",
+    "sortArtist": "아티스트",
+    "done": "완료",
+    "edit": "편집",
+    "selected": "{count}곡 선택됨",
+    "moved": "이동 완료",
+    "movedCount": "{count}곡 이동 완료",
+    "moveTo": "이동...",
+    "uncategorized": "미분류",
+    "removedCount": "{count}곡 즐겨찾기 해제",
+    "removeFavorite": "즐겨찾기 해제",
+    "trackCount": "{count}곡",
+    "inQueue": "재신청 불가"
+  },
+  "history": {
+    "emptyTitle": "아직 재생된 곡이 없습니다",
+    "emptyDescription": "곡이 재생되면 여기에 기록됩니다"
   }
 }
