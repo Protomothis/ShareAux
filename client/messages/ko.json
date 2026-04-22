@@ -174,7 +174,8 @@
       "retry": "다시 시도",
       "noTracks": "재생 가능한 곡이 없습니다",
       "loadMore": "더 보기 ({loaded}/{total})"
-    }
+    },
+    "showcaseTab": "추천"
   },
   "favorites": {
     "loading": "불러오는 중...",

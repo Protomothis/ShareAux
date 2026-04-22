@@ -149,7 +149,7 @@ export default function SearchModal({
             )}
           >
             <Sparkles size={14} />
-            {ts('showcase')}
+            {ts('showcaseTab')}
           </Button>
           <Button
             variant="ghost"

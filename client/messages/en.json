@@ -174,7 +174,8 @@
       "retry": "Retry",
       "noTracks": "No playable tracks",
       "loadMore": "Load more ({loaded}/{total})"
-    }
+    },
+    "showcaseTab": "Showcase"
   },
   "favorites": {
     "loading": "Loading...",
