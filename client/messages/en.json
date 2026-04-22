@@ -392,7 +392,11 @@
   },
   "meta": {
     "description": "Self-hosted real-time music sharing platform. Create a room and listen together.",
-    "shortDescription": "Self-hosted real-time music sharing platform"
+    "shortDescription": "Self-hosted real-time music sharing platform",
+    "rooms": "Rooms",
+    "login": "Login",
+    "setup": "Initial Setup",
+    "admin": "Admin"
   },
   "admin": {
     "nav": {

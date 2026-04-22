@@ -392,7 +392,11 @@
   },
   "meta": {
     "description": "자체 호스팅 실시간 음악 공유 플랫폼. 방을 만들고 함께 음악을 들어보세요.",
-    "shortDescription": "자체 호스팅 실시간 음악 공유 플랫폼"
+    "shortDescription": "자체 호스팅 실시간 음악 공유 플랫폼",
+    "rooms": "방 목록",
+    "login": "로그인",
+    "setup": "초기 설정",
+    "admin": "관리자"
   },
   "admin": {
     "nav": {

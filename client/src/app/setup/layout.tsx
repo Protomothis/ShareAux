@@ -3,9 +3,9 @@ import { getTranslations } from 'next-intl/server';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('meta');
-  return { title: t('rooms') };
+  return { title: t('setup') };
 }
 
-export default function RoomsLayout({ children }: { children: React.ReactNode }) {
+export default function SetupLayout({ children }: { children: React.ReactNode }) {
   return children;
 }
