@@ -9,7 +9,21 @@ function userTag(userId: string): string {
   return `#${userId.slice(-4)}`;
 }
 
-const SYSTEM_KEYS = ['userJoined', 'userLeft', 'trackSkipped', 'trackPrevious', 'roomClosed'] as const;
+const SYSTEM_KEYS = new Set([
+  'userJoined',
+  'userLeft',
+  'trackSkipped',
+  'trackPrevious',
+  'roomClosed',
+  'hostChanged',
+  'autoDjEnabled',
+  'autoDjDisabled',
+  'enqueueCountsReset',
+  'userKicked',
+  'trackAdded',
+  'trackUnavailable',
+  'voteSkipPassed',
+]);
 
 interface ChatMessageListProps {
   messages: ChatMessage[];
@@ -36,8 +50,8 @@ export default function ChatMessageList({ messages, bottomRef, hostId }: ChatMes
               <div className="h-px flex-1 bg-white/[0.06]" />
               <span className="text-center text-[11px] leading-tight text-white/25 line-clamp-3 break-keep">
                 {m.nickname
-                  ? `${m.nickname}${SYSTEM_KEYS.includes(m.message as (typeof SYSTEM_KEYS)[number]) ? t(`system.${m.message}`) : m.message}`
-                  : SYSTEM_KEYS.includes(m.message as (typeof SYSTEM_KEYS)[number])
+                  ? `${m.nickname}${SYSTEM_KEYS.has(m.message) ? t(`system.${m.message}`) : m.message}`
+                  : SYSTEM_KEYS.has(m.message)
                     ? t(`system.${m.message}`)
                     : m.message}
               </span>
