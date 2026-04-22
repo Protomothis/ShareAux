@@ -13,7 +13,13 @@ export interface TrackRankingTrackInfo {
   name: string;
   sourceId: string;
   /** @nullable */
+  artist?: string | null;
+  /** @nullable */
+  songTitle?: string | null;
+  /** @nullable */
   songArtist?: string | null;
+  /** @nullable */
+  songAlbum?: string | null;
   lyricsStatus: TrackRankingTrackInfoLyricsStatus;
   /** @nullable */
   lyricsLang?: string | null;

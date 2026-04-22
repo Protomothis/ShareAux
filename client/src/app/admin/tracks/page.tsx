@@ -30,8 +30,8 @@ const columns: Column<TrackRankingItem>[] = [
     primary: true,
     render: (item) => (
       <div className="min-w-0">
-        <div className="truncate font-medium text-white">{item.track.name}</div>
-        {item.track.songArtist && <div className="truncate text-xs text-sa-text-muted">{item.track.songArtist}</div>}
+        <div className="truncate font-medium text-white">{item.track.songTitle ?? item.track.name}</div>
+        <div className="truncate text-xs text-sa-text-muted">{item.track.songArtist ?? item.track.artist}</div>
       </div>
     ),
   },
@@ -111,7 +111,9 @@ export default function AdminTracksPage() {
     if (!search.trim()) return data ?? [];
     const q = search.toLowerCase();
     return (data ?? []).filter(
-      (item) => item.track.name.toLowerCase().includes(q) || item.track.songArtist?.toLowerCase().includes(q),
+      (item) =>
+        (item.track.songTitle ?? item.track.name).toLowerCase().includes(q) ||
+        (item.track.songArtist ?? item.track.artist ?? '').toLowerCase().includes(q),
     );
   }, [data, search]);
 

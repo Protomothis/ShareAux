@@ -10,7 +10,16 @@ export class TrackRankingTrackInfo {
   sourceId!: string;
 
   @ApiPropertyOptional({ nullable: true })
+  artist!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  songTitle!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
   songArtist!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  songAlbum!: string | null;
 
   @ApiProperty({ enum: ['searching', 'found', 'not_found'] })
   lyricsStatus!: 'searching' | 'found' | 'not_found';
