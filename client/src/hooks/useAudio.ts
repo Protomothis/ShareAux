@@ -446,6 +446,13 @@ export function useAudio(onPlaying?: () => void, onError?: () => void, onTimeUpd
     return clearBuffer();
   }, [clearBuffer]);
 
+  // cleanup: AudioContext 리소스 해제
+  useEffect(() => {
+    return () => {
+      audioCtxRef.current?.close().catch(() => {});
+    };
+  }, []);
+
   return {
     init,
     pause,
