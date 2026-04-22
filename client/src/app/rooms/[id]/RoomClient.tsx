@@ -80,9 +80,8 @@ export default function RoomClient({ id }: { id: string }) {
   const listeningRef = useRef(false);
   const trackRef = useRef<Track | null>(null);
   const getOneWayRef = useRef<() => number>(() => 0);
-  const getCurrentTimeRef = useRef<() => number>(() => 0);
   const onResyncNeededRef = useRef<(action: 'prepare' | 'send') => void>(() => {});
-  const events = useRoomEvents(id, listeningRef, trackRef, getOneWayRef, getCurrentTimeRef, onResyncNeededRef);
+  const events = useRoomEvents(id, listeningRef, trackRef, getOneWayRef, onResyncNeededRef);
   const {
     messages,
     isPlaying,
@@ -114,7 +113,11 @@ export default function RoomClient({ id }: { id: string }) {
   } = events;
 
   // --- Audio ---
-  const roomAudio = useRoomAudio(audioLoadingRef, setAudioLoading);
+  const roomAudio = useRoomAudio(audioLoadingRef, setAudioLoading, (ms) => {
+    if (listeningRef.current && streamState === 'streaming') {
+      setTimeSync({ base: ms, at: Date.now() });
+    }
+  });
   const { audio, listening, volume, onAudio, handleListenToggle, handleVolumeChange, buffering } = roomAudio;
   useEffect(() => {
     listeningRef.current = listening;
@@ -176,8 +179,7 @@ export default function RoomClient({ id }: { id: string }) {
   };
   useEffect(() => {
     getOneWayRef.current = getOneWay;
-    getCurrentTimeRef.current = audio.getCurrentTime;
-  }, [getOneWay, audio.getCurrentTime]);
+  }, [getOneWay]);
 
   // --- Room join ---
   const joinRoom = useCallback(

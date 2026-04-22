@@ -38,7 +38,7 @@ function getBufferGoal(phase: BufferPhase, stallCount: number): number {
  * - audio.load() 절대 호출 안 함 → autoplay 정책 안 걸림
  * - 모든 프레임은 queue에 쌓고 flush로 순차 append
  */
-export function useAudio(onPlaying?: () => void, onError?: () => void) {
+export function useAudio(onPlaying?: () => void, onError?: () => void, onTimeUpdate?: (ms: number) => void) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const msRef = useRef<ManagedMediaSourceLike | null>(null);
   const sbRef = useRef<SourceBuffer | null>(null);
@@ -61,10 +61,12 @@ export function useAudio(onPlaying?: () => void, onError?: () => void) {
 
   const onPlayingRef = useRef(onPlaying);
   const onErrorRef = useRef(onError);
+  const onTimeUpdateRef = useRef(onTimeUpdate);
   useEffect(() => {
     onPlayingRef.current = onPlaying;
     onErrorRef.current = onError;
-  }, [onPlaying, onError]);
+    onTimeUpdateRef.current = onTimeUpdate;
+  }, [onPlaying, onError, onTimeUpdate]);
 
   // --- flush: queue에서 하나씩 SourceBuffer에 append ---
   const resetMSERef = useRef<() => void>(() => {});
@@ -296,12 +298,13 @@ export function useAudio(onPlaying?: () => void, onError?: () => void) {
     const audio = new Audio();
     audio.volume = volumeRef.current;
     audio.disableRemotePlayback = true;
-    // 최초/곡 전환: timeupdate로 실제 재생 확인 (1회만)
+    // 최초/곡 전환: timeupdate로 실제 재생 확인 (1회만) + 경과 시간 콜백
     audio.addEventListener('timeupdate', () => {
       if (needsFirstPlayRef.current) {
         needsFirstPlayRef.current = false;
         onPlayingRef.current?.();
       }
+      onTimeUpdateRef.current?.(audio.currentTime * 1000);
     });
     // stall 감지 → pause + rebuffer (첫 play 직후 waiting은 무시)
     let playStartedAt = 0;
