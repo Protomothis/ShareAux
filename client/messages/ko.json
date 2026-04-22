@@ -106,5 +106,21 @@
       "admin": "관리자 페이지",
       "logout": "로그아웃"
     }
+  },
+  "player": {
+    "loading": "로딩 중",
+    "play": "재생",
+    "pause": "일시정지",
+    "prevTrack": "이전곡",
+    "nextTrack": "다음곡",
+    "mute": "음소거",
+    "unmute": "음소거 해제",
+    "visualMode": "비주얼 모드 변경",
+    "lyricsToggle": "가사 토글",
+    "skipping": "곡을 넘기는 중...",
+    "preparing": "다음 곡 준비 중...",
+    "idle": "재생 대기 중...",
+    "idleHint": "곡을 신청하면 자동으로 재생됩니다",
+    "djControl": "🎧 DJ 컨트롤"
   }
 }

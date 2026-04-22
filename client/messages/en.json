@@ -106,5 +106,21 @@
       "admin": "Admin",
       "logout": "Log out"
     }
+  },
+  "player": {
+    "loading": "Loading",
+    "play": "Play",
+    "pause": "Pause",
+    "prevTrack": "Previous track",
+    "nextTrack": "Next track",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "visualMode": "Change visual mode",
+    "lyricsToggle": "Toggle lyrics",
+    "skipping": "Skipping...",
+    "preparing": "Preparing next track...",
+    "idle": "Waiting for tracks...",
+    "idleHint": "Add a track to start playing",
+    "djControl": "🎧 DJ Controls"
   }
 }

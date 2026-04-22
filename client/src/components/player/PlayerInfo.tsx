@@ -2,6 +2,7 @@
 
 import { Loader2 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
+import { useTranslations } from 'next-intl';
 
 import { TrackLyricsType } from '@/api/model';
 import type { AutoDjStatus, StreamState, TrackInfo, TrackVoteMap } from '@/types';
@@ -48,12 +49,9 @@ export default function PlayerInfo({
   favoriteLoading,
   onToggleFavorite,
 }: PlayerInfoProps) {
+  const t = useTranslations('player');
   const statusText =
-    streamState === 'skipping'
-      ? '곡을 넘기는 중...'
-      : streamState === 'preparing' && isPlaying
-        ? '다음 곡 준비 중...'
-        : null;
+    streamState === 'skipping' ? t('skipping') : streamState === 'preparing' && isPlaying ? t('preparing') : null;
   return (
     <AnimatePresence mode="wait">
       <motion.div
@@ -100,7 +98,7 @@ export default function PlayerInfo({
               className={`text-[15px] font-semibold leading-tight ${statusText ? 'animate-text-shimmer' : 'text-white'}`}
             />
           ) : (
-            <p className="text-[13px] text-white/30">곡을 신청하면 자동으로 재생됩니다</p>
+            <p className="text-[13px] text-white/30">{t('idleHint')}</p>
           )}
           <div className="mt-1 flex h-4 items-center gap-1">
             {autoDjEnabled ? (
