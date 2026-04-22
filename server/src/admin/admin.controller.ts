@@ -49,6 +49,7 @@ import { StreamingMetricsResponse } from './dto/streaming-metrics-response.dto.j
 import { SystemSettingItem, UpdateSettingsDto } from './dto/system-setting.dto.js';
 import { SystemStatsResponse } from './dto/system-stats-response.dto.js';
 import { TrackRankingItem } from './dto/track-ranking-item.dto.js';
+import { PaginatedTrackRankingResponse } from './dto/paginated-track-ranking-response.dto.js';
 import { TrackLyricsResponse } from './dto/track-lyrics-response.dto.js';
 import { UpdateRoleDto } from './dto/update-role.dto.js';
 import { UserDetailResponse } from './dto/user-detail-response.dto.js';
@@ -229,9 +230,12 @@ export class AdminController {
 
   @Get('tracks/ranking')
   @ApiOperation({ summary: '인기 트랙 순위' })
-  @ApiOkResponse({ type: [TrackRankingItem] })
-  getTopTracks(@Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number) {
-    return this.adminService.getTopTracks(limit);
+  @ApiOkResponse({ type: PaginatedTrackRankingResponse })
+  getTopTracks(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+  ) {
+    return this.adminService.getTopTracks(page, limit);
   }
 
   @Get('live-rooms')

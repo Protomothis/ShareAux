@@ -4,6 +4,8 @@ import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { Provider } from '../types/provider.enum.js';
 import { LyricsType } from '../types/lyrics-type.enum.js';
 
+import type { TrackStats } from './track-stats.entity.js';
+
 @Entity('tracks')
 @Unique(['provider', 'sourceId'])
 export class Track {
@@ -100,4 +102,7 @@ export class Track {
   @ApiProperty()
   @Column({ name: 'fetched_at' })
   fetchedAt!: Date;
+
+  /** leftJoinAndMapOne으로 매핑되는 비영속 프로퍼티 */
+  stats?: TrackStats | null;
 }

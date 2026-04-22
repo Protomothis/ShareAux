@@ -48,6 +48,7 @@ import type {
   PaginatedInviteCodesResponse,
   PaginatedReportsResponse,
   PaginatedRoomsResponse,
+  PaginatedTrackRankingResponse,
   PaginatedUsersResponse,
   PlaysMetricsResponse,
   RealtimeMetricsResponse,
@@ -55,7 +56,6 @@ import type {
   StreamingMetricsResponse,
   SystemStatsResponse,
   TrackLyricsResponse,
-  TrackRankingItem,
   UpdateRoleDto,
   UpdateSettingsDto,
   User,
@@ -1494,8 +1494,8 @@ export const getAdminControllerGetTopTracksUrl = (params: AdminControllerGetTopT
 export const adminControllerGetTopTracks = async (
   params: AdminControllerGetTopTracksParams,
   options?: RequestInit,
-): Promise<TrackRankingItem[]> => {
-  return customFetch<TrackRankingItem[]>(getAdminControllerGetTopTracksUrl(params), {
+): Promise<PaginatedTrackRankingResponse> => {
+  return customFetch<PaginatedTrackRankingResponse>(getAdminControllerGetTopTracksUrl(params), {
     ...options,
     method: 'GET',
   });
