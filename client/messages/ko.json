@@ -81,5 +81,30 @@
       "submitButton": "입장하기",
       "errorFallback": "입장에 실패했습니다"
     }
+  },
+  "rooms": {
+    "list": {
+      "refresh": "새로고침",
+      "createRoom": "방 만들기",
+      "emptyTitle": "아직 활성 방이 없습니다",
+      "emptyDescription": "첫 번째 방을 만들어보세요!",
+      "wrongPassword": "비밀번호가 틀렸습니다",
+      "joinFailed": "입장에 실패했습니다"
+    },
+    "card": {
+      "idle": "재생 대기 중",
+      "unknownHost": "알 수 없음"
+    },
+    "createModal": {
+      "title": "방 만들기",
+      "nameRequired": "방 이름을 입력하세요",
+      "passwordRequired": "비밀번호를 입력하세요",
+      "submit": "만들기"
+    },
+    "profile": {
+      "settings": "설정",
+      "admin": "관리자 페이지",
+      "logout": "로그아웃"
+    }
   }
 }

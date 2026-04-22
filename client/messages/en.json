@@ -81,5 +81,30 @@
       "submitButton": "Join",
       "errorFallback": "Failed to join"
     }
+  },
+  "rooms": {
+    "list": {
+      "refresh": "Refresh",
+      "createRoom": "Create room",
+      "emptyTitle": "No active rooms yet",
+      "emptyDescription": "Create the first room!",
+      "wrongPassword": "Wrong password",
+      "joinFailed": "Failed to join"
+    },
+    "card": {
+      "idle": "Idle",
+      "unknownHost": "Unknown"
+    },
+    "createModal": {
+      "title": "Create room",
+      "nameRequired": "Enter a room name",
+      "passwordRequired": "Enter a password",
+      "submit": "Create"
+    },
+    "profile": {
+      "settings": "Settings",
+      "admin": "Admin",
+      "logout": "Log out"
+    }
   }
 }

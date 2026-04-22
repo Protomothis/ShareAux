@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import Modal from '@/components/common/Modal';
 import { roomsControllerCreate } from '@/api/rooms/rooms';
@@ -17,13 +18,14 @@ interface CreateRoomModalProps {
 }
 
 export default function CreateRoomModal({ open, onClose, onCreated }: CreateRoomModalProps) {
+  const t = useTranslations('rooms');
   const [values, setValues] = useState<RoomFormValues>({ ...DEFAULT_FORM_VALUES });
   const [loading, setLoading] = useState(false);
 
   const rules = useMemo(
     () => ({
-      name: (v: string) => !v.trim() && '방 이름을 입력하세요',
-      password: (v: string, vals: RoomFormValues) => vals.isPrivate && !v && '비밀번호를 입력하세요',
+      name: (v: string) => !v.trim() && t('createModal.nameRequired'),
+      password: (v: string, vals: RoomFormValues) => vals.isPrivate && !v && t('createModal.passwordRequired'),
     }),
     [],
   );
@@ -74,7 +76,7 @@ export default function CreateRoomModal({ open, onClose, onCreated }: CreateRoom
     <Modal open={open} onClose={reset} className="max-w-sm sm:max-w-lg">
       <form onSubmit={handleSubmit} className="grid gap-4">
         <Modal.Header>
-          <Modal.Title>방 만들기</Modal.Title>
+          <Modal.Title>{t('createModal.title')}</Modal.Title>
         </Modal.Header>
 
         <Modal.Body>
@@ -83,7 +85,7 @@ export default function CreateRoomModal({ open, onClose, onCreated }: CreateRoom
 
         <Modal.Footer>
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? <Loader2 size={16} className="animate-spin" /> : '만들기'}
+            {loading ? <Loader2 size={16} className="animate-spin" /> : t('createModal.submit')}
           </Button>
         </Modal.Footer>
       </form>
