@@ -439,7 +439,18 @@
       "guest": "Guest",
       "createdAt": "Joined",
       "status": "Status",
-      "backToList": "User List"
+      "backToList": "User List",
+      "roles": {
+        "user": "User",
+        "admin": "Admin",
+        "superAdmin": "Super Admin",
+        "guest": "Guest"
+      },
+      "providers": {
+        "google": "Google",
+        "local": "Local",
+        "invite": "Invite"
+      }
     },
     "rooms": {
       "title": "Room Management",
@@ -710,7 +721,18 @@
       "saved": "Saved",
       "saving": "Saving...",
       "save": "Save",
-      "banned": "Banned"
+      "banned": "Banned",
+      "providers": {
+        "google": "Google",
+        "local": "Local",
+        "invite": "Invite"
+      },
+      "roles": {
+        "user": "User",
+        "admin": "Admin",
+        "superAdmin": "Super Admin",
+        "guest": "Guest"
+      }
     },
     "charts": {
       "connections": "Connections",

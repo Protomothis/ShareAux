@@ -11,7 +11,7 @@ import { AdminTable } from '@/components/admin/AdminTable';
 import type { Column } from '@/components/admin/AdminTable';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { PROVIDER_LABELS, ROLE_LABELS } from '@/lib/constants';
+import { PROVIDER_VARIANT } from '@/lib/constants';
 import { useAdminUsers, useUpdateUserRole } from '@/hooks/admin/useAdminUsers';
 import { useTranslations } from 'next-intl';
 
@@ -45,16 +45,16 @@ function FilterSelect({ value, onValueChange, placeholder, options }: FilterSele
 
 const ROLE_FILTER_OPTIONS = [
   { value: 'all', label: 'allRoles' },
-  { value: 'user', label: ROLE_LABELS.user },
-  { value: 'admin', label: ROLE_LABELS.admin },
-  { value: 'guest', label: ROLE_LABELS.guest },
+  { value: 'user', label: 'roles.user' },
+  { value: 'admin', label: 'roles.admin' },
+  { value: 'guest', label: 'roles.guest' },
 ];
 
 const PROVIDER_FILTER_OPTIONS = [
   { value: 'all', label: 'allProviders' },
-  { value: 'local', label: PROVIDER_LABELS.local.label },
-  { value: 'google', label: PROVIDER_LABELS.google.label },
-  { value: 'invite', label: PROVIDER_LABELS.invite.label },
+  { value: 'local', label: 'providers.local' },
+  { value: 'google', label: 'providers.google' },
+  { value: 'invite', label: 'providers.invite' },
 ];
 
 const STATUS_FILTER_OPTIONS = [
@@ -138,10 +138,11 @@ export default function AdminUsersPage() {
       key: 'provider',
       header: t('provider'),
       render: (user) => {
-        const info = PROVIDER_LABELS[user.provider] ?? { label: user.provider, variant: 'muted' as const };
+        const variant = PROVIDER_VARIANT[user.provider] ?? ('muted' as const);
+        const label = t(`providers.${user.provider}` as 'providers.google');
         return (
           <div className="flex flex-wrap gap-1">
-            <StatusBadge variant={info.variant}>{info.label}</StatusBadge>
+            <StatusBadge variant={variant}>{label}</StatusBadge>
             {user.googleId && user.provider !== 'google' && (
               <StatusBadge variant="accent">{t('googleLinked')}</StatusBadge>
             )}
@@ -163,7 +164,7 @@ export default function AdminUsersPage() {
             <SelectContent>
               {Object.values(UpdateRoleDtoRole).map((r) => (
                 <SelectItem key={r} value={r}>
-                  {ROLE_LABELS[r] ?? r}
+                  {t(`roles.${r}` as 'roles.user')}
                 </SelectItem>
               ))}
             </SelectContent>

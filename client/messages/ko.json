@@ -439,7 +439,18 @@
       "guest": "게스트",
       "createdAt": "가입일",
       "status": "상태",
-      "backToList": "유저 목록"
+      "backToList": "유저 목록",
+      "roles": {
+        "user": "일반 유저",
+        "admin": "관리자",
+        "superAdmin": "최고 관리자",
+        "guest": "게스트"
+      },
+      "providers": {
+        "google": "Google",
+        "local": "Local",
+        "invite": "초대"
+      }
     },
     "rooms": {
       "title": "방 관리",
@@ -710,7 +721,18 @@
       "saved": "저장되었습니다",
       "saving": "저장 중...",
       "save": "저장",
-      "banned": "정지됨"
+      "banned": "정지됨",
+      "providers": {
+        "google": "Google",
+        "local": "Local",
+        "invite": "초대"
+      },
+      "roles": {
+        "user": "일반 유저",
+        "admin": "관리자",
+        "superAdmin": "최고 관리자",
+        "guest": "게스트"
+      }
     },
     "charts": {
       "connections": "접속자",

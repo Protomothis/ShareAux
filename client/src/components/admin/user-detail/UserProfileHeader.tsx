@@ -1,7 +1,6 @@
 import { User as UserIcon } from 'lucide-react';
 
 import type { UserDetailResponse } from '@/api/model';
-import { PROVIDER_LABELS } from '@/lib/constants';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { useTranslations } from 'next-intl';
 
@@ -30,7 +29,7 @@ export function UserProfileHeader({ user }: UserProfileHeaderProps) {
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-sa-text-muted">
           <span>
-            {t('providerLabel')}: {PROVIDER_LABELS[user.provider]?.label ?? user.provider}
+            {t('providerLabel')}: {t(`providers.${user.provider}` as 'providers.google')}
           </span>
           <span>·</span>
           <span>
