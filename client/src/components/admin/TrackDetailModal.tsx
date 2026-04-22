@@ -70,9 +70,9 @@ export function TrackDetailModal({
           {/* 원본 YouTube 정보 */}
           {track.track.songTitle && (
             <div className="space-y-1 rounded-xl bg-white/[0.03] p-3 text-xs text-sa-text-muted">
-              <div className="truncate">원본: {track.track.name}</div>
-              <div className="truncate">채널: {track.track.artist}</div>
-              {track.track.songAlbum && <div className="truncate">앨범: {track.track.songAlbum}</div>}
+              <div className="truncate">{t('original')}: {track.track.name}</div>
+              <div className="truncate">{t('channel')}: {track.track.artist}</div>
+              {track.track.songAlbum && <div className="truncate">{t('album')}: {track.track.songAlbum}</div>}
             </div>
           )}
           <div className="flex items-center justify-between">
@@ -113,7 +113,7 @@ export function TrackDetailModal({
                 <StatusBadge variant="success">
                   {track.track.lyricsType === TrackRankingTrackInfoLyricsType.karaoke ? 'KLRC' : 'LRC'}{' '}
                   {track.track.lyricsLang?.toUpperCase() ?? ''}
-                  {track.track.hasTranslation ? ' 번역' : ''}
+                  {track.track.hasTranslation ? t('translated') : ''}
                 </StatusBadge>
               ) : track.track.lyricsStatus === TrackRankingTrackInfoLyricsStatus.not_found ? (
                 <StatusBadge variant="danger">{t('noLyrics')}</StatusBadge>
@@ -123,7 +123,7 @@ export function TrackDetailModal({
               {track.track.lyricsStatus !== TrackRankingTrackInfoLyricsStatus.searching && (
                 <button
                   onClick={async () => {
-                    if (!confirm('가사 정보를 삭제하시겠습니까? 다음 재생 시 재검색됩니다.')) return;
+                    if (!confirm(t('lyricsDeleteConfirm'))) return;
                     await adminControllerResetTrackLyrics(track.trackId);
                     toast.success(t('lyricsDeleted'));
                     setLyrics(null);
@@ -163,7 +163,7 @@ export function TrackDetailModal({
               {track.track.metaStatus === TrackRankingTrackInfoMetaStatus.done && (
                 <button
                   onClick={async () => {
-                    if (!confirm('Content ID 매칭 정보를 삭제하시겠습니까? 다음 재생 시 재매칭됩니다.')) return;
+                    if (!confirm(t('contentIdDeleteConfirm'))) return;
                     await adminControllerResetTrackMeta(track.trackId);
                     toast.success(t('contentIdDeleted'));
                     setLocalTrack((prev) =>
@@ -188,14 +188,14 @@ export function TrackDetailModal({
                   onClick={() => setLyricsTab('original')}
                   className={`text-xs ${lyricsTab === 'original' ? 'text-sa-accent' : 'text-sa-text-muted hover:text-sa-text-secondary'}`}
                 >
-                  원문
+                  {t('lyricsOriginal')}
                 </button>
                 {translated && (
                   <button
                     onClick={() => setLyricsTab('translated')}
                     className={`text-xs ${lyricsTab === 'translated' ? 'text-sa-accent' : 'text-sa-text-muted hover:text-sa-text-secondary'}`}
                   >
-                    번역
+                    {t('lyricsTranslation')}
                   </button>
                 )}
               </div>
@@ -210,7 +210,7 @@ export function TrackDetailModal({
       <Modal.Footer>
         <button
           onClick={async () => {
-            if (!confirm('이 트랙을 삭제하시겠습니까? 관련 큐/통계도 함께 삭제됩니다.')) return;
+            if (!confirm(t('trackDeleteConfirm'))) return;
             await adminControllerDeleteTrack(track.trackId);
             toast.success(t('trackDeleted'));
             onOpenChange(false);
@@ -218,7 +218,7 @@ export function TrackDetailModal({
           }}
           className="text-xs text-red-400 hover:text-red-300"
         >
-          트랙 삭제
+          {t('trackDelete')}
         </button>
       </Modal.Footer>
     </Modal>

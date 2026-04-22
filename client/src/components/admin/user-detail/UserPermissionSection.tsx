@@ -69,7 +69,7 @@ export function UserPermissionSection({ user }: UserPermissionSectionProps) {
           permissions: [...permissions] as UpdatePermissionsBodyPermissionsItem[],
         });
       }
-      toast.success('저장되었습니다');
+      toast.success(t('saved'));
     } catch {}
   }, [user, role, permissions, isAdmin, updateRole, updatePermissions]);
 
@@ -109,7 +109,7 @@ export function UserPermissionSection({ user }: UserPermissionSectionProps) {
       {!isSuperAdmin && (
         <Button variant="accent" className="mt-5 gap-1.5" onClick={handleSave} disabled={saving}>
           <Save size={14} />
-          {saving ? '저장 중...' : '저장'}
+          {saving ? t('saving') : t('save')}
         </Button>
       )}
     </div>

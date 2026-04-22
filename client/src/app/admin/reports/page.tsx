@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import type { ReportItem } from '@/api/model';
@@ -10,12 +11,11 @@ import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { useAdminReports, useResolveReport } from '@/hooks/admin/useAdminReports';
-import { useTranslations } from 'next-intl';
 
 const TABS = [
-  { value: 'pending', label: '대기중' },
-  { value: 'resolved', label: '처리됨' },
-  { value: 'dismissed', label: '무시됨' },
+  { value: 'pending', label: 'pending' },
+  { value: 'resolved', label: 'resolved' },
+  { value: 'dismissed', label: 'dismissed' },
 ] as const;
 
 const STATUS_VARIANT: Record<string, 'accent' | 'success' | 'muted'> = {
@@ -25,9 +25,9 @@ const STATUS_VARIANT: Record<string, 'accent' | 'success' | 'muted'> = {
 };
 
 const STATUS_LABEL: Record<string, string> = {
-  pending: '대기중',
-  resolved: '처리됨',
-  dismissed: '무시됨',
+  pending: 'pending',
+  resolved: 'resolved',
+  dismissed: 'dismissed',
 };
 
 const LIMIT = 20;
@@ -46,12 +46,13 @@ function ReportCard({
   onResolve: (id: string) => void;
   onDismiss: (id: string) => void;
 }) {
+  const t = useTranslations('admin.reports');
   return (
     <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-white">{report.reporterNickname ?? '알 수 없음'}</span>
+            <span className="text-sm font-medium text-white">{report.reporterNickname ?? t('unknown')}</span>
             <span className="text-xs text-sa-text-muted">
               → {report.targetType}:{report.targetId.slice(0, 8)}
             </span>
@@ -66,10 +67,10 @@ function ReportCard({
         {report.status === 'pending' && (
           <div className="flex shrink-0 gap-2">
             <Button variant="accent" size="sm" onClick={() => onResolve(report.id)}>
-              처리
+              {t('resolve')}
             </Button>
             <Button variant="ghost" size="sm" onClick={() => onDismiss(report.id)}>
-              무시
+              {t('dismiss')}
             </Button>
           </div>
         )}
@@ -91,7 +92,7 @@ export default function AdminReportsPage() {
     if (!resolveTarget) return;
     resolveReport.mutate(resolveTarget, {
       onSuccess: () => {
-        toast.success(resolveTarget.status === 'resolved' ? '신고가 처리되었습니다' : '신고가 무시되었습니다');
+        toast.success(resolveTarget.status === 'resolved' ? t('resolvedToast') : t('dismissedToast'));
         setResolveTarget(null);
       },
     });
@@ -100,10 +101,7 @@ export default function AdminReportsPage() {
   return (
     <div>
       <AdminPageHeader title={t('title')} />
-      <p className="mb-4 text-xs text-sa-text-muted">
-        신고 내용을 확인 후 필요 시 유저 상세에서 제재(밴/경고)를 진행하세요. &quot;처리&quot;는 조치 완료,
-        &quot;무시&quot;는 조치 불필요를 의미합니다.
-      </p>
+      <p className="mb-4 text-xs text-sa-text-muted">{t('hint')}</p>
 
       {/* 탭 필터 */}
       <div className="mb-4 flex gap-1 rounded-xl bg-white/5 p-1">
@@ -121,7 +119,7 @@ export default function AdminReportsPage() {
                 : 'text-sa-text-muted hover:text-white'
             }`}
           >
-            {tab.label}
+            {t(tab.label)}
           </button>
         ))}
       </div>
@@ -150,13 +148,9 @@ export default function AdminReportsPage() {
       <ConfirmDialog
         open={!!resolveTarget}
         onOpenChange={(open) => !open && setResolveTarget(null)}
-        title={resolveTarget?.status === 'resolved' ? '신고 처리' : '신고 무시'}
-        description={
-          resolveTarget?.status === 'resolved'
-            ? '이 신고를 확인하고 조치를 완료했음을 표시합니다.'
-            : '이 신고를 부당하거나 조치 불필요로 처리합니다.'
-        }
-        confirmLabel={resolveTarget?.status === 'resolved' ? '처리' : '무시'}
+        title={resolveTarget?.status === 'resolved' ? t('resolveTitle') : t('dismissTitle')}
+        description={resolveTarget?.status === 'resolved' ? t('resolveDesc') : t('dismissDesc')}
+        confirmLabel={resolveTarget?.status === 'resolved' ? t('resolve') : t('dismiss')}
         variant={resolveTarget?.status === 'resolved' ? 'default' : 'destructive'}
         onConfirm={handleResolve}
         loading={resolveReport.isPending}

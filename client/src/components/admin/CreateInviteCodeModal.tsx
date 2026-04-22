@@ -119,7 +119,7 @@ export function CreateInviteCodeModal({
             variant="accent"
             disabled={createCode.isPending || (code.length > 0 && code.length < 6)}
           >
-            {createCode.isPending ? '생성 중...' : '생성'}
+            {createCode.isPending ? t('creating') : t('create')}
           </Button>
         </Modal.Footer>
       </form>

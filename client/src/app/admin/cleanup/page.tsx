@@ -23,50 +23,50 @@ interface CleanupSection {
 const CLEANUP_SECTIONS: CleanupSection[] = [
   {
     type: 'unplayed-tracks',
-    label: '미재생 트랙',
-    description: '한 번도 재생되지 않은 트랙 삭제',
+    label: 'unplayedTracks',
+    description: 'unplayedTracksDesc',
     countKey: 'unplayedTracks',
     icon: '🎵',
   },
   {
     type: 'stale-tracks',
-    label: '오래된 트랙 (30일)',
-    description: '30일 이상 재생되지 않은 트랙 삭제',
+    label: 'oldTracks',
+    description: 'oldTracksDesc',
     countKey: 'staleTracksCount',
     icon: '📀',
   },
   {
     type: 'old-histories-30d',
-    label: '재생 이력 (30일)',
-    description: '30일 이전 재생 이력 삭제',
+    label: 'oldHistory',
+    description: 'oldHistoryDesc',
     countKey: 'oldHistories30d',
     icon: '📜',
   },
   {
     type: 'inactive-rooms-7d',
-    label: '비활성 방 (7일)',
-    description: '7일 이상 비활성 방 삭제',
+    label: 'inactiveRoomsClean',
+    description: 'inactiveRoomsCleanDesc',
     countKey: 'inactiveRooms7d',
     icon: '🚪',
   },
   {
     type: 'empty-inactive-rooms',
-    label: '빈 비활성 방',
-    description: '큐가 없는 비활성 방 삭제',
+    label: 'emptyRooms',
+    description: 'emptyRoomsDesc',
     countKey: 'emptyInactiveRooms',
     icon: '🏚️',
   },
   {
     type: 'expired-guests',
-    label: '만료 게스트',
-    description: '12시간 이상 된 게스트 삭제',
+    label: 'expiredGuests',
+    description: 'expiredGuestsDesc',
     countKey: 'expiredGuests',
     icon: '👤',
   },
   {
     type: 'inactive-guests-30d',
-    label: '비활성 게스트 (30일)',
-    description: '30일 이상 비활성 게스트 삭제',
+    label: 'inactiveGuests',
+    description: 'inactiveGuestsDesc',
     countKey: 'inactiveGuests30d',
     icon: '👻',
   },
@@ -122,7 +122,7 @@ export default function AdminCleanupPage() {
         <div className="mb-6 rounded-xl border border-white/5 bg-white/[0.03] p-4">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-medium text-white">{t('tableSize')}</h3>
-            <span className="text-xs text-sa-text-muted">전체 {formatSize(totalDB)}</span>
+            <span className="text-xs text-sa-text-muted">{t('totalSize', { size: formatSize(totalDB) })}</span>
           </div>
           <div className="space-y-1.5">
             {summary.tableSizes.map((t) => (
@@ -153,7 +153,7 @@ export default function AdminCleanupPage() {
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-sm font-medium tabular-nums text-sa-text-muted">
-                  {isLoading ? '...' : (count as number).toLocaleString()}건
+                  {isLoading ? '...' : t('items', { count: (count as number).toLocaleString() })}
                 </span>
                 <Button
                   variant="destructive"
@@ -162,7 +162,7 @@ export default function AdminCleanupPage() {
                   onClick={() => setConfirmType(section.type)}
                 >
                   <Trash2 size={14} className="mr-1" />
-                  정리
+                  {t('clean')}
                 </Button>
               </div>
             </div>
@@ -174,8 +174,8 @@ export default function AdminCleanupPage() {
         open={!!confirmType}
         onOpenChange={(open) => !open && setConfirmType(null)}
         title={t('cleanTitle')}
-        description={`${activeSection?.label ?? ''} 항목을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
-        confirmLabel="삭제"
+        description={t('cleanDesc', { label: activeSection?.label ? t(activeSection.label) : '' })}
+        confirmLabel={t('delete')}
         variant="destructive"
         onConfirm={handleCleanup}
         loading={cleanup.isPending}

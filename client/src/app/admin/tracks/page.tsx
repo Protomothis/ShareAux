@@ -30,7 +30,7 @@ export default function AdminTracksPage() {
     },
     {
       key: 'name',
-      header: '트랙',
+      header: t('track'),
       primary: true,
       render: (item) => (
         <div className="min-w-0">
@@ -41,7 +41,7 @@ export default function AdminTracksPage() {
     },
     {
       key: 'plays',
-      header: '재생',
+      header: t('plays'),
       width: '5rem',
       render: (item) => (
         <span className="flex items-center gap-1 text-white">
@@ -51,7 +51,7 @@ export default function AdminTracksPage() {
     },
     {
       key: 'votes',
-      header: '투표',
+      header: t('votes'),
       width: '7rem',
       hideOnMobile: true,
       render: (item) => (
@@ -67,14 +67,14 @@ export default function AdminTracksPage() {
     },
     {
       key: 'users',
-      header: '유저',
+      header: t('users'),
       width: '4rem',
       hideOnMobile: true,
       render: (item) => <span className="text-sa-text-muted">{item.uniqueUsers}</span>,
     },
     {
       key: 'lyrics',
-      header: '가사',
+      header: t('lyrics'),
       width: '7rem',
       hideOnMobile: true,
       render: (item) => {
@@ -85,7 +85,7 @@ export default function AdminTracksPage() {
         return s === TrackRankingTrackInfoLyricsStatus.found ? (
           <StatusBadge variant="success">
             {type} {lang?.toUpperCase() ?? ''}
-            {translated ? ' 번역' : ''}
+            {translated ? t('translated') : ''}
           </StatusBadge>
         ) : s === TrackRankingTrackInfoLyricsStatus.not_found ? (
           <StatusBadge variant="danger">{t('noLyrics')}</StatusBadge>
@@ -96,7 +96,7 @@ export default function AdminTracksPage() {
     },
     {
       key: 'score',
-      header: '점수',
+      header: t('score'),
       width: '5rem',
       render: (item) => (
         <StatusBadge variant="accent">
@@ -126,7 +126,7 @@ export default function AdminTracksPage() {
     <div>
       <AdminPageHeader
         title={t('title')}
-        search={{ value: search, onChange: setSearch, placeholder: '트랙 검색...' }}
+        search={{ value: search, onChange: setSearch, placeholder: t('searchPlaceholder') }}
       />
       <AdminTable
         columns={columns}

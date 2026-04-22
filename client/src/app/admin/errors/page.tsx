@@ -118,7 +118,7 @@ function Filters({
             onClick={() => onStatusChange(v)}
             className={statusFilter !== v ? 'text-sa-text-muted' : ''}
           >
-            {v === 'all' ? '전체' : v}
+            {v === 'all' ? t('all') : v}
           </Button>
         ))}
       </div>
@@ -189,7 +189,7 @@ function FileTab() {
             <div className="flex-1">
               <p className="text-sm text-white">{f.filename}</p>
               <p className="text-xs text-sa-text-muted">
-                {f.errorCount}건 · {(f.sizeBytes / 1024).toFixed(1)}KB
+                {t('items', { count: f.errorCount })} · {(f.sizeBytes / 1024).toFixed(1)}KB
               </p>
             </div>
           </button>
@@ -202,7 +202,7 @@ function FileTab() {
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="xs" onClick={() => setSelected('')} className="text-sa-text-muted">
-          ← 파일 목록
+          {t('backToFiles')}
         </Button>
         <span className="text-xs text-white">{selected}</span>
       </div>
@@ -229,8 +229,8 @@ export default function AdminErrorsPage() {
       <div className="flex gap-1 rounded-xl bg-white/[0.03] p-1">
         {(
           [
-            ['memory', '에러 로그'],
-            ['files', '파일 로그'],
+            ['memory', t('memoryTab')],
+            ['files', t('filesTab')],
           ] as const
         ).map(([key, label]) => (
           <Button

@@ -10,6 +10,7 @@ interface UserProfileHeaderProps {
 }
 
 export function UserProfileHeader({ user }: UserProfileHeaderProps) {
+  const t = useTranslations('admin.userDetail');
   const isSuperAdmin = user.role === 'superAdmin';
 
   return (
@@ -25,12 +26,16 @@ export function UserProfileHeader({ user }: UserProfileHeaderProps) {
           <StatusBadge variant={isSuperAdmin ? 'accent' : user.role === 'guest' ? 'muted' : 'success'}>
             {user.role}
           </StatusBadge>
-          {user.bannedAt && <StatusBadge variant="danger">정지됨</StatusBadge>}
+          {user.bannedAt && <StatusBadge variant="danger">{t('banned')}</StatusBadge>}
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-sa-text-muted">
-          <span>가입 방식: {PROVIDER_LABELS[user.provider]?.label ?? user.provider}</span>
+          <span>
+            {t('providerLabel')}: {PROVIDER_LABELS[user.provider]?.label ?? user.provider}
+          </span>
           <span>·</span>
-          <span>Google 연동: {user.googleId ? '✅' : '❌'}</span>
+          <span>
+            {t('googleLinked')}: {user.googleId ? '✅' : '❌'}
+          </span>
           <span>·</span>
           <span>가입: {new Date(user.createdAt).toLocaleDateString('ko-KR')}</span>
         </div>

@@ -10,22 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAdminAuditLogs } from '@/hooks/admin/useAdminAuditLogs';
 import { useTranslations } from 'next-intl';
 
-const ACTION_OPTIONS = [
-  { value: '', label: '전체 액션' },
-  { value: 'settings_update', label: '설정 변경' },
-  { value: 'cleanup', label: '데이터 정리' },
-  { value: 'report_resolve', label: '신고 처리' },
-  { value: 'role_change', label: '역할 변경' },
-  { value: 'ban', label: '밴' },
-  { value: 'unban', label: '밴 해제' },
-];
-
 const TARGET_OPTIONS = [
-  { value: '', label: '전체 대상' },
-  { value: 'system', label: '시스템' },
-  { value: 'user', label: '유저' },
-  { value: 'room', label: '방' },
-  { value: 'report', label: '신고' },
+  { value: '', label: 'allTargets' },
+  { value: 'system', label: 'system' },
+  { value: 'user', label: 'user' },
+  { value: 'room', label: 'room' },
+  { value: 'report', label: 'report' },
 ];
 
 const ACTION_ICONS: Record<string, string> = {
@@ -79,6 +69,16 @@ function LogEntry({ log }: { log: AuditLogItem }) {
 
 export default function AdminAuditLogsPage() {
   const t = useTranslations('admin.auditLogs');
+  const ACTION_OPTIONS = [
+    { value: '', label: 'allActions' },
+    { value: 'settings_update', label: 'settingsUpdate' },
+    { value: 'cleanup', label: 'cleanupAction' },
+    { value: 'report_resolve', label: 'reportResolve' },
+    { value: 'role_change', label: 'roleChange' },
+    { value: 'ban', label: 'ban' },
+    { value: 'unban', label: 'unban' },
+  ];
+
   const [page, setPage] = useState(1);
   const [action, setAction] = useState('');
   const [targetType, setTargetType] = useState('');
@@ -109,7 +109,7 @@ export default function AdminAuditLogsPage() {
             <SelectContent>
               {ACTION_OPTIONS.map((o) => (
                 <SelectItem key={o.value} value={o.value}>
-                  {o.label}
+                  {t(o.label)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -121,7 +121,7 @@ export default function AdminAuditLogsPage() {
             <SelectContent>
               {TARGET_OPTIONS.map((o) => (
                 <SelectItem key={o.value} value={o.value}>
-                  {o.label}
+                  {t(o.label)}
                 </SelectItem>
               ))}
             </SelectContent>

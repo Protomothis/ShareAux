@@ -93,24 +93,26 @@ export default function AdminIpBansPage() {
     },
     {
       key: 'reason',
-      header: '사유',
+      header: t('reason'),
       render: (item) => <span className="text-sa-text-muted">{item.reason ?? '-'}</span>,
     },
     {
       key: 'banner',
-      header: '차단자',
+      header: t('bannedBy'),
       hideOnMobile: true,
       render: (item) => <span className="text-sa-text-muted">{item.bannerNickname ?? '-'}</span>,
     },
     {
       key: 'expiresAt',
-      header: '만료일',
+      header: t('expiresAt'),
       hideOnMobile: true,
-      render: (item) => <span className="text-sa-text-muted">{item.expiresAt ? fmt(item.expiresAt) : '영구'}</span>,
+      render: (item) => (
+        <span className="text-sa-text-muted">{item.expiresAt ? fmt(item.expiresAt) : t('permanent')}</span>
+      ),
     },
     {
       key: 'createdAt',
-      header: '차단일',
+      header: t('bannedAt'),
       hideOnMobile: true,
       render: (item) => <span className="text-sa-text-muted">{fmt(item.createdAt)}</span>,
     },
@@ -120,7 +122,7 @@ export default function AdminIpBansPage() {
       render: (item) => (
         <Button variant="destructive" size="sm" onClick={() => setUnbanTarget(item.id)}>
           <Trash2 size={12} className="mr-1" />
-          해제
+          {t('release')}
         </Button>
       ),
     },
@@ -163,7 +165,7 @@ export default function AdminIpBansPage() {
             </FormField>
             <DialogFooter>
               <Button type="submit" variant="accent" disabled={banIp.isPending || !ip.trim()}>
-                {banIp.isPending ? '차단 중...' : '차단'}
+                {banIp.isPending ? t('banning') : t('ban')}
               </Button>
             </DialogFooter>
           </form>
@@ -176,7 +178,7 @@ export default function AdminIpBansPage() {
         onOpenChange={(open) => !open && setUnbanTarget(null)}
         title={t('releaseTitle')}
         description={t('releaseDesc')}
-        confirmLabel="해제"
+        confirmLabel={t('release')}
         variant="destructive"
         onConfirm={handleUnban}
         loading={unbanIp.isPending}

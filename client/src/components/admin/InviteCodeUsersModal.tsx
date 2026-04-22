@@ -36,7 +36,7 @@ export function InviteCodeUsersModal({
     setDeleting(true);
     try {
       await adminControllerDeleteInviteCodeGuests(inviteCodeId);
-      toast.success(`게스트 ${guestCount}명 삭제 완료`);
+      toast.success(t('guestsDeleted', { count: guestCount }));
       setConfirmOpen(false);
       await qc.invalidateQueries({ queryKey: ['admin', 'invite-codes'] });
     } catch {
@@ -50,7 +50,7 @@ export function InviteCodeUsersModal({
     <Modal open={!!inviteCodeId} onOpenChange={onOpenChange} className="sm:max-w-md">
       <Modal.Header>
         <Modal.Title className="flex items-center gap-2">
-          <Users size={16} /> 초대코드 유저 — {code}
+          <Users size={16} /> {t('usersTitle')} — {code}
         </Modal.Title>
       </Modal.Header>
 
@@ -79,14 +79,14 @@ export function InviteCodeUsersModal({
       {guestCount > 0 && (
         <Modal.Footer>
           <Button variant="destructive" className="gap-1.5" onClick={() => setConfirmOpen(true)}>
-            <Trash2 size={14} /> 게스트 {guestCount}명 일괄 삭제
+            <Trash2 size={14} /> {t('deleteGuests', { count: guestCount })}
           </Button>
           <ConfirmDialog
             open={confirmOpen}
             onOpenChange={setConfirmOpen}
             title={t('deleteGuestsTitle')}
-            description={`이 초대코드로 입장한 게스트 ${guestCount}명을 모두 삭제합니다. 일반 회원은 영향받지 않습니다.`}
-            confirmLabel="삭제"
+            description={t('deleteGuestsDesc', { count: guestCount })}
+            confirmLabel={t('delete')}
             variant="destructive"
             onConfirm={handleDeleteGuests}
             loading={deleting}

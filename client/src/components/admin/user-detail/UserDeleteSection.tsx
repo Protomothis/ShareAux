@@ -40,18 +40,18 @@ export function UserDeleteSection({ user }: UserDeleteSectionProps) {
   return (
     <div className="mt-4 rounded-2xl border border-red-500/10 bg-red-500/[0.03] p-4 sm:p-6">
       <h3 className="mb-3 flex items-center gap-2 text-sm font-medium text-red-400">
-        <Trash2 size={16} /> 계정 삭제
+        <Trash2 size={16} /> {t('accountDelete')}
       </h3>
       <p className="mb-3 text-xs text-sa-text-muted">{t('deleteHint')}</p>
       <Button variant="destructive" className="gap-1.5" onClick={() => setOpen(true)}>
-        <Trash2 size={14} /> 계정 삭제
+        <Trash2 size={14} /> {t('accountDelete')}
       </Button>
       <ConfirmDialog
         open={open}
         onOpenChange={setOpen}
         title={t('accountDelete')}
-        description={`${user.nickname} 계정을 영구 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
-        confirmLabel="삭제"
+        description={t('deleteConfirmDesc', { nickname: user.nickname })}
+        confirmLabel={t('delete')}
         variant="destructive"
         onConfirm={handleDelete}
         loading={deleteUser.isPending}

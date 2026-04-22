@@ -13,6 +13,7 @@ import { useAdminUserDetail } from '@/hooks/admin/useAdminUserDetail';
 import { useTranslations } from 'next-intl';
 
 export default function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const t = useTranslations('admin.userDetail');
   const { id } = use(params);
   const { data: user, isLoading } = useAdminUserDetail(id);
 
@@ -27,7 +28,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
   return (
     <div>
       <Link href="/admin/users" className="mb-4 flex items-center gap-1 text-sm text-sa-text-muted hover:text-white">
-        <ArrowLeft size={14} /> 유저 목록
+        <ArrowLeft size={14} /> {t('backToList')}
       </Link>
       <UserProfileHeader user={user} />
       <UserPermissionSection user={user} />

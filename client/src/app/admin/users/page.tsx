@@ -44,23 +44,23 @@ function FilterSelect({ value, onValueChange, placeholder, options }: FilterSele
 }
 
 const ROLE_FILTER_OPTIONS = [
-  { value: 'all', label: '전체 역할' },
+  { value: 'all', label: 'allRoles' },
   { value: 'user', label: ROLE_LABELS.user },
   { value: 'admin', label: ROLE_LABELS.admin },
   { value: 'guest', label: ROLE_LABELS.guest },
 ];
 
 const PROVIDER_FILTER_OPTIONS = [
-  { value: 'all', label: '전체 가입' },
+  { value: 'all', label: 'allProviders' },
   { value: 'local', label: PROVIDER_LABELS.local.label },
   { value: 'google', label: PROVIDER_LABELS.google.label },
   { value: 'invite', label: PROVIDER_LABELS.invite.label },
 ];
 
 const STATUS_FILTER_OPTIONS = [
-  { value: 'all', label: '전체 상태' },
-  { value: 'active', label: '정상' },
-  { value: 'banned', label: '정지됨' },
+  { value: 'all', label: 'allStatus' },
+  { value: 'active', label: 'active' },
+  { value: 'banned', label: 'banned' },
 ];
 
 export default function AdminUsersPage() {
@@ -115,7 +115,7 @@ export default function AdminUsersPage() {
   const columns: Column<User>[] = [
     {
       key: 'nickname',
-      header: '닉네임',
+      header: t('nickname'),
       render: (user) => (
         <Link href={`/admin/users/${user.id}`} className="font-medium text-white hover:text-sa-accent">
           {user.nickname}
@@ -124,19 +124,19 @@ export default function AdminUsersPage() {
     },
     {
       key: 'username',
-      header: '유저네임',
+      header: t('username'),
       hideOnMobile: true,
       render: (user) => <span className="text-sa-text-muted">{user.username ? `@${user.username}` : '-'}</span>,
     },
     {
       key: 'email',
-      header: '이메일',
+      header: t('email'),
       hideOnMobile: true,
       render: (user) => <span className="text-sa-text-muted">{user.email ?? '-'}</span>,
     },
     {
       key: 'provider',
-      header: '가입/연동',
+      header: t('provider'),
       render: (user) => {
         const info = PROVIDER_LABELS[user.provider] ?? { label: user.provider, variant: 'muted' as const };
         return (
@@ -151,7 +151,7 @@ export default function AdminUsersPage() {
     },
     {
       key: 'role',
-      header: '역할',
+      header: t('role'),
       render: (user) => {
         if (user.role === UserRole.superAdmin) return <StatusBadge variant="accent">superAdmin</StatusBadge>;
         if (user.role === UserRole.guest) return <StatusBadge variant="muted">{t('guest')}</StatusBadge>;
@@ -173,7 +173,7 @@ export default function AdminUsersPage() {
     },
     {
       key: 'createdAt',
-      header: '가입일',
+      header: t('createdAt'),
       hideOnMobile: true,
       render: (user) => (
         <span className="text-sa-text-muted">{new Date(user.createdAt).toLocaleDateString('ko-KR')}</span>
@@ -181,7 +181,7 @@ export default function AdminUsersPage() {
     },
     {
       key: 'status',
-      header: '상태',
+      header: t('status'),
       render: (user) =>
         user.bannedAt ? (
           <StatusBadge variant="danger">{t('banned')}</StatusBadge>
@@ -195,7 +195,7 @@ export default function AdminUsersPage() {
     <div>
       <AdminPageHeader
         title={t('title')}
-        search={{ value: search, onChange: handleSearch, placeholder: '닉네임 또는 유저네임 검색...' }}
+        search={{ value: search, onChange: handleSearch, placeholder: t('searchPlaceholder') }}
       />
 
       {/* 필터 */}
@@ -209,7 +209,7 @@ export default function AdminUsersPage() {
         <FilterSelect
           value={providerFilter}
           onValueChange={handleFilterChange(setProviderFilter)}
-          placeholder="가입 방식"
+          placeholder={t('allProviders')}
           options={PROVIDER_FILTER_OPTIONS}
         />
         <FilterSelect
