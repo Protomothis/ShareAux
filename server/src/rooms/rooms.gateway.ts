@@ -1,4 +1,5 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import type { IncomingMessage, Server as HttpServer } from 'http';
 import type { Duplex } from 'stream';
@@ -36,20 +37,32 @@ export class RoomsGateway {
     private audio: AudioService,
     private chatMute: ChatMuteService,
     private rooms: RoomsService,
+    private config: ConfigService,
     @Inject(forwardRef(() => AuthService)) private auth: AuthService,
   ) {}
 
   attachToServer(httpServer: HttpServer): void {
     this.wss = new WebSocketServer({ noServer: true });
 
+    const allowedOrigin = this.config.get<string>('CLIENT_URL');
+
     httpServer.on('upgrade', (req: IncomingMessage, socket: Duplex, head: Buffer) => {
-      if (req.url?.split('?')[0] === '/ws') {
-        this.wss!.handleUpgrade(req, socket, head, (client) => {
-          void this.handleConnection(client as WsClient, req);
-        });
-      } else {
+      if (req.url?.split('?')[0] !== '/ws') {
         socket.destroy();
+        return;
       }
+
+      // CSWSH 방지: Origin 헤더 검증
+      const origin = req.headers.origin;
+      if (allowedOrigin && origin && !origin.startsWith(allowedOrigin)) {
+        this.logger.warn(`WS upgrade rejected: origin=${origin} (allowed=${allowedOrigin})`);
+        socket.destroy();
+        return;
+      }
+
+      this.wss!.handleUpgrade(req, socket, head, (client) => {
+        void this.handleConnection(client as WsClient, req);
+      });
     });
 
     // 60초마다 하트비트 체크 — 세션 만료된 유저 정리

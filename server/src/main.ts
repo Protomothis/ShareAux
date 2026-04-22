@@ -36,17 +36,19 @@ async function bootstrap() {
   app.getHttpAdapter().getInstance().set('trust proxy', true);
   app.setGlobalPrefix('api');
 
-  // Swagger
-  const config = new DocumentBuilder()
-    .setTitle('ShareAux API')
-    .setDescription('실시간 음악 공유 플랫폼 API')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, config, {
-    extraModels: [WsEnumsSchema, ErrorResponseDto],
-  });
-  SwaggerModule.setup('api/docs', app, document);
+  // Swagger — 프로덕션에서는 비활성화
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('ShareAux API')
+      .setDescription('실시간 음악 공유 플랫폼 API')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
+    const document = SwaggerModule.createDocument(app, config, {
+      extraModels: [WsEnumsSchema, ErrorResponseDto],
+    });
+    SwaggerModule.setup('api/docs', app, document);
+  }
 
   await app.listen(process.env.PORT || 3000);
 
