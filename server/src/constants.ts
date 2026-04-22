@@ -21,7 +21,8 @@ export const FFMPEG_FRAG_DURATION = '1000000'; // 1초 (μs)
 export const FFMPEG_MAX_RETRIES = 3;
 export const FFMPEG_RECENT_CHUNKS = 3;
 export const STREAM_BUFFER_CHUNKS = 3; // 버스트 전송 전 모을 청크 수 (= 초)
-export const TRACK_END_DELAY_MS = 2000; // 곡 전환 전 마지막 버퍼 재생 대기 (ms)
+/** 곡 전환 전 마지막 버퍼 재생 대기 — burst 크기 + 여유 1초 */
+export const TRACK_END_DELAY_MS = (STREAM_BUFFER_CHUNKS + 1) * 1000;
 
 // ─── Preload ────────────────────────────────────────────
 export const PRELOAD_MAX_CONCURRENT = 20;

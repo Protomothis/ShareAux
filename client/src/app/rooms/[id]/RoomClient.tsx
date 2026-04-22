@@ -116,7 +116,7 @@ export default function RoomClient({ id }: { id: string }) {
 
   // --- Audio ---
   const roomAudio = useRoomAudio(audioLoadingRef, setAudioLoading);
-  const { audio, listening, volume, onAudio, handleListenToggle, handleVolumeChange } = roomAudio;
+  const { audio, listening, volume, onAudio, handleListenToggle, handleVolumeChange, buffering } = roomAudio;
   useEffect(() => {
     listeningRef.current = listening;
   }, [listening, listeningRef]);
@@ -279,7 +279,7 @@ export default function RoomClient({ id }: { id: string }) {
       if (streamState === 'streaming') sendResync();
     },
     listening,
-    audioLoading,
+    audioLoading: audioLoading || buffering,
     volume,
     skipVotes,
     skipRequired,

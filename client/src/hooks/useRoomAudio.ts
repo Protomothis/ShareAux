@@ -86,5 +86,7 @@ export function useRoomAudio(audioLoadingRef: React.MutableRefObject<boolean>, s
     onAudio,
     handleListenToggle,
     handleVolumeChange,
+    /** MSE 버퍼 확보 대기 중 여부 */
+    buffering: audio.buffering,
   };
 }
