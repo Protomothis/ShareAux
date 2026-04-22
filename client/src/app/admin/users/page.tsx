@@ -13,6 +13,7 @@ import { StatusBadge } from '@/components/admin/StatusBadge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PROVIDER_LABELS, ROLE_LABELS } from '@/lib/constants';
 import { useAdminUsers, useUpdateUserRole } from '@/hooks/admin/useAdminUsers';
+import { useTranslations } from 'next-intl';
 
 const LIMIT = 20;
 const DEBOUNCE_MS = 300;
@@ -63,6 +64,7 @@ const STATUS_FILTER_OPTIONS = [
 ];
 
 export default function AdminUsersPage() {
+  const t = useTranslations('admin.users');
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -140,7 +142,9 @@ export default function AdminUsersPage() {
         return (
           <div className="flex flex-wrap gap-1">
             <StatusBadge variant={info.variant}>{info.label}</StatusBadge>
-            {user.googleId && user.provider !== 'google' && <StatusBadge variant="accent">Google 연동</StatusBadge>}
+            {user.googleId && user.provider !== 'google' && (
+              <StatusBadge variant="accent">{t('googleLinked')}</StatusBadge>
+            )}
           </div>
         );
       },
@@ -150,7 +154,7 @@ export default function AdminUsersPage() {
       header: '역할',
       render: (user) => {
         if (user.role === UserRole.superAdmin) return <StatusBadge variant="accent">superAdmin</StatusBadge>;
-        if (user.role === UserRole.guest) return <StatusBadge variant="muted">게스트</StatusBadge>;
+        if (user.role === UserRole.guest) return <StatusBadge variant="muted">{t('guest')}</StatusBadge>;
         return (
           <Select value={user.role} onValueChange={(v) => handleRoleChange(user.id, v as UpdateRoleDtoRole)}>
             <SelectTrigger className="h-8 w-28 border-white/10 bg-white/5 text-sm">
@@ -180,9 +184,9 @@ export default function AdminUsersPage() {
       header: '상태',
       render: (user) =>
         user.bannedAt ? (
-          <StatusBadge variant="danger">정지됨</StatusBadge>
+          <StatusBadge variant="danger">{t('banned')}</StatusBadge>
         ) : (
-          <StatusBadge variant="success">정상</StatusBadge>
+          <StatusBadge variant="success">{t('active')}</StatusBadge>
         ),
     },
   ];
@@ -190,7 +194,7 @@ export default function AdminUsersPage() {
   return (
     <div>
       <AdminPageHeader
-        title="유저 관리"
+        title={t('title')}
         search={{ value: search, onChange: handleSearch, placeholder: '닉네임 또는 유저네임 검색...' }}
       />
 
@@ -199,7 +203,7 @@ export default function AdminUsersPage() {
         <FilterSelect
           value={roleFilter}
           onValueChange={handleFilterChange(setRoleFilter)}
-          placeholder="역할"
+          placeholder={t('role')}
           options={ROLE_FILTER_OPTIONS}
         />
         <FilterSelect
@@ -211,7 +215,7 @@ export default function AdminUsersPage() {
         <FilterSelect
           value={statusFilter}
           onValueChange={handleFilterChange(setStatusFilter)}
-          placeholder="상태"
+          placeholder={t('status')}
           options={STATUS_FILTER_OPTIONS}
         />
       </div>

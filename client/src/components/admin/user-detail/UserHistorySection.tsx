@@ -2,21 +2,23 @@ import { Music, User as UserIcon } from 'lucide-react';
 
 import type { UserDetailResponse } from '@/api/model';
 import { StatCard } from '@/components/admin/StatCard';
+import { useTranslations } from 'next-intl';
 
 interface UserHistorySectionProps {
   user: UserDetailResponse;
 }
 
 export function UserHistorySection({ user }: UserHistorySectionProps) {
+  const t = useTranslations('admin.userDetail');
   return (
     <>
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <StatCard icon={Music} label="총 재생" value={user.totalPlays} />
-        <StatCard icon={UserIcon} label="참여 방" value={user.roomCount} />
-        <StatCard icon={Music} label="트랙 수" value={user.recentTracks.length} />
+        <StatCard icon={Music} label={t('totalPlays')} value={user.totalPlays} />
+        <StatCard icon={UserIcon} label={t('roomCount')} value={user.roomCount} />
+        <StatCard icon={Music} label={t('trackCount')} value={user.recentTracks.length} />
       </div>
 
-      <h3 className="mb-3 text-sm font-medium text-sa-text-muted">최근 재생 기록</h3>
+      <h3 className="mb-3 text-sm font-medium text-sa-text-muted">{t('recentHistory')}</h3>
       {user.recentTracks.length === 0 ? (
         <div className="rounded-2xl border border-white/5 bg-white/[0.03] px-5 py-8 text-center text-sm text-sa-text-muted">
           재생 기록이 없습니다

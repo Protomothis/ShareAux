@@ -10,6 +10,7 @@ import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { useAdminReports, useResolveReport } from '@/hooks/admin/useAdminReports';
+import { useTranslations } from 'next-intl';
 
 const TABS = [
   { value: 'pending', label: '대기중' },
@@ -78,6 +79,7 @@ function ReportCard({
 }
 
 export default function AdminReportsPage() {
+  const t = useTranslations('admin.reports');
   const [status, setStatus] = useState<string>('pending');
   const [page, setPage] = useState(1);
   const [resolveTarget, setResolveTarget] = useState<ResolveTarget | null>(null);
@@ -97,7 +99,7 @@ export default function AdminReportsPage() {
 
   return (
     <div>
-      <AdminPageHeader title="🚨 신고 관리" />
+      <AdminPageHeader title={t('title')} />
       <p className="mb-4 text-xs text-sa-text-muted">
         신고 내용을 확인 후 필요 시 유저 상세에서 제재(밴/경고)를 진행하세요. &quot;처리&quot;는 조치 완료,
         &quot;무시&quot;는 조치 불필요를 의미합니다.
@@ -139,7 +141,7 @@ export default function AdminReportsPage() {
               />
             ))}
         {!isLoading && data?.items.length === 0 && (
-          <p className="py-12 text-center text-sm text-sa-text-muted">신고가 없습니다</p>
+          <p className="py-12 text-center text-sm text-sa-text-muted">{t('empty')}</p>
         )}
       </div>
 

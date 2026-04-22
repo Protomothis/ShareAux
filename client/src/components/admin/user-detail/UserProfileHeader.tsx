@@ -3,6 +3,7 @@ import { User as UserIcon } from 'lucide-react';
 import type { UserDetailResponse } from '@/api/model';
 import { PROVIDER_LABELS } from '@/lib/constants';
 import { StatusBadge } from '@/components/admin/StatusBadge';
+import { useTranslations } from 'next-intl';
 
 interface UserProfileHeaderProps {
   user: UserDetailResponse;

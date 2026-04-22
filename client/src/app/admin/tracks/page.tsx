@@ -12,98 +12,99 @@ import { StatusBadge } from '@/components/admin/StatusBadge';
 import { TrackDetailModal } from '@/components/admin/TrackDetailModal';
 import { PaginationBar } from '@/components/common/PaginationBar';
 import { useAdminTopTracks } from '@/hooks/admin/useAdminTracks';
-
-const columns: Column<TrackRankingItem>[] = [
-  {
-    key: 'rank',
-    header: '#',
-    width: '3rem',
-    primary: true,
-    render: (_, i) => (
-      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/5 font-mono text-xs text-sa-text-muted">
-        {(i ?? 0) + 1}
-      </span>
-    ),
-  },
-  {
-    key: 'name',
-    header: '트랙',
-    primary: true,
-    render: (item) => (
-      <div className="min-w-0">
-        <div className="truncate font-medium text-white">{item.track.songTitle ?? item.track.name}</div>
-        <div className="truncate text-xs text-sa-text-muted">{item.track.songArtist ?? item.track.artist}</div>
-      </div>
-    ),
-  },
-  {
-    key: 'plays',
-    header: '재생',
-    width: '5rem',
-    render: (item) => (
-      <span className="flex items-center gap-1 text-white">
-        <Music size={12} className="text-sa-accent" /> {item.totalPlays}
-      </span>
-    ),
-  },
-  {
-    key: 'votes',
-    header: '투표',
-    width: '7rem',
-    hideOnMobile: true,
-    render: (item) => (
-      <div className="flex items-center gap-2 text-xs">
-        <span className="flex items-center gap-0.5 text-green-400">
-          <ThumbsUp size={11} /> {item.likes}
-        </span>
-        <span className="flex items-center gap-0.5 text-red-400">
-          <ThumbsDown size={11} /> {item.dislikes}
-        </span>
-      </div>
-    ),
-  },
-  {
-    key: 'users',
-    header: '유저',
-    width: '4rem',
-    hideOnMobile: true,
-    render: (item) => <span className="text-sa-text-muted">{item.uniqueUsers}</span>,
-  },
-  {
-    key: 'lyrics',
-    header: '가사',
-    width: '7rem',
-    hideOnMobile: true,
-    render: (item) => {
-      const s = item.track.lyricsStatus;
-      const lang = item.track.lyricsLang;
-      const translated = item.track.hasTranslation;
-      const type = item.track.lyricsType === TrackRankingTrackInfoLyricsType.karaoke ? 'KLRC' : 'LRC';
-      return s === TrackRankingTrackInfoLyricsStatus.found ? (
-        <StatusBadge variant="success">
-          {type} {lang?.toUpperCase() ?? ''}
-          {translated ? ' 번역' : ''}
-        </StatusBadge>
-      ) : s === TrackRankingTrackInfoLyricsStatus.not_found ? (
-        <StatusBadge variant="danger">없음</StatusBadge>
-      ) : (
-        <StatusBadge variant="muted">검색중</StatusBadge>
-      );
-    },
-  },
-  {
-    key: 'score',
-    header: '점수',
-    width: '5rem',
-    render: (item) => (
-      <StatusBadge variant="accent">
-        <TrendingUp size={10} className="mr-0.5" /> {item.score.toFixed(1)}
-      </StatusBadge>
-    ),
-  },
-];
+import { useTranslations } from 'next-intl';
 
 export default function AdminTracksPage() {
+  const t = useTranslations('admin.tracks');
+  const columns: Column<TrackRankingItem>[] = [
+    {
+      key: 'rank',
+      header: '#',
+      width: '3rem',
+      primary: true,
+      render: (_, i) => (
+        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/5 font-mono text-xs text-sa-text-muted">
+          {(i ?? 0) + 1}
+        </span>
+      ),
+    },
+    {
+      key: 'name',
+      header: '트랙',
+      primary: true,
+      render: (item) => (
+        <div className="min-w-0">
+          <div className="truncate font-medium text-white">{item.track.songTitle ?? item.track.name}</div>
+          <div className="truncate text-xs text-sa-text-muted">{item.track.songArtist ?? item.track.artist}</div>
+        </div>
+      ),
+    },
+    {
+      key: 'plays',
+      header: '재생',
+      width: '5rem',
+      render: (item) => (
+        <span className="flex items-center gap-1 text-white">
+          <Music size={12} className="text-sa-accent" /> {item.totalPlays}
+        </span>
+      ),
+    },
+    {
+      key: 'votes',
+      header: '투표',
+      width: '7rem',
+      hideOnMobile: true,
+      render: (item) => (
+        <div className="flex items-center gap-2 text-xs">
+          <span className="flex items-center gap-0.5 text-green-400">
+            <ThumbsUp size={11} /> {item.likes}
+          </span>
+          <span className="flex items-center gap-0.5 text-red-400">
+            <ThumbsDown size={11} /> {item.dislikes}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'users',
+      header: '유저',
+      width: '4rem',
+      hideOnMobile: true,
+      render: (item) => <span className="text-sa-text-muted">{item.uniqueUsers}</span>,
+    },
+    {
+      key: 'lyrics',
+      header: '가사',
+      width: '7rem',
+      hideOnMobile: true,
+      render: (item) => {
+        const s = item.track.lyricsStatus;
+        const lang = item.track.lyricsLang;
+        const translated = item.track.hasTranslation;
+        const type = item.track.lyricsType === TrackRankingTrackInfoLyricsType.karaoke ? 'KLRC' : 'LRC';
+        return s === TrackRankingTrackInfoLyricsStatus.found ? (
+          <StatusBadge variant="success">
+            {type} {lang?.toUpperCase() ?? ''}
+            {translated ? ' 번역' : ''}
+          </StatusBadge>
+        ) : s === TrackRankingTrackInfoLyricsStatus.not_found ? (
+          <StatusBadge variant="danger">{t('noLyrics')}</StatusBadge>
+        ) : (
+          <StatusBadge variant="muted">{t('searching')}</StatusBadge>
+        );
+      },
+    },
+    {
+      key: 'score',
+      header: '점수',
+      width: '5rem',
+      render: (item) => (
+        <StatusBadge variant="accent">
+          <TrendingUp size={10} className="mr-0.5" /> {item.score.toFixed(1)}
+        </StatusBadge>
+      ),
+    },
+  ];
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [selectedTrack, setSelectedTrack] = useState<TrackRankingItem | null>(null);
@@ -124,7 +125,7 @@ export default function AdminTracksPage() {
   return (
     <div>
       <AdminPageHeader
-        title="🎵 인기 트랙"
+        title={t('title')}
         search={{ value: search, onChange: setSearch, placeholder: '트랙 검색...' }}
       />
       <AdminTable
@@ -132,7 +133,7 @@ export default function AdminTracksPage() {
         data={filtered}
         loading={isLoading}
         rowKey={(item) => item.trackId}
-        emptyMessage="재생 기록이 없습니다"
+        emptyMessage={t('empty')}
         maxHeight="calc(100vh - 12rem)"
         onRowClick={setSelectedTrack}
         indexOffset={(page - 1) * limit}

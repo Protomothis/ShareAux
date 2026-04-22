@@ -24,10 +24,12 @@ import {
 import { FormField } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useAdminIpBans, useBanIp, useUnbanIp } from '@/hooks/admin/useAdminIpBans';
+import { useTranslations } from 'next-intl';
 
 const LIMIT = 20;
 
 export default function AdminIpBansPage() {
+  const t = useTranslations('admin.ipBans');
   const [page, setPage] = useState(1);
   const [showCreate, setShowCreate] = useState(false);
   const [unbanTarget, setUnbanTarget] = useState<string | null>(null);
@@ -61,7 +63,7 @@ export default function AdminIpBansPage() {
         onSuccess: () => {
           resetForm();
           setShowCreate(false);
-          toast.success('IP가 차단되었습니다');
+          toast.success(t('banned'));
         },
       },
     );
@@ -73,7 +75,7 @@ export default function AdminIpBansPage() {
       { id: unbanTarget },
       {
         onSuccess: () => {
-          toast.success('차단이 해제되었습니다');
+          toast.success(t('released'));
           setUnbanTarget(null);
         },
       },
@@ -126,10 +128,10 @@ export default function AdminIpBansPage() {
 
   return (
     <div>
-      <AdminPageHeader title="IP 차단 관리">
+      <AdminPageHeader title={t('title')}>
         <Button onClick={() => setShowCreate(true)} variant="accent" className="gap-1.5">
           <Shield size={16} />
-          <span className="hidden sm:inline">IP 차단</span>
+          <span className="hidden sm:inline">{t('addBan')}</span>
         </Button>
       </AdminPageHeader>
 
@@ -138,7 +140,7 @@ export default function AdminIpBansPage() {
         data={data?.items ?? []}
         loading={isLoading}
         rowKey={(item) => item.id}
-        emptyMessage="차단된 IP가 없습니다"
+        emptyMessage={t('empty')}
       />
       <AdminPagination page={page} totalPages={Math.ceil((data?.total ?? 0) / LIMIT)} onPageChange={setPage} />
 
@@ -146,18 +148,18 @@ export default function AdminIpBansPage() {
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>IP 차단</DialogTitle>
-            <DialogDescription>차단할 IP 주소를 입력하세요</DialogDescription>
+            <DialogTitle>{t('addBan')}</DialogTitle>
+            <DialogDescription>{t('dialogDesc')}</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreate} className="space-y-4">
-            <FormField label="IP 주소">
+            <FormField label={t('ipLabel')}>
               <Input value={ip} onChange={(e) => setIp(e.target.value)} placeholder="192.168.1.1" required />
             </FormField>
-            <FormField label="사유 (선택)">
-              <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="스팸, 악용 등" />
+            <FormField label={t('reasonLabel')}>
+              <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t('reasonPlaceholder')} />
             </FormField>
-            <FormField label="만료일 (선택)">
-              <DatePicker value={expiresAt} onChange={setExpiresAt} placeholder="영구 차단" />
+            <FormField label={t('expiresLabel')}>
+              <DatePicker value={expiresAt} onChange={setExpiresAt} placeholder={t('expiresPlaceholder')} />
             </FormField>
             <DialogFooter>
               <Button type="submit" variant="accent" disabled={banIp.isPending || !ip.trim()}>
@@ -172,8 +174,8 @@ export default function AdminIpBansPage() {
       <ConfirmDialog
         open={!!unbanTarget}
         onOpenChange={(open) => !open && setUnbanTarget(null)}
-        title="IP 차단 해제"
-        description="이 IP의 차단을 해제하시겠습니까?"
+        title={t('releaseTitle')}
+        description={t('releaseDesc')}
         confirmLabel="해제"
         variant="destructive"
         onConfirm={handleUnban}

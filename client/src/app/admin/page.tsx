@@ -14,11 +14,12 @@ import { StatCard } from '@/components/admin/StatCard';
 import { useAdminDashboard, useAdminSystemStats } from '@/hooks/admin/useAdminDashboard';
 import type { TimeRange } from '@/hooks/admin/useAdminMetrics';
 import { usePlaysMetrics, useRealtimeMetrics, useUsersBreakdown } from '@/hooks/admin/useAdminMetrics';
+import { useTranslations } from 'next-intl';
 
-function formatUptime(sec: number): string {
+function formatUptime(sec: number, h_label: string, m_label: string): string {
   const h = Math.floor(sec / 3600);
   const m = Math.floor((sec % 3600) / 60);
-  return h > 0 ? `${h}시간 ${m}분` : `${m}분`;
+  return h > 0 ? h_label.replace('{h}', String(h)).replace('{m}', String(m)) : m_label.replace('{m}', String(m));
 }
 
 interface QuickActionProps {
@@ -80,6 +81,7 @@ function SystemStatsSkeleton() {
 }
 
 export default function AdminPage() {
+  const t = useTranslations('admin.dashboard');
   const { data } = useAdminDashboard();
   const { data: sys, isLoading: sysLoading } = useAdminSystemStats();
   const [timeRange, setTimeRange] = useState<TimeRange>('1h');
@@ -89,87 +91,103 @@ export default function AdminPage() {
 
   return (
     <div className="space-y-8">
-      <h2 className="text-xl font-bold text-white">대시보드</h2>
+      <h2 className="text-xl font-bold text-white">{t('title')}</h2>
 
       {/* 주요 통계 */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <StatCard icon={Users} label="총 유저" value={data?.totalUsers ?? null} />
-        <StatCard icon={DoorOpen} label="활성 방" value={data?.activeRooms ?? null} />
-        <StatCard icon={LayoutDashboard} label="총 방" value={data?.totalRooms ?? null} />
+        <StatCard icon={Users} label={t('totalUsers')} value={data?.totalUsers ?? null} />
+        <StatCard icon={DoorOpen} label={t('activeRooms')} value={data?.activeRooms ?? null} />
+        <StatCard icon={LayoutDashboard} label={t('totalRooms')} value={data?.totalRooms ?? null} />
       </div>
 
-      {/* 빠른 작업 */}
+      {/* {t('quickActions')} */}
       <section>
-        <h3 className="mb-3 text-sm font-medium text-sa-text-muted">빠른 작업</h3>
+        <h3 className="mb-3 text-sm font-medium text-sa-text-muted">{t('quickActions')}</h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <QuickAction
             href="/admin/invite-codes"
             icon={Ticket}
-            label="초대코드 관리"
-            description="초대코드 생성 및 관리"
+            label={t('inviteCodeManage')}
+            description={t('inviteCodeManageDesc')}
           />
-          <QuickAction href="/admin/users" icon={Users} label="유저 관리" description="유저 목록 및 권한 관리" />
-          <QuickAction href="/admin/tracks" icon={Music} label="인기 트랙" description="트랙 순위 확인" />
-          <QuickAction href="/admin/rooms" icon={DoorOpen} label="방 관리" description="활성 방 관리 및 삭제" />
+          <QuickAction href="/admin/users" icon={Users} label={t('userManage')} description={t('userManageDesc')} />
+          <QuickAction
+            href="/admin/tracks"
+            icon={Music}
+            label={t('popularTracks')}
+            description={t('popularTracksDesc')}
+          />
+          <QuickAction href="/admin/rooms" icon={DoorOpen} label={t('roomManage')} description={t('roomManageDesc')} />
           <QuickAction
             href="/admin/invite-codes"
             icon={Trash2}
-            label="게스트 정리"
-            description="만료된 게스트 계정 삭제"
+            label={t('guestCleanup')}
+            description={t('guestCleanupDesc')}
           />
         </div>
       </section>
 
-      {/* 서버 리소스 */}
+      {/* {t('serverResources')} */}
       <section>
-        <h3 className="mb-3 text-sm font-medium text-sa-text-muted">서버 리소스</h3>
+        <h3 className="mb-3 text-sm font-medium text-sa-text-muted">{t('serverResources')}</h3>
         <MinLoading loading={sysLoading} fallback={<SystemStatsSkeleton />}>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            <StatCard icon={Music} label="ffmpeg 프로세스" value={sys?.ffmpegProcesses ?? null} />
-            <StatCard icon={HardDrive} label="프리로드 메모리" value={sys ? `${sys.preloadMemoryMB}MB` : null} />
-            <StatCard icon={Cpu} label="Heap 사용" value={sys ? `${sys.heapUsedMB}/${sys.heapTotalMB}MB` : null} />
+            <StatCard icon={Music} label={t('ffmpegProcesses')} value={sys?.ffmpegProcesses ?? null} />
+            <StatCard icon={HardDrive} label={t('preloadMemory')} value={sys ? `${sys.preloadMemoryMB}MB` : null} />
+            <StatCard icon={Cpu} label={t('heapUsage')} value={sys ? `${sys.heapUsedMB}/${sys.heapTotalMB}MB` : null} />
             <StatCard icon={Activity} label="RSS" value={sys ? `${sys.rssMB}MB` : null} />
-            <StatCard icon={Clock} label="업타임" value={sys ? formatUptime(sys.uptimeSec) : null} />
+            <StatCard
+              icon={Clock}
+              label={t('uptime')}
+              value={sys ? formatUptime(sys.uptimeSec, t('hourMin'), t('min')) : null}
+            />
           </div>
         </MinLoading>
       </section>
 
       {/* 차트 */}
       <section className="space-y-4">
-        <ChartCard title="실시간 접속자" action={<TimeRangeToggle value={timeRange} onChange={setTimeRange} />}>
+        <ChartCard
+          title={t('realtimeConnections')}
+          action={<TimeRangeToggle value={timeRange} onChange={setTimeRange} />}
+        >
           {realtime?.points?.length ? (
             <RealtimeChart data={realtime.points} timeRange={timeRange} />
           ) : (
             <div className="flex h-[260px] items-center justify-center text-sm text-sa-text-muted">
-              데이터 수집 중...
+              {t('collecting')}
             </div>
           )}
         </ChartCard>
 
-        <ChartCard title="메모리 사용량">
+        <ChartCard title={t('memoryUsage')}>
           {realtime?.points?.length ? (
             <ResourceChart data={realtime.points} />
           ) : (
             <div className="flex h-[260px] items-center justify-center text-sm text-sa-text-muted">
-              데이터 수집 중...
+              {t('collecting')}
             </div>
           )}
         </ChartCard>
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <ChartCard title="일별 재생 수 (7일)">
+          <ChartCard title={t('dailyPlays')}>
             {plays?.items?.length ? (
               <DailyPlaysChart data={plays.items} />
             ) : (
-              <div className="flex h-[240px] items-center justify-center text-sm text-sa-text-muted">데이터 없음</div>
+              <div className="flex h-[240px] items-center justify-center text-sm text-sa-text-muted">
+                {t('noChartData')}
+              </div>
             )}
           </ChartCard>
 
-          <ChartCard title="유저 분포">
+          <ChartCard title={t('userDistribution')}>
             {breakdown ? (
               <UserDistributionChart byProvider={breakdown.byProvider} byRole={breakdown.byRole} />
             ) : (
-              <div className="flex h-[240px] items-center justify-center text-sm text-sa-text-muted">로딩 중...</div>
+              <div className="flex h-[240px] items-center justify-center text-sm text-sa-text-muted">
+                {t('loading')}
+              </div>
             )}
           </ChartCard>
         </div>

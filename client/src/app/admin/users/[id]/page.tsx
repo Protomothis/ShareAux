@@ -10,6 +10,7 @@ import { UserHistorySection } from '@/components/admin/user-detail/UserHistorySe
 import { UserPermissionSection } from '@/components/admin/user-detail/UserPermissionSection';
 import { UserProfileHeader } from '@/components/admin/user-detail/UserProfileHeader';
 import { useAdminUserDetail } from '@/hooks/admin/useAdminUserDetail';
+import { useTranslations } from 'next-intl';
 
 export default function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);

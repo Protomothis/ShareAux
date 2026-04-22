@@ -10,6 +10,7 @@ import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { StatCard } from '@/components/admin/StatCard';
 import { Button } from '@/components/ui/button';
 import { useCleanup, useCleanupSummary } from '@/hooks/admin/useAdminCleanup';
+import { useTranslations } from 'next-intl';
 
 interface CleanupSection {
   type: string;
@@ -78,6 +79,7 @@ function formatSize(mb: number): string {
 }
 
 export default function AdminCleanupPage() {
+  const t = useTranslations('admin.cleanup');
   const { data: summary, isLoading } = useCleanupSummary();
   const cleanup = useCleanup();
   const [confirmType, setConfirmType] = useState<string | null>(null);
@@ -90,7 +92,7 @@ export default function AdminCleanupPage() {
       { type: confirmType },
       {
         onSuccess: () => {
-          toast.success('정리가 완료되었습니다');
+          toast.success(t('done'));
           setConfirmType(null);
         },
       },
@@ -101,25 +103,25 @@ export default function AdminCleanupPage() {
 
   return (
     <div>
-      <AdminPageHeader title="🧹 DB 정리" />
+      <AdminPageHeader title={t('title')} />
 
       {/* 요약 카드 */}
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        <StatCard icon={Music} label="총 트랙" value={summary?.totalTracks ?? null} />
-        <StatCard icon={Clock} label="총 재생 이력" value={summary?.totalPlayHistories ?? null} />
-        <StatCard icon={DoorOpen} label="활성 방" value={summary?.activeRooms ?? null} />
-        <StatCard icon={HardDrive} label="비활성 방" value={summary?.inactiveRooms ?? null} />
-        <StatCard icon={Users} label="총 유저" value={summary?.totalUsers ?? null} />
-        <StatCard icon={Users} label="게스트" value={summary?.guestUsers ?? null} />
-        <StatCard icon={Database} label="큐 아이템" value={summary?.totalQueueItems ?? null} />
-        <StatCard icon={Music} label="가사 보유" value={summary?.lyricsFoundTracks ?? null} />
+        <StatCard icon={Music} label={t('totalTracks')} value={summary?.totalTracks ?? null} />
+        <StatCard icon={Clock} label={t('totalPlayHistories')} value={summary?.totalPlayHistories ?? null} />
+        <StatCard icon={DoorOpen} label={t('activeRooms')} value={summary?.activeRooms ?? null} />
+        <StatCard icon={HardDrive} label={t('inactiveRooms')} value={summary?.inactiveRooms ?? null} />
+        <StatCard icon={Users} label={t('totalUsers')} value={summary?.totalUsers ?? null} />
+        <StatCard icon={Users} label={t('guests')} value={summary?.guestUsers ?? null} />
+        <StatCard icon={Database} label={t('queueItems')} value={summary?.totalQueueItems ?? null} />
+        <StatCard icon={Music} label={t('lyricsFound')} value={summary?.lyricsFoundTracks ?? null} />
       </div>
 
       {/* 테이블별 용량 */}
       {summary?.tableSizes && summary.tableSizes.length > 0 && (
         <div className="mb-6 rounded-xl border border-white/5 bg-white/[0.03] p-4">
           <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-medium text-white">테이블별 용량</h3>
+            <h3 className="text-sm font-medium text-white">{t('tableSize')}</h3>
             <span className="text-xs text-sa-text-muted">전체 {formatSize(totalDB)}</span>
           </div>
           <div className="space-y-1.5">
@@ -171,7 +173,7 @@ export default function AdminCleanupPage() {
       <ConfirmDialog
         open={!!confirmType}
         onOpenChange={(open) => !open && setConfirmType(null)}
-        title="데이터 정리"
+        title={t('cleanTitle')}
         description={`${activeSection?.label ?? ''} 항목을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
         confirmLabel="삭제"
         variant="destructive"

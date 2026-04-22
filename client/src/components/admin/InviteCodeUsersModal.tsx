@@ -10,6 +10,7 @@ import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import Modal from '@/components/common/Modal';
 import { Button } from '@/components/ui/button';
 import { adminControllerDeleteInviteCodeGuests, useAdminControllerGetInviteCodeUsers } from '@/api/admin/admin';
+import { useTranslations } from 'next-intl';
 
 interface InviteCodeUsersModalProps {
   inviteCodeId: string | null;
@@ -17,7 +18,9 @@ interface InviteCodeUsersModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function InviteCodeUsersModal({ inviteCodeId, code, onOpenChange }: InviteCodeUsersModalProps) {
+export function InviteCodeUsersModal({
+  inviteCodeId, code, onOpenChange }: InviteCodeUsersModalProps) {
+  const t = useTranslations('admin.inviteCodes');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const qc = useQueryClient();
@@ -57,7 +60,7 @@ export function InviteCodeUsersModal({ inviteCodeId, code, onOpenChange }: Invit
             <Loader2 size={20} className="animate-spin text-sa-text-muted" />
           </div>
         ) : users.length === 0 ? (
-          <p className="py-6 text-center text-sm text-sa-text-muted">이 코드로 가입한 유저가 없습니다</p>
+          <p className="py-6 text-center text-sm text-sa-text-muted">{t('noUsers')}</p>
         ) : (
           <div className="space-y-1.5">
             {users.map((u) => (
@@ -81,7 +84,7 @@ export function InviteCodeUsersModal({ inviteCodeId, code, onOpenChange }: Invit
           <ConfirmDialog
             open={confirmOpen}
             onOpenChange={setConfirmOpen}
-            title="게스트 일괄 삭제"
+            title={t('deleteGuestsTitle')}
             description={`이 초대코드로 입장한 게스트 ${guestCount}명을 모두 삭제합니다. 일반 회원은 영향받지 않습니다.`}
             confirmLabel="삭제"
             variant="destructive"

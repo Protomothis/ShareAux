@@ -14,10 +14,12 @@ import { RoomDetailModal } from '@/components/admin/RoomDetailModal';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { useAdminLiveRooms, useAdminRooms, useDeleteRoom } from '@/hooks/admin/useAdminRooms';
+import { useTranslations } from 'next-intl';
 
 const LIMIT = 20;
 
 export default function AdminRoomsPage() {
+  const t = useTranslations('admin.rooms');
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [selectedRoom, setSelectedRoom] = useState<AdminRoomItem | null>(null);
@@ -34,7 +36,7 @@ export default function AdminRoomsPage() {
       { id: deleteTarget },
       {
         onSuccess: () => {
-          toast.success('방이 삭제되었습니다');
+          toast.success(t('deleted'));
           setDeleteTarget(null);
         },
       },
@@ -126,7 +128,7 @@ export default function AdminRoomsPage() {
 
   return (
     <div>
-      <AdminPageHeader title="방 관리">
+      <AdminPageHeader title={t('title')}>
         <Button
           variant="ghost"
           size="icon-sm"
@@ -144,15 +146,15 @@ export default function AdminRoomsPage() {
         data={data?.items ?? []}
         loading={isLoading}
         rowKey={(room) => room.id}
-        emptyMessage="활성 방이 없습니다"
+        emptyMessage={t('empty')}
         onRowClick={setSelectedRoom}
       />
       <AdminPagination page={page} totalPages={Math.ceil((data?.total ?? 0) / LIMIT)} onPageChange={setPage} />
       <ConfirmDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="방 삭제"
-        description="이 방을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        title={t('deleteTitle')}
+        description={t('deleteDesc')}
         confirmLabel="삭제"
         variant="destructive"
         onConfirm={handleDelete}

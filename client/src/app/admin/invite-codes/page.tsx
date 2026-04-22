@@ -14,6 +14,7 @@ import { InviteCodeUsersModal } from '@/components/admin/InviteCodeUsersModal';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { useAdminInviteCodes, useDeactivateInviteCode, useDeleteInviteCode } from '@/hooks/admin/useAdminInviteCodes';
+import { useTranslations } from 'next-intl';
 
 const LIMIT = 20;
 
@@ -23,6 +24,7 @@ interface ActionTarget {
 }
 
 export default function AdminInviteCodesPage() {
+  const t = useTranslations('admin.inviteCodes');
   const [page, setPage] = useState(1);
   const [showCreate, setShowCreate] = useState(false);
   const [actionTarget, setActionTarget] = useState<ActionTarget | null>(null);
@@ -42,7 +44,7 @@ export default function AdminInviteCodesPage() {
         { id: actionTarget.id },
         {
           onSuccess: () => {
-            toast.success('비활성화되었습니다');
+            toast.success(t('deactivated'));
             setActionTarget(null);
           },
         },
@@ -52,7 +54,7 @@ export default function AdminInviteCodesPage() {
       try {
         await deleteCode.mutate(actionTarget.id, {
           onSuccess: () => {
-            toast.success('삭제되었습니다');
+            toast.success(t('deleted'));
             setActionTarget(null);
           },
         });
@@ -64,17 +66,17 @@ export default function AdminInviteCodesPage() {
 
   const copyLink = useCallback((code: string) => {
     const url = `${window.location.origin}/login?code=${code}`;
-    navigator.clipboard.writeText(url).then(() => toast.success('초대 링크가 복사되었습니다'));
+    navigator.clipboard.writeText(url).then(() => toast.success(t('linkCopied')));
   }, []);
 
   const items = data?.items ?? [];
 
   return (
     <div>
-      <AdminPageHeader title="초대코드 관리">
+      <AdminPageHeader title={t('title')}>
         <Button onClick={() => setShowCreate(true)} variant="accent" size="sm" className="gap-1.5">
           <Plus size={14} />
-          <span className="hidden sm:inline">새 초대코드</span>
+          <span className="hidden sm:inline">{t('new')}</span>
         </Button>
       </AdminPageHeader>
 

@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import NumberStepper from '@/components/ui/number-stepper';
 import { Switch } from '@/components/ui/switch';
 import { useAdminSettings, useUpdateSettings } from '@/hooks/admin/useAdminSettings';
+import { useTranslations } from 'next-intl';
 
 interface SettingDef {
   key: string;
@@ -137,6 +138,7 @@ const CATEGORIES: SettingCategory[] = [
 ];
 
 export default function AdminSettingsPage() {
+  const t = useTranslations('admin.settings');
   const { data: settings, isLoading } = useAdminSettings();
   const updateSettings = useUpdateSettings();
   const [draft, setDraft] = useState<Record<string, string>>({});
@@ -163,13 +165,13 @@ export default function AdminSettingsPage() {
       if (draft[k] !== orig[k]) changed[k] = draft[k];
     }
     if (Object.keys(changed).length === 0) return;
-    updateSettings.mutate({ data: { settings: changed } }, { onSuccess: () => toast.success('설정이 저장되었습니다') });
+    updateSettings.mutate({ data: { settings: changed } }, { onSuccess: () => toast.success(t('saved')) });
   }, [draft, settings, updateSettings]);
 
   if (isLoading) {
     return (
       <div>
-        <AdminPageHeader title="⚙️ 시스템 설정" />
+        <AdminPageHeader title={t('title')} />
         <div className="space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="h-32 animate-pulse rounded-2xl bg-white/5" />
@@ -181,7 +183,7 @@ export default function AdminSettingsPage() {
 
   return (
     <div>
-      <AdminPageHeader title="⚙️ 시스템 설정">
+      <AdminPageHeader title={t('title')}>
         <Button onClick={handleSave} disabled={!hasChanges || updateSettings.isPending} variant="accent" size="sm">
           {updateSettings.isPending ? (
             <Loader2 size={14} className="mr-1.5 animate-spin" />
