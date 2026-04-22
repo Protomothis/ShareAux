@@ -225,7 +225,9 @@
       "userKicked": "멤버가 추방되었습니다",
       "trackAdded": "🤖 AutoDJ가 \"{trackName}\"을(를) 추가했습니다",
       "trackUnavailable": "\"{trackName}\" 재생 불가 — 건너뜁니다",
-      "voteSkipPassed": "스킵 투표가 통과되어 곡이 넘어갑니다"
+      "voteSkipPassed": "스킵 투표가 통과되어 곡이 넘어갑니다",
+      "userTrackAdded": "{nickname}님이 \"{trackName}\" 외 {count}곡을 추가했습니다",
+      "userTrackAddedSingle": "{nickname}님이 \"{trackName}\"을(를) 추가했습니다"
     }
   },
   "members": {

@@ -98,6 +98,11 @@ export class QueueController {
     }
 
     this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue: updatedQueue });
+    this.gateway.broadcastSystem(roomId, WsEvent.UserTrackAdded, '', {
+      nickname: req.user.nickname ?? '',
+      trackName: addedTracks[0]?.name ?? '',
+      count: entries.length,
+    });
     this.player.triggerPreload(roomId);
     this.autoPlayIfIdle(roomId, entries[0]?.track?.id ?? addedTracks[0]?.id);
     return entries;

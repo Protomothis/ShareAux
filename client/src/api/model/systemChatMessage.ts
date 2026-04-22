@@ -13,4 +13,6 @@ export interface SystemChatMessage {
   nickname?: string;
   /** 이벤트 관련 트랙명 (AutoDJ 추가/재생 불가 등) */
   trackName?: string;
+  /** 추가된 곡 수 */
+  count?: number;
 }

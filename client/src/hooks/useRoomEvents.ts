@@ -293,7 +293,7 @@ export function useRoomEvents(
           message: data.event,
           timestamp: new Date().toISOString(),
           type: 'system',
-          data: data.data as { nickname?: string; trackName?: string } | undefined,
+          data: data.data as { nickname?: string; trackName?: string; count?: number } | undefined,
         }),
       );
     },

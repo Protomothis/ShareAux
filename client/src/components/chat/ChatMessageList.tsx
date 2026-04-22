@@ -40,6 +40,12 @@ export default function ChatMessageList({ messages, bottomRef, hostId }: ChatMes
       case SystemChatEvent.trackUnavailable:
         return t('system.trackUnavailable', { trackName: track });
 
+      // 유저 곡 추가
+      case SystemChatEvent.userTrackAdded:
+        return (msg.data?.count ?? 1) > 1
+          ? t('system.userTrackAdded', { nickname: nick, trackName: track, count: (msg.data?.count ?? 1) - 1 })
+          : t('system.userTrackAddedSingle', { nickname: nick, trackName: track });
+
       // 단독 메시지
       case SystemChatEvent.roomClosed:
         return t('system.roomClosed');

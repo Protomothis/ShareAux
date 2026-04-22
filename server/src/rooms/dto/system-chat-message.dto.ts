@@ -9,6 +9,7 @@ export enum SystemChatEvent {
   TrackSkipped = 'trackSkipped',
   TrackPrevious = 'trackPrevious',
   TrackAdded = 'trackAdded',
+  UserTrackAdded = 'userTrackAdded',
   TrackUnavailable = 'trackUnavailable',
   VoteSkipPassed = 'voteSkipPassed',
   RoomClosed = 'roomClosed',
@@ -27,4 +28,7 @@ export class SystemChatMessage {
 
   @ApiPropertyOptional({ description: '이벤트 관련 트랙명 (AutoDJ 추가/재생 불가 등)' })
   trackName?: string;
+
+  @ApiPropertyOptional({ description: '추가된 곡 수' })
+  count?: number;
 }

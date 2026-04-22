@@ -18,6 +18,7 @@ export enum WsEvent {
   TrackSkipped = 'trackSkipped',
   TrackPrevious = 'trackPrevious',
   TrackAdded = 'trackAdded',
+  UserTrackAdded = 'userTrackAdded',
 
   // 큐
   QueueUpdated = 'queueUpdated',

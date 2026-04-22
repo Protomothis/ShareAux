@@ -17,6 +17,7 @@ export const SystemChatEvent = {
   trackSkipped: 'trackSkipped',
   trackPrevious: 'trackPrevious',
   trackAdded: 'trackAdded',
+  userTrackAdded: 'userTrackAdded',
   trackUnavailable: 'trackUnavailable',
   voteSkipPassed: 'voteSkipPassed',
   roomClosed: 'roomClosed',
