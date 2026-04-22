@@ -795,5 +795,287 @@
     "429": "Too many requests. Please try again later",
     "serverError": "Server error",
     "fallback": "Request failed"
+  },
+  "errorCode": {
+    "AUTH_001": {
+      "title": "Login failed",
+      "description": "Invalid username or password"
+    },
+    "AUTH_002": {
+      "title": "Account suspended",
+      "description": "This account has been suspended"
+    },
+    "AUTH_003": {
+      "title": "Invalid invite code",
+      "description": "The invite code is invalid"
+    },
+    "AUTH_004": {
+      "title": "Invite code expired",
+      "description": "The invite code has expired"
+    },
+    "AUTH_005": {
+      "title": "Invite code limit",
+      "description": "Invite code usage limit exceeded"
+    },
+    "AUTH_006": {
+      "title": "Invite code unavailable",
+      "description": "Registration is not allowed with this invite code"
+    },
+    "AUTH_007": {
+      "title": "Invite code required",
+      "description": "Please enter an invite code"
+    },
+    "AUTH_008": {
+      "title": "Username taken",
+      "description": "This username is already in use"
+    },
+    "AUTH_009": {
+      "title": "Wrong password",
+      "description": "The password is incorrect"
+    },
+    "AUTH_010": {
+      "title": "Cannot change password",
+      "description": "Password change is not supported for this account"
+    },
+    "AUTH_011": {
+      "title": "Wrong current password",
+      "description": "The current password is incorrect"
+    },
+    "AUTH_012": {
+      "title": "User not found",
+      "description": "User not found"
+    },
+    "AUTH_013": {
+      "title": "Invalid refresh token",
+      "description": "The refresh token is invalid"
+    },
+    "AUTH_014": {
+      "title": "Revoked refresh token",
+      "description": "The refresh token has been revoked"
+    },
+    "AUTH_015": {
+      "title": "Google OAuth not configured",
+      "description": "Google OAuth is not configured"
+    },
+    "AUTH_016": {
+      "title": "Google not linked",
+      "description": "Google account is not linked"
+    },
+    "AUTH_017": {
+      "title": "Google already linked",
+      "description": "This Google account is already linked to another account"
+    },
+    "AUTH_018": {
+      "title": "Cannot delete",
+      "description": "SuperAdmin cannot be deleted"
+    },
+    "AUTH_019": {
+      "title": "Wrong password",
+      "description": "Deletion confirmation password is incorrect"
+    },
+    "ROOM_001": {
+      "title": "Room not found",
+      "description": "Room not found"
+    },
+    "ROOM_002": {
+      "title": "Room full",
+      "description": "The room is full"
+    },
+    "ROOM_003": {
+      "title": "Banned",
+      "description": "You have been banned from this room"
+    },
+    "ROOM_004": {
+      "title": "No permission",
+      "description": "Only the host can edit room settings"
+    },
+    "ROOM_005": {
+      "title": "No permission",
+      "description": "Only the host can change permissions"
+    },
+    "ROOM_006": {
+      "title": "No permission",
+      "description": "Only the DJ can transfer host"
+    },
+    "ROOM_007": {
+      "title": "No permission",
+      "description": "Only the DJ can kick members"
+    },
+    "ROOM_008": {
+      "title": "No permission",
+      "description": "Only the DJ can reset bans"
+    },
+    "ROOM_009": {
+      "title": "No permission",
+      "description": "Only the DJ can unban members"
+    },
+    "ROOM_010": {
+      "title": "No permission",
+      "description": "Only the host can delete the room"
+    },
+    "ROOM_011": {
+      "title": "No permission",
+      "description": "Only the host can reset the room"
+    },
+    "ROOM_012": {
+      "title": "Cannot kick self",
+      "description": "You cannot kick yourself"
+    },
+    "ROOM_013": {
+      "title": "Member not found",
+      "description": "Member not found"
+    },
+    "ROOM_014": {
+      "title": "Cannot transfer",
+      "description": "Cannot transfer to a member without host permission"
+    },
+    "ROOM_015": {
+      "title": "Insufficient permission",
+      "description": "Insufficient account permissions"
+    },
+    "ROOM_016": {
+      "title": "Access denied",
+      "description": "You do not have permission for this action"
+    },
+    "ROOM_017": {
+      "title": "Wrong password",
+      "description": "Room password is incorrect"
+    },
+    "PLAYER_001": {
+      "title": "No track playing",
+      "description": "No track is currently playing"
+    },
+    "PLAYER_002": {
+      "title": "No next track",
+      "description": "There is no next track"
+    },
+    "PLAYER_003": {
+      "title": "No previous track",
+      "description": "There is no previous track"
+    },
+    "PLAYER_004": {
+      "title": "Track transitioning",
+      "description": "Track is transitioning. Please try again shortly"
+    },
+    "PLAYER_005": {
+      "title": "Skip cooldown",
+      "description": "Please wait a moment after playback starts"
+    },
+    "PLAYER_006": {
+      "title": "No skip permission",
+      "description": "You do not have skip vote permission"
+    },
+    "PLAYER_007": {
+      "title": "No audio info",
+      "description": "Audio information not found"
+    },
+    "PLAYER_008": {
+      "title": "No audio URL",
+      "description": "Audio URL not found"
+    },
+    "QUEUE_001": {
+      "title": "Queue item not found",
+      "description": "Queue item not found"
+    },
+    "QUEUE_002": {
+      "title": "Duplicate track",
+      "description": "This track is already in the queue"
+    },
+    "QUEUE_003": {
+      "title": "All duplicates",
+      "description": "All tracks are already in the queue"
+    },
+    "QUEUE_004": {
+      "title": "Queue limit",
+      "description": "Maximum 50 tracks in queue"
+    },
+    "QUEUE_005": {
+      "title": "Personal limit",
+      "description": "Maximum 10 tracks per person"
+    },
+    "QUEUE_006": {
+      "title": "Version conflict",
+      "description": "Queue was modified by another user. Please refresh and try again"
+    },
+    "QUEUE_007": {
+      "title": "Batch limit",
+      "description": "Exceeded maximum tracks per add"
+    },
+    "QUEUE_008": {
+      "title": "Replay cooldown",
+      "description": "This track was recently played. Please try again later"
+    },
+    "SEARCH_001": {
+      "title": "Query required",
+      "description": "Search query or continuation parameter is required"
+    },
+    "ADMIN_001": {
+      "title": "Admin required",
+      "description": "Admin permission required"
+    },
+    "ADMIN_002": {
+      "title": "User not found",
+      "description": "User not found"
+    },
+    "ADMIN_003": {
+      "title": "Invite code not found",
+      "description": "Invite code not found"
+    },
+    "ADMIN_004": {
+      "title": "Report not found",
+      "description": "Report not found"
+    },
+    "ADMIN_005": {
+      "title": "Cannot change role",
+      "description": "SuperAdmin role cannot be changed"
+    },
+    "ADMIN_006": {
+      "title": "Cannot ban",
+      "description": "SuperAdmin cannot be banned"
+    },
+    "ADMIN_007": {
+      "title": "Invalid cleanup type",
+      "description": "Unknown cleanup type"
+    },
+    "ADMIN_008": {
+      "title": "Invalid status",
+      "description": "Status must be resolved or dismissed"
+    },
+    "CAPTCHA_001": {
+      "title": "CAPTCHA required",
+      "description": "CAPTCHA verification required"
+    },
+    "CAPTCHA_002": {
+      "title": "CAPTCHA failed",
+      "description": "CAPTCHA verification failed"
+    },
+    "COMMON_001": {
+      "title": "Access denied",
+      "description": "This action is not allowed"
+    },
+    "COMMON_002": {
+      "title": "Track not found",
+      "description": "Track not found"
+    },
+    "COMMON_003": {
+      "title": "No vote record",
+      "description": "No vote record found"
+    },
+    "FAV_001": {
+      "title": "Favorites limit",
+      "description": "Maximum 200 favorites"
+    },
+    "FAV_002": {
+      "title": "Guests not allowed",
+      "description": "Favorites are only available for registered users"
+    },
+    "FAV_003": {
+      "title": "Folder limit",
+      "description": "Maximum 20 folders"
+    },
+    "FAV_004": {
+      "title": "Folder not found",
+      "description": "Folder not found"
+    }
   }
 }

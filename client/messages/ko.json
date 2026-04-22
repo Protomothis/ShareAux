@@ -795,5 +795,287 @@
     "429": "요청이 너무 많습니다. 잠시 후 다시 시도해주세요",
     "serverError": "서버 오류가 발생했습니다",
     "fallback": "요청 처리에 실패했습니다"
+  },
+  "errorCode": {
+    "AUTH_001": {
+      "title": "로그인 실패",
+      "description": "아이디 또는 비밀번호가 올바르지 않습니다"
+    },
+    "AUTH_002": {
+      "title": "계정 정지",
+      "description": "정지된 계정입니다"
+    },
+    "AUTH_003": {
+      "title": "초대코드 오류",
+      "description": "유효하지 않은 초대코드입니다"
+    },
+    "AUTH_004": {
+      "title": "초대코드 만료",
+      "description": "만료된 초대코드입니다"
+    },
+    "AUTH_005": {
+      "title": "초대코드 한도 초과",
+      "description": "초대코드 사용 한도를 초과했습니다"
+    },
+    "AUTH_006": {
+      "title": "초대코드 사용 불가",
+      "description": "이 초대코드로는 회원가입할 수 없습니다"
+    },
+    "AUTH_007": {
+      "title": "초대코드 필요",
+      "description": "초대코드를 입력하세요"
+    },
+    "AUTH_008": {
+      "title": "아이디 중복",
+      "description": "이미 사용 중인 아이디입니다"
+    },
+    "AUTH_009": {
+      "title": "비밀번호 오류",
+      "description": "비밀번호가 올바르지 않습니다"
+    },
+    "AUTH_010": {
+      "title": "비밀번호 변경 불가",
+      "description": "비밀번호 변경을 지원하지 않는 계정입니다"
+    },
+    "AUTH_011": {
+      "title": "현재 비밀번호 불일치",
+      "description": "현재 비밀번호가 올바르지 않습니다"
+    },
+    "AUTH_012": {
+      "title": "사용자 없음",
+      "description": "사용자를 찾을 수 없습니다"
+    },
+    "AUTH_013": {
+      "title": "리프레시 토큰 오류",
+      "description": "유효하지 않은 리프레시 토큰입니다"
+    },
+    "AUTH_014": {
+      "title": "리프레시 토큰 폐기",
+      "description": "폐기된 리프레시 토큰입니다"
+    },
+    "AUTH_015": {
+      "title": "Google OAuth 미설정",
+      "description": "Google OAuth가 설정되지 않았습니다"
+    },
+    "AUTH_016": {
+      "title": "Google 계정 미연동",
+      "description": "Google 계정이 연동되지 않았습니다"
+    },
+    "AUTH_017": {
+      "title": "Google 계정 중복",
+      "description": "이미 다른 계정에 연동된 Google 계정입니다"
+    },
+    "AUTH_018": {
+      "title": "탈퇴 불가",
+      "description": "SuperAdmin은 탈퇴할 수 없습니다"
+    },
+    "AUTH_019": {
+      "title": "비밀번호 오류",
+      "description": "탈퇴 확인 비밀번호가 올바르지 않습니다"
+    },
+    "ROOM_001": {
+      "title": "방 없음",
+      "description": "방을 찾을 수 없습니다"
+    },
+    "ROOM_002": {
+      "title": "방 인원 초과",
+      "description": "방이 가득 찼습니다"
+    },
+    "ROOM_003": {
+      "title": "입장 차단",
+      "description": "이 방에서 추방되어 입장할 수 없습니다"
+    },
+    "ROOM_004": {
+      "title": "권한 없음",
+      "description": "호스트만 방 정보를 수정할 수 있습니다"
+    },
+    "ROOM_005": {
+      "title": "권한 없음",
+      "description": "호스트만 권한을 변경할 수 있습니다"
+    },
+    "ROOM_006": {
+      "title": "권한 없음",
+      "description": "DJ만 호스트를 위임할 수 있습니다"
+    },
+    "ROOM_007": {
+      "title": "권한 없음",
+      "description": "DJ만 강퇴할 수 있습니다"
+    },
+    "ROOM_008": {
+      "title": "권한 없음",
+      "description": "DJ만 차단 목록을 초기화할 수 있습니다"
+    },
+    "ROOM_009": {
+      "title": "권한 없음",
+      "description": "DJ만 차단을 해제할 수 있습니다"
+    },
+    "ROOM_010": {
+      "title": "권한 없음",
+      "description": "호스트만 방을 삭제할 수 있습니다"
+    },
+    "ROOM_011": {
+      "title": "권한 없음",
+      "description": "호스트만 방을 초기화할 수 있습니다"
+    },
+    "ROOM_012": {
+      "title": "자기 강퇴 불가",
+      "description": "자기 자신을 강퇴할 수 없습니다"
+    },
+    "ROOM_013": {
+      "title": "멤버 없음",
+      "description": "멤버를 찾을 수 없습니다"
+    },
+    "ROOM_014": {
+      "title": "위임 불가",
+      "description": "호스트 권한이 없는 멤버에게 위임할 수 없습니다"
+    },
+    "ROOM_015": {
+      "title": "권한 부족",
+      "description": "계정 권한이 부족합니다"
+    },
+    "ROOM_016": {
+      "title": "접근 거부",
+      "description": "해당 작업에 대한 권한이 없습니다"
+    },
+    "ROOM_017": {
+      "title": "비밀번호 오류",
+      "description": "방 비밀번호가 올바르지 않습니다"
+    },
+    "PLAYER_001": {
+      "title": "재생 중인 곡 없음",
+      "description": "현재 재생 중인 곡이 없습니다"
+    },
+    "PLAYER_002": {
+      "title": "다음 곡 없음",
+      "description": "다음 곡이 없습니다"
+    },
+    "PLAYER_003": {
+      "title": "이전 곡 없음",
+      "description": "이전 곡이 없습니다"
+    },
+    "PLAYER_004": {
+      "title": "곡 전환 중",
+      "description": "곡 전환 중입니다. 잠시 후 다시 시도하세요"
+    },
+    "PLAYER_005": {
+      "title": "스킵 대기",
+      "description": "재생 시작 후 잠시 뒤에 가능합니다"
+    },
+    "PLAYER_006": {
+      "title": "스킵 투표 권한 없음",
+      "description": "스킵 투표 권한이 없습니다"
+    },
+    "PLAYER_007": {
+      "title": "오디오 정보 없음",
+      "description": "오디오 정보를 찾을 수 없습니다"
+    },
+    "PLAYER_008": {
+      "title": "오디오 URL 없음",
+      "description": "오디오 URL을 찾을 수 없습니다"
+    },
+    "QUEUE_001": {
+      "title": "큐 항목 없음",
+      "description": "큐 항목을 찾을 수 없습니다"
+    },
+    "QUEUE_002": {
+      "title": "중복 곡",
+      "description": "이미 큐에 있는 곡입니다"
+    },
+    "QUEUE_003": {
+      "title": "전체 중복",
+      "description": "모든 곡이 이미 큐에 있습니다"
+    },
+    "QUEUE_004": {
+      "title": "큐 한도 초과",
+      "description": "큐에 최대 50곡까지 추가할 수 있습니다"
+    },
+    "QUEUE_005": {
+      "title": "개인 한도 초과",
+      "description": "1인당 최대 10곡까지 추가할 수 있습니다"
+    },
+    "QUEUE_006": {
+      "title": "버전 충돌",
+      "description": "다른 사용자가 큐를 수정했습니다. 새로고침 후 다시 시도하세요"
+    },
+    "QUEUE_007": {
+      "title": "일괄 추가 한도 초과",
+      "description": "한 번에 추가할 수 있는 곡 수를 초과했습니다"
+    },
+    "QUEUE_008": {
+      "title": "재신청 쿨다운",
+      "description": "최근 재생된 곡입니다. 잠시 후 다시 신청해주세요"
+    },
+    "SEARCH_001": {
+      "title": "검색어 필요",
+      "description": "검색어 또는 continuation 파라미터가 필요합니다"
+    },
+    "ADMIN_001": {
+      "title": "관리자 권한 필요",
+      "description": "관리자 권한이 필요합니다"
+    },
+    "ADMIN_002": {
+      "title": "사용자 없음",
+      "description": "사용자를 찾을 수 없습니다"
+    },
+    "ADMIN_003": {
+      "title": "초대코드 없음",
+      "description": "초대코드를 찾을 수 없습니다"
+    },
+    "ADMIN_004": {
+      "title": "신고 없음",
+      "description": "신고를 찾을 수 없습니다"
+    },
+    "ADMIN_005": {
+      "title": "역할 변경 불가",
+      "description": "SuperAdmin 역할은 변경할 수 없습니다"
+    },
+    "ADMIN_006": {
+      "title": "밴 불가",
+      "description": "SuperAdmin은 밴할 수 없습니다"
+    },
+    "ADMIN_007": {
+      "title": "정리 유형 오류",
+      "description": "알 수 없는 정리 유형입니다"
+    },
+    "ADMIN_008": {
+      "title": "상태 오류",
+      "description": "상태는 resolved 또는 dismissed여야 합니다"
+    },
+    "CAPTCHA_001": {
+      "title": "CAPTCHA 필요",
+      "description": "CAPTCHA 인증이 필요합니다"
+    },
+    "CAPTCHA_002": {
+      "title": "CAPTCHA 실패",
+      "description": "CAPTCHA 인증에 실패했습니다"
+    },
+    "COMMON_001": {
+      "title": "접근 거부",
+      "description": "허용되지 않은 작업입니다"
+    },
+    "COMMON_002": {
+      "title": "트랙 없음",
+      "description": "트랙을 찾을 수 없습니다"
+    },
+    "COMMON_003": {
+      "title": "투표 기록 없음",
+      "description": "투표 기록이 없습니다"
+    },
+    "FAV_001": {
+      "title": "즐겨찾기 초과",
+      "description": "즐겨찾기는 최대 200곡까지 가능합니다"
+    },
+    "FAV_002": {
+      "title": "게스트 사용 불가",
+      "description": "즐겨찾기는 로그인 회원만 사용할 수 있습니다"
+    },
+    "FAV_003": {
+      "title": "폴더 초과",
+      "description": "폴더는 최대 20개까지 생성할 수 있습니다"
+    },
+    "FAV_004": {
+      "title": "폴더 없음",
+      "description": "해당 폴더를 찾을 수 없습니다"
+    }
   }
 }
