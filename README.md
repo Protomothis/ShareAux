@@ -19,6 +19,7 @@
 - **게스트 접속** — 초대 코드 기반, 계정 없이 참여 가능
 - **관리자 백오피스** — 대시보드, 유저/방/트랙 관리, 감사 로그, IP 차단
 - **모바일 대응** — 반응형 디자인, iOS Safari 호환 (ManagedMediaSource)
+- **다국어 지원** — next-intl 기반 한국어/영어, 쿠키 기반 locale 감지
 - **셀프호스팅** — GHCR Docker 이미지, `docker compose up` 한 줄로 실행
 
 ## 기술 스택
@@ -26,7 +27,7 @@
 | 계층 | 기술 |
 |------|------|
 | 서버 | NestJS 11, TypeORM, PostgreSQL 16, raw `ws` WebSocket |
-| 클라이언트 | Next.js 16, React 19, Tailwind 4, zustand, react-query |
+| 클라이언트 | Next.js 16, React 19, Tailwind 4, zustand, react-query, next-intl |
 | 인증 | Passport (Google OAuth + 로컬 JWT) |
 | 오디오 | yt-dlp → ffmpeg (fMP4 AAC) → WebSocket 바이너리 → 브라우저 MSE |
 | 가사 | syncedlyrics (Musixmatch) + Gemini AI 번역 |
