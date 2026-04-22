@@ -10,6 +10,7 @@ import helmet from 'helmet';
 
 import { AppModule } from './app.module.js';
 import { ErrorLogService } from './services/error-log.service.js';
+import { ErrorResponseDto } from './filters/dto/error-response.dto.js';
 import { GlobalExceptionFilter } from './filters/http-exception.filter.js';
 import { RoomsGateway } from './rooms/rooms.gateway.js';
 
@@ -43,7 +44,7 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config, {
-    extraModels: [WsEnumsSchema],
+    extraModels: [WsEnumsSchema, ErrorResponseDto],
   });
   SwaggerModule.setup('api/docs', app, document);
 

@@ -47,6 +47,8 @@ export * from './dashboardResponse';
 export * from './deleteAccountDto';
 export * from './errorFileItem';
 export * from './errorLogItem';
+export * from './errorResponseDto';
+export * from './errorResponseDtoCode';
 export * from './favoriteIdsResponse';
 export * from './favoriteItem';
 export * from './favoriteItemProvider';

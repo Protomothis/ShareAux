@@ -5,6 +5,7 @@ import { PCaptcha } from '@/components/common/PCaptcha';
 import { useEffect, useState } from 'react';
 
 import { authControllerGuestLogin } from '@/api/auth/auth';
+import { ApiError } from '@/api/mutator';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -40,7 +41,11 @@ export function GuestLoginForm({ onSuccess, onBack, initialCode }: GuestLoginFor
         onSuccess();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '입장에 실패했습니다');
+      if (err instanceof ApiError && err.code) {
+        setError((err.body.description ?? err.body.title ?? err.message) as string);
+      } else {
+        setError('입장에 실패했습니다');
+      }
       captcha.reset();
     } finally {
       setLoading(false);
