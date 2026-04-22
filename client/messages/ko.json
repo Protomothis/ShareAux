@@ -1,7 +1,23 @@
 {
   "common": {
     "privacyPolicy": "개인정보처리방침",
-    "terms": "이용약관"
+    "terms": "이용약관",
+    "serverStatus": {
+      "connecting": "서버에 연결하는 중...",
+      "disconnected": "서버에 연결할 수 없습니다",
+      "autoRetry": "잠시 후 자동으로 재시도합니다",
+      "retryNow": "지금 재시도"
+    },
+    "errorBoundary": {
+      "message": "문제가 발생했습니다",
+      "reload": "새로고침"
+    },
+    "wsDisconnect": {
+      "message": "서버와 연결이 끊어졌습니다 — 재연결 시도 중..."
+    },
+    "modal": {
+      "close": "닫기"
+    }
   },
   "login": {
     "tagline": "함께 듣는 음악, 함께 만드는 플레이리스트",

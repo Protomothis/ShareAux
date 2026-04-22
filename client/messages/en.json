@@ -1,7 +1,23 @@
 {
   "common": {
     "privacyPolicy": "Privacy Policy",
-    "terms": "Terms of Service"
+    "terms": "Terms of Service",
+    "serverStatus": {
+      "connecting": "Connecting to server…",
+      "disconnected": "Unable to connect to server",
+      "autoRetry": "Retrying automatically soon",
+      "retryNow": "Retry now"
+    },
+    "errorBoundary": {
+      "message": "Something went wrong",
+      "reload": "Reload"
+    },
+    "wsDisconnect": {
+      "message": "Disconnected from server — reconnecting…"
+    },
+    "modal": {
+      "close": "Close"
+    }
   },
   "login": {
     "tagline": "Listen together, build playlists together",
