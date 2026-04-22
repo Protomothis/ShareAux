@@ -147,8 +147,8 @@ export default function AdminCleanupPage() {
               <div className="flex items-center gap-3">
                 <span className="text-lg">{section.icon}</span>
                 <div>
-                  <p className="text-sm font-medium text-white">{section.label}</p>
-                  <p className="text-xs text-sa-text-muted">{section.description}</p>
+                  <p className="text-sm font-medium text-white">{t(section.label)}</p>
+                  <p className="text-xs text-sa-text-muted">{t(section.description)}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
