@@ -37,8 +37,7 @@ export function useRoomEvents(
   const [listenerCount, setListenerCount] = useState(0);
   const [trackVotes, setTrackVotes] = useState<TrackVoteMap>(new Map());
   const [currentTrackState, setTrack] = useState<Track | null>(null);
-  const [elapsedBase, setElapsedBase] = useState(0);
-  const [syncTime, setSyncTime] = useState(0);
+  const [timeSync, setTimeSync] = useState({ base: 0, at: 0 });
 
   const audioLoadingRef = useRef(false);
   const pendingTrackRef = useRef<TrackState | null>(null);
@@ -79,9 +78,7 @@ export function useRoomEvents(
       }
       if (ss === 'skipping' || ss === 'preparing') {
         setStreamState(ss as StreamState);
-        setElapsedBase(0);
-        setSyncTime(0);
-        // preparing: 버퍼 정리만 (서버에 init segment 아직 없음)
+        setTimeSync({ base: 0, at: 0 });
         if (listeningRef.current) onResyncNeededRef?.current('prepare');
       }
       if (ss === 'streaming') {
@@ -112,25 +109,15 @@ export function useRoomEvents(
   const handleTimeSync = useCallback(
     (d: { elapsedMs?: number; streamState?: string }, trackChanged: boolean) => {
       const ow = getOneWayRef?.current() ?? 0;
-      if (trackChanged) {
-        setElapsedBase((d.elapsedMs ?? 0) + ow);
-        setSyncTime(Date.now());
+      if (trackChanged || d.streamState === 'streaming') {
+        setTimeSync({ base: (d.elapsedMs ?? 0) + ow, at: Date.now() });
       } else if (d.elapsedMs != null) {
-        if (d.streamState === 'streaming') {
-          // preparing→streaming 전환: 서버가 startedAt 리셋 → 무조건 동기화
-          setElapsedBase((d.elapsedMs ?? 0) + ow);
-          setSyncTime(Date.now());
-        } else {
-          // 같은 곡: drift 2초 이상이면 보정
-          setElapsedBase((prevBase) => {
-            setSyncTime((prevSync) => {
-              const clientElapsed = prevBase + (Date.now() - prevSync);
-              return Math.abs(clientElapsed - d.elapsedMs!) > 2000 ? Date.now() : prevSync;
-            });
-            const corrected = d.elapsedMs! + ow;
-            return Math.abs(corrected - prevBase) > 2000 ? corrected : prevBase;
-          });
-        }
+        // 같은 곡: drift 2초 이상이면 보정
+        setTimeSync((prev) => {
+          const clientElapsed = prev.base + (Date.now() - prev.at);
+          const corrected = d.elapsedMs! + ow;
+          return Math.abs(clientElapsed - corrected) > 2000 ? { base: corrected, at: Date.now() } : prev;
+        });
       }
     },
     [getOneWayRef],
@@ -139,8 +126,7 @@ export function useRoomEvents(
   // ─── Playback: stopped ────────────────────────────────
   const handleStopped = useCallback(() => {
     setTrack(null);
-    setElapsedBase(0);
-    setSyncTime(0);
+    setTimeSync({ base: 0, at: 0 });
     setStreamState('idle');
   }, []);
 
@@ -327,8 +313,7 @@ export function useRoomEvents(
       if (!listeningRef.current || !getCurrentTimeRef?.current) return;
       const audioMs = getCurrentTimeRef.current();
       if (audioMs > 0) {
-        setElapsedBase(audioMs);
-        setSyncTime(Date.now());
+        setTimeSync({ base: audioMs, at: Date.now() });
       }
     }, 250);
     return () => clearInterval(id);
@@ -349,10 +334,9 @@ export function useRoomEvents(
     trackVotes,
     currentTrack: currentTrackState,
     setTrack,
-    elapsedBase,
-    setElapsedBase,
-    syncTime,
-    setSyncTime,
+    elapsedBase: timeSync.base,
+    syncTime: timeSync.at,
+    setTimeSync,
     audioLoading,
     setAudioLoading,
     audioLoadingRef,

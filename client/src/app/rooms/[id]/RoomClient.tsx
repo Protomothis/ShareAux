@@ -99,9 +99,8 @@ export default function RoomClient({ id }: { id: string }) {
     currentTrack,
     setTrack,
     elapsedBase,
-    setElapsedBase,
+    setTimeSync,
     syncTime,
-    setSyncTime,
     audioLoading,
     setAudioLoading,
     audioLoadingRef,
@@ -212,13 +211,12 @@ export default function RoomClient({ id }: { id: string }) {
     setPlaying(true);
     setTrack(playerData.track);
     trackRef.current = playerData.track;
-    setElapsedBase((playerData.elapsedMs ?? 0) + (getOneWayRef.current() ?? 0));
-    setSyncTime(Date.now());
+    setTimeSync({ base: (playerData.elapsedMs ?? 0) + (getOneWayRef.current() ?? 0), at: Date.now() });
     if (playerData.streamState) setStreamState(playerData.streamState as StreamState);
     const ls = playerData.track.lyricsStatus;
     if (ls === 'found') setLyricsStatus(LyricsStatus.Found);
     else if (ls === 'not_found') setLyricsStatus(LyricsStatus.NotFound);
-  }, [playerData, id, setPlaying, setTrack, setElapsedBase, setSyncTime, setLyricsStatus, setStreamState]);
+  }, [playerData, id, setPlaying, setTrack, setTimeSync, setLyricsStatus, setStreamState]);
 
   // --- Media Session ---
   useEffect(() => {
