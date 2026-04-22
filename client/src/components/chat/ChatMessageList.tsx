@@ -50,9 +50,9 @@ export default function ChatMessageList({ messages, bottomRef, hostId }: ChatMes
               <div className="h-px flex-1 bg-white/[0.06]" />
               <span className="text-center text-[11px] leading-tight text-white/25 line-clamp-3 break-keep">
                 {m.nickname
-                  ? `${m.nickname}${SYSTEM_KEYS.has(m.message) ? t(`system.${m.message}`) : m.message}`
+                  ? `${m.nickname}${SYSTEM_KEYS.has(m.message) ? t(`system.${m.message}`, m.data ?? {}) : m.message}`
                   : SYSTEM_KEYS.has(m.message)
-                    ? t(`system.${m.message}`)
+                    ? t(`system.${m.message}`, m.data ?? {})
                     : m.message}
               </span>
               <div className="h-px flex-1 bg-white/[0.06]" />
