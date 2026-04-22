@@ -10,8 +10,6 @@ function userTag(userId: string): string {
   return `#${userId.slice(-4)}`;
 }
 
-const SYSTEM_KEYS = new Set<string>(Object.values(SystemChatEvent));
-
 interface ChatMessageListProps {
   messages: ChatMessage[];
   bottomRef: React.RefObject<HTMLDivElement | null>;
@@ -21,10 +19,44 @@ interface ChatMessageListProps {
 export default function ChatMessageList({ messages, bottomRef, hostId }: ChatMessageListProps) {
   const t = useTranslations('chat');
   const sysLabel = (msg: ChatMessage): string => {
-    if (!SYSTEM_KEYS.has(msg.message)) return msg.nickname ? `${msg.nickname} ${msg.message}` : msg.message;
-    const vars = { trackName: '', ...msg.data };
-    const label = t(`system.${msg.message}`, vars);
-    return msg.nickname ? `${msg.nickname}${label}` : label;
+    const nick = msg.data?.nickname ?? msg.nickname ?? '';
+    const track = msg.data?.trackName ?? '';
+    switch (msg.message) {
+      // nickname + 접미사
+      case SystemChatEvent.userJoined:
+        return `${nick}${t('system.userJoined')}`;
+      case SystemChatEvent.userLeft:
+        return `${nick}${t('system.userLeft')}`;
+      case SystemChatEvent.trackSkipped:
+        return `${nick}${t('system.trackSkipped')}`;
+      case SystemChatEvent.trackPrevious:
+        return `${nick}${t('system.trackPrevious')}`;
+      case SystemChatEvent.hostChanged:
+        return `${nick}${t('system.hostChanged')}`;
+
+      // trackName 포함
+      case SystemChatEvent.trackAdded:
+        return t('system.trackAdded', { trackName: track });
+      case SystemChatEvent.trackUnavailable:
+        return t('system.trackUnavailable', { trackName: track });
+
+      // 단독 메시지
+      case SystemChatEvent.roomClosed:
+        return t('system.roomClosed');
+      case SystemChatEvent.userKicked:
+        return t('system.userKicked');
+      case SystemChatEvent.voteSkipPassed:
+        return t('system.voteSkipPassed');
+      case SystemChatEvent.autoDjEnabled:
+        return t('system.autoDjEnabled');
+      case SystemChatEvent.autoDjDisabled:
+        return t('system.autoDjDisabled');
+      case SystemChatEvent.enqueueCountsReset:
+        return t('system.enqueueCountsReset');
+
+      default:
+        return msg.message;
+    }
   };
 
   return (
