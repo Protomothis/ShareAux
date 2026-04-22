@@ -149,13 +149,27 @@
   },
   "search": {
     "title": "Add tracks",
-    "showcase": "Showcase",
+    "showcase": {
+      "emptyTitle": "No play history yet",
+      "emptyHint": "Add tracks from the search tab",
+      "popular": "Popular",
+      "myHistory": "My Requests",
+      "recentPlays": "Recent Plays",
+      "recommended": "Recommended"
+    },
     "searchTab": "Search",
     "favorites": "Favorites",
     "placeholder": "Song title or artist...",
     "emptyHint": "Search by song title or artist",
     "noResults": "No results found",
-    "noResultsHint": "No results for \"{query}\".\nTry different keywords."
+    "noResultsHint": "No results for \"{query}\".\nTry different keywords.",
+    "playlist": {
+      "trackCount": "{count} tracks",
+      "loadError": "Failed to load playlist",
+      "retry": "Retry",
+      "noTracks": "No playable tracks",
+      "loadMore": "Load more ({loaded}/{total})"
+    }
   },
   "favorites": {
     "loading": "Loading...",
@@ -740,5 +754,46 @@
       "providerTitle": "Provider",
       "roleTitle": "Role"
     }
+  },
+  "folders": {
+    "title": "Manage Folders",
+    "count": "{count}/20 folders",
+    "created": "Folder created",
+    "updated": "Folder updated",
+    "deleteConfirm": "Delete this folder? Tracks will be moved to uncategorized.",
+    "deleted": "Folder deleted",
+    "save": "Save",
+    "create": "Create",
+    "newFolder": "New folder",
+    "placeholder": "Folder name (2–20 chars)",
+    "cancel": "Cancel",
+    "trackCount": "{count} tracks"
+  },
+  "room": {
+    "chat": "Chat",
+    "queue": "Queue",
+    "history": "History",
+    "members": "Members"
+  },
+  "authCallback": {
+    "loginFailed": "Login failed",
+    "defaultTitle": "Login Failed",
+    "defaultDesc": "An unknown error occurred. Please try again.",
+    "notLinkedTitle": "Account not found",
+    "googleDisabledTitle": "Google login unavailable",
+    "googleDisabledDesc": "Google login is currently disabled.",
+    "alreadyLinkedTitle": "Link failed",
+    "backToLogin": "Back to login",
+    "processing": "Signing in",
+    "wait": "Please wait..."
+  },
+  "apiError": {
+    "400": "Invalid request",
+    "403": "Permission denied",
+    "404": "Resource not found",
+    "409": "Already processed",
+    "429": "Too many requests. Please try again later",
+    "serverError": "Server error",
+    "fallback": "Request failed"
   }
 }
