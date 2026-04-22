@@ -147,7 +147,15 @@ src/
 - `audio` + `MediaSource` + `SourceBuffer`는 `useAudio.init()`에서 1회 생성, 재생성 금지
 - 곡 전환: `clearBuffer()` — `sb.abort()` + `sb.remove()`. 새 MediaSource 생성 금지
 - `audio.load()` 호출 금지 (재생 상태 리셋, iOS 제스처 토큰 소비)
-- `audio.play()`는 `updateend`에서 버퍼 확보 후 호출 — `init()`에서 조기 호출 금지 (빈 MSE → `ended` 전환)
+- `audio.play()`는 `updateend`에서 버퍼 확보(`tryPlay`) 후 호출 — `init()`에서 조기 호출 금지 (빈 MSE → `ended` 전환)
+
+#### 서버 chunk 전송 규칙
+
+- **burst 없음** — ffmpeg에서 chunk가 나오면 즉시 `broadcastChunk`. 모아서 보내지 않음
+  - burst(모아서 전송)는 첫 재생을 불필요하게 지연시킴 (3초 → 2초로 단축됨)
+  - 중간 입장자에게도 이점 없음 (recentChunks 전송 금지)
+- **`onStart` 콜백**은 첫 chunk 전송 시점에 호출 — init segment 파싱 시점이 아님
+- **`TRACK_END_DELAY_MS`** — 곡 종료 후 클라이언트 버퍼 소진 대기 (3초). 스킵 시에는 즉시 전환
 
 #### init segment 전송 규칙 (중요!)
 
@@ -158,6 +166,23 @@ src/
 - **클라이언트**: 중간 입장(이미 streaming)은 `handleListenToggle`에서 `sendResync` 호출
 - **클라이언트**: 가드는 `gotInitRef`(init 수신 여부) + `resettingRef`(clearBuffer 중) 두 개만 — useWebSocket에 가드 넣지 말 것
 - **클라이언트**: REST API 초기 상태에서 `trackRef` 즉시 세팅 — WS 이벤트 중복 trackChanged 판정 방지
+
+#### 적응형 버퍼링 (useAudio)
+
+- **상태별 임계값**: startup 2.0s / rebuffer 1.0~2.5s (stall 에스컬레이션) / steady 0.4s
+- **stall 감지**: `waiting` 이벤트 → `audio.pause()` → rebuffer phase → 임계값 확보 후 resume
+  - `play()` 직후 500ms 이내 `waiting`은 디코더 초기화 — stall로 카운트하지 않음 (`playStartedAtRef`로 판정)
+- **타임아웃 폴백**: 5초 내 임계값 미도달 시 현재 버퍼로 재생 시작
+- **`currentTime` 갱신 규칙**:
+  - 첫 play 전: seek 1회 (버퍼 시작점)
+  - 재생 중: 서버 동기화 보정만 — drift > 5초(`SYNC_DRIFT_THRESHOLD`)일 때만 `end - BUFFER_STARTUP`으로 보정
+  - 매 updateend마다 무조건 갱신 금지 — 재생 위치가 `end - BUFFER_GOAL`로 밀려나는 버그 발생
+- **`buffering` 상태**: 외부 노출하여 play 버튼 로딩 표시에 사용
+
+#### 경과 시간 동기화 (useRoomEvents)
+
+- `elapsedBase` + `syncTime`은 단일 state 객체(`timeSync`)로 원자적 업데이트 — 별도 setState 시 중간 렌더에서 이전 곡 시간 표시되는 버그 방지
+- listening 중 경과 시간 갱신은 `useAudio`의 `onTimeUpdate` 콜백으로 처리 — interval 폴링 금지 (state 반영 지연으로 곡 전환 시 이전 곡 시간 노출)
 
 ---
 
