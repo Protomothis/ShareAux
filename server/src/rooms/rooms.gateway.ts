@@ -8,6 +8,7 @@ import { WebSocket, WebSocketServer } from 'ws';
 import { AuthService } from '../auth/auth.service.js';
 import { AudioService } from '../services/audio.service.js';
 import { ChatMuteService } from '../services/chat-mute.service.js';
+import { IpBanService } from '../services/ip-ban.service.js';
 import {
   AUTH_COOKIE_ACCESS,
   WS_CLOSE_BANNED,
@@ -38,6 +39,7 @@ export class RoomsGateway {
     private chatMute: ChatMuteService,
     private rooms: RoomsService,
     private config: ConfigService,
+    private ipBan: IpBanService,
     @Inject(forwardRef(() => AuthService)) private auth: AuthService,
   ) {}
 
@@ -46,8 +48,21 @@ export class RoomsGateway {
 
     const allowedOrigin = this.config.get<string>('CLIENT_URL');
 
+    // WS pre-auth flood 방어: IP별 연결 시도 추적
+    const connectAttempts = new Map<string, { count: number; resetAt: number; violations: number }>();
+    const WS_RATE_WINDOW_MS = 10_000;
+    const WS_RATE_LIMIT = 10;
+
     httpServer.on('upgrade', (req: IncomingMessage, socket: Duplex, head: Buffer) => {
       if (req.url?.split('?')[0] !== '/ws') {
+        socket.destroy();
+        return;
+      }
+
+      const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ?? req.socket.remoteAddress ?? '';
+
+      // IP ban 체크
+      if (this.ipBan.isIpBanned(ip)) {
         socket.destroy();
         return;
       }
@@ -58,6 +73,33 @@ export class RoomsGateway {
         this.logger.warn(`WS upgrade rejected: origin=${origin} (allowed=${allowedOrigin})`);
         socket.destroy();
         return;
+      }
+
+      // Rate limit (인증된 유저는 쿠키로 판별하여 bypass)
+      const hasCookie = !!req.headers.cookie?.includes('sat=');
+      if (!hasCookie) {
+        const now = Date.now();
+        let entry = connectAttempts.get(ip);
+        if (!entry || now > entry.resetAt) {
+          entry = { count: 0, resetAt: now + WS_RATE_WINDOW_MS, violations: entry?.violations ?? 0 };
+          connectAttempts.set(ip, entry);
+        }
+        entry.count++;
+
+        if (entry.count > WS_RATE_LIMIT) {
+          entry.violations++;
+          this.logger.warn(`WS flood: ip=${ip} count=${entry.count} violations=${entry.violations}`);
+
+          // 에스컬레이션: 3회 위반 → 30분 ban, 10회 → 24시간 ban
+          if (entry.violations >= 10) {
+            void this.ipBan.banIp(ip, 'WS flood (auto)', 'system', new Date(now + 24 * 60 * 60_000));
+          } else if (entry.violations >= 3) {
+            void this.ipBan.banIp(ip, 'WS flood (auto)', 'system', new Date(now + 30 * 60_000));
+          }
+
+          socket.destroy();
+          return;
+        }
       }
 
       this.wss!.handleUpgrade(req, socket, head, (client) => {
