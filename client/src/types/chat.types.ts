@@ -5,7 +5,7 @@ export interface ChatMessage {
   timestamp: string;
   type?: 'chat' | 'system';
   role?: string;
-  data?: Record<string, string>;
+  data?: { nickname?: string; trackName?: string };
 }
 
 export interface FloatingReaction {

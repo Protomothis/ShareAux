@@ -9,10 +9,12 @@ import type { WsEvent } from './wsEvent';
 import type { AutoDjStatus } from './autoDjStatus';
 import type { Language } from './language';
 import type { AuthProvider } from './authProvider';
+import type { SystemChatEvent } from './systemChatEvent';
 
 export interface SharedEnums {
   wsEvent: WsEvent;
   autoDjStatus: AutoDjStatus;
   language: Language;
   authProvider: AuthProvider;
+  systemChatEvent: SystemChatEvent;
 }

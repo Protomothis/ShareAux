@@ -129,6 +129,8 @@ export * from './sharedEnums';
 export * from './showcaseResponse';
 export * from './streamingMetricsResponse';
 export * from './suggestResponse';
+export * from './systemChatEvent';
+export * from './systemChatMessage';
 export * from './systemSettingItem';
 export * from './systemStatsResponse';
 export * from './tableSizeItem';

@@ -1,4 +1,5 @@
 import { useTranslations } from 'next-intl';
+import { SystemChatEvent } from '@/api/model';
 
 import { getAvatar } from '@/lib/avatar';
 import { getDisplayRole, ROLE_CONFIG } from '@/lib/roles';
@@ -9,21 +10,7 @@ function userTag(userId: string): string {
   return `#${userId.slice(-4)}`;
 }
 
-const SYSTEM_KEYS = new Set([
-  'userJoined',
-  'userLeft',
-  'trackSkipped',
-  'trackPrevious',
-  'roomClosed',
-  'hostChanged',
-  'autoDjEnabled',
-  'autoDjDisabled',
-  'enqueueCountsReset',
-  'userKicked',
-  'trackAdded',
-  'trackUnavailable',
-  'voteSkipPassed',
-]);
+const SYSTEM_KEYS = new Set<string>(Object.values(SystemChatEvent));
 
 interface ChatMessageListProps {
   messages: ChatMessage[];
