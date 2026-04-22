@@ -20,6 +20,13 @@ interface ChatMessageListProps {
 
 export default function ChatMessageList({ messages, bottomRef, hostId }: ChatMessageListProps) {
   const t = useTranslations('chat');
+  const sysLabel = (msg: ChatMessage): string => {
+    if (!SYSTEM_KEYS.has(msg.message)) return msg.nickname ? `${msg.nickname} ${msg.message}` : msg.message;
+    const vars = { trackName: '', ...msg.data };
+    const label = t(`system.${msg.message}`, vars);
+    return msg.nickname ? `${msg.nickname}${label}` : label;
+  };
+
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3" role="log" aria-live="polite">
       {messages.length === 0 && (
@@ -36,11 +43,7 @@ export default function ChatMessageList({ messages, bottomRef, hostId }: ChatMes
             <div key={`msg-${i}`} className="animate-fade-in flex items-center gap-2 py-0.5">
               <div className="h-px flex-1 bg-white/[0.06]" />
               <span className="text-center text-[11px] leading-tight text-white/25 line-clamp-3 break-keep">
-                {m.nickname
-                  ? `${m.nickname}${SYSTEM_KEYS.has(m.message) ? t(`system.${m.message}`, m.data ?? {}) : m.message}`
-                  : SYSTEM_KEYS.has(m.message)
-                    ? t(`system.${m.message}`, m.data ?? {})
-                    : m.message}
+                {sysLabel(m)}
               </span>
               <div className="h-px flex-1 bg-white/[0.06]" />
             </div>
