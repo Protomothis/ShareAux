@@ -245,7 +245,7 @@ export class RoomsGateway {
             const parsed = JSON.parse(data.subarray(1).toString());
             // 메시지 길이 제한
             if (!parsed.message || typeof parsed.message !== 'string' || parsed.message.length > 300) return;
-            const trimmed = parsed.message.trim();
+            const trimmed = parsed.message.trim().replace(/[<>]/g, '');
             if (!trimmed) return;
 
             const { userId, roomId: rid } = client.data;
