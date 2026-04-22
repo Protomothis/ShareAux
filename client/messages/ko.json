@@ -441,14 +441,14 @@
       "status": "상태",
       "backToList": "유저 목록",
       "roles": {
-        "user": "일반 유저",
+        "user": "일반",
         "admin": "관리자",
         "superAdmin": "최고 관리자",
         "guest": "게스트"
       },
       "providers": {
         "google": "Google",
-        "local": "아이디/비밀번호",
+        "local": "일반",
         "invite": "초대코드"
       }
     },
@@ -724,11 +724,11 @@
       "banned": "정지됨",
       "providers": {
         "google": "Google",
-        "local": "아이디/비밀번호",
+        "local": "일반",
         "invite": "초대코드"
       },
       "roles": {
-        "user": "일반 유저",
+        "user": "일반",
         "admin": "관리자",
         "superAdmin": "최고 관리자",
         "guest": "게스트"

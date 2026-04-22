@@ -448,7 +448,7 @@
       },
       "providers": {
         "google": "Google",
-        "local": "Credentials",
+        "local": "Local",
         "invite": "Invite Code"
       }
     },
@@ -724,7 +724,7 @@
       "banned": "Banned",
       "providers": {
         "google": "Google",
-        "local": "Credentials",
+        "local": "Local",
         "invite": "Invite Code"
       },
       "roles": {
