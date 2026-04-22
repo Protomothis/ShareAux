@@ -68,7 +68,6 @@ export const AUTH_REFRESH_EXPIRY_SEC = 604_800; // 7일
 export const AUTH_GUEST_EXPIRY_SEC = 43_200; // 12시간
 export const AUTH_COOKIE_ACCESS = 'sat'; // ShareAux Token
 export const AUTH_COOKIE_REFRESH = 'sart'; // ShareAux Refresh Token
-export const AUTH_COOKIE_USER = 'sau'; // ShareAux User (비-httpOnly 메타)
 export const AUTH_LOGIN_RATE_LIMIT = 5;
 
 // ─── CAPTCHA (PoW) ─────────────────────────────────────
