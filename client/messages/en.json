@@ -448,8 +448,8 @@
       },
       "providers": {
         "google": "Google",
-        "local": "Local",
-        "invite": "Invite"
+        "local": "Credentials",
+        "invite": "Invite Code"
       }
     },
     "rooms": {
@@ -724,8 +724,8 @@
       "banned": "Banned",
       "providers": {
         "google": "Google",
-        "local": "Local",
-        "invite": "Invite"
+        "local": "Credentials",
+        "invite": "Invite Code"
       },
       "roles": {
         "user": "User",

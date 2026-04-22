@@ -448,8 +448,8 @@
       },
       "providers": {
         "google": "Google",
-        "local": "Local",
-        "invite": "초대"
+        "local": "아이디/비밀번호",
+        "invite": "초대코드"
       }
     },
     "rooms": {
@@ -724,8 +724,8 @@
       "banned": "정지됨",
       "providers": {
         "google": "Google",
-        "local": "Local",
-        "invite": "초대"
+        "local": "아이디/비밀번호",
+        "invite": "초대코드"
       },
       "roles": {
         "user": "일반 유저",
