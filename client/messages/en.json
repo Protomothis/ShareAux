@@ -1,0 +1,16 @@
+{
+  "common": {
+    "privacyPolicy": "Privacy Policy",
+    "terms": "Terms of Service"
+  },
+  "login": {
+    "tagline": "Listen together, build playlists together",
+    "invitedTo": "You've been invited to {roomName}",
+    "loginTitle": "Log in",
+    "loginDescription": "Sign in with your credentials",
+    "registerTitle": "Sign up",
+    "registerDescription": "Create an account with invite code",
+    "guestTitle": "Guest access",
+    "guestDescription": "Join instantly with invite code"
+  }
+}

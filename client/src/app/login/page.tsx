@@ -3,6 +3,7 @@
 import { LogIn, Ticket, UserPlus } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Suspense, useEffect, useState } from 'react';
 
 import AnimatedBackground from '@/components/common/AnimatedBackground';
@@ -28,6 +29,8 @@ export default function LoginPage() {
 function LoginInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations('login');
+  const tc = useTranslations('common');
   const codeParam = searchParams.get('code');
   const errorParam = searchParams.get('error');
   const [mode, setMode] = useState<Mode>(codeParam ? 'register' : 'select');
@@ -70,14 +73,14 @@ function LoginInner() {
           className="relative z-10 mb-10 text-center"
         >
           <ShareAuxLogo className="mx-auto h-16 w-auto md:h-20" />
-          <p className="mt-2 text-sm text-sa-text-muted">함께 듣는 음악, 함께 만드는 플레이리스트</p>
+          <p className="mt-2 text-sm text-sa-text-muted">{t('tagline')}</p>
           {inviteRoomName && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               className="mt-4 rounded-xl border border-sa-accent/30 bg-sa-accent/10 px-4 py-2.5 text-sm text-sa-accent"
             >
-              🎵 <span className="font-semibold">{inviteRoomName}</span> 방에서 초대받았습니다
+              🎵 {t('invitedTo', { roomName: inviteRoomName })}
             </motion.div>
           )}
           {errorParam && (
@@ -103,20 +106,20 @@ function LoginInner() {
             >
               <LoginCard
                 icon={LogIn}
-                title="로그인"
-                description="아이디와 비밀번호로 로그인"
+                title={t('loginTitle')}
+                description={t('loginDescription')}
                 onClick={() => setMode('login')}
               />
               <LoginCard
                 icon={UserPlus}
-                title="회원가입"
-                description="초대코드로 계정 만들기"
+                title={t('registerTitle')}
+                description={t('registerDescription')}
                 onClick={() => setMode('register')}
               />
               <LoginCard
                 icon={Ticket}
-                title="게스트 입장"
-                description="초대코드로 바로 참여하기"
+                title={t('guestTitle')}
+                description={t('guestDescription')}
                 onClick={() => setMode('guest')}
               />
             </motion.div>
@@ -150,11 +153,11 @@ function LoginInner() {
 
         <div className="relative z-10 mt-8 flex gap-3 text-xs text-sa-text-muted">
           <a href="/privacy" className="hover:text-sa-text-secondary hover:underline">
-            개인정보처리방침
+            {tc('privacyPolicy')}
           </a>
           <span>·</span>
           <a href="/terms" className="hover:text-sa-text-secondary hover:underline">
-            이용약관
+            {tc('terms')}
           </a>
         </div>
       </motion.main>

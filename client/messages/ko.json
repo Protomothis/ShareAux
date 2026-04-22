@@ -1,0 +1,16 @@
+{
+  "common": {
+    "privacyPolicy": "개인정보처리방침",
+    "terms": "이용약관"
+  },
+  "login": {
+    "tagline": "함께 듣는 음악, 함께 만드는 플레이리스트",
+    "invitedTo": "{roomName} 방에서 초대받았습니다",
+    "loginTitle": "로그인",
+    "loginDescription": "아이디와 비밀번호로 로그인",
+    "registerTitle": "회원가입",
+    "registerDescription": "초대코드로 계정 만들기",
+    "guestTitle": "게스트 입장",
+    "guestDescription": "초대코드로 바로 참여하기"
+  }
+}

@@ -4,6 +4,8 @@ import type { Viewport } from 'next';
 import { Outfit } from 'next/font/google';
 import localFont from 'next/font/local';
 import { headers } from 'next/headers';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages } from 'next-intl/server';
 import { Toaster } from 'sonner';
 
 import ErrorBoundary from '@/components/common/ErrorBoundary';
@@ -52,13 +54,18 @@ export const viewport: Viewport = {
   themeColor: '#ff4081',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="ko" className={`dark ${pretendard.variable} ${outfit.variable} h-full overflow-hidden`}>
+    <html lang={locale} className={`dark ${pretendard.variable} ${outfit.variable} h-full overflow-hidden`}>
       <body className="h-full overflow-hidden bg-sa-bg-primary font-[family-name:var(--font-pretendard)] text-sa-text-primary antialiased">
-        <Providers>
-          <ErrorBoundary>{children}</ErrorBoundary>
-        </Providers>
+        <NextIntlClientProvider messages={messages}>
+          <Providers>
+            <ErrorBoundary>{children}</ErrorBoundary>
+          </Providers>
+        </NextIntlClientProvider>
         <Toaster theme="dark" position="top-center" />
       </body>
     </html>
