@@ -7,13 +7,14 @@
 | Node.js | 22+ | 서버 + 클라이언트 런타임 |
 | PostgreSQL | 16 | 데이터베이스 (Docker 권장) |
 | ffmpeg | 6+ | 오디오 트랜스코딩 (fMP4 AAC) |
-| yt-dlp | 최신 | 오디오 URL 추출 |
+| media resolver | 최신 | 오디오 URL 추출 |
 | python3 | 3.10+ | syncedlyrics (가사 검색) |
 
 ### macOS
 
 ```bash
-brew install node ffmpeg yt-dlp python3
+brew install node ffmpeg python3
+pip3 install yt-dlp
 pip3 install syncedlyrics
 ```
 
@@ -22,7 +23,7 @@ pip3 install syncedlyrics
 ```bash
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt install -y nodejs ffmpeg python3 python3-pip
-pip3 install yt-dlp syncedlyrics
+pip3 install syncedlyrics
 ```
 
 ---

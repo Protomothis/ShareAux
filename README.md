@@ -31,7 +31,7 @@ Self-hosted real-time music sharing platform. Create rooms, search for music, an
 | Server | NestJS 11, TypeORM, PostgreSQL 16, raw `ws` WebSocket |
 | Client | Next.js 16, React 19, Tailwind 4, zustand, react-query, next-intl |
 | Auth | Passport (Google OAuth + Local JWT) |
-| Audio | yt-dlp → ffmpeg (fMP4 AAC) → WebSocket binary → Browser MSE |
+| Audio | media resolver → ffmpeg (fMP4 AAC) → WebSocket binary → Browser MSE |
 | Lyrics | syncedlyrics (Musixmatch) + Gemini AI translation |
 | Infra | Docker, GitHub Actions, GHCR |
 
@@ -75,7 +75,7 @@ docker compose -f docker-compose.ghcr.yml up -d
 See the [Development Guide](docs/development.md) for details.
 
 ```bash
-# Required: Node.js 22+, PostgreSQL 16, ffmpeg, yt-dlp, python3
+# Required: Node.js 22+, PostgreSQL 16, ffmpeg, media resolver, python3
 
 # Start DB
 docker compose up db -d

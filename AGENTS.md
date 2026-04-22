@@ -8,7 +8,7 @@
 셀프호스팅 실시간 음악 공유 플랫폼. 방을 만들고, 음악을 검색하고, 모든 참여자에게 WebSocket 바이너리로 실시간 스트리밍합니다.
 
 ```
-클라이언트 (Next.js 16) → NestJS API + raw WebSocket → yt-dlp → ffmpeg (fMP4 AAC) → WS 바이너리 → 브라우저 (MSE)
+클라이언트 (Next.js 16) → NestJS API + raw WebSocket → media resolver → ffmpeg (fMP4 AAC) → WS 바이너리 → 브라우저 (MSE)
 ```
 
 ## 모노레포 구조
@@ -70,7 +70,7 @@ npx tsc --noEmit
 
 ### 기술 스택
 
-NestJS 11 · TypeORM · PostgreSQL 16 · raw `ws` WebSocket · Passport (Google OAuth + JWT) · yt-dlp · ffmpeg
+NestJS 11 · TypeORM · PostgreSQL 16 · raw `ws` WebSocket · Passport (Google OAuth + JWT) · media resolver · ffmpeg
 
 ### ESM 필수
 

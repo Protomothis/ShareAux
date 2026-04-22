@@ -31,7 +31,7 @@
 | 서버 | NestJS 11, TypeORM, PostgreSQL 16, raw `ws` WebSocket |
 | 클라이언트 | Next.js 16, React 19, Tailwind 4, zustand, react-query, next-intl |
 | 인증 | Passport (Google OAuth + 로컬 JWT) |
-| 오디오 | yt-dlp → ffmpeg (fMP4 AAC) → WebSocket 바이너리 → 브라우저 MSE |
+| 오디오 | 미디어 리졸버 → ffmpeg (fMP4 AAC) → WebSocket 바이너리 → 브라우저 MSE |
 | 가사 | syncedlyrics (Musixmatch) + Gemini AI 번역 |
 | 인프라 | Docker, GitHub Actions, GHCR |
 
@@ -75,7 +75,7 @@ docker compose -f docker-compose.ghcr.yml up -d
 자세한 내용은 [개발 가이드](docs/development.md)를 참고하세요.
 
 ```bash
-# 필수: Node.js 22+, PostgreSQL 16, ffmpeg, yt-dlp, python3
+# 필수: Node.js 22+, PostgreSQL 16, ffmpeg, 미디어 리졸버, python3
 
 # DB 실행
 docker compose up db -d
