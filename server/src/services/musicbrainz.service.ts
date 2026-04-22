@@ -6,6 +6,14 @@ export interface MusicBrainzResult {
   album?: string;
 }
 
+interface MbRecording {
+  title: string;
+  score: number;
+  length?: number;
+  'artist-credit'?: { name: string }[];
+  releases?: { title: string }[];
+}
+
 @Injectable()
 export class MusicBrainzService {
   private readonly logger = new Logger(MusicBrainzService.name);
@@ -30,31 +38,46 @@ export class MusicBrainzService {
     });
   }
 
+  /** 후보 중 duration이 가장 가까운 recording 선택 */
+  private pickBest(recordings: MbRecording[], durationMs?: number): MbRecording | null {
+    const valid = recordings.filter((r) => r.score >= 80);
+    if (!valid.length) return null;
+    if (!durationMs || valid.length === 1) return valid[0];
+
+    let best = valid[0];
+    let bestDiff = Infinity;
+    for (const r of valid) {
+      if (!r.length) continue;
+      const diff = Math.abs(r.length - durationMs);
+      if (diff < bestDiff) {
+        bestDiff = diff;
+        best = r;
+      }
+    }
+    // duration 차이 10초 초과면 오매칭 가능성 — score 1위 우선
+    return bestDiff > 10_000 ? valid[0] : best;
+  }
+
   /** MusicBrainz recording 검색 (rate limit: 1req/sec) */
-  async search(artist: string, title: string): Promise<MusicBrainzResult | null> {
-    if (!artist || !title || title.length < 2) return null;
+  async search(artist: string, title: string, durationMs?: number): Promise<MusicBrainzResult | null> {
+    if (!title || title.length < 2) return null;
 
     await this.waitForSlot();
 
-    const q = encodeURIComponent(`recording:"${title}" AND artist:"${artist}"`);
+    const query = artist ? `recording:"${title}" AND artist:"${artist}"` : `recording:"${title}"`;
     try {
-      const res = await fetch(`https://musicbrainz.org/ws/2/recording?query=${q}&limit=3&fmt=json`, {
-        headers: { 'User-Agent': 'ShareAux/0.1.4 (https://github.com/Protomothis/ShareAux)' },
-        signal: AbortSignal.timeout(10_000),
-      });
+      const res = await fetch(
+        `https://musicbrainz.org/ws/2/recording?query=${encodeURIComponent(query)}&limit=25&fmt=json`,
+        {
+          headers: { 'User-Agent': 'ShareAux/0.1.6 (https://github.com/Protomothis/ShareAux)' },
+          signal: AbortSignal.timeout(10_000),
+        },
+      );
       if (!res.ok) return null;
 
-      const data = (await res.json()) as {
-        recordings?: {
-          title: string;
-          score: number;
-          'artist-credit'?: { name: string }[];
-          releases?: { title: string }[];
-        }[];
-      };
-
-      const best = data.recordings?.[0];
-      if (!best || best.score < 80) return null;
+      const data = (await res.json()) as { recordings?: MbRecording[] };
+      const best = this.pickBest(data.recordings ?? [], durationMs);
+      if (!best) return null;
 
       return {
         title: best.title,

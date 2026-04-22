@@ -10,6 +10,7 @@ import { AdminTable } from '@/components/admin/AdminTable';
 import type { Column } from '@/components/admin/AdminTable';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { TrackDetailModal } from '@/components/admin/TrackDetailModal';
+import { PaginationBar } from '@/components/common/PaginationBar';
 import { useAdminTopTracks } from '@/hooks/admin/useAdminTracks';
 
 const columns: Column<TrackRankingItem>[] = [
@@ -30,8 +31,8 @@ const columns: Column<TrackRankingItem>[] = [
     primary: true,
     render: (item) => (
       <div className="min-w-0">
-        <div className="truncate font-medium text-white">{item.track.name}</div>
-        {item.track.songArtist && <div className="truncate text-xs text-sa-text-muted">{item.track.songArtist}</div>}
+        <div className="truncate font-medium text-white">{item.track.songTitle ?? item.track.name}</div>
+        <div className="truncate text-xs text-sa-text-muted">{item.track.songArtist ?? item.track.artist}</div>
       </div>
     ),
   },
@@ -104,16 +105,21 @@ const columns: Column<TrackRankingItem>[] = [
 
 export default function AdminTracksPage() {
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
   const [selectedTrack, setSelectedTrack] = useState<TrackRankingItem | null>(null);
-  const { data, isLoading, refetch } = useAdminTopTracks({ limit: 50 });
+  const limit = 20;
+  const { items, total, isLoading, refetch } = useAdminTopTracks({ page, limit });
+  const totalPages = Math.ceil(total / limit);
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return data ?? [];
+    if (!search.trim()) return items;
     const q = search.toLowerCase();
-    return (data ?? []).filter(
-      (item) => item.track.name.toLowerCase().includes(q) || item.track.songArtist?.toLowerCase().includes(q),
+    return items.filter(
+      (item) =>
+        (item.track.songTitle ?? item.track.name).toLowerCase().includes(q) ||
+        (item.track.songArtist ?? item.track.artist ?? '').toLowerCase().includes(q),
     );
-  }, [data, search]);
+  }, [items, search]);
 
   return (
     <div>
@@ -127,9 +133,11 @@ export default function AdminTracksPage() {
         loading={isLoading}
         rowKey={(item) => item.trackId}
         emptyMessage="재생 기록이 없습니다"
-        maxHeight="calc(100vh - 10rem)"
+        maxHeight="calc(100vh - 12rem)"
         onRowClick={setSelectedTrack}
+        indexOffset={(page - 1) * limit}
       />
+      <PaginationBar page={page} totalPages={totalPages} onPageChange={setPage} />
       <TrackDetailModal
         track={selectedTrack}
         onOpenChange={(open) => !open && setSelectedTrack(null)}

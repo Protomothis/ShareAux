@@ -134,7 +134,7 @@ export class AuthController {
       return;
     }
     const tokens = await this.authService.generateTokenPair(user);
-    setAuthCookies(res, this.isProd, tokens.accessToken, tokens.refreshToken, tokens.user);
+    setAuthCookies(res, this.isProd, tokens.accessToken, tokens.refreshToken);
     return { ok: true };
   }
 
@@ -147,7 +147,7 @@ export class AuthController {
       return;
     }
     const tokens = await this.authService.refreshTokens(token);
-    setAuthCookies(res, this.isProd, tokens.accessToken, tokens.refreshToken, tokens.user);
+    setAuthCookies(res, this.isProd, tokens.accessToken, tokens.refreshToken);
     return { ok: true };
   }
 
@@ -169,7 +169,7 @@ export class AuthController {
   async guestLogin(@Body() dto: GuestLoginDto, @Res({ passthrough: true }) res: Response) {
     this.verifyCaptcha(dto);
     const tokens = await this.authService.guestLogin(dto.code, dto.nickname);
-    setAuthCookies(res, this.isProd, tokens.accessToken, '', tokens.user);
+    setAuthCookies(res, this.isProd, tokens.accessToken, '');
     return { ok: true };
   }
 
@@ -179,8 +179,8 @@ export class AuthController {
   async register(@Body() dto: RegisterDto, @Res({ passthrough: true }) res: Response) {
     this.verifyCaptcha(dto);
     const tokens = await this.authService.register(dto);
-    setAuthCookies(res, this.isProd, tokens.accessToken, tokens.refreshToken, tokens.user);
-    return { user: tokens.user };
+    setAuthCookies(res, this.isProd, tokens.accessToken, tokens.refreshToken);
+    return { success: true };
   }
 
   @Post('login')
@@ -189,8 +189,8 @@ export class AuthController {
   async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
     this.verifyCaptcha(dto);
     const tokens = await this.authService.login(dto);
-    setAuthCookies(res, this.isProd, tokens.accessToken, tokens.refreshToken, tokens.user);
-    return { user: tokens.user };
+    setAuthCookies(res, this.isProd, tokens.accessToken, tokens.refreshToken);
+    return { success: true };
   }
 
   @Put('profile/nickname')
@@ -203,16 +203,8 @@ export class AuthController {
     @Body() dto: UpdateNicknameDto,
   ) {
     await this.authService.updateNickname(req.user.userId, dto.nickname);
-    // sau 쿠키 갱신
-    const user = await this.authService.findUserById(req.user.userId);
-    if (user) {
-      res.cookie('sau', JSON.stringify({ sub: user.id, nickname: user.nickname, role: user.role }), {
-        secure: this.isProd,
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 900_000,
-      });
-    }
+    const tokens = await this.authService.generateTokenPairById(req.user.userId);
+    setAuthCookies(res, this.isProd, tokens.accessToken, tokens.refreshToken);
     return { success: true };
   }
 

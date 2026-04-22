@@ -169,7 +169,7 @@ function NicknamePage({ me, onBack, onDone }: { me: User | null; onBack: () => v
     setLoading(true);
     try {
       await authControllerUpdateNickname({ nickname: value.trim() });
-      useAuthStore.getState().init();
+      useAuthStore.setState({ nickname: value.trim() });
       onDone('닉네임이 변경되었습니다');
     } catch (e) {
     } finally {

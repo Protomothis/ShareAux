@@ -1,11 +1,14 @@
 'use client';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { createAnalyser } from '../lib/audioAnalyser';
 import { debug } from '../lib/debug';
 import {
   attachMSE,
-  BUFFER_GOAL,
+  BUFFER_REBUFFER,
+  BUFFER_STARTUP,
+  BUFFER_STEADY,
+  BUFFER_TIMEOUT_MS,
   copyToArrayBuffer,
   createMSE,
   IS_MMS,
@@ -13,7 +16,18 @@ import {
   type ManagedMediaSourceLike,
   MIME,
   MSE_SUPPORTED,
+  SYNC_DRIFT_THRESHOLD,
 } from '../lib/mse';
+
+type BufferPhase = 'startup' | 'rebuffer' | 'steady';
+
+/** stall 횟수에 따른 rebuffer 임계값 에스컬레이션 */
+function getBufferGoal(phase: BufferPhase, stallCount: number): number {
+  if (phase === 'startup') return BUFFER_STARTUP;
+  if (phase === 'steady') return BUFFER_STEADY;
+  // rebuffer: stall 횟수에 따라 증가
+  return Math.min(BUFFER_REBUFFER, 1.0 + stallCount * 0.5);
+}
 
 /**
  * useAudio — MSE fMP4 AAC 스트리밍 재생
@@ -24,7 +38,7 @@ import {
  * - audio.load() 절대 호출 안 함 → autoplay 정책 안 걸림
  * - 모든 프레임은 queue에 쌓고 flush로 순차 append
  */
-export function useAudio(onPlaying?: () => void, onError?: () => void) {
+export function useAudio(onPlaying?: () => void, onError?: () => void, onTimeUpdate?: (ms: number) => void) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const msRef = useRef<ManagedMediaSourceLike | null>(null);
   const sbRef = useRef<SourceBuffer | null>(null);
@@ -36,12 +50,24 @@ export function useAudio(onPlaying?: () => void, onError?: () => void) {
   const gotInitRef = useRef(false);
   const resettingRef = useRef(false);
 
+  // 적응형 버퍼링 상태
+  const phaseRef = useRef<BufferPhase>('startup');
+  const stallCountRef = useRef(0);
+  const didFirstPlayRef = useRef(false);
+  const bufferTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const playStartedAtRef = useRef(0);
+
+  // 버퍼링 중 로딩 상태 (외부 노출)
+  const [buffering, setBuffering] = useState(false);
+
   const onPlayingRef = useRef(onPlaying);
   const onErrorRef = useRef(onError);
+  const onTimeUpdateRef = useRef(onTimeUpdate);
   useEffect(() => {
     onPlayingRef.current = onPlaying;
     onErrorRef.current = onError;
-  }, [onPlaying, onError]);
+    onTimeUpdateRef.current = onTimeUpdate;
+  }, [onPlaying, onError, onTimeUpdate]);
 
   // --- flush: queue에서 하나씩 SourceBuffer에 append ---
   const resetMSERef = useRef<() => void>(() => {});
@@ -50,7 +76,7 @@ export function useAudio(onPlaying?: () => void, onError?: () => void) {
     const sb = sbRef.current;
     const ms = msRef.current;
     if (!sb || !ms || ms.readyState !== 'open' || appendingRef.current || !queueRef.current.length) return;
-    if (resettingRef.current) return; // clearBuffer 진행 중
+    if (resettingRef.current) return;
     appendingRef.current = true;
     try {
       sb.appendBuffer(queueRef.current.shift()!);
@@ -63,6 +89,45 @@ export function useAudio(onPlaying?: () => void, onError?: () => void) {
 
   const needsFirstPlayRef = useRef(true);
 
+  /** 버퍼 타임아웃 클리어 */
+  const clearBufferTimeout = useCallback(() => {
+    if (bufferTimeoutRef.current) {
+      clearTimeout(bufferTimeoutRef.current);
+      bufferTimeoutRef.current = null;
+    }
+  }, []);
+
+  /** 버퍼 확보 후 재생 시도 — 임계값 도달 또는 타임아웃 시 호출 */
+  const tryPlay = useCallback(() => {
+    const audio = audioRef.current;
+    const sb = sbRef.current;
+    if (!audio || !sb || !wantPlayRef.current) return;
+    try {
+      if (!sb.buffered.length) return;
+    } catch {
+      return;
+    }
+
+    clearBufferTimeout();
+
+    const end = sb.buffered.end(sb.buffered.length - 1);
+    const start = sb.buffered.start(0);
+
+    // 첫 play 전 seek 1회
+    if (!didFirstPlayRef.current) {
+      audio.currentTime = start;
+      didFirstPlayRef.current = true;
+    }
+
+    if (audio.paused) {
+      setBuffering(false);
+      phaseRef.current = 'steady';
+      playStartedAtRef.current = Date.now();
+      debug(`[audio] ▶ play — buffered: ${(end - start).toFixed(1)}s, phase→steady`);
+      audio.play().catch((e) => debug('[audio] play failed:', e.message));
+    }
+  }, [clearBufferTimeout]);
+
   // --- clearBuffer: SourceBuffer 데이터만 클리어 (MSE/Audio 유지) ---
   const clearBuffer = useCallback((): Promise<void> => {
     const sb = sbRef.current;
@@ -73,6 +138,8 @@ export function useAudio(onPlaying?: () => void, onError?: () => void) {
     gotInitRef.current = false;
     resettingRef.current = true;
     needsFirstPlayRef.current = true;
+    didFirstPlayRef.current = false;
+    clearBufferTimeout();
 
     return new Promise<void>((resolve) => {
       try {
@@ -100,7 +167,7 @@ export function useAudio(onPlaying?: () => void, onError?: () => void) {
 
       finish();
     });
-  }, []);
+  }, [clearBufferTimeout]);
 
   // --- setupSb: SourceBuffer 생성 + updateend 핸들러 ---
   const setupSb = useCallback(
@@ -117,17 +184,39 @@ export function useAudio(onPlaying?: () => void, onError?: () => void) {
             const end = sb.buffered.end(sb.buffered.length - 1);
             const start = sb.buffered.start(0);
             const buffered = end - start;
+            const goal = getBufferGoal(phaseRef.current, stallCountRef.current);
 
-            if (audio.paused && buffered < BUFFER_GOAL) {
-              flush();
-              return;
-            }
-
-            if (audio.currentTime < start || audio.currentTime > end) {
-              audio.currentTime = Math.max(end - BUFFER_GOAL, start);
-            }
+            // 버퍼 확보 대기 중 (paused)
             if (audio.paused) {
-              audio.play().catch((e) => debug('[audio] play failed:', e.message));
+              if (buffered < goal) {
+                // 타임아웃 설정 (최초 1회)
+                if (!bufferTimeoutRef.current) {
+                  setBuffering(true);
+                  bufferTimeoutRef.current = setTimeout(() => {
+                    debug(`[audio] ⏰ buffer timeout — playing with ${buffered.toFixed(1)}s`);
+                    tryPlay();
+                  }, BUFFER_TIMEOUT_MS);
+                }
+                flush();
+                return;
+              }
+              tryPlay();
+            } else {
+              // 재생 중 — 서버 동기화 보정만
+              if (audio.currentTime < start || audio.currentTime > end) {
+                const target = Math.max(end - BUFFER_STARTUP, start);
+                debug(`[audio] 🔄 sync drift — currentTime: ${audio.currentTime.toFixed(1)}s → ${target.toFixed(1)}s`);
+                audio.currentTime = target;
+              } else {
+                const drift = end - audio.currentTime;
+                if (drift > SYNC_DRIFT_THRESHOLD) {
+                  const target = end - BUFFER_STARTUP;
+                  debug(
+                    `[audio] 🔄 drift ${drift.toFixed(1)}s > ${SYNC_DRIFT_THRESHOLD}s — seeking to ${target.toFixed(1)}s`,
+                  );
+                  audio.currentTime = target;
+                }
+              }
             }
           }
         } catch {
@@ -136,7 +225,7 @@ export function useAudio(onPlaying?: () => void, onError?: () => void) {
         flush();
       });
     },
-    [flush],
+    [flush, tryPlay],
   );
 
   // --- resetMSE: 에러 상태에서 MSE + SourceBuffer 재생성 ---
@@ -151,6 +240,10 @@ export function useAudio(onPlaying?: () => void, onError?: () => void) {
     gotInitRef.current = false;
     resettingRef.current = false;
     needsFirstPlayRef.current = true;
+    didFirstPlayRef.current = false;
+    phaseRef.current = 'startup';
+    stallCountRef.current = 0;
+    clearBufferTimeout();
     sbRef.current = null;
     readyRef.current = false;
 
@@ -172,7 +265,7 @@ export function useAudio(onPlaying?: () => void, onError?: () => void) {
       );
     }
     onErrorRef.current?.();
-  }, [setupSb]);
+  }, [setupSb, clearBufferTimeout]);
   resetMSERef.current = resetMSE;
 
   // --- Analyser (데스크톱 Visualizer용) ---
@@ -195,6 +288,8 @@ export function useAudio(onPlaying?: () => void, onError?: () => void) {
   const init = useCallback(async () => {
     if (readyRef.current) {
       wantPlayRef.current = true;
+      phaseRef.current = 'steady';
+      setBuffering(true);
       audioRef.current?.play().catch(() => {
         /* updateend에서 재시도 */
       });
@@ -205,30 +300,37 @@ export function useAudio(onPlaying?: () => void, onError?: () => void) {
     const audio = new Audio();
     audio.volume = volumeRef.current;
     audio.disableRemotePlayback = true;
-    // 최초/곡 전환: timeupdate로 실제 재생 확인 (1회만)
+    // 최초/곡 전환: timeupdate로 실제 재생 확인 (1회만) + 경과 시간 콜백
     audio.addEventListener('timeupdate', () => {
       if (needsFirstPlayRef.current) {
         needsFirstPlayRef.current = false;
         onPlayingRef.current?.();
       }
+      onTimeUpdateRef.current?.(audio.currentTime * 1000);
     });
-    // 중간 버퍼링 복구: waiting → playing
-    let wasWaiting = false;
+    // stall 감지 → pause + rebuffer (첫 play 직후 waiting은 무시)
     audio.addEventListener('waiting', () => {
-      needsFirstPlayRef.current = true; // 다음 timeupdate에서 다시 fire
-      wasWaiting = true;
+      // play() 직후 500ms 이내 waiting은 디코더 초기화 — stall 아님
+      if (Date.now() - playStartedAtRef.current < 500) return;
+      needsFirstPlayRef.current = true;
+      stallCountRef.current++;
+      phaseRef.current = 'rebuffer';
+      setBuffering(true);
+      audio.pause();
       const sb = sbRef.current;
       const buffered = sb?.buffered.length ? sb.buffered.end(sb.buffered.length - 1) - audio.currentTime : 0;
       debug(
-        `[audio] ⏳ buffering — currentTime: ${audio.currentTime.toFixed(1)}s, ahead: ${buffered.toFixed(1)}s, queue: ${queueRef.current.length}`,
+        `[audio] ⏳ stall #${stallCountRef.current} — paused for rebuffer, ahead: ${buffered.toFixed(1)}s, goal: ${getBufferGoal('rebuffer', stallCountRef.current).toFixed(1)}s`,
       );
     });
     audio.addEventListener('playing', () => {
-      if (wasWaiting) {
-        wasWaiting = false;
+      playStartedAtRef.current = Date.now();
+      setBuffering(false);
+      if (phaseRef.current === 'rebuffer') {
+        phaseRef.current = 'steady';
         const sb = sbRef.current;
         const buffered = sb?.buffered.length ? sb.buffered.end(sb.buffered.length - 1) - audio.currentTime : 0;
-        debug(`[audio] ▶️ resumed — ahead: ${buffered.toFixed(1)}s`);
+        debug(`[audio] ▶️ resumed — ahead: ${buffered.toFixed(1)}s, phase→steady`);
         onPlayingRef.current?.();
       }
     });
@@ -242,6 +344,8 @@ export function useAudio(onPlaying?: () => void, onError?: () => void) {
     const ms = createMSE();
     msRef.current = ms;
     wantPlayRef.current = true;
+    phaseRef.current = 'startup';
+    setBuffering(true);
 
     if (IS_MMS) {
       (ms as EventTarget).addEventListener('startstreaming', () => {
@@ -270,7 +374,7 @@ export function useAudio(onPlaying?: () => void, onError?: () => void) {
             clearTimeout(timeout);
             setupSb(ms);
             readyRef.current = true;
-            flush(); // queue에 쌓인 데이터 처리
+            flush();
             resolve();
           },
           { once: true },
@@ -279,23 +383,25 @@ export function useAudio(onPlaying?: () => void, onError?: () => void) {
     });
 
     // play는 updateend에서 버퍼 확보 후 호출 — 여기서 호출하면 빈 MSE에서 ended 전환
-  }, [setupSb, clearBuffer]);
+  }, [setupSb, clearBuffer, flush]);
 
   // --- pause ---
   const pause = useCallback(() => {
     wantPlayRef.current = false;
+    clearBufferTimeout();
+    setBuffering(false);
     audioRef.current?.pause();
-  }, []);
+  }, [clearBufferTimeout]);
 
   // --- pushFrame: 프레임 수신 처리 ---
   const pushFrame = useCallback(
     (data: Uint8Array) => {
-      if (resettingRef.current) return; // clearBuffer 진행 중
+      if (resettingRef.current) return;
 
       const isInit = isInitSegment(data);
 
-      if (!isInit && !gotInitRef.current) return; // init 전 chunk 무시
-      if (isInit && gotInitRef.current) return; // 중복 init 무시
+      if (!isInit && !gotInitRef.current) return;
+      if (isInit && gotInitRef.current) return;
       if (isInit) gotInitRef.current = true;
 
       queueRef.current.push(copyToArrayBuffer(data));
@@ -334,9 +440,18 @@ export function useAudio(onPlaying?: () => void, onError?: () => void) {
       resetMSERef.current();
       return Promise.resolve();
     }
+    phaseRef.current = 'startup';
+    stallCountRef.current = 0;
     gotInitRef.current = false;
     return clearBuffer();
   }, [clearBuffer]);
+
+  // cleanup: AudioContext 리소스 해제
+  useEffect(() => {
+    return () => {
+      audioCtxRef.current?.close().catch(() => {});
+    };
+  }, []);
 
   return {
     init,
@@ -349,5 +464,7 @@ export function useAudio(onPlaying?: () => void, onError?: () => void) {
     getDelay,
     getCurrentTime,
     supported: MSE_SUPPORTED,
+    /** 버퍼 확보 대기 중 여부 — play 버튼 로딩 표시용 */
+    buffering,
   };
 }

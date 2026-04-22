@@ -5,8 +5,11 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
+import type { TrackRankingItem } from './trackRankingItem';
 
-export type AdminControllerGetTopTracksParams = {
+export interface PaginatedTrackRankingResponse {
+  items: TrackRankingItem[];
+  total: number;
   page: number;
   limit: number;
-};
+}

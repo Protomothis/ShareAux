@@ -5,8 +5,9 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
+import type { TrackStats } from './trackStats';
 
-export type AdminControllerGetTopTracksParams = {
-  page: number;
-  limit: number;
-};
+/**
+ * @nullable
+ */
+export type TrackStatsProperty = TrackStats | null;

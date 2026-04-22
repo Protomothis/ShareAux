@@ -5,6 +5,7 @@ import { PCaptcha } from '@/components/common/PCaptcha';
 import { useEffect, useState } from 'react';
 
 import { authControllerRegister } from '@/api/auth/auth';
+import { ApiError } from '@/api/mutator';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -64,7 +65,7 @@ export function RegisterForm({ onSuccess, onBack, initialCode, skipInviteCode }:
   });
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState('');
-  const { errors, validate, clearError } = useFormValidation<RegisterValues>({
+  const { errors, validate, clearError, setError } = useFormValidation<RegisterValues>({
     ...rules,
     code: skipInviteCode ? () => false : rules.code,
   });
@@ -90,7 +91,21 @@ export function RegisterForm({ onSuccess, onBack, initialCode, skipInviteCode }:
       useAuthStore.getState().init();
       onSuccess();
     } catch (err) {
-      setServerError(err instanceof Error ? err.message : '회원가입에 실패했습니다');
+      if (err instanceof ApiError && err.code) {
+        const fieldMap: Partial<Record<string, keyof RegisterValues>> = {
+          AUTH_003: 'code',
+          AUTH_004: 'code',
+          AUTH_005: 'code',
+          AUTH_006: 'code',
+          AUTH_007: 'code',
+          AUTH_008: 'username',
+        };
+        const field = fieldMap[err.code];
+        if (field) setError(field, err.body.description as string);
+        else setServerError((err.body.description ?? err.body.title ?? err.message) as string);
+      } else {
+        setServerError('회원가입에 실패했습니다');
+      }
       captcha.reset();
     } finally {
       setLoading(false);

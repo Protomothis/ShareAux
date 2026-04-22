@@ -7,7 +7,7 @@ export const THROTTLE_LIMIT_QUEUE_ADD = 10;
 
 // ─── WebSocket ──────────────────────────────────────────
 export const WS_HEARTBEAT_INTERVAL_MS = 60_000;
-export const WS_GRACE_MS = 5_000;
+export const WS_GRACE_MS = 30_000;
 export const WS_CLOSE_KICKED = 4003;
 export const WS_CLOSE_ROOM_GONE = 4004;
 export const WS_CLOSE_BANNED = 4005;
@@ -20,8 +20,8 @@ export const FFMPEG_BITRATE = '160k';
 export const FFMPEG_FRAG_DURATION = '1000000'; // 1초 (μs)
 export const FFMPEG_MAX_RETRIES = 3;
 export const FFMPEG_RECENT_CHUNKS = 3;
-export const STREAM_BUFFER_CHUNKS = 3; // 버스트 전송 전 모을 청크 수 (= 초)
-export const TRACK_END_DELAY_MS = 2000; // 곡 전환 전 마지막 버퍼 재생 대기 (ms)
+/** 곡 전환 전 마지막 버퍼 재생 대기 — 클라이언트 버퍼 소진 시간 + 여유 */
+export const TRACK_END_DELAY_MS = 3000;
 
 // ─── Preload ────────────────────────────────────────────
 export const PRELOAD_MAX_CONCURRENT = 20;
@@ -68,7 +68,6 @@ export const AUTH_REFRESH_EXPIRY_SEC = 604_800; // 7일
 export const AUTH_GUEST_EXPIRY_SEC = 43_200; // 12시간
 export const AUTH_COOKIE_ACCESS = 'sat'; // ShareAux Token
 export const AUTH_COOKIE_REFRESH = 'sart'; // ShareAux Refresh Token
-export const AUTH_COOKIE_USER = 'sau'; // ShareAux User (비-httpOnly 메타)
 export const AUTH_LOGIN_RATE_LIMIT = 5;
 
 // ─── CAPTCHA (PoW) ─────────────────────────────────────

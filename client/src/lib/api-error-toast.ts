@@ -1,9 +1,13 @@
 import type { ExternalToast } from 'sonner';
 import { toast } from 'sonner';
 
+import { ErrorResponseDtoCode } from '@/api/model';
 import type { ServerErrorBody } from '@/types';
 
 const isDev = process.env.NODE_ENV === 'development';
+
+/** 토큰 만료/폐기 — 세션 만료 흐름에서 처리하므로 토스트 불필요 */
+const TOKEN_EXPIRED_CODES: string[] = [ErrorResponseDtoCode.AUTH_013, ErrorResponseDtoCode.AUTH_014];
 
 const FALLBACK_MESSAGES: Record<number, string> = {
   400: '요청이 올바르지 않습니다',
@@ -20,7 +24,8 @@ function devSuffix(code: string | undefined, method: string, path: string): stri
 
 /** 서버 구조화 에러 또는 fallback toast */
 export function notifyApiError(status: number, method: string, path: string, body: ServerErrorBody): void {
-  if (status === 401) return;
+  // 토큰 만료만 무시 — 나머지 401(로그인 실패, 초대코드 오류 등)은 토스트 표시
+  if (status === 401 && (!body.code || TOKEN_EXPIRED_CODES.includes(body.code))) return;
 
   // 서버 메타 기반 (code + title 존재)
   if (body.code && body.title) {
