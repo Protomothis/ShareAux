@@ -84,6 +84,13 @@ NestJS 11 · TypeORM · PostgreSQL 16 · raw `ws` WebSocket · Passport (Google 
 - WebSocket: raw `ws` 라이브러리 (`socket.io` 아님)
 - 기능별 1모듈 (module + service + controller 같은 디렉토리)
 
+### Swagger enum 노출 컨벤션
+
+- 공유 enum은 `common/dto/shared-enums.schema.ts`의 `SharedEnums` 클래스에 등록
+- 반드시 `enumName` 지정: `@ApiProperty({ enum: MyEnum, enumName: 'MyEnum' })`
+- `enumName` 미지정 시 orval이 `부모DTO명 + 프로퍼티명`으로 생성 (예: `WsEnumsSchemaLanguage`) — 금지
+- DTO 내부 enum도 동일: `@ApiProperty({ enum: ErrorCode, enumName: 'ErrorCode' })`
+
 ### 오디오 스트리밍 (서버)
 
 - ffmpeg에서 chunk가 나오면 **즉시 `broadcastChunk`** — 모아서 보내지 않음 (burst 금지)
@@ -162,6 +169,16 @@ Next.js 16 · React 19 · Tailwind 4 · zustand · @tanstack/react-query · shad
 - 스크롤 방지: `overscroll-behavior: none`
 - 터치: `touch-manipulation` (300ms 딜레이 제거)
 - fixed 요소: 부모에 `transition-*` 금지 (iOS containing block)
+
+### i18n (next-intl)
+
+- `next-intl` v4 — 쿠키 기반 locale 감지 (URL 경로 변경 없음)
+- 번역 파일: `messages/ko.json`, `messages/en.json`
+- 서버 컴포넌트: `const t = await getTranslations('namespace')`
+- 클라이언트 컴포넌트: `const t = useTranslations('namespace')`
+- `Language` enum은 서버에서 정의 → orval 자동생성 (`@/api/model`에서 import)
+- 클라이언트에서 locale 하드코딩 금지 — `Language` enum 사용
+- `global.d.ts`에 `Messages` 타입 augmentation → 잘못된 키 사용 시 tsc 에러
 
 ### URL / 리버스 프록시
 
