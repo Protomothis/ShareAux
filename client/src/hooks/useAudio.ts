@@ -55,6 +55,7 @@ export function useAudio(onPlaying?: () => void, onError?: () => void, onTimeUpd
   const stallCountRef = useRef(0);
   const didFirstPlayRef = useRef(false);
   const bufferTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const playStartedAtRef = useRef(0);
 
   // 버퍼링 중 로딩 상태 (외부 노출)
   const [buffering, setBuffering] = useState(false);
@@ -121,6 +122,7 @@ export function useAudio(onPlaying?: () => void, onError?: () => void, onTimeUpd
     if (audio.paused) {
       setBuffering(false);
       phaseRef.current = 'steady';
+      playStartedAtRef.current = Date.now();
       debug(`[audio] ▶ play — buffered: ${(end - start).toFixed(1)}s, phase→steady`);
       audio.play().catch((e) => debug('[audio] play failed:', e.message));
     }
@@ -307,10 +309,9 @@ export function useAudio(onPlaying?: () => void, onError?: () => void, onTimeUpd
       onTimeUpdateRef.current?.(audio.currentTime * 1000);
     });
     // stall 감지 → pause + rebuffer (첫 play 직후 waiting은 무시)
-    let playStartedAt = 0;
     audio.addEventListener('waiting', () => {
       // play() 직후 500ms 이내 waiting은 디코더 초기화 — stall 아님
-      if (Date.now() - playStartedAt < 500) return;
+      if (Date.now() - playStartedAtRef.current < 500) return;
       needsFirstPlayRef.current = true;
       stallCountRef.current++;
       phaseRef.current = 'rebuffer';
@@ -323,7 +324,7 @@ export function useAudio(onPlaying?: () => void, onError?: () => void, onTimeUpd
       );
     });
     audio.addEventListener('playing', () => {
-      playStartedAt = Date.now();
+      playStartedAtRef.current = Date.now();
       setBuffering(false);
       if (phaseRef.current === 'rebuffer') {
         phaseRef.current = 'steady';

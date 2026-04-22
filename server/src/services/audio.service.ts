@@ -2,13 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { type ChildProcess, spawn } from 'child_process';
 
-import {
-  FFMPEG_BITRATE,
-  FFMPEG_FRAG_DURATION,
-  FFMPEG_MAX_RETRIES,
-  FFMPEG_RECENT_CHUNKS,
-  STREAM_BUFFER_CHUNKS,
-} from '../constants.js';
+import { FFMPEG_BITRATE, FFMPEG_FRAG_DURATION, FFMPEG_MAX_RETRIES, FFMPEG_RECENT_CHUNKS } from '../constants.js';
 import type { ListenerState, ParsedInitSegment, RoomAudio, StreamInfo } from '../types/index.js';
 
 @Injectable()
@@ -234,16 +228,9 @@ export class AudioService {
   ): void {
     let headerBuf = Buffer.alloc(0);
     let headerDone = false;
-    let burstDone = false;
-    const burstBuffer: Buffer[] = [];
     let startCb: (() => Promise<void> | void) | null = onStart ?? null;
 
-    const flushBurst = () => {
-      if (!room.initSegment) return;
-      for (const c of burstBuffer) this.broadcastChunk(room, c);
-      burstBuffer.length = 0;
-      burstDone = true;
-      this.logger.log(`[${roomId}] burst: ${STREAM_BUFFER_CHUNKS} chunks (init via resync)`);
+    const fireStart = () => {
       if (startCb) {
         const cb = startCb;
         startCb = null;
@@ -260,27 +247,22 @@ export class AudioService {
         room.initSegment = initSeg.segment;
         headerDone = true;
         this.logger.log(`[${roomId}] fMP4 init segment: ${initSeg.segment.length} bytes`);
-        // init segment 후 남은 데이터가 있으면 burst buffer에
-        if (initSeg.rest.length) burstBuffer.push(initSeg.rest);
+        if (initSeg.rest.length) {
+          this.broadcastChunk(room, initSeg.rest);
+          fireStart();
+        }
         headerBuf = Buffer.alloc(0);
         return;
       }
 
-      if (!burstDone) {
-        burstBuffer.push(chunk);
-        if (burstBuffer.length >= STREAM_BUFFER_CHUNKS) flushBurst();
-        return;
-      }
-
+      // 첫 chunk 전송 시 onStart 호출
+      fireStart();
       this.broadcastChunk(room, chunk);
     });
 
-    // 곡이 짧아서 burst 못 채운 경우
+    // 곡이 짧아서 chunk 없이 끝난 경우
     ffmpeg.on('close', () => {
-      if (!burstDone && (burstBuffer.length > 0 || room.initSegment)) {
-        this.logger.log(`[${roomId}] burst: short track, flushing ${burstBuffer.length} chunks`);
-        flushBurst();
-      }
+      fireStart();
     });
   }
 
