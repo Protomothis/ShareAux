@@ -5,7 +5,7 @@ import { Outfit } from 'next/font/google';
 import localFont from 'next/font/local';
 import { headers } from 'next/headers';
 import { NextIntlClientProvider } from 'next-intl';
-import { getLocale, getMessages } from 'next-intl/server';
+import { getLocale, getMessages, getTranslations } from 'next-intl/server';
 import { Toaster } from 'sonner';
 
 import ErrorBoundary from '@/components/common/ErrorBoundary';
@@ -25,14 +25,15 @@ export async function generateMetadata() {
   const host = h.get('x-forwarded-host') || h.get('host') || 'localhost:3001';
   const proto = h.get('x-forwarded-proto') || 'http';
   const baseUrl = `${proto}://${host}`;
+  const t = await getTranslations('meta');
 
   return {
     metadataBase: new URL(baseUrl),
     title: { default: 'ShareAux', template: '%s | ShareAux' },
-    description: '자체 호스팅 실시간 음악 공유 플랫폼. 방을 만들고 함께 음악을 들어보세요.',
+    description: t('description'),
     openGraph: {
       title: 'ShareAux',
-      description: '자체 호스팅 실시간 음악 공유 플랫폼. 방을 만들고 함께 음악을 들어보세요.',
+      description: t('description'),
       type: 'website',
       siteName: 'ShareAux',
       images: [{ url: '/og.png', width: 1200, height: 630, alt: 'ShareAux' }],
@@ -40,7 +41,7 @@ export async function generateMetadata() {
     twitter: {
       card: 'summary_large_image',
       title: 'ShareAux',
-      description: '자체 호스팅 실시간 음악 공유 플랫폼',
+      description: t('shortDescription'),
       images: ['/og.png'],
     },
   };

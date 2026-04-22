@@ -339,5 +339,21 @@
     "label": "Password",
     "placeholder": "Enter password",
     "join": "Join"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "fallback": "An unexpected error occurred",
+    "retry": "Try again",
+    "notFound": "Page not found",
+    "notFoundDesc": "The page you requested does not exist",
+    "backToRooms": "Back to rooms",
+    "roomError": "Error connecting to room",
+    "roomErrorFallback": "The connection was lost or the room may have ended",
+    "roomNotFound": "Room not found",
+    "roomNotFoundDesc": "This room has ended or does not exist"
+  },
+  "meta": {
+    "description": "Self-hosted real-time music sharing platform. Create a room and listen together.",
+    "shortDescription": "Self-hosted real-time music sharing platform"
   }
 }
