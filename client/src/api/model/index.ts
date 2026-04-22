@@ -28,6 +28,7 @@ export * from './auditLogItemDetails';
 export * from './authConfigResponse';
 export * from './authControllerExchangeBody';
 export * from './authControllerGuestLogin200';
+export * from './authProvider';
 export * from './autoDjStatus';
 export * from './banInfo';
 export * from './bannedIp';

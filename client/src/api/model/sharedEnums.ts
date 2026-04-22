@@ -8,9 +8,11 @@
 import type { WsEvent } from './wsEvent';
 import type { AutoDjStatus } from './autoDjStatus';
 import type { Language } from './language';
+import type { AuthProvider } from './authProvider';
 
 export interface SharedEnums {
   wsEvent: WsEvent;
   autoDjStatus: AutoDjStatus;
   language: Language;
+  authProvider: AuthProvider;
 }
