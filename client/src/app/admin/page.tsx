@@ -16,10 +16,10 @@ import type { TimeRange } from '@/hooks/admin/useAdminMetrics';
 import { usePlaysMetrics, useRealtimeMetrics, useUsersBreakdown } from '@/hooks/admin/useAdminMetrics';
 import { useTranslations } from 'next-intl';
 
-function formatUptime(sec: number, h_label: string, m_label: string): string {
+function formatUptime(sec: number, t: (key: string, values: Record<string, number>) => string): string {
   const h = Math.floor(sec / 3600);
   const m = Math.floor((sec % 3600) / 60);
-  return h > 0 ? h_label.replace('{h}', String(h)).replace('{m}', String(m)) : m_label.replace('{m}', String(m));
+  return h > 0 ? t('hourMin', { h, m }) : t('min', { m });
 }
 
 interface QuickActionProps {
@@ -136,11 +136,7 @@ export default function AdminPage() {
             <StatCard icon={HardDrive} label={t('preloadMemory')} value={sys ? `${sys.preloadMemoryMB}MB` : null} />
             <StatCard icon={Cpu} label={t('heapUsage')} value={sys ? `${sys.heapUsedMB}/${sys.heapTotalMB}MB` : null} />
             <StatCard icon={Activity} label="RSS" value={sys ? `${sys.rssMB}MB` : null} />
-            <StatCard
-              icon={Clock}
-              label={t('uptime')}
-              value={sys ? formatUptime(sys.uptimeSec, t('hourMin'), t('min')) : null}
-            />
+            <StatCard icon={Clock} label={t('uptime')} value={sys ? formatUptime(sys.uptimeSec, t) : null} />
           </div>
         </MinLoading>
       </section>
