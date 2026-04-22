@@ -2,6 +2,14 @@
   "common": {
     "privacyPolicy": "Privacy Policy",
     "terms": "Terms of Service",
+    "back": "← Back",
+    "lastUpdated": "Last updated",
+    "updatedDate": "April 16, 2026",
+    "setup": {
+      "title": "ShareAux Initial Setup",
+      "subtitle": "The first account will be registered as admin.",
+      "hint": "No invite code required."
+    },
     "serverStatus": {
       "connecting": "Connecting to server…",
       "disconnected": "Unable to connect to server",
