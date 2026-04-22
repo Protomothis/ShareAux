@@ -20,6 +20,10 @@ const nextConfig: NextConfig = {
   },
 };
 
-const withNextIntl = createNextIntlPlugin();
+const withNextIntl = createNextIntlPlugin({
+  experimental: {
+    createMessagesDeclaration: './messages/ko.json',
+  },
+});
 const withMDX = createMDX({ options: { remarkPlugins: ['remark-gfm'] } });
 export default withNextIntl(withMDX(nextConfig));
