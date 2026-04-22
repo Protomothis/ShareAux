@@ -25,6 +25,11 @@
     },
     "modal": {
       "close": "닫기"
+    },
+    "captcha": {
+      "idle": "사람입니다",
+      "solving": "확인 중...",
+      "solved": "확인 완료"
     }
   },
   "login": {

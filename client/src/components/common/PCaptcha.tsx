@@ -2,6 +2,7 @@
 
 import { Check, Loader2, ShieldCheck } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface PCaptchaProps {
   challenge: string;
@@ -11,6 +12,7 @@ interface PCaptchaProps {
 type Status = 'idle' | 'solving' | 'solved';
 
 export function PCaptcha({ challenge, onVerified }: PCaptchaProps) {
+  const tc = useTranslations('common.captcha');
   const [status, setStatus] = useState<Status>('idle');
   const workerRef = useRef<Worker | null>(null);
 
@@ -64,9 +66,9 @@ export function PCaptcha({ challenge, onVerified }: PCaptchaProps) {
         {status === 'solved' && <Check size={16} className="text-green-400" strokeWidth={3} />}
       </div>
       <span className="flex-1 text-sm text-white/70">
-        {status === 'idle' && '사람입니다'}
-        {status === 'solving' && '확인 중...'}
-        {status === 'solved' && '확인 완료'}
+        {status === 'idle' && tc('idle')}
+        {status === 'solving' && tc('solving')}
+        {status === 'solved' && tc('solved')}
       </span>
       <ShieldCheck size={14} className="text-white/20" />
     </button>

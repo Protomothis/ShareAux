@@ -25,6 +25,11 @@
     },
     "modal": {
       "close": "Close"
+    },
+    "captcha": {
+      "idle": "I am human",
+      "solving": "Verifying...",
+      "solved": "Verified"
     }
   },
   "login": {
