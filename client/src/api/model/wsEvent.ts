@@ -6,13 +6,10 @@
  * OpenAPI spec version: 1.0
  */
 
-/**
- * WebSocket system event name
- */
-export type WsEnumsSchemaWsEvent = (typeof WsEnumsSchemaWsEvent)[keyof typeof WsEnumsSchemaWsEvent];
+export type WsEvent = (typeof WsEvent)[keyof typeof WsEvent];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const WsEnumsSchemaWsEvent = {
+export const WsEvent = {
   roomClosed: 'roomClosed',
   roomUpdated: 'roomUpdated',
   userJoined: 'userJoined',

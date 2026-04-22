@@ -1,13 +1,13 @@
 import type { ExternalToast } from 'sonner';
 import { toast } from 'sonner';
 
-import { ErrorResponseDtoCode } from '@/api/model';
+import { ErrorCode } from '@/api/model';
 import type { ServerErrorBody } from '@/types';
 
 const isDev = process.env.NODE_ENV === 'development';
 
 /** 토큰 만료/폐기 — 세션 만료 흐름에서 처리하므로 토스트 불필요 */
-const TOKEN_EXPIRED_CODES: string[] = [ErrorResponseDtoCode.AUTH_013, ErrorResponseDtoCode.AUTH_014];
+const TOKEN_EXPIRED_CODES: string[] = [ErrorCode.AUTH_013, ErrorCode.AUTH_014];
 
 const FALLBACK_MESSAGES: Record<number, string> = {
   400: '요청이 올바르지 않습니다',

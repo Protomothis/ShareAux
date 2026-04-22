@@ -17,3 +17,4 @@ pgdata
 .claude/
 .cursor/
 .copilot/
+client/swagger.json

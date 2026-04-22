@@ -1,11 +1,11 @@
 import { cookies } from 'next/headers';
 import { getRequestConfig } from 'next-intl/server';
 
-import { WsEnumsSchemaLanguage } from '@/api/model';
+import { Language } from '@/api/model';
 
-const SUPPORTED_LOCALES = Object.values(WsEnumsSchemaLanguage);
-export type Locale = WsEnumsSchemaLanguage;
-export const DEFAULT_LOCALE = WsEnumsSchemaLanguage.ko;
+const SUPPORTED_LOCALES = Object.values(Language);
+export type Locale = Language;
+export const DEFAULT_LOCALE = Language.ko;
 
 export default getRequestConfig(async () => {
   const store = await cookies();

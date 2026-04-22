@@ -6,13 +6,10 @@
  * OpenAPI spec version: 1.0
  */
 
-/**
- * 지원 언어
- */
-export type WsEnumsSchemaLanguage = (typeof WsEnumsSchemaLanguage)[keyof typeof WsEnumsSchemaLanguage];
+export type Language = (typeof Language)[keyof typeof Language];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const WsEnumsSchemaLanguage = {
+export const Language = {
   ko: 'ko',
   en: 'en',
 } as const;
