@@ -211,7 +211,15 @@
       "userLeft": "님이 퇴장했습니다",
       "trackSkipped": "님이 곡을 스킵했습니다",
       "trackPrevious": "님이 이전 곡으로 돌아갔습니다",
-      "roomClosed": "방이 종료되었습니다"
+      "roomClosed": "방이 종료되었습니다",
+      "hostChanged": "님이 새 호스트가 되었습니다",
+      "autoDjEnabled": "🤖 AutoDJ가 활성화되었습니다",
+      "autoDjDisabled": "🤖 AutoDJ가 비활성화되었습니다",
+      "enqueueCountsReset": "곡 신청 횟수가 초기화되었습니다",
+      "userKicked": "멤버가 추방되었습니다",
+      "trackAdded": "🤖 AutoDJ가 \"{trackName}\"을(를) 추가했습니다",
+      "trackUnavailable": "\"{trackName}\" 재생 불가 — 건너뜁니다",
+      "voteSkipPassed": "스킵 투표가 통과되어 곡이 넘어갑니다"
     }
   },
   "members": {

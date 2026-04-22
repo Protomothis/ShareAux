@@ -5,6 +5,7 @@ export interface ChatMessage {
   timestamp: string;
   type?: 'chat' | 'system';
   role?: string;
+  data?: Record<string, string>;
 }
 
 export interface FloatingReaction {

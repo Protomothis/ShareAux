@@ -211,7 +211,15 @@
       "userLeft": " left",
       "trackSkipped": " skipped the track",
       "trackPrevious": " went to previous track",
-      "roomClosed": "Room closed"
+      "roomClosed": "Room closed",
+      "hostChanged": " is the new host",
+      "autoDjEnabled": "🤖 AutoDJ enabled",
+      "autoDjDisabled": "🤖 AutoDJ disabled",
+      "enqueueCountsReset": "Enqueue counts reset",
+      "userKicked": "A member was kicked",
+      "trackAdded": "🤖 AutoDJ added \"{trackName}\"",
+      "trackUnavailable": "\"{trackName}\" unavailable — skipping",
+      "voteSkipPassed": "Skip vote passed"
     }
   },
   "members": {

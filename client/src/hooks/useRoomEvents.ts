@@ -287,10 +287,11 @@ export function useRoomEvents(
       setMessages((prev) =>
         prev.slice(-200).concat({
           userId: '',
-          nickname: '',
-          message: data.detail || data.event,
+          nickname: (data.data as Record<string, string>)?.nickname ?? '',
+          message: data.event,
           timestamp: new Date().toISOString(),
           type: 'system',
+          data: data.data as Record<string, string> | undefined,
         }),
       );
     },
