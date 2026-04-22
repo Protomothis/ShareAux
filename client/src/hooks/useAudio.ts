@@ -303,8 +303,11 @@ export function useAudio(onPlaying?: () => void, onError?: () => void) {
         onPlayingRef.current?.();
       }
     });
-    // stall 감지 → pause + rebuffer
+    // stall 감지 → pause + rebuffer (첫 play 직후 waiting은 무시)
+    let playStartedAt = 0;
     audio.addEventListener('waiting', () => {
+      // play() 직후 500ms 이내 waiting은 디코더 초기화 — stall 아님
+      if (Date.now() - playStartedAt < 500) return;
       needsFirstPlayRef.current = true;
       stallCountRef.current++;
       phaseRef.current = 'rebuffer';
@@ -317,6 +320,7 @@ export function useAudio(onPlaying?: () => void, onError?: () => void) {
       );
     });
     audio.addEventListener('playing', () => {
+      playStartedAt = Date.now();
       setBuffering(false);
       if (phaseRef.current === 'rebuffer') {
         phaseRef.current = 'steady';

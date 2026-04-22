@@ -4,7 +4,7 @@ export const FTYP = [0x66, 0x74, 0x79, 0x70] as const;
 export const BUFFER_GOAL = 3.0;
 
 /** 적응형 버퍼링 임계값 (초) */
-export const BUFFER_STARTUP = 1.5;
+export const BUFFER_STARTUP = 2.0;
 export const BUFFER_REBUFFER = 2.5;
 export const BUFFER_STEADY = 0.4;
 export const BUFFER_TIMEOUT_MS = 5000;

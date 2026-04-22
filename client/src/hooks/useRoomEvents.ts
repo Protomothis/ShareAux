@@ -306,11 +306,14 @@ export function useRoomEvents(
     goneRef.current = true;
   }, []);
 
-  // listening 중일 때 audio.currentTime 기반으로 elapsedBase 갱신
+  // listening 중일 때 audio.currentTime 기반으로 timeSync 갱신
+  const streamStateRef = useRef(streamState);
+  streamStateRef.current = streamState;
   useEffect(() => {
     if (!isPlaying || streamState !== 'streaming') return;
     const id = setInterval(() => {
       if (!listeningRef.current || !getCurrentTimeRef?.current) return;
+      if (streamStateRef.current !== 'streaming') return;
       const audioMs = getCurrentTimeRef.current();
       if (audioMs > 0) {
         setTimeSync({ base: audioMs, at: Date.now() });
