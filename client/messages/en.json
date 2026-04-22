@@ -458,7 +458,8 @@
       "private": "Private",
       "crossfadeLabel": "Crossfade",
       "defaultEnqueue": "Default Enqueue",
-      "defaultVoteSkip": "Default Vote Skip"
+      "defaultVoteSkip": "Default Vote Skip",
+      "delete": "Delete"
     },
     "tracks": {
       "title": "🎵 Popular Tracks",
@@ -531,7 +532,8 @@
       "deleteGuests": "Delete {count} guests",
       "deleteGuestsTitle": "Delete Guests",
       "deleteGuestsDesc": "Delete all {count} guests who joined with this invite code. Regular members are not affected.",
-      "guestsDeleted": "{count} guests deleted"
+      "guestsDeleted": "{count} guests deleted",
+      "delete": "Delete"
     },
     "settings": {
       "title": "⚙️ System Settings",
@@ -566,7 +568,8 @@
       "dailyLimit": "Daily Limit",
       "dailyLimitDesc": "Max translation requests per day",
       "geminiModel": "Gemini Model",
-      "geminiModelDesc": "flash-lite (fast) / flash (accurate)"
+      "geminiModelDesc": "flash-lite (fast) / flash (accurate)",
+      "save": "Save"
     },
     "cleanup": {
       "title": "🧹 DB Cleanup",
@@ -598,7 +601,8 @@
       "expiredGuests": "Expired Guests",
       "expiredGuestsDesc": "Delete guests older than 12 hours",
       "inactiveGuests": "Inactive Guests (30d)",
-      "inactiveGuestsDesc": "Delete guests inactive for 30+ days"
+      "inactiveGuestsDesc": "Delete guests inactive for 30+ days",
+      "delete": "Delete"
     },
     "auditLogs": {
       "title": "📋 Audit Logs",
@@ -654,7 +658,8 @@
       "expiresLabel": "Expires (optional)",
       "expiresPlaceholder": "Permanent",
       "banning": "Banning...",
-      "ban": "Ban"
+      "ban": "Ban",
+      "release": "Release"
     },
     "errors": {
       "title": "Error Logs",
@@ -699,7 +704,13 @@
       "adminAllPerms": "Admins have all permissions",
       "providerLabel": "Provider",
       "googleLinked": "Google Linked",
-      "joinDate": "Joined"
+      "joinDate": "Joined",
+      "backToList": "User List",
+      "delete": "Delete",
+      "saved": "Saved",
+      "saving": "Saving...",
+      "save": "Save",
+      "banned": "Banned"
     },
     "charts": {
       "connections": "Connections",

@@ -458,7 +458,8 @@
       "private": "비공개",
       "crossfadeLabel": "크로스페이드",
       "defaultEnqueue": "기본 큐 추가",
-      "defaultVoteSkip": "기본 투표 스킵"
+      "defaultVoteSkip": "기본 투표 스킵",
+      "delete": "삭제"
     },
     "tracks": {
       "title": "🎵 인기 트랙",
@@ -531,7 +532,8 @@
       "deleteGuests": "게스트 {count}명 일괄 삭제",
       "deleteGuestsTitle": "게스트 일괄 삭제",
       "deleteGuestsDesc": "이 초대코드로 입장한 게스트 {count}명을 모두 삭제합니다. 일반 회원은 영향받지 않습니다.",
-      "guestsDeleted": "게스트 {count}명 삭제 완료"
+      "guestsDeleted": "게스트 {count}명 삭제 완료",
+      "delete": "삭제"
     },
     "settings": {
       "title": "⚙️ 시스템 설정",
@@ -566,7 +568,8 @@
       "dailyLimit": "일일 한도",
       "dailyLimitDesc": "하루 최대 번역 요청 수",
       "geminiModel": "Gemini 모델",
-      "geminiModelDesc": "flash-lite (빠름) / flash (정확)"
+      "geminiModelDesc": "flash-lite (빠름) / flash (정확)",
+      "save": "저장"
     },
     "cleanup": {
       "title": "🧹 DB 정리",
@@ -598,7 +601,8 @@
       "expiredGuests": "만료 게스트",
       "expiredGuestsDesc": "12시간 이상 된 게스트 삭제",
       "inactiveGuests": "비활성 게스트 (30일)",
-      "inactiveGuestsDesc": "30일 이상 비활성 게스트 삭제"
+      "inactiveGuestsDesc": "30일 이상 비활성 게스트 삭제",
+      "delete": "삭제"
     },
     "auditLogs": {
       "title": "📋 감사 로그",
@@ -654,7 +658,8 @@
       "expiresLabel": "만료일 (선택)",
       "expiresPlaceholder": "영구 차단",
       "banning": "차단 중...",
-      "ban": "차단"
+      "ban": "차단",
+      "release": "해제"
     },
     "errors": {
       "title": "에러 로그",
@@ -699,7 +704,13 @@
       "adminAllPerms": "관리자는 모든 권한을 가집니다",
       "providerLabel": "가입 방식",
       "googleLinked": "Google 연동",
-      "joinDate": "가입"
+      "joinDate": "가입",
+      "backToList": "유저 목록",
+      "delete": "삭제",
+      "saved": "저장되었습니다",
+      "saving": "저장 중...",
+      "save": "저장",
+      "banned": "정지됨"
     },
     "charts": {
       "connections": "접속자",
