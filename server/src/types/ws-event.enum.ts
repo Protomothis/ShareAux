@@ -34,6 +34,8 @@ export enum WsEvent {
 
   // AutoDJ
   AutoDjStatus = 'autoDjStatus',
+  AutoDjEnabled = 'autoDjEnabled',
+  AutoDjDisabled = 'autoDjDisabled',
 
   // 기타
   SystemMessage = 'systemMessage',

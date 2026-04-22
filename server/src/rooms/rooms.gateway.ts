@@ -327,7 +327,7 @@ export class RoomsGateway {
       client.on('close', (code: number) => this.handleDisconnect(client, code));
 
       if (!wasReconnect) {
-        this.broadcastSystem(roomId, WsEvent.UserJoined, '');
+        this.broadcastSystem(roomId, WsEvent.UserJoined, '', { nickname });
       }
       // Send chat history to this client only
       const history = this.chatHistory.get(roomId);
@@ -406,7 +406,7 @@ export class RoomsGateway {
     if (reconnected) return;
 
     await this.rooms.removeMember(roomId, userId).catch(() => {});
-    this.broadcastSystem(roomId, WsEvent.UserLeft, '');
+    this.broadcastSystem(roomId, WsEvent.UserLeft, '', { nickname });
 
     const count = await this.rooms.getMemberCount(roomId).catch(() => 0);
     if (count === 0) {

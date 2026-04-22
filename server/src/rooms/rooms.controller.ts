@@ -68,9 +68,9 @@ export class RoomsController {
       if (dto.autoDjEnabled) {
         this.autoDj.resetFailCount(id);
         this.autoDj.trigger(id);
-        this.gateway.broadcastSystem(id, WsEvent.SystemMessage, '');
+        this.gateway.broadcastSystem(id, WsEvent.AutoDjEnabled, '');
       } else {
-        this.gateway.broadcastSystem(id, WsEvent.SystemMessage, '');
+        this.gateway.broadcastSystem(id, WsEvent.AutoDjDisabled, '');
       }
     } else if (result.autoDjEnabled && (dto.autoDjMode !== undefined || dto.autoDjFolderId !== undefined)) {
       // 모드/폴더 변경 시 재트리거
