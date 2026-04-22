@@ -206,7 +206,12 @@ export class SearchService {
       if (track) {
         const artist = cleanArtist(track.artist ?? '');
         const title = extractTitle(track.name);
-        const mb = await this.musicBrainz.search(artist || title, title);
+        const dur = track.durationMs ?? undefined;
+        // 1차: artist + title, 2차: title only
+        let mb = await this.musicBrainz.search(artist, title, dur);
+        if (!mb && artist) {
+          mb = await this.musicBrainz.search('', title, dur);
+        }
         if (mb) {
           update.songTitle = mb.title;
           update.songArtist = mb.artist;

@@ -58,12 +58,20 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
   return (
     <Modal open={!!track} onOpenChange={onOpenChange} className="sm:max-w-md">
       <Modal.Header>
-        <Modal.Title className="leading-snug">{track.track.name}</Modal.Title>
-        {track.track.songArtist && <Modal.Description>{track.track.songArtist}</Modal.Description>}
+        <Modal.Title className="leading-snug">{track.track.songTitle ?? track.track.name}</Modal.Title>
+        <Modal.Description>{track.track.songArtist ?? track.track.artist}</Modal.Description>
       </Modal.Header>
 
       <Modal.Body>
         <div className="space-y-3 text-sm">
+          {/* 원본 YouTube 정보 */}
+          {track.track.songTitle && (
+            <div className="space-y-1 rounded-xl bg-white/[0.03] p-3 text-xs text-sa-text-muted">
+              <div className="truncate">원본: {track.track.name}</div>
+              <div className="truncate">채널: {track.track.artist}</div>
+              {track.track.songAlbum && <div className="truncate">앨범: {track.track.songAlbum}</div>}
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <span className="text-sa-text-muted">YouTube</span>
             <a

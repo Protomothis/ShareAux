@@ -5,6 +5,7 @@ import { PCaptcha } from '@/components/common/PCaptcha';
 import { useEffect, useState } from 'react';
 
 import { authControllerLogin } from '@/api/auth/auth';
+import { ApiError } from '@/api/mutator';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -58,7 +59,11 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
       useAuthStore.getState().init();
       onSuccess();
     } catch (err) {
-      setServerError(err instanceof Error ? err.message : '로그인에 실패했습니다');
+      if (err instanceof ApiError && err.code) {
+        setServerError((err.body.description ?? err.body.title ?? err.message) as string);
+      } else {
+        setServerError('로그인에 실패했습니다');
+      }
       captcha.reset();
     } finally {
       setLoading(false);

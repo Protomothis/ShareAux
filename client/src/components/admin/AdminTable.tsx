@@ -20,10 +20,10 @@ interface AdminTableProps<T> {
   skeletonRows?: number;
   rowKey: (item: T) => string;
   emptyMessage?: string;
-  /** 최대 높이 — 넘으면 스크롤 */
   maxHeight?: string;
-  /** 행 클릭 핸들러 */
   onRowClick?: (item: T) => void;
+  /** 인덱스 오프셋 — 페이지네이션 시 순번 보정 */
+  indexOffset?: number;
 }
 
 export function AdminTable<T>({
@@ -35,6 +35,7 @@ export function AdminTable<T>({
   emptyMessage = '데이터가 없습니다',
   maxHeight,
   onRowClick,
+  indexOffset = 0,
 }: AdminTableProps<T>) {
   if (loading) {
     return (
@@ -71,14 +72,14 @@ export function AdminTable<T>({
       style={maxHeight ? { maxHeight, overflowY: 'auto' } : undefined}
     >
       {/* 데스크톱: 테이블 */}
-      <table className="hidden w-full text-left text-sm md:table">
+      <table className="hidden w-full table-fixed text-left text-sm md:table">
         <thead className="sticky top-0 z-10 bg-sa-bg-primary/95 backdrop-blur-sm">
           <tr className="border-b border-white/5">
             {columns.map((col) => (
               <th
                 key={col.key}
                 style={col.width ? { width: col.width } : undefined}
-                className={`px-5 py-3 text-xs font-medium uppercase tracking-wider text-sa-text-muted ${col.className ?? ''}`}
+                className={`whitespace-nowrap px-5 py-3 text-xs font-medium uppercase tracking-wider text-sa-text-muted ${col.className ?? ''}`}
               >
                 {col.header}
               </th>
@@ -93,8 +94,11 @@ export function AdminTable<T>({
               onClick={() => onRowClick?.(item)}
             >
               {columns.map((col) => (
-                <td key={col.key} className={`px-5 py-3 ${col.className ?? ''}`}>
-                  {col.render(item, idx)}
+                <td
+                  key={col.key}
+                  className={`px-5 py-3 ${col.primary ? 'overflow-hidden' : 'whitespace-nowrap'} ${col.className ?? ''}`}
+                >
+                  {col.render(item, idx + indexOffset)}
                 </td>
               ))}
             </tr>
@@ -115,7 +119,7 @@ export function AdminTable<T>({
               <div className="flex items-center gap-2">
                 {primaryCols.map((col) => (
                   <div key={col.key} className="min-w-0 flex-1 first:flex-none">
-                    {col.render(item, idx)}
+                    {col.render(item, idx + indexOffset)}
                   </div>
                 ))}
               </div>
@@ -128,7 +132,7 @@ export function AdminTable<T>({
                 {secondaryCols.map((col) => (
                   <div key={col.key} className="flex items-center gap-1">
                     {col.header && <span className="text-sa-text-muted">{col.header}:</span>}
-                    <span>{col.render(item, idx)}</span>
+                    <span>{col.render(item, idx + indexOffset)}</span>
                   </div>
                 ))}
               </div>

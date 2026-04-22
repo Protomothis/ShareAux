@@ -224,26 +224,32 @@ export class AdminService {
 
   // --- 인기 트랙 ---
 
-  async getTopTracks(limit: number) {
-    const items = await this.trackRepo
+  async getTopTracks(page: number, limit: number) {
+    const [items, total] = await this.trackRepo
       .createQueryBuilder('t')
       .addSelect('t.lyrics_translated')
       .leftJoinAndMapOne('t.stats', TrackStats, 's', 's.track_id = t.id')
       .orderBy('s.score', 'DESC', 'NULLS LAST')
+      .skip((page - 1) * limit)
       .take(limit)
-      .getMany();
-    return items.map((t) => {
-      const s = (t as unknown as { stats: TrackStats | null }).stats;
-      return {
-        trackId: t.id,
-        totalPlays: s?.totalPlays ?? 0,
-        uniqueUsers: s?.uniqueUsers ?? 0,
-        likes: s?.likes ?? 0,
-        dislikes: s?.dislikes ?? 0,
-        score: s?.score ?? 0,
-        track: { ...t, hasTranslation: !!t.lyricsTranslated },
-      };
-    });
+      .getManyAndCount();
+    return {
+      items: items.map((t) => {
+        const s = t.stats;
+        return {
+          trackId: t.id,
+          totalPlays: s?.totalPlays ?? 0,
+          uniqueUsers: s?.uniqueUsers ?? 0,
+          likes: s?.likes ?? 0,
+          dislikes: s?.dislikes ?? 0,
+          score: s?.score ?? 0,
+          track: { ...t, hasTranslation: !!t.lyricsTranslated },
+        };
+      }),
+      total,
+      page,
+      limit,
+    };
   }
 
   // --- 실시간 방 상태 ---

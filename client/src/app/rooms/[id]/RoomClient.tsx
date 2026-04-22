@@ -80,9 +80,8 @@ export default function RoomClient({ id }: { id: string }) {
   const listeningRef = useRef(false);
   const trackRef = useRef<Track | null>(null);
   const getOneWayRef = useRef<() => number>(() => 0);
-  const getCurrentTimeRef = useRef<() => number>(() => 0);
   const onResyncNeededRef = useRef<(action: 'prepare' | 'send') => void>(() => {});
-  const events = useRoomEvents(id, listeningRef, trackRef, getOneWayRef, getCurrentTimeRef, onResyncNeededRef);
+  const events = useRoomEvents(id, listeningRef, trackRef, getOneWayRef, onResyncNeededRef);
   const {
     messages,
     isPlaying,
@@ -99,9 +98,8 @@ export default function RoomClient({ id }: { id: string }) {
     currentTrack,
     setTrack,
     elapsedBase,
-    setElapsedBase,
+    setTimeSync,
     syncTime,
-    setSyncTime,
     audioLoading,
     setAudioLoading,
     audioLoadingRef,
@@ -115,8 +113,12 @@ export default function RoomClient({ id }: { id: string }) {
   } = events;
 
   // --- Audio ---
-  const roomAudio = useRoomAudio(audioLoadingRef, setAudioLoading);
-  const { audio, listening, volume, onAudio, handleListenToggle, handleVolumeChange } = roomAudio;
+  const roomAudio = useRoomAudio(audioLoadingRef, setAudioLoading, (ms) => {
+    if (listeningRef.current && streamState === 'streaming') {
+      setTimeSync({ base: ms, at: Date.now() });
+    }
+  });
+  const { audio, listening, volume, onAudio, handleListenToggle, handleVolumeChange, buffering } = roomAudio;
   useEffect(() => {
     listeningRef.current = listening;
   }, [listening, listeningRef]);
@@ -177,8 +179,7 @@ export default function RoomClient({ id }: { id: string }) {
   };
   useEffect(() => {
     getOneWayRef.current = getOneWay;
-    getCurrentTimeRef.current = audio.getCurrentTime;
-  }, [getOneWay, audio.getCurrentTime]);
+  }, [getOneWay]);
 
   // --- Room join ---
   const joinRoom = useCallback(
@@ -212,13 +213,12 @@ export default function RoomClient({ id }: { id: string }) {
     setPlaying(true);
     setTrack(playerData.track);
     trackRef.current = playerData.track;
-    setElapsedBase((playerData.elapsedMs ?? 0) + (getOneWayRef.current() ?? 0));
-    setSyncTime(Date.now());
+    setTimeSync({ base: (playerData.elapsedMs ?? 0) + (getOneWayRef.current() ?? 0), at: Date.now() });
     if (playerData.streamState) setStreamState(playerData.streamState as StreamState);
     const ls = playerData.track.lyricsStatus;
     if (ls === 'found') setLyricsStatus(LyricsStatus.Found);
     else if (ls === 'not_found') setLyricsStatus(LyricsStatus.NotFound);
-  }, [playerData, id, setPlaying, setTrack, setElapsedBase, setSyncTime, setLyricsStatus, setStreamState]);
+  }, [playerData, id, setPlaying, setTrack, setTimeSync, setLyricsStatus, setStreamState]);
 
   // --- Media Session ---
   useEffect(() => {
@@ -279,7 +279,7 @@ export default function RoomClient({ id }: { id: string }) {
       if (streamState === 'streaming') sendResync();
     },
     listening,
-    audioLoading,
+    audioLoading: audioLoading || buffering,
     volume,
     skipVotes,
     skipRequired,

@@ -16,6 +16,10 @@ interface SearchPlaylistItemProps {
   disabledIds: Set<string>;
   maxReached: boolean;
   onToggleTrack: (track: SearchResultItem) => void;
+  favoriteIds: Set<string>;
+  favLoadingIds: Set<string>;
+  onToggleFavorite: (track: SearchResultItem) => void;
+  isGuest: boolean;
 }
 
 const LIMIT = 20;
@@ -26,6 +30,10 @@ export function SearchPlaylistItem({
   disabledIds,
   maxReached,
   onToggleTrack,
+  favoriteIds,
+  favLoadingIds,
+  onToggleFavorite,
+  isGuest,
 }: SearchPlaylistItemProps) {
   const [open, setOpen] = useState(false);
   const [tracks, setTracks] = useState<SearchResultItem[]>([]);
@@ -97,6 +105,10 @@ export function SearchPlaylistItem({
                 full={!order && maxReached}
                 inQueue={disabledIds.has(track.sourceId)}
                 onClick={() => onToggleTrack(track)}
+                isFavorite={favoriteIds.has(track.sourceId)}
+                favLoading={favLoadingIds.has(track.sourceId)}
+                onToggleFavorite={() => onToggleFavorite(track)}
+                isGuest={isGuest}
               />
             );
           })}

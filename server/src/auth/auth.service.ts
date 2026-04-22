@@ -12,14 +12,13 @@ import { RefreshToken } from '../entities/refresh-token.entity.js';
 import { User } from '../entities/user.entity.js';
 import type { OAuthProfile } from '../types/index.js';
 import { AuthProvider, ErrorCode, Permission, UserRole } from '../types/index.js';
-import type { UserCookiePayload } from './cookie.util.js';
+
 import type { LoginDto } from './dto/login.dto.js';
 import type { RegisterDto } from './dto/register.dto.js';
 
 export interface TokenPair {
   accessToken: string;
   refreshToken: string;
-  user: UserCookiePayload;
 }
 
 @Injectable()
@@ -81,7 +80,13 @@ export class AuthService {
       }),
     );
 
-    return { accessToken, refreshToken, user: { sub: user.id, nickname: user.nickname, role: user.role } };
+    return { accessToken, refreshToken };
+  }
+
+  async generateTokenPairById(userId: string): Promise<TokenPair> {
+    const user = await this.userRepo.findOneBy({ id: userId });
+    if (!user) throw new AppException(ErrorCode.AUTH_012);
+    return this.generateTokenPair(user);
   }
 
   async refreshTokens(token: string): Promise<TokenPair> {
@@ -195,7 +200,7 @@ export class AuthService {
 
     const payload = { sub: user.id, nickname: user.nickname, role: user.role };
     const accessToken = this.jwtService.sign(payload, { expiresIn: AUTH_GUEST_EXPIRY_SEC });
-    return { accessToken, refreshToken: '', user: { sub: user.id, nickname: user.nickname, role: user.role } };
+    return { accessToken, refreshToken: '' };
   }
 
   // --- account deletion ---

@@ -6,7 +6,11 @@ import { debug } from '@/lib/debug';
 
 import { useAudio } from './useAudio';
 
-export function useRoomAudio(audioLoadingRef: React.MutableRefObject<boolean>, setAudioLoading: (v: boolean) => void) {
+export function useRoomAudio(
+  audioLoadingRef: React.MutableRefObject<boolean>,
+  setAudioLoading: (v: boolean) => void,
+  onTimeUpdate?: (ms: number) => void,
+) {
   const audio = useAudio(
     () => {
       if (audioLoadingRef.current) {
@@ -20,6 +24,7 @@ export function useRoomAudio(audioLoadingRef: React.MutableRefObject<boolean>, s
       listeningRef.current = false;
       setListening(false);
     },
+    onTimeUpdate,
   );
 
   const [listening, setListening] = useState(false);
@@ -86,5 +91,7 @@ export function useRoomAudio(audioLoadingRef: React.MutableRefObject<boolean>, s
     onAudio,
     handleListenToggle,
     handleVolumeChange,
+    /** MSE 버퍼 확보 대기 중 여부 */
+    buffering: audio.buffering,
   };
 }
