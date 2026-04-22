@@ -25,7 +25,7 @@ pip3 install syncedlyrics
 ```bash
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt install -y nodejs ffmpeg python3 python3-pip
-pip3 install syncedlyrics
+pip3 install yt-dlp syncedlyrics
 ```
 
 ---
