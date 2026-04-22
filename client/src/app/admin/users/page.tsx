@@ -26,16 +26,17 @@ interface FilterSelectProps {
 }
 
 function FilterSelect({ value, onValueChange, placeholder, options }: FilterSelectProps) {
+  const t = useTranslations('admin.users');
   const selectedLabel = options.find((o) => o.value === value)?.label ?? placeholder;
   return (
     <Select value={value} onValueChange={(v) => v && onValueChange(v)}>
       <SelectTrigger className="h-8 w-28 border-white/10 bg-white/5 text-xs">
-        <SelectValue placeholder={placeholder}>{selectedLabel}</SelectValue>
+        <SelectValue placeholder={placeholder}>{t(selectedLabel as 'allRoles')}</SelectValue>
       </SelectTrigger>
       <SelectContent>
         {options.map((o) => (
           <SelectItem key={o.value} value={o.value}>
-            {o.label}
+            {t(o.label as 'allRoles')}
           </SelectItem>
         ))}
       </SelectContent>
