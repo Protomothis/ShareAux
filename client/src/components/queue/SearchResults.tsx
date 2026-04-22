@@ -75,6 +75,10 @@ export default function SearchResults({
           disabledIds={disabledIds}
           maxReached={selected.length >= maxSelect}
           onToggleTrack={onToggleTrack}
+          favoriteIds={favoriteIds ?? new Set()}
+          favLoadingIds={favLoadingIds ?? new Set()}
+          onToggleFavorite={onToggleFavorite ?? (() => {})}
+          isGuest={isGuest ?? false}
         />
       ))}
 
