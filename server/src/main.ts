@@ -5,7 +5,8 @@ import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-import { WsEnumsSchema } from './rooms/dto/ws-enums.schema.js';
+import { SystemChatMessage } from './rooms/dto/system-chat-message.dto.js';
+import { SharedEnums } from './common/dto/shared-enums.schema.js';
 import helmet from 'helmet';
 
 import { AppModule } from './app.module.js';
@@ -45,7 +46,7 @@ async function bootstrap() {
       .addBearerAuth()
       .build();
     const document = SwaggerModule.createDocument(app, config, {
-      extraModels: [WsEnumsSchema, ErrorResponseDto],
+      extraModels: [SharedEnums, ErrorResponseDto, SystemChatMessage],
     });
     SwaggerModule.setup('api/docs', app, document);
   }

@@ -90,20 +90,17 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Permission } from './types/permission.enum.js';
 
 export class PermissionMeta {
-  @ApiProperty() key!: string;
-  @ApiProperty() label!: string;
-  @ApiProperty() emoji!: string;
-  @ApiProperty() description!: string;
+  @ApiProperty({ enum: Permission, enumName: 'Permission' }) key!: Permission;
 }
 
 export const PERMISSION_META: PermissionMeta[] = [
-  { key: Permission.Listen, label: '음악 듣기', emoji: '🎵', description: '방에서 음악을 들을 수 있습니다' },
-  { key: Permission.Chat, label: '채팅', emoji: '💬', description: '채팅 메시지를 보낼 수 있습니다' },
-  { key: Permission.Reaction, label: '리액션', emoji: '🎉', description: '이모지 리액션을 보낼 수 있습니다' },
-  { key: Permission.Search, label: '검색', emoji: '🔍', description: '음악을 검색할 수 있습니다' },
-  { key: Permission.AddQueue, label: '큐 추가', emoji: '📋', description: '큐에 곡을 추가할 수 있습니다' },
-  { key: Permission.VoteSkip, label: '투표 스킵', emoji: '⏭️', description: '곡 스킵 투표에 참여할 수 있습니다' },
-  { key: Permission.Host, label: '호스트', emoji: '🏠', description: '방 생성 · 관리 · 순서 변경 · 강퇴' },
+  { key: Permission.Listen },
+  { key: Permission.Chat },
+  { key: Permission.Reaction },
+  { key: Permission.Search },
+  { key: Permission.AddQueue },
+  { key: Permission.VoteSkip },
+  { key: Permission.Host },
 ];
 
 // ─── Chat Mute ──────────────────────────────────────────

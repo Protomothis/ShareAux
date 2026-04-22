@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 
 import { SearchTrackItem } from './SearchTrackItem';
 import type { SearchResultItem } from '@/api/model';
+import { useTranslations } from 'next-intl';
 
 interface SearchPlaylistItemProps {
   playlist: PlaylistResult;
@@ -35,6 +36,7 @@ export function SearchPlaylistItem({
   onToggleFavorite,
   isGuest,
 }: SearchPlaylistItemProps) {
+  const t = useTranslations('search');
   const [open, setOpen] = useState(false);
   const [tracks, setTracks] = useState<SearchResultItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -86,7 +88,7 @@ export function SearchPlaylistItem({
           <p className="truncate text-sm font-medium text-white">{playlist.title}</p>
           <p className="truncate text-xs text-sa-text-muted">{playlist.channelName}</p>
         </div>
-        <span className="text-xs text-sa-text-muted">{playlist.videoCount}곡</span>
+        <span className="text-xs text-sa-text-muted">{t('playlist.trackCount', { count: playlist.videoCount })}</span>
         <ChevronDown size={16} className={`shrink-0 text-white/40 transition-transform ${open ? 'rotate-180' : ''}`} />
       </Button>
 
@@ -123,16 +125,16 @@ export function SearchPlaylistItem({
           {/* Error */}
           {error && !loading && (
             <div className="flex flex-col items-center gap-1 py-3 text-xs text-sa-text-muted">
-              <span>플레이리스트를 불러올 수 없습니다</span>
+              <span>{t('playlist.loadError')}</span>
               <Button variant="link" onClick={() => void fetchPage(page || 1)} className="text-sa-accent">
-                다시 시도
+                {t('playlist.retry')}
               </Button>
             </div>
           )}
 
           {/* Empty */}
           {!loading && !error && fetched.current && tracks.length === 0 && (
-            <p className="py-3 text-center text-xs text-sa-text-muted">재생 가능한 곡이 없습니다</p>
+            <p className="py-3 text-center text-xs text-sa-text-muted">{t('playlist.noTracks')}</p>
           )}
 
           {/* Load more */}
@@ -142,7 +144,7 @@ export function SearchPlaylistItem({
               onClick={() => void fetchPage(page + 1)}
               className="w-full py-2 text-xs text-sa-accent"
             >
-              더 보기 ({tracks.length}/{total})
+              {t('playlist.loadMore', { loaded: tracks.length, total })}
             </Button>
           )}
         </div>

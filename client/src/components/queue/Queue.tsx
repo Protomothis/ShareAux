@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { GripVertical, Loader2, Search } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 import type { RoomQueue } from '@/api/model';
 import { getQueueControllerGetQueueQueryKey, queueControllerRemoveTrack } from '@/api/queue/queue';
@@ -65,6 +66,7 @@ export default function Queue({
   const { data: quota } = useQueueControllerGetMyQuota(roomId);
   const invalidate = useInvalidate();
   const queryClient = useQueryClient();
+  const t = useTranslations('queue');
   const [searchOpen, setSearchOpen] = useState(false);
   const { favoriteIds, favLoadingIds, toggleFavorite } = favorites;
   const [removingId, setRemovingId] = useState<string | null>(null);
@@ -113,7 +115,7 @@ export default function Queue({
         <div className="flex items-center justify-between px-4 py-2.5">
           <div className="flex items-center gap-2">
             <h2 className="text-sm font-semibold text-white">
-              📋 신청곡{' '}
+              {t('title')}{' '}
               <span className="font-normal text-white/40">
                 {queue.length}/{MAX_QUEUE_SIZE}
               </span>
@@ -121,18 +123,18 @@ export default function Queue({
             {quota &&
               !quota.unlimited &&
               (quota.banned ? (
-                <span className="rounded bg-red-400/10 px-1.5 py-0.5 text-xs text-red-400">🚫 신청 금지</span>
+                <span className="rounded bg-red-400/10 px-1.5 py-0.5 text-xs text-red-400">{t('enqueueDisabled')}</span>
               ) : (
                 <span
                   className={`rounded px-1.5 py-0.5 text-xs ${quota.used >= quota.limit ? 'bg-red-400/10 text-red-400' : 'bg-white/5 text-sa-text-secondary'}`}
                 >
-                  {quota.used}/{quota.limit}곡 ({quota.windowMin}분)
+                  {t('quota', { used: quota.used, limit: quota.limit, windowMin: quota.windowMin })}
                 </span>
               ))}
           </div>
           {canSearch && (
             <Button variant="accent-ghost" size="sm" onClick={() => setSearchOpen(true)} className="gap-1.5">
-              <Search size={13} /> 신청하기
+              <Search size={13} /> {t('addTrack')}
             </Button>
           )}
         </div>
@@ -140,12 +142,12 @@ export default function Queue({
         {queue.length === 0 ? (
           <EmptyState
             icon="🎵"
-            title="아직 신청곡이 없어요"
-            description={'곡을 검색해서 추가하면 순서대로 자동 재생됩니다.\n여러 곡을 한 번에 골라 넣을 수도 있어요!'}
+            title={t('emptyTitle')}
+            description={t('emptyDescription')}
             action={
               canSearch ? (
                 <Button variant="accent" size="sm" onClick={() => setSearchOpen(true)} className="mx-auto gap-1.5">
-                  <Search size={14} /> 신청하기
+                  <Search size={14} /> {t('addTrack')}
                 </Button>
               ) : undefined
             }
@@ -213,9 +215,7 @@ export default function Queue({
             >
               <div className="flex items-center justify-center gap-2 py-2 text-xs text-white/30">
                 <span className="animate-pulse">🤖</span>
-                <span>
-                  {autoDjStatus === 'thinking' ? 'AutoDJ가 곡을 찾고 있어요...' : 'AutoDJ가 곡을 추가하고 있어요...'}
-                </span>
+                <span>{autoDjStatus === 'thinking' ? t('autoDjThinking') : t('autoDjAdding')}</span>
               </div>
             </motion.div>
           )}
@@ -243,14 +243,14 @@ export default function Queue({
       <Dialog open={!!confirmRemoveId} onOpenChange={(open) => !open && setConfirmRemoveId(null)}>
         <DialogContent className="sm:max-w-xs">
           <DialogHeader>
-            <DialogTitle>신청곡에서 삭제할까요?</DialogTitle>
+            <DialogTitle>{t('deleteConfirm')}</DialogTitle>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmRemoveId(null)}>
-              취소
+              {t('cancel')}
             </Button>
             <Button variant="destructive" onClick={() => confirmRemoveId && handleRemove(confirmRemoveId)}>
-              삭제
+              {t('delete')}
             </Button>
           </DialogFooter>
         </DialogContent>

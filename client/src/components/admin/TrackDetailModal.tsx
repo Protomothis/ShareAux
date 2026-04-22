@@ -18,6 +18,7 @@ import {
 } from '@/api/model';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import Modal from '@/components/common/Modal';
+import { useTranslations } from 'next-intl';
 
 interface TrackDetailModalProps {
   track: TrackRankingItem | null;
@@ -25,7 +26,9 @@ interface TrackDetailModalProps {
   onDeleted?: () => void;
 }
 
-export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: TrackDetailModalProps) {
+export function TrackDetailModal({
+  track: trackProp, onOpenChange, onDeleted }: TrackDetailModalProps) {
+  const t = useTranslations('admin.tracks');
   const [localTrack, setLocalTrack] = useState(trackProp);
   const [lyrics, setLyrics] = useState<string | null>(null);
   const [translated, setTranslated] = useState<string | null>(null);
@@ -67,9 +70,9 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
           {/* 원본 YouTube 정보 */}
           {track.track.songTitle && (
             <div className="space-y-1 rounded-xl bg-white/[0.03] p-3 text-xs text-sa-text-muted">
-              <div className="truncate">원본: {track.track.name}</div>
-              <div className="truncate">채널: {track.track.artist}</div>
-              {track.track.songAlbum && <div className="truncate">앨범: {track.track.songAlbum}</div>}
+              <div className="truncate">{t('original')}: {track.track.name}</div>
+              <div className="truncate">{t('channel')}: {track.track.artist}</div>
+              {track.track.songAlbum && <div className="truncate">{t('album')}: {track.track.songAlbum}</div>}
             </div>
           )}
           <div className="flex items-center justify-between">
@@ -86,13 +89,13 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
           </div>
 
           <div className="grid grid-cols-3 gap-3 rounded-xl bg-white/[0.03] p-3">
-            <Stat icon={<Music size={14} />} label="재생" value={track.totalPlays} />
-            <Stat icon={<Users size={14} />} label="유저" value={track.uniqueUsers} />
-            <Stat label="점수" value={track.score.toFixed(1)} />
+            <Stat icon={<Music size={14} />} label={t('plays')} value={track.totalPlays} />
+            <Stat icon={<Users size={14} />} label={t('users')} value={track.uniqueUsers} />
+            <Stat label={t('score')} value={track.score.toFixed(1)} />
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-sa-text-muted">투표</span>
+            <span className="text-sa-text-muted">{t('votes')}</span>
             <div className="flex items-center gap-3 text-sm">
               <span className="flex items-center gap-1 text-emerald-400">
                 <ThumbsUp size={13} /> {track.likes}
@@ -104,25 +107,25 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-sa-text-muted">가사</span>
+            <span className="text-sa-text-muted">{t('lyrics')}</span>
             <div className="flex items-center gap-1.5">
               {track.track.lyricsStatus === TrackRankingTrackInfoLyricsStatus.found ? (
                 <StatusBadge variant="success">
                   {track.track.lyricsType === TrackRankingTrackInfoLyricsType.karaoke ? 'KLRC' : 'LRC'}{' '}
                   {track.track.lyricsLang?.toUpperCase() ?? ''}
-                  {track.track.hasTranslation ? ' 번역' : ''}
+                  {track.track.hasTranslation ? t('translated') : ''}
                 </StatusBadge>
               ) : track.track.lyricsStatus === TrackRankingTrackInfoLyricsStatus.not_found ? (
-                <StatusBadge variant="danger">없음</StatusBadge>
+                <StatusBadge variant="danger">{t('noLyrics')}</StatusBadge>
               ) : (
-                <StatusBadge variant="muted">검색중</StatusBadge>
+                <StatusBadge variant="muted">{t('searching')}</StatusBadge>
               )}
               {track.track.lyricsStatus !== TrackRankingTrackInfoLyricsStatus.searching && (
                 <button
                   onClick={async () => {
-                    if (!confirm('가사 정보를 삭제하시겠습니까? 다음 재생 시 재검색됩니다.')) return;
+                    if (!confirm(t('lyricsDeleteConfirm'))) return;
                     await adminControllerResetTrackLyrics(track.trackId);
-                    toast.success('가사 삭제 완료');
+                    toast.success(t('lyricsDeleted'));
                     setLyrics(null);
                     setTranslated(null);
                     setLocalTrack((prev) =>
@@ -141,7 +144,7 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
                     );
                   }}
                   className="text-red-400/60 hover:text-red-400"
-                  title="가사 삭제"
+                  title={t('lyricsDelete')}
                 >
                   <Trash2 size={12} />
                 </button>
@@ -150,19 +153,19 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-sa-text-muted">Content ID 매칭</span>
+            <span className="text-sa-text-muted">{t('contentId')}</span>
             <div className="flex items-center gap-1.5">
               {track.track.metaStatus === TrackRankingTrackInfoMetaStatus.done ? (
-                <StatusBadge variant="success">완료</StatusBadge>
+                <StatusBadge variant="success">{t('contentIdDone')}</StatusBadge>
               ) : (
-                <StatusBadge variant="muted">대기</StatusBadge>
+                <StatusBadge variant="muted">{t('contentIdPending')}</StatusBadge>
               )}
               {track.track.metaStatus === TrackRankingTrackInfoMetaStatus.done && (
                 <button
                   onClick={async () => {
-                    if (!confirm('Content ID 매칭 정보를 삭제하시겠습니까? 다음 재생 시 재매칭됩니다.')) return;
+                    if (!confirm(t('contentIdDeleteConfirm'))) return;
                     await adminControllerResetTrackMeta(track.trackId);
-                    toast.success('Content ID 삭제 완료');
+                    toast.success(t('contentIdDeleted'));
                     setLocalTrack((prev) =>
                       prev
                         ? { ...prev, track: { ...prev.track, metaStatus: TrackRankingTrackInfoMetaStatus.pending } }
@@ -170,7 +173,7 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
                     );
                   }}
                   className="text-red-400/60 hover:text-red-400"
-                  title="Content ID 삭제"
+                  title={t('contentIdDelete')}
                 >
                   <Trash2 size={12} />
                 </button>
@@ -185,14 +188,14 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
                   onClick={() => setLyricsTab('original')}
                   className={`text-xs ${lyricsTab === 'original' ? 'text-sa-accent' : 'text-sa-text-muted hover:text-sa-text-secondary'}`}
                 >
-                  원문
+                  {t('lyricsOriginal')}
                 </button>
                 {translated && (
                   <button
                     onClick={() => setLyricsTab('translated')}
                     className={`text-xs ${lyricsTab === 'translated' ? 'text-sa-accent' : 'text-sa-text-muted hover:text-sa-text-secondary'}`}
                   >
-                    번역
+                    {t('lyricsTranslation')}
                   </button>
                 )}
               </div>
@@ -201,21 +204,21 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
               </div>
             </div>
           )}
-          {lyricsLoading && <p className="text-xs text-sa-text-muted">가사 불러오는 중...</p>}
+          {lyricsLoading && <p className="text-xs text-sa-text-muted">{t('lyricsLoading')}</p>}
         </div>
       </Modal.Body>
       <Modal.Footer>
         <button
           onClick={async () => {
-            if (!confirm('이 트랙을 삭제하시겠습니까? 관련 큐/통계도 함께 삭제됩니다.')) return;
+            if (!confirm(t('trackDeleteConfirm'))) return;
             await adminControllerDeleteTrack(track.trackId);
-            toast.success('트랙 삭제 완료');
+            toast.success(t('trackDeleted'));
             onOpenChange(false);
             onDeleted?.();
           }}
           className="text-xs text-red-400 hover:text-red-300"
         >
-          트랙 삭제
+          {t('trackDelete')}
         </button>
       </Modal.Footer>
     </Modal>

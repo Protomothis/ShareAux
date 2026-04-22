@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 import Modal from '@/components/common/Modal';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ interface JoinPasswordModalProps {
 }
 
 export default function JoinPasswordModal({ open, onSubmit, onClose }: JoinPasswordModalProps) {
+  const t = useTranslations('joinPassword');
   const [password, setPassword] = useState('');
 
   return (
@@ -26,22 +28,22 @@ export default function JoinPasswordModal({ open, onSubmit, onClose }: JoinPassw
         }}
       >
         <Modal.Header>
-          <Modal.Title>비밀번호 입력</Modal.Title>
+          <Modal.Title>{t('title')}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <FormField label="비밀번호">
+          <FormField label={t('label')}>
             <Input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="비밀번호를 입력하세요"
+              placeholder={t('placeholder')}
               autoFocus
             />
           </FormField>
         </Modal.Body>
         <Modal.Footer>
           <Button type="submit" className="w-full">
-            입장
+            {t('join')}
           </Button>
         </Modal.Footer>
       </form>

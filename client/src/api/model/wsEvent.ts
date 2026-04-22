@@ -6,13 +6,10 @@
  * OpenAPI spec version: 1.0
  */
 
-/**
- * WebSocket system event name
- */
-export type WsEnumsSchemaWsEvent = (typeof WsEnumsSchemaWsEvent)[keyof typeof WsEnumsSchemaWsEvent];
+export type WsEvent = (typeof WsEvent)[keyof typeof WsEvent];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const WsEnumsSchemaWsEvent = {
+export const WsEvent = {
   roomClosed: 'roomClosed',
   roomUpdated: 'roomUpdated',
   userJoined: 'userJoined',
@@ -26,6 +23,7 @@ export const WsEnumsSchemaWsEvent = {
   trackSkipped: 'trackSkipped',
   trackPrevious: 'trackPrevious',
   trackAdded: 'trackAdded',
+  userTrackAdded: 'userTrackAdded',
   queueUpdated: 'queueUpdated',
   voteSkipRequested: 'voteSkipRequested',
   voteSkipPassed: 'voteSkipPassed',
@@ -34,6 +32,8 @@ export const WsEnumsSchemaWsEvent = {
   lyricsResult: 'lyricsResult',
   lyricsUpdated: 'lyricsUpdated',
   autoDjStatus: 'autoDjStatus',
+  autoDjEnabled: 'autoDjEnabled',
+  autoDjDisabled: 'autoDjDisabled',
   systemMessage: 'systemMessage',
   enqueueCountsReset: 'enqueueCountsReset',
   chatHistory: 'chatHistory',

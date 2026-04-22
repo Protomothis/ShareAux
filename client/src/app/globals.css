@@ -4,6 +4,61 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* MDX prose 스타일 */
+.legal-prose h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: white;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+.legal-prose h3 {
+  font-weight: 500;
+  color: white;
+  margin-top: 1rem;
+  margin-bottom: 0.25rem;
+}
+.legal-prose p {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.legal-prose ul {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+.legal-prose li {
+  margin-top: 0.125rem;
+  margin-bottom: 0.125rem;
+}
+.legal-prose a {
+  color: var(--color-sa-accent);
+  text-decoration: none;
+}
+.legal-prose a:hover {
+  text-decoration: underline;
+}
+.legal-prose strong {
+  color: white;
+}
+.legal-prose table {
+  width: 100%;
+  text-align: left;
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.legal-prose th {
+  color: white;
+  padding: 0.5rem 1rem 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.legal-prose td {
+  padding: 0.5rem 1rem 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
 @utility bg-room-gradient {
   background-image: linear-gradient(to bottom right, #1a0a1a, #0a0a2e, black);
 }

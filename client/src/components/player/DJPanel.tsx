@@ -1,5 +1,6 @@
 'use client';
 import { Loader2, SkipBack, SkipForward } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { playerControllerSkip } from '@/api/player/player';
@@ -17,6 +18,7 @@ interface DJPanelProps {
 }
 
 export default function DJPanel({ roomId, track, hasNext, hasPrev }: DJPanelProps) {
+  const t = useTranslations('player');
   const [skipping, setSkipping] = useState(false);
 
   const handleSkip = async () => {
@@ -33,7 +35,7 @@ export default function DJPanel({ roomId, track, hasNext, hasPrev }: DJPanelProp
 
   return (
     <div className="mx-4 mt-4 rounded-2xl backdrop-blur-2xl bg-black/80 border border-white/10 p-5 animate-fade-in">
-      <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-sa-accent">🎧 DJ 컨트롤</p>
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-sa-accent">{t('djControl')}</p>
       <div className="flex items-center gap-5">
         {track?.thumbnail && track.thumbnail !== 'NA' ? (
           <Thumbnail
@@ -48,12 +50,12 @@ export default function DJPanel({ roomId, track, hasNext, hasPrev }: DJPanelProp
           {track?.name ? (
             <MarqueeText text={track.name} className="text-xl font-bold text-white" />
           ) : (
-            <p className="text-xl font-bold text-white">재생 대기 중...</p>
+            <p className="text-xl font-bold text-white">{t('idle')}</p>
           )}
           <p className="truncate text-sm text-sa-text-secondary">{track?.artist ?? ''}</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="ghost-muted" size="circle" disabled={!hasPrev || skipping} aria-label="이전곡">
+          <Button variant="ghost-muted" size="circle" disabled={!hasPrev || skipping} aria-label={t('prevTrack')}>
             <SkipBack size={18} />
           </Button>
           <Button
@@ -62,7 +64,7 @@ export default function DJPanel({ roomId, track, hasNext, hasPrev }: DJPanelProp
             onClick={handleSkip}
             disabled={!hasNext || skipping}
             className="hover:scale-105"
-            aria-label="다음곡"
+            aria-label={t('nextTrack')}
           >
             {skipping ? <Loader2 size={20} className="animate-spin" /> : <SkipForward size={20} />}
           </Button>

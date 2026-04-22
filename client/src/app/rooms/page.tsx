@@ -2,6 +2,7 @@
 
 import { Plus, RefreshCw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -31,6 +32,8 @@ function SkeletonCard() {
 
 export default function RoomsPage() {
   const router = useRouter();
+  const t = useTranslations('rooms');
+  const tc = useTranslations('common');
   const { data: rooms = [], isLoading: loading, refetch } = useRoomsControllerFindAll();
   const [refreshing, setRefreshing] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
@@ -63,7 +66,7 @@ export default function RoomsPage() {
       await roomsControllerJoin(room.id, { password: pw });
       router.push(`/rooms/${room.id}`);
     } catch {
-      toast.error(room.isPrivate ? '비밀번호가 틀렸습니다' : '입장에 실패했습니다');
+      toast.error(room.isPrivate ? t('list.wrongPassword') : t('list.joinFailed'));
     }
   };
 
@@ -96,7 +99,7 @@ export default function RoomsPage() {
               onClick={handleRefresh}
               disabled={refreshing}
               className="text-sa-text-muted hover:bg-white/10 hover:text-white disabled:opacity-40"
-              title="새로고침"
+              title={t('list.refresh')}
             >
               <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
             </Button>
@@ -107,7 +110,7 @@ export default function RoomsPage() {
               onClick={() => setShowCreate(true)}
               className="gap-2 rounded-full px-4 hover:scale-105"
             >
-              <Plus size={16} /> 방 만들기
+              <Plus size={16} /> {t('list.createRoom')}
             </Button>
           </div>
         </div>
@@ -126,11 +129,11 @@ export default function RoomsPage() {
           {rooms.length === 0 ? (
             <EmptyState
               icon="🎧"
-              title="아직 활성 방이 없습니다"
-              description="첫 번째 방을 만들어보세요!"
+              title={t('list.emptyTitle')}
+              description={t('list.emptyDescription')}
               action={
                 <Button variant="accent" size="sm" onClick={() => setShowCreate(true)} className="mx-auto gap-1.5">
-                  <Plus size={14} /> 방 만들기
+                  <Plus size={14} /> {t('list.createRoom')}
                 </Button>
               }
             />
@@ -160,11 +163,11 @@ export default function RoomsPage() {
 
       <footer className="relative z-10 mt-12 flex justify-center gap-3 pb-4 text-xs text-sa-text-muted">
         <a href="/privacy" className="hover:text-sa-text-secondary hover:underline">
-          개인정보처리방침
+          {tc('privacyPolicy')}
         </a>
         <span>·</span>
         <a href="/terms" className="hover:text-sa-text-secondary hover:underline">
-          이용약관
+          {tc('terms')}
         </a>
       </footer>
     </main>

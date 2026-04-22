@@ -3,6 +3,7 @@
 import { useQueueControllerGetHistory } from '@/api/queue/queue';
 import { FavoriteButton } from '@/components/common/FavoriteButton';
 import EmptyState from '@/components/common/EmptyState';
+import { useTranslations } from 'next-intl';
 import type { FavoriteActions } from '@/types';
 
 import QueueTrackItem from './QueueTrackItem';
@@ -16,10 +17,11 @@ interface HistoryPanelProps {
 
 export default function HistoryPanel({ roomId, isGuest, favorites }: HistoryPanelProps) {
   const { data: history = [] } = useQueueControllerGetHistory(roomId);
+  const t = useTranslations('history');
   const { favoriteIds, favLoadingIds, toggleFavorite } = favorites;
 
   if (history.length === 0) {
-    return <EmptyState icon="📻" title="아직 재생된 곡이 없습니다" description="곡이 재생되면 여기에 기록됩니다" />;
+    return <EmptyState icon="📻" title={t('emptyTitle')} description={t('emptyDescription')} />;
   }
 
   return (

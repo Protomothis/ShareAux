@@ -1,6 +1,6 @@
 import type { Track } from '@/api/model';
 import type { PlaybackStatusStreamState } from '@/api/model';
-import type { WsEnumsSchemaAutoDjStatus } from '@/api/model';
+import type { AutoDjStatus as AutoDjStatusType } from '@/api/model';
 
 /** Track 정보 중 플레이어 UI에 필요한 필드만 추출 */
 export type TrackInfo = Pick<
@@ -13,8 +13,8 @@ export type VisualMode = 'bars' | 'wave' | 'mirror' | 'dots';
 /** swagger 기반 StreamState (server PlaybackStatus.streamState) */
 export type StreamState = PlaybackStatusStreamState;
 
-/** swagger 기반 AutoDjStatus (server WsEnumsSchema.autoDjStatus) */
-export type AutoDjStatus = WsEnumsSchemaAutoDjStatus;
+/** AutoDjStatus (server SharedEnums.autoDjStatus) */
+export type AutoDjStatus = AutoDjStatusType;
 
 /** swagger 기반 AutoDjMode (server CreateRoomDto.autoDjMode) */
 export type { CreateRoomDtoAutoDjMode as AutoDjMode } from '@/api/model';

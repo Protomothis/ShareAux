@@ -68,9 +68,9 @@ export class RoomsController {
       if (dto.autoDjEnabled) {
         this.autoDj.resetFailCount(id);
         this.autoDj.trigger(id);
-        this.gateway.broadcastSystem(id, WsEvent.SystemMessage, '🤖 AutoDJ가 활성화되었습니다');
+        this.gateway.broadcastSystem(id, WsEvent.AutoDjEnabled, '');
       } else {
-        this.gateway.broadcastSystem(id, WsEvent.SystemMessage, '🤖 AutoDJ가 비활성화되었습니다');
+        this.gateway.broadcastSystem(id, WsEvent.AutoDjDisabled, '');
       }
     } else if (result.autoDjEnabled && (dto.autoDjMode !== undefined || dto.autoDjFolderId !== undefined)) {
       // 모드/폴더 변경 시 재트리거
@@ -103,9 +103,9 @@ export class RoomsController {
   @ApiBearerAuth()
   async leave(@Param('id', ParseUUIDPipe) id: string, @Req() req: AuthenticatedRequest) {
     const result = await this.rooms.leave(id, req.user.userId);
-    this.gateway.broadcastSystem(id, WsEvent.UserLeft, '멤버가 퇴장했습니다');
+    this.gateway.broadcastSystem(id, WsEvent.UserLeft, '');
     if (result.roomClosed) {
-      this.gateway.broadcastSystem(id, WsEvent.RoomClosed, '방이 종료되었습니다');
+      this.gateway.broadcastSystem(id, WsEvent.RoomClosed, '');
     } else if (result.hostChanged) {
       this.gateway.broadcastSystem(
         id,
@@ -148,7 +148,7 @@ export class RoomsController {
   @ApiBearerAuth()
   async resetEnqueueCounts(@Param('id', ParseUUIDPipe) id: string, @Req() req: AuthenticatedRequest) {
     await this.rooms.resetEnqueueCounts(id, req.user.userId);
-    this.gateway.broadcastSystem(id, WsEvent.EnqueueCountsReset, '곡 신청 횟수가 초기화되었습니다');
+    this.gateway.broadcastSystem(id, WsEvent.EnqueueCountsReset, '');
     return { ok: true };
   }
 
@@ -162,7 +162,7 @@ export class RoomsController {
     @Req() req: AuthenticatedRequest,
   ) {
     const newHost = await this.rooms.transferHostTo(id, req.user.userId, targetUserId);
-    this.gateway.broadcastSystem(id, WsEvent.HostChanged, `${newHost.nickname}님이 새 DJ가 되었습니다`);
+    this.gateway.broadcastSystem(id, WsEvent.HostChanged, '', { nickname: newHost.nickname });
     this.gateway.sendToUser(id, targetUserId, WsEvent.PermissionChanged, 'DJ 권한을 위임받았습니다');
     return { ok: true };
   }
@@ -178,7 +178,7 @@ export class RoomsController {
   ) {
     await this.rooms.kick(id, req.user.userId, targetUserId);
     this.gateway.kickUser(id, targetUserId);
-    this.gateway.broadcastSystem(id, WsEvent.UserKicked, '멤버가 추방되었습니다');
+    this.gateway.broadcastSystem(id, WsEvent.UserKicked, '');
     return { ok: true };
   }
 

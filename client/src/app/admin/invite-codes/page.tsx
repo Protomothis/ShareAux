@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
 import type { InviteCode } from '@/api/model';
-import { buildPermLookup, usePermissionMeta } from '@/hooks/usePermissionMeta';
+import { usePermissionMeta, usePermLookup } from '@/hooks/usePermissionMeta';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminPagination } from '@/components/admin/AdminPagination';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
@@ -14,6 +14,7 @@ import { InviteCodeUsersModal } from '@/components/admin/InviteCodeUsersModal';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { useAdminInviteCodes, useDeactivateInviteCode, useDeleteInviteCode } from '@/hooks/admin/useAdminInviteCodes';
+import { useTranslations } from 'next-intl';
 
 const LIMIT = 20;
 
@@ -23,6 +24,7 @@ interface ActionTarget {
 }
 
 export default function AdminInviteCodesPage() {
+  const t = useTranslations('admin.inviteCodes');
   const [page, setPage] = useState(1);
   const [showCreate, setShowCreate] = useState(false);
   const [actionTarget, setActionTarget] = useState<ActionTarget | null>(null);
@@ -30,7 +32,7 @@ export default function AdminInviteCodesPage() {
 
   const { data, isLoading } = useAdminInviteCodes({ page, limit: LIMIT });
   const { data: permMeta } = usePermissionMeta();
-  const perm = buildPermLookup(permMeta);
+  const perm = usePermLookup();
   const deactivate = useDeactivateInviteCode();
   const deleteCode = useDeleteInviteCode();
   const [deleting, setDeleting] = useState(false);
@@ -42,7 +44,7 @@ export default function AdminInviteCodesPage() {
         { id: actionTarget.id },
         {
           onSuccess: () => {
-            toast.success('비활성화되었습니다');
+            toast.success(t('deactivated'));
             setActionTarget(null);
           },
         },
@@ -52,7 +54,7 @@ export default function AdminInviteCodesPage() {
       try {
         await deleteCode.mutate(actionTarget.id, {
           onSuccess: () => {
-            toast.success('삭제되었습니다');
+            toast.success(t('deleted'));
             setActionTarget(null);
           },
         });
@@ -64,17 +66,17 @@ export default function AdminInviteCodesPage() {
 
   const copyLink = useCallback((code: string) => {
     const url = `${window.location.origin}/login?code=${code}`;
-    navigator.clipboard.writeText(url).then(() => toast.success('초대 링크가 복사되었습니다'));
+    navigator.clipboard.writeText(url).then(() => toast.success(t('linkCopied')));
   }, []);
 
   const items = data?.items ?? [];
 
   return (
     <div>
-      <AdminPageHeader title="초대코드 관리">
+      <AdminPageHeader title={t('title')}>
         <Button onClick={() => setShowCreate(true)} variant="accent" size="sm" className="gap-1.5">
           <Plus size={14} />
-          <span className="hidden sm:inline">새 초대코드</span>
+          <span className="hidden sm:inline">{t('new')}</span>
         </Button>
       </AdminPageHeader>
 
@@ -86,7 +88,7 @@ export default function AdminInviteCodesPage() {
         </div>
       ) : items.length === 0 ? (
         <div className="rounded-2xl border border-white/5 bg-white/[0.03] px-5 py-12 text-center text-sm text-sa-text-muted">
-          초대코드가 없습니다
+          {t('empty')}
         </div>
       ) : (
         <div className="space-y-2">
@@ -114,13 +116,9 @@ export default function AdminInviteCodesPage() {
       <ConfirmDialog
         open={!!actionTarget}
         onOpenChange={(open) => !open && setActionTarget(null)}
-        title={actionTarget?.type === 'delete' ? '초대코드 삭제' : '초대코드 비활성화'}
-        description={
-          actionTarget?.type === 'delete'
-            ? '이 초대코드를 완전히 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.'
-            : '이 초대코드를 비활성화하시겠습니까?'
-        }
-        confirmLabel={actionTarget?.type === 'delete' ? '삭제' : '비활성화'}
+        title={actionTarget?.type === 'delete' ? t('deleteTitle') : t('deactivateTitle')}
+        description={actionTarget?.type === 'delete' ? t('deleteDesc') : t('deactivateDesc')}
+        confirmLabel={actionTarget?.type === 'delete' ? t('delete') : t('deactivate')}
         variant="destructive"
         onConfirm={handleConfirm}
         loading={deactivate.isPending || deleting}
@@ -139,19 +137,22 @@ interface InviteCodeCardProps {
 }
 
 function InviteCodeCard({ item, permLabel, onCopy, onDeactivate, onDelete, onShowUsers }: InviteCodeCardProps) {
+  const t = useTranslations('admin.inviteCodes');
   const pct = Math.round((item.usedCount / item.maxUses) * 100);
   const expiresLabel = item.expiresAt
     ? new Date(item.expiresAt) < new Date()
-      ? '만료됨'
-      : new Date(item.expiresAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }) + ' 까지'
-    : '무기한';
+      ? t('expired')
+      : new Date(item.expiresAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }) + ' ' + t('until')
+    : t('noExpiry');
 
   return (
     <div className="rounded-xl border border-white/5 bg-white/[0.03] p-3 sm:p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <span className="rounded-lg bg-white/5 px-2.5 py-1 font-mono text-sm text-white">{item.code}</span>
-          <StatusBadge variant={item.isActive ? 'success' : 'muted'}>{item.isActive ? '활성' : '비활성'}</StatusBadge>
+          <StatusBadge variant={item.isActive ? 'success' : 'muted'}>
+            {item.isActive ? t('activeStatus') : t('inactiveStatus')}
+          </StatusBadge>
         </div>
         <div className="flex items-center gap-1">
           {item.isActive && (
@@ -192,7 +193,9 @@ function InviteCodeCard({ item, permLabel, onCopy, onDeactivate, onDelete, onSho
         <span>
           사용 <span className="font-medium text-white">{item.usedCount}</span>/{item.maxUses}
         </span>
-        <span>회원가입 {item.allowRegistration ? '✓' : '✕'}</span>
+        <span>
+          {t('registration')} {item.allowRegistration ? '✓' : '✕'}
+        </span>
         <span>{expiresLabel}</span>
       </div>
 

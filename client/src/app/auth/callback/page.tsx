@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/stores/auth';
 
 export default function AuthCallbackPage() {
+  const t = useTranslations('authCallback');
   const router = useRouter();
   const calledRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,22 +53,22 @@ export default function AuthCallbackPage() {
           router.replace(redirect);
         } else {
           const data = (await r.json().catch(() => null)) as { message?: string } | null;
-          const msg = data?.message ?? '로그인에 실패했습니다';
+          const msg = data?.message ?? t('loginFailed');
           router.replace(`/login?error=${encodeURIComponent(msg)}`);
         }
       })
-      .catch(() => router.replace('/login?error=' + encodeURIComponent('로그인에 실패했습니다')));
+      .catch(() => router.replace('/login?error=' + encodeURIComponent(t('loginFailed'))));
   }, [router]);
 
   const ERROR_MESSAGES: Record<string, { title: string; desc: string }> = {
-    default: { title: '로그인 실패', desc: '알 수 없는 오류가 발생했습니다. 다시 시도해주세요.' },
+    default: { title: t('defaultTitle'), desc: t('defaultDesc') },
   };
 
   const getErrorInfo = (msg: string) => {
-    if (msg.includes('연동되지 않았습니다')) return { title: '계정을 찾을 수 없음', desc: msg };
+    if (msg.includes('연동되지 않았습니다')) return { title: t('notLinkedTitle'), desc: msg };
     if (msg.includes('not configured') || msg.includes('비활성'))
-      return { title: 'Google 로그인 불가', desc: 'Google 로그인이 현재 비활성화되어 있습니다.' };
-    if (msg.includes('이미 다른 계정')) return { title: '연동 실패', desc: msg };
+      return { title: t('googleDisabledTitle'), desc: t('googleDisabledDesc') };
+    if (msg.includes('이미 다른 계정')) return { title: t('alreadyLinkedTitle'), desc: msg };
     return { title: ERROR_MESSAGES.default.title, desc: msg || ERROR_MESSAGES.default.desc };
   };
 
@@ -102,8 +104,8 @@ export default function AuthCallbackPage() {
           </div>
         </div>
         <div className="text-center">
-          <p className="text-lg font-semibold text-white">로그인 처리 중</p>
-          <p className="mt-1 text-sm text-sa-text-muted">잠시만 기다려주세요...</p>
+          <p className="text-lg font-semibold text-white">{t('processing')}</p>
+          <p className="mt-1 text-sm text-sa-text-muted">{t('wait')}</p>
         </div>
       </div>
     </main>

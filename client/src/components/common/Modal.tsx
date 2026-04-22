@@ -2,6 +2,7 @@
 
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog';
 import { XIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -68,6 +69,8 @@ function ModalRoot({
   showCloseButton = true,
   fullscreenMobile,
 }: ModalProps) {
+  const t = useTranslations('common');
+
   const handleOpenChange = (o: boolean) => {
     onOpenChange?.(o);
     if (!o) onClose?.();
@@ -92,7 +95,7 @@ function ModalRoot({
               render={<Button variant="ghost" className="absolute top-3 right-3" size="icon-sm" />}
             >
               <XIcon />
-              <span className="sr-only">Close</span>
+              <span className="sr-only">{t('modal.close')}</span>
             </DialogPrimitive.Close>
           )}
         </DialogPrimitive.Popup>

@@ -1,75 +1,77 @@
-# 자주 묻는 질문 (FAQ)
+[🇰🇷 한국어](./faq.ko.md)
 
-## 재생 관련
+# Frequently Asked Questions (FAQ)
 
-### 곡이 재생되지 않아요
-- yt-dlp가 최신 버전인지 확인하세요. Docker 이미지를 최신으로 pull하면 자동 업데이트됩니다.
-- 서버 로그(`docker logs shareaux-server`)에서 에러를 확인하세요.
+## Playback
 
-### iOS에서 소리가 안 나와요
-- HTTPS 환경이 필수입니다. HTTP에서는 iOS Safari가 MediaSource를 지원하지 않습니다.
-- 화면을 한 번 터치한 뒤 듣기 버튼을 눌러주세요 (브라우저 오디오 정책).
+### Tracks won't play
+- Make sure the media resolver is up to date. Pulling the latest Docker image will auto-update it.
+- Check server logs (`docker logs shareaux-server`) for errors.
 
-### 곡 전환 시 잠깐 끊겨요
-- 정상 동작입니다. ffmpeg가 다음 곡을 준비하는 1~2초간 로딩이 발생합니다.
-- 네트워크가 느린 환경에서는 더 길어질 수 있습니다.
+### No sound on iOS
+- HTTPS is required. iOS Safari does not support MediaSource over HTTP.
+- Tap the screen once, then press the listen button (browser audio policy).
 
-## 설정 관련
+### Brief interruption when switching tracks
+- This is normal. There's a 1–2 second loading time while ffmpeg prepares the next track.
+- May take longer on slow networks.
 
-### Google 로그인을 안 쓰고 싶어요
-- `.env`에서 `GOOGLE_CLIENT_ID`를 비워두면 자동으로 비활성화됩니다.
+## Configuration
 
-### 가사 번역이 안 돼요
-- `.env`에 `GEMINI_API_KEY`를 설정해야 합니다. [Google AI Studio](https://aistudio.google.com/)에서 무료 키를 발급받을 수 있습니다.
+### I don't want to use Google login
+- Leave `GOOGLE_CLIENT_ID` empty in `.env` to automatically disable it.
 
-### 초대코드 없이 가입하게 하고 싶어요
-- 현재는 초대코드 기반만 지원합니다. 관리자가 사용 횟수가 많은 초대코드를 만들어 공유하세요.
+### Lyrics translation isn't working
+- Set `GEMINI_API_KEY` in `.env`. You can get a free key from [Google AI Studio](https://aistudio.google.com/).
 
-## 배포 관련
+### I want to allow sign-up without invite codes
+- Currently only invite code-based registration is supported. Create an invite code with a high usage limit and share it.
 
-### Cloudflare 뒤에서 동작하나요?
-- 네, WebSocket 지원을 활성화해야 합니다 (Cloudflare 대시보드 → Network → WebSockets: On).
-- 100초 이상 연결 유지가 필요하므로 Pro 플랜 이상을 권장합니다.
+## Deployment
 
-### 포트를 바꾸고 싶어요
-- `docker-compose.yml`에서 포트 매핑을 변경하세요 (예: `'8080:3001'`).
-- `.env`의 `CLIENT_URL`도 함께 변경해야 합니다.
+### Does it work behind Cloudflare?
+- Yes, but you need to enable WebSocket support (Cloudflare Dashboard → Network → WebSockets: On).
+- Pro plan or higher is recommended since connections need to stay alive for 100+ seconds.
 
-### 데이터 백업은 어떻게 하나요?
-- PostgreSQL 볼륨(`pgdata`)을 백업하면 됩니다.
+### I want to change the ports
+- Change port mappings in `docker-compose.yml` (e.g., `'8080:3001'`).
+- Also update `CLIENT_URL` in `.env`.
+
+### How do I back up data?
+- Back up the PostgreSQL volume (`pgdata`).
 - `docker compose exec db pg_dump -U spotiparty spotiparty > backup.sql`
 
-## 문제 해결
+## Troubleshooting
 
-### 서버가 시작되지 않아요
-- `docker logs shareaux-server`로 에러를 확인하세요.
-- DB 연결 실패: `DATABASE_URL`이 올바른지, DB 컨테이너가 healthy 상태인지 확인.
+### Server won't start
+- Check errors with `docker logs shareaux-server`.
+- DB connection failure: Verify `DATABASE_URL` is correct and the DB container is healthy.
 
-### 업데이트 후 에러가 나요
-- DB 스키마가 자동 동기화됩니다 (`synchronize: true`). 대부분 재시작으로 해결됩니다.
-- 해결 안 되면 DB 초기화: `docker compose down -v && docker compose up -d`
-- ⚠️ 현재는 자동 동기화 방식이라 드물게 데이터 유실이 발생할 수 있습니다. 중요한 데이터는 업데이트 전 백업을 권장합니다. 추후 안전한 마이그레이션 시스템을 도입할 예정입니다.
+### Errors after updating
+- DB schema syncs automatically (`synchronize: true`). Most issues resolve with a restart.
+- If not, reset DB: `docker compose down -v && docker compose up -d`
+- ⚠️ Auto-sync may rarely cause data loss. Back up important data before updating. A safe migration system is planned for the future.
 
-## 사용 관련
+## Usage
 
-### 동시에 몇 명까지 들을 수 있나요?
-- 방당 최대 50명, 서버 전체는 하드웨어에 따라 다릅니다.
-- 1코어/1GB 기준 약 3~5개 방 동시 스트리밍 가능합니다.
+### How many people can listen simultaneously?
+- Up to 50 per room. Server-wide capacity depends on hardware.
+- ~3–5 rooms streaming simultaneously on 1 core / 1GB.
 
-### 곡 길이 제한이 있나요?
-- 제한 없습니다. 다만 1시간 이상의 영상은 ffmpeg 변환에 시간이 걸릴 수 있습니다.
+### Is there a track length limit?
+- No limit. However, videos over 1 hour may take time for ffmpeg to process.
 
-### 큐에 곡을 몇 개까지 넣을 수 있나요?
-- 방당 최대 50곡, 유저당 윈도우 시간 내 최대 10곡입니다. 방 설정에서 조절 가능합니다.
+### How many tracks can be added to the queue?
+- Up to 50 per room, up to 10 per user within a time window. Configurable in room settings.
 
-### Auto DJ가 뭔가요?
-- 큐가 비면 자동으로 관련 곡을 추가하는 기능입니다. 방 설정에서 활성화할 수 있습니다.
-- 모드: 관련 곡 / 재생 기록 / 인기곡 / 혼합
+### What is Auto DJ?
+- Automatically adds related tracks when the queue is empty. Enable it in room settings.
+- Modes: Related tracks / Play history / Popular / Mixed
 
-### 게스트와 일반 회원의 차이는?
-- 게스트: 초대코드로 즉시 입장, 세션 만료 시 데이터 삭제
-- 일반 회원: 초대코드로 가입, 영구 계정, 재생 기록 보존
+### What's the difference between guest and regular member?
+- Guest: Instant entry with invite code, data deleted on session expiry
+- Regular member: Sign up with invite code, permanent account, play history preserved
 
-### 방이 자동으로 삭제되나요?
-- 호스트가 나가고 호스트 권한을 가진 멤버가 없으면 방이 즉시 종료됩니다.
-- 비활성 방은 관리자 페이지에서 수동 정리할 수 있습니다.
+### Do rooms get automatically deleted?
+- When the host leaves and no member has host permissions, the room closes immediately.
+- Inactive rooms can be manually cleaned up from the admin page.

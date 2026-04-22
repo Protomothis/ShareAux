@@ -2,12 +2,14 @@
 
 import { WifiOff } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
+import { useTranslations } from 'next-intl';
 
 interface WsDisconnectBannerProps {
   connected: boolean;
 }
 
 export function WsDisconnectBanner({ connected }: WsDisconnectBannerProps) {
+  const t = useTranslations('common');
   return (
     <AnimatePresence>
       {!connected && (
@@ -20,7 +22,7 @@ export function WsDisconnectBanner({ connected }: WsDisconnectBannerProps) {
         >
           <div className="flex items-center justify-center gap-2 bg-red-500/90 px-3 py-1.5 text-xs font-medium text-white">
             <WifiOff className="size-3.5" />
-            서버와 연결이 끊어졌습니다 — 재연결 시도 중...
+            {t('wsDisconnect.message')}
           </div>
         </motion.div>
       )}

@@ -2,6 +2,7 @@
 
 import { ChevronDown, LogOut, Settings, Shield } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import ProfileSettingsModal from '@/components/room/ProfileSettingsModal';
@@ -24,6 +25,7 @@ interface ProfileDropdownProps {
 }
 
 export default function ProfileDropdown({ nickname, email, isAdmin, onLogout }: ProfileDropdownProps) {
+  const t = useTranslations('rooms');
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
@@ -48,17 +50,17 @@ export default function ProfileDropdown({ nickname, email, isAdmin, onLogout }: 
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
             <Settings size={14} />
-            설정
+            {t('profile.settings')}
           </DropdownMenuItem>
           {isAdmin && (
             <DropdownMenuItem className="text-sa-accent" render={<Link href="/admin" />}>
               <Shield size={14} />
-              관리자 페이지
+              {t('profile.admin')}
             </DropdownMenuItem>
           )}
           <DropdownMenuItem onClick={onLogout}>
             <LogOut size={14} />
-            로그아웃
+            {t('profile.logout')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

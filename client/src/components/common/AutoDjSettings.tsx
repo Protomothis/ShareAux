@@ -1,5 +1,6 @@
 import { useFavoritesControllerListFolders } from '@/api/favorites/favorites';
 import { FormField } from '@/components/ui/form';
+import { useTranslations } from 'next-intl';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SettingCard } from '@/components/ui/setting-card';
 import type { AutoDjMode } from '@/types';
@@ -18,14 +19,6 @@ interface AutoDjSettingsProps {
   onFavFallbackMixedChange?: (v: boolean) => void;
 }
 
-const modeLabels: Record<string, string> = {
-  related: '🔗 관련곡',
-  history: '📜 히스토리',
-  popular: '🔥 인기곡',
-  mixed: '🎲 혼합',
-  favorites: '❤️ 즐겨찾기',
-};
-
 export default function AutoDjSettings({
   enabled,
   mode,
@@ -40,42 +33,51 @@ export default function AutoDjSettings({
   onFavFallbackMixedChange,
 }: AutoDjSettingsProps) {
   const { data: folders = [] } = useFavoritesControllerListFolders();
+  const t = useTranslations('settings');
+  const modeLabels: Record<string, string> = {
+    related: t('autoDjRelated'),
+    history: t('autoDjHistory'),
+    popular: t('autoDjPopular'),
+    mixed: t('autoDjMixed'),
+    favorites: t('autoDjFavorites'),
+  };
 
   return (
     <SettingCard
       icon="🤖"
       label="AutoDJ"
-      description="큐가 비면 자동으로 곡 추가"
+      description={t('autoDjDescription')}
       htmlFor="autoDj"
       checked={enabled}
       onCheckedChange={onEnabledChange}
     >
       <div className="grid gap-3 sm:grid-cols-2">
-        <FormField label="모드">
+        <FormField label={t('autoDjMode')}>
           <Select value={mode} onValueChange={(v) => v && onModeChange(v as AutoDjMode)}>
             <SelectTrigger size="sm">
-              <SelectValue placeholder="모드 선택">{modeLabels[mode] ?? mode}</SelectValue>
+              <SelectValue placeholder={t('autoDjModePlaceholder')}>{modeLabels[mode] ?? mode}</SelectValue>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="related">🔗 관련곡</SelectItem>
-              <SelectItem value="history">📜 히스토리</SelectItem>
-              <SelectItem value="popular">🔥 인기곡</SelectItem>
-              <SelectItem value="mixed">🎲 혼합</SelectItem>
+              <SelectItem value="related">{t('autoDjRelated')}</SelectItem>
+              <SelectItem value="history">{t('autoDjHistory')}</SelectItem>
+              <SelectItem value="popular">{t('autoDjPopular')}</SelectItem>
+              <SelectItem value="mixed">{t('autoDjMixed')}</SelectItem>
               <SelectItem value="favorites" disabled={!hasFavorites}>
-                ❤️ 즐겨찾기{!hasFavorites ? ' (곡 없음)' : ''}
+                {t('autoDjFavorites')}
+                {!hasFavorites ? t('autoDjFavEmpty') : ''}
               </SelectItem>
             </SelectContent>
           </Select>
         </FormField>
-        <FormField label="트리거 기준">
+        <FormField label={t('autoDjThreshold')}>
           <Select value={String(threshold)} onValueChange={(v) => v && onThresholdChange(+v)}>
             <SelectTrigger size="sm">
-              <SelectValue>남은 {threshold}곡 이하</SelectValue>
+              <SelectValue>{t('autoDjThresholdValue', { n: threshold })}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               {[1, 2, 3, 4, 5].map((n) => (
                 <SelectItem key={n} value={String(n)}>
-                  남은 {n}곡 이하
+                  {t('autoDjThresholdValue', { n })}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -84,18 +86,20 @@ export default function AutoDjSettings({
       </div>
       {mode === 'favorites' && folders.length > 0 && (
         <div className="mt-3">
-          <FormField label="폴더 필터">
+          <FormField label={t('autoDjFolder')}>
             <Select value={folderId ?? '__all__'} onValueChange={(v) => onFolderIdChange?.(v === '__all__' ? null : v)}>
               <SelectTrigger size="sm">
                 <SelectValue>
-                  {folderId ? (folders.find((f) => f.id === folderId)?.name ?? '전체') : '전체'}
+                  {folderId
+                    ? (folders.find((f) => f.id === folderId)?.name ?? t('autoDjFolderAll'))
+                    : t('autoDjFolderAll')}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__all__">전체</SelectItem>
+                <SelectItem value="__all__">{t('autoDjFolderAll')}</SelectItem>
                 {folders.map((f) => (
                   <SelectItem key={f.id} value={f.id}>
-                    {f.name} ({f.trackCount}곡)
+                    {t('autoDjFolderItem', { name: f.name, count: f.trackCount })}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -111,7 +115,7 @@ export default function AutoDjSettings({
             onChange={(e) => onFavFallbackMixedChange?.(e.target.checked)}
             className="accent-sa-accent"
           />
-          즐겨찾기 곡 소진 시 혼합 모드로 전환
+          {t('autoDjFavFallback')}
         </label>
       )}
     </SettingCard>

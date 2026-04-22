@@ -4,6 +4,7 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 
 import type { MetricsPointDto } from '@/api/model';
 import type { TimeRange } from '@/hooks/admin/useAdminMetrics';
+import { useTranslations } from 'next-intl';
 
 interface RealtimeChartProps {
   data: MetricsPointDto[];
@@ -18,6 +19,7 @@ function formatTime(ts: number, timeRange: TimeRange) {
 }
 
 export function RealtimeChart({ data, timeRange }: RealtimeChartProps) {
+  const t = useTranslations('admin.charts');
   return (
     <ResponsiveContainer width="100%" height={260}>
       <AreaChart data={data}>
@@ -40,7 +42,7 @@ export function RealtimeChart({ data, timeRange }: RealtimeChartProps) {
           labelFormatter={(v) => formatTime(Number(v), timeRange)}
           labelStyle={{ color: 'rgba(255,255,255,0.7)' }}
         />
-        <Area type="monotone" dataKey="connections" stroke="#8b5cf6" fill="url(#connGrad)" name="접속자" />
+        <Area type="monotone" dataKey="connections" stroke="#8b5cf6" fill="url(#connGrad)" name={t('connections')} />
       </AreaChart>
     </ResponsiveContainer>
   );

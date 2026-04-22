@@ -1,8 +1,22 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
+
+function ErrorFallback() {
+  const t = useTranslations('common');
+
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-black text-white">
+      <p className="mb-4 text-lg">{t('errorBoundary.message')}</p>
+      <Button variant="accent" onClick={() => window.location.reload()} className="px-6 py-2">
+        {t('errorBoundary.reload')}
+      </Button>
+    </div>
+  );
+}
 
 interface State {
   hasError: boolean;
@@ -21,14 +35,7 @@ export default class ErrorBoundary extends React.Component<{ children: React.Rea
 
   render() {
     if (this.state.hasError) {
-      return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-black text-white">
-          <p className="mb-4 text-lg">문제가 발생했습니다</p>
-          <Button variant="accent" onClick={() => window.location.reload()} className="px-6 py-2">
-            새로고침
-          </Button>
-        </div>
-      );
+      return <ErrorFallback />;
     }
     return this.props.children;
   }

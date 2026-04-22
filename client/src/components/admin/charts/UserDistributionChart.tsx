@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
+import { useTranslations } from 'next-intl';
 
 const COLORS = ['#8b5cf6', '#34d399', '#fbbf24', '#fb7185'];
 
@@ -48,13 +49,14 @@ function MiniPie({ data, title }: { data: PieEntry[]; title: string }) {
 }
 
 export function UserDistributionChart({ byProvider, byRole }: UserDistributionChartProps) {
+  const t = useTranslations('admin.charts');
   const providerData = useMemo(() => toPieData(byProvider), [byProvider]);
   const roleData = useMemo(() => toPieData(byRole), [byRole]);
 
   return (
     <div className="flex gap-4">
-      <MiniPie data={providerData} title="가입 경로" />
-      <MiniPie data={roleData} title="역할" />
+      <MiniPie data={providerData} title={t('providerTitle')} />
+      <MiniPie data={roleData} title={t('roleTitle')} />
     </div>
   );
 }

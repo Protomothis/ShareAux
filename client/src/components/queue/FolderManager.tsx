@@ -17,6 +17,7 @@ import { folderColorClass, FOLDER_COLOR_MAP } from '@/lib/folder-colors';
 import { cn } from '@/lib/utils';
 
 import Modal from '../common/Modal';
+import { useTranslations } from 'next-intl';
 
 interface FolderManagerProps {
   onClose: () => void;
@@ -25,6 +26,7 @@ interface FolderManagerProps {
 const COLOR_OPTIONS = Object.keys(FOLDER_COLOR_MAP) as string[];
 
 export function FolderManager({ onClose }: FolderManagerProps) {
+  const t = useTranslations('folders');
   const { data: folders = [], refetch } = useFavoritesControllerListFolders();
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState('');
@@ -39,7 +41,7 @@ export function FolderManager({ onClose }: FolderManagerProps) {
     setNewName('');
     setCreating(false);
     refetch();
-    toast.success('폴더 생성 완료');
+    toast.success(t('created'));
   };
 
   const handleUpdate = async (id: string) => {
@@ -47,21 +49,21 @@ export function FolderManager({ onClose }: FolderManagerProps) {
     await favoritesControllerUpdateFolder(id, { name: editName, color: editColor as unknown as undefined });
     setEditingId(null);
     refetch();
-    toast.success('폴더 수정 완료');
+    toast.success(t('updated'));
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('폴더를 삭제하시겠습니까? 곡은 미분류로 이동됩니다.')) return;
+    if (!confirm(t('deleteConfirm'))) return;
     await favoritesControllerDeleteFolder(id);
     refetch();
-    toast.success('폴더 삭제 완료');
+    toast.success(t('deleted'));
   };
 
   return (
     <Modal open onOpenChange={(open) => !open && onClose()} className="sm:max-w-sm">
       <Modal.Header>
-        <Modal.Title>폴더 관리</Modal.Title>
-        <Modal.Description>{folders.length}/20 폴더</Modal.Description>
+        <Modal.Title>{t('title')}</Modal.Title>
+        <Modal.Description>{t('count', { count: folders.length })}</Modal.Description>
       </Modal.Header>
       <Modal.Body>
         <div className="space-y-2">
@@ -76,13 +78,13 @@ export function FolderManager({ onClose }: FolderManagerProps) {
                 onColorChange={setEditColor}
                 onSubmit={() => handleUpdate(f.id)}
                 onCancel={() => setEditingId(null)}
-                submitLabel="저장"
+                submitLabel={t('save')}
               />
             ) : (
               <div key={f.id} className="flex items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-white/5">
                 <span className={cn('size-3 shrink-0 rounded-full', folderColorClass(f.color))} />
                 <span className="flex-1 truncate text-sm text-white">{f.name}</span>
-                <span className="text-xs text-sa-text-muted">{f.trackCount}곡</span>
+                <span className="text-xs text-sa-text-muted">{t('trackCount', { count: f.trackCount })}</span>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -117,7 +119,7 @@ export function FolderManager({ onClose }: FolderManagerProps) {
               onColorChange={setNewColor}
               onSubmit={handleCreate}
               onCancel={() => setCreating(false)}
-              submitLabel="만들기"
+              submitLabel={t('create')}
             />
           ) : (
             folders.length < 20 && (
@@ -131,7 +133,8 @@ export function FolderManager({ onClose }: FolderManagerProps) {
                 }}
                 className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-white/10 py-2 text-xs text-sa-text-muted hover:border-white/20 hover:text-white"
               >
-                <Plus size={14} />새 폴더
+                <Plus size={14} />
+                {t('newFolder')}
               </Button>
             )
           )}
@@ -158,12 +161,13 @@ function FolderForm({
   onCancel: () => void;
   submitLabel: string;
 }) {
+  const t = useTranslations('folders');
   return (
     <div className="space-y-2 rounded-lg bg-white/5 p-3">
       <Input
         value={name}
         onChange={(e) => onNameChange(e.target.value)}
-        placeholder="폴더 이름 (2~20자)"
+        placeholder={t('placeholder')}
         maxLength={20}
         className="h-8 rounded-lg border-white/10 bg-white/5 text-xs"
         onKeyDown={(e) => e.key === 'Enter' && onSubmit()}
@@ -184,7 +188,7 @@ function FolderForm({
       </div>
       <div className="flex justify-end gap-1.5">
         <Button variant="ghost" size="sm" onClick={onCancel} className="h-7 px-3 text-xs">
-          취소
+          {t('cancel')}
         </Button>
         <Button
           variant="ghost"

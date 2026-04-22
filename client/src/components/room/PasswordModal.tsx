@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 import Modal from '@/components/common/Modal';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,7 @@ interface PasswordModalProps {
 }
 
 export default function PasswordModal({ open, onSubmit, onClose }: PasswordModalProps) {
+  const t = useTranslations('passwordModal');
   const [password, setPassword] = useState('');
 
   return (
@@ -25,26 +27,26 @@ export default function PasswordModal({ open, onSubmit, onClose }: PasswordModal
         }}
       >
         <Modal.Header>
-          <Modal.Title>🔒 비밀번호 입력</Modal.Title>
-          <Modal.Description>이 방은 비밀번호가 필요합니다</Modal.Description>
+          <Modal.Title>{t('title')}</Modal.Title>
+          <Modal.Description>{t('description')}</Modal.Description>
         </Modal.Header>
         <Modal.Body>
-          <FormField label="비밀번호">
+          <FormField label={t('label')}>
             <Input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="비밀번호"
+              placeholder={t('placeholder')}
               autoFocus
             />
           </FormField>
         </Modal.Body>
         <Modal.Footer className="flex-col sm:flex-col">
           <Button type="submit" className="w-full">
-            입장
+            {t('join')}
           </Button>
           <Button type="button" variant="ghost" className="w-full" onClick={onClose}>
-            돌아가기
+            {t('back')}
           </Button>
         </Modal.Footer>
       </form>
