@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import type { ReactNode } from 'react';
 
 interface LegalPageLayoutProps {
@@ -8,8 +8,8 @@ interface LegalPageLayoutProps {
   children: ReactNode;
 }
 
-export default function LegalPageLayout({ title, updatedAt, children }: LegalPageLayoutProps) {
-  const t = useTranslations('common');
+export default async function LegalPageLayout({ title, updatedAt, children }: LegalPageLayoutProps) {
+  const t = await getTranslations('common');
   return (
     <div className="mx-auto flex h-full max-w-2xl flex-col px-6">
       <header className="shrink-0 pb-4 pt-16">
@@ -21,7 +21,7 @@ export default function LegalPageLayout({ title, updatedAt, children }: LegalPag
           {t('lastUpdated')}: {updatedAt}
         </p>
       </header>
-      <main className="flex-1 overflow-y-auto pb-16 text-sm leading-relaxed text-sa-text-secondary prose prose-invert prose-sm max-w-none">
+      <main className="legal-prose flex-1 overflow-y-auto pb-16 text-sm leading-relaxed text-sa-text-secondary">
         {children}
       </main>
     </div>

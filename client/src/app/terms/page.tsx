@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from 'next-intl/server';
 
 import LegalPageLayout from '@/components/common/LegalPageLayout';
+import { TermsContent } from './content';
 
 export async function generateMetadata() {
   const t = await getTranslations('common');
@@ -10,11 +11,10 @@ export async function generateMetadata() {
 export default async function TermsPage() {
   const locale = await getLocale();
   const t = await getTranslations('common');
-  const { default: Content } = await import(`../../../content/terms/${locale}.mdx`);
 
   return (
     <LegalPageLayout title={t('terms')} updatedAt={t('updatedDate')}>
-      <Content />
+      <TermsContent locale={locale} />
     </LegalPageLayout>
   );
 }

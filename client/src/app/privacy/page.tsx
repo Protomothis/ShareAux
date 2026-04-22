@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from 'next-intl/server';
 
 import LegalPageLayout from '@/components/common/LegalPageLayout';
+import { PrivacyContent } from './content';
 
 export async function generateMetadata() {
   const t = await getTranslations('common');
@@ -10,11 +11,10 @@ export async function generateMetadata() {
 export default async function PrivacyPage() {
   const locale = await getLocale();
   const t = await getTranslations('common');
-  const { default: Content } = await import(`../../../content/privacy/${locale}.mdx`);
 
   return (
     <LegalPageLayout title={t('privacyPolicy')} updatedAt={t('updatedDate')}>
-      <Content />
+      <PrivacyContent locale={locale} />
     </LegalPageLayout>
   );
 }
