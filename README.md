@@ -5,9 +5,7 @@
 Self-hosted real-time music sharing platform. Create rooms, search for music together, and stream to all participants via WebSocket — everyone hears the same moment. Synced lyrics, chat, and reactions included.
 
 <p align="center">
-  <img src="docs/images/login-mobile.png" alt="Login" width="280" />
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="docs/images/room-mobile.png" alt="Room Player" width="280" />
+  <img src="docs/images/login-desktop.png" alt="ShareAux" width="720" />
 </p>
 
 ## Key Features
