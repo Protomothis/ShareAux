@@ -13,6 +13,7 @@ interface NumberStepperProps {
   max?: number;
   step?: number;
   size?: 'sm' | 'md';
+  disabled?: boolean;
 }
 
 const sizeConfig = {
@@ -27,6 +28,7 @@ export default function NumberStepper({
   max = 100,
   step = 1,
   size = 'md',
+  disabled,
 }: NumberStepperProps) {
   const s = sizeConfig[size];
   const clamp = useCallback((v: number) => Math.min(max, Math.max(min, v)), [min, max]);
@@ -50,7 +52,11 @@ export default function NumberStepper({
 
   return (
     <div
-      className={cn('flex items-center gap-0 overflow-hidden rounded-lg border border-white/10 bg-white/5', s.width)}
+      className={cn(
+        'flex items-center gap-0 overflow-hidden rounded-lg border border-white/10 bg-white/5',
+        s.width,
+        disabled && 'pointer-events-none opacity-40',
+      )}
     >
       <Button
         variant="ghost"

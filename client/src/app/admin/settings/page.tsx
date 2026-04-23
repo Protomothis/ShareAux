@@ -2,184 +2,92 @@
 
 import { Loader2, Save } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
-import { Button } from '@/components/ui/button';
-import { FormField } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import NumberStepper from '@/components/ui/number-stepper';
-import { Switch } from '@/components/ui/switch';
-import { useAdminSettings, useUpdateSettings } from '@/hooks/admin/useAdminSettings';
 import { useTranslations } from 'next-intl';
 
-interface SettingDef {
-  key: string;
-  label: string;
-  description: string;
-  type: 'boolean' | 'number' | 'string';
-  min?: number;
-  max?: number;
-}
-
-interface SettingCategory {
-  title: string;
-  icon: string;
-  items: SettingDef[];
-}
-
-const CATEGORIES: SettingCategory[] = [
-  {
-    title: 'authSection',
-    icon: '🔐',
-    items: [
-      { key: 'auth.guestEnabled', label: 'guestLogin', description: 'guestLoginDesc', type: 'boolean' },
-      { key: 'auth.googleEnabled', label: 'googleOAuth', description: 'googleOAuthDesc', type: 'boolean' },
-      {
-        key: 'auth.guestMaxAge',
-        label: 'guestExpiry',
-        description: 'guestExpiryDesc',
-        type: 'number',
-        min: 1,
-        max: 720,
-      },
-    ],
-  },
-  {
-    title: 'roomSection',
-    icon: '🚪',
-    items: [
-      {
-        key: 'room.maxMembers',
-        label: 'maxMembers',
-        description: 'maxMembersDesc',
-        type: 'number',
-        min: 2,
-        max: 100,
-      },
-      {
-        key: 'room.maxRoomsPerUser',
-        label: 'maxRoomsPerUser',
-        description: 'maxRoomsPerUserDesc',
-        type: 'number',
-        min: 1,
-        max: 10,
-      },
-    ],
-  },
-  {
-    title: 'autoDjEnabled',
-    icon: '🤖',
-    items: [{ key: 'autodj.enabled', label: 'autoDjEnabled', description: 'autoDjEnabledDesc', type: 'boolean' }],
-  },
-  {
-    title: 'queueSection',
-    icon: '📋',
-    items: [
-      {
-        key: 'queue.maxPerUser',
-        label: 'maxQueuePerUser',
-        description: 'maxQueuePerUserDesc',
-        type: 'number',
-        min: 1,
-        max: 50,
-      },
-      {
-        key: 'queue.maxDuration',
-        label: 'maxTrackLength',
-        description: 'maxTrackLengthDesc',
-        type: 'number',
-        min: 1,
-        max: 60,
-      },
-    ],
-  },
-  {
-    title: 'streamSection',
-    icon: '🎵',
-    items: [
-      {
-        key: 'stream.maxBitrateEnabled',
-        label: 'maxBitrateEnabled',
-        description: 'maxBitrateEnabledDesc',
-        type: 'boolean',
-      },
-      {
-        key: 'stream.maxBitrate',
-        label: 'maxBitrate',
-        description: 'maxBitrateDesc',
-        type: 'number',
-        min: 64,
-        max: 320,
-      },
-    ],
-  },
-  {
-    title: 'translationSection',
-    icon: '🌐',
-    items: [
-      {
-        key: 'translation.enabled',
-        label: 'translationEnabled',
-        description: 'translationEnabledDesc',
-        type: 'boolean',
-      },
-      {
-        key: 'translation.dailyLimit',
-        label: 'dailyLimit',
-        description: 'dailyLimitDesc',
-        type: 'number',
-        min: 10,
-        max: 1000,
-      },
-      {
-        key: 'translation.model',
-        label: 'geminiModel',
-        description: 'geminiModelDesc',
-        type: 'string',
-      },
-    ],
-  },
-];
+import {
+  getAdminControllerGetSecretsQueryKey,
+  useAdminControllerGetGeminiModels,
+  useAdminControllerGetSecrets,
+} from '@/api/admin/admin';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { BoolField, NumField, SecretSection, SelectField, SettingSection } from '@/components/admin/settings';
+import { Button } from '@/components/ui/button';
+import { useAdminSettings, useUpdateSettings } from '@/hooks/admin/useAdminSettings';
+import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
 
 export default function AdminSettingsPage() {
   const t = useTranslations('admin.settings');
+  const qc = useQueryClient();
   const { data: settings, isLoading } = useAdminSettings();
   const updateSettings = useUpdateSettings();
+  const { data: geminiData } = useAdminControllerGetGeminiModels();
+
   const [draft, setDraft] = useState<Record<string, string>>({});
+  const [pendingSecrets, setPendingSecrets] = useState<Record<string, string>>({});
+
+  const values = useMemo(() => (settings ?? {}) as Record<string, string>, [settings]);
+  const geminiModels = useMemo(() => {
+    const d = geminiData as unknown as { models?: string[] } | undefined;
+    return d?.models ?? [];
+  }, [geminiData]);
+
+  // 시크릿 상태 → 의존 옵션 비활성화
+  const { data: secretsData } = useAdminControllerGetSecrets();
+  const secrets = useMemo(
+    () => (secretsData ?? {}) as Record<string, { masked: string; configured: boolean }>,
+    [secretsData],
+  );
+  const hasGemini = secrets['secret.geminiApiKey']?.configured ?? false;
+  const hasGoogle =
+    (secrets['secret.googleClientId']?.configured ?? false) &&
+    (secrets['secret.googleClientSecret']?.configured ?? false);
+  const translationOn = draft['translation.enabled'] === 'true';
 
   useEffect(() => {
-    if (settings) setDraft(settings as Record<string, string>);
-  }, [settings]);
+    if (Object.keys(values).length) setDraft(values);
+  }, [values]);
 
-  const hasChanges = useMemo(() => {
-    if (!settings) return false;
-    const orig = settings as Record<string, string>;
-    return Object.keys(draft).some((k) => draft[k] !== orig[k]);
-  }, [draft, settings]);
+  const hasChanges = useMemo(
+    () => Object.keys(draft).some((k) => draft[k] !== values[k]) || Object.keys(pendingSecrets).length > 0,
+    [draft, values, pendingSecrets],
+  );
 
-  const setValue = useCallback((key: string, value: string) => {
-    setDraft((prev) => ({ ...prev, [key]: value }));
+  const set = useCallback((key: string, value: string) => {
+    setDraft((p) => ({ ...p, [key]: value }));
+  }, []);
+
+  const handleSecretChange = useCallback((key: string, value: string) => {
+    setPendingSecrets((p) => ({ ...p, [key]: value }));
   }, []);
 
   const handleSave = useCallback(() => {
-    if (!settings) return;
-    const orig = settings as Record<string, string>;
     const changed: Record<string, string> = {};
     for (const k of Object.keys(draft)) {
-      if (draft[k] !== orig[k]) changed[k] = draft[k];
+      if (draft[k] !== values[k]) changed[k] = draft[k];
     }
-    if (Object.keys(changed).length === 0) return;
-    updateSettings.mutate({ data: { settings: changed } }, { onSuccess: () => toast.success(t('saved')) });
-  }, [draft, settings, updateSettings]);
+    Object.assign(changed, pendingSecrets);
+    if (!Object.keys(changed).length) return;
+    updateSettings.mutate(
+      { data: { settings: changed } },
+      {
+        onSuccess: () => {
+          toast.success(t('saved'));
+          setPendingSecrets({});
+          void qc.invalidateQueries({ queryKey: getAdminControllerGetSecretsQueryKey() });
+        },
+      },
+    );
+  }, [draft, values, pendingSecrets, updateSettings, t, qc]);
 
   if (isLoading) {
     return (
       <div>
         <AdminPageHeader title={t('title')} />
         <div className="space-y-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-32 animate-pulse rounded-2xl bg-white/5" />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonCard key={i} className="h-32" />
           ))}
         </div>
       </div>
@@ -200,43 +108,132 @@ export default function AdminSettingsPage() {
       </AdminPageHeader>
 
       <div className="space-y-6">
-        {CATEGORIES.map((cat) => (
-          <section key={t(cat.title)} className="rounded-2xl border border-white/5 bg-white/[0.03] p-4">
-            <h3 className="mb-4 text-sm font-medium text-white">
-              {cat.icon} {t(cat.title)}
-            </h3>
-            <div className="space-y-4">
-              {cat.items.map((item) => {
-                const val = draft[item.key] ?? '';
-                if (item.type === 'boolean') {
-                  return (
-                    <FormField key={item.key} label={t(item.label)} description={t(item.description)} inline>
-                      <Switch checked={val === 'true'} onCheckedChange={(v) => setValue(item.key, String(v))} />
-                    </FormField>
-                  );
-                }
-                if (item.type === 'number') {
-                  return (
-                    <FormField key={item.key} label={t(item.label)} description={t(item.description)} inline>
-                      <NumberStepper
-                        value={Number(val) || 0}
-                        onChange={(v) => setValue(item.key, String(v))}
-                        min={item.min}
-                        max={item.max}
-                        size="sm"
-                      />
-                    </FormField>
-                  );
-                }
-                return (
-                  <FormField key={item.key} label={t(item.label)} description={t(item.description)}>
-                    <Input value={val} onChange={(e) => setValue(item.key, e.target.value)} />
-                  </FormField>
-                );
-              })}
-            </div>
-          </section>
-        ))}
+        <SecretSection onSecretChange={handleSecretChange} />
+
+        <SettingSection icon="🔐" title={t('authSection')}>
+          <BoolField
+            label={t('guestLogin')}
+            description={t('guestLoginDesc')}
+            value={draft['auth.guestEnabled'] ?? ''}
+            onChange={(v) => set('auth.guestEnabled', v)}
+          />
+          <BoolField
+            label={t('googleOAuth')}
+            description={t('googleOAuthDesc')}
+            value={draft['auth.googleEnabled'] ?? ''}
+            onChange={(v) => set('auth.googleEnabled', v)}
+            disabled={!hasGoogle}
+            disabledReason={t('requireGoogleKey')}
+          />
+          <NumField
+            label={t('guestExpiry')}
+            description={t('guestExpiryDesc')}
+            value={draft['auth.guestMaxAge'] ?? ''}
+            onChange={(v) => set('auth.guestMaxAge', v)}
+            min={1}
+            max={720}
+          />
+          <BoolField
+            label={t('captchaEnabled')}
+            description={t('captchaEnabledDesc')}
+            value={draft['captcha.enabled'] ?? ''}
+            onChange={(v) => set('captcha.enabled', v)}
+          />
+        </SettingSection>
+
+        <SettingSection icon="🚪" title={t('roomSection')}>
+          <NumField
+            label={t('maxMembers')}
+            description={t('maxMembersDesc')}
+            value={draft['room.maxMembers'] ?? ''}
+            onChange={(v) => set('room.maxMembers', v)}
+            min={2}
+            max={100}
+          />
+          <NumField
+            label={t('maxRoomsPerUser')}
+            description={t('maxRoomsPerUserDesc')}
+            value={draft['room.maxRoomsPerUser'] ?? ''}
+            onChange={(v) => set('room.maxRoomsPerUser', v)}
+            min={1}
+            max={10}
+          />
+        </SettingSection>
+
+        <SettingSection icon="🤖" title={t('autodjSection')}>
+          <BoolField
+            label={t('autoDjEnabled')}
+            description={t('autoDjEnabledDesc')}
+            value={draft['autodj.enabled'] ?? ''}
+            onChange={(v) => set('autodj.enabled', v)}
+          />
+        </SettingSection>
+
+        <SettingSection icon="📋" title={t('queueSection')}>
+          <NumField
+            label={t('maxQueuePerUser')}
+            description={t('maxQueuePerUserDesc')}
+            value={draft['queue.maxPerUser'] ?? ''}
+            onChange={(v) => set('queue.maxPerUser', v)}
+            min={1}
+            max={50}
+          />
+          <NumField
+            label={t('maxTrackLength')}
+            description={t('maxTrackLengthDesc')}
+            value={draft['queue.maxDuration'] ?? ''}
+            onChange={(v) => set('queue.maxDuration', v)}
+            min={1}
+            max={60}
+          />
+        </SettingSection>
+
+        <SettingSection icon="🎵" title={t('streamSection')}>
+          <BoolField
+            label={t('maxBitrateEnabled')}
+            description={t('maxBitrateEnabledDesc')}
+            value={draft['stream.maxBitrateEnabled'] ?? ''}
+            onChange={(v) => set('stream.maxBitrateEnabled', v)}
+          />
+          <NumField
+            label={t('maxBitrate')}
+            description={t('maxBitrateDesc')}
+            value={draft['stream.maxBitrate'] ?? ''}
+            onChange={(v) => set('stream.maxBitrate', v)}
+            min={64}
+            max={320}
+          />
+        </SettingSection>
+
+        <SettingSection icon="🌐" title={t('translationSection')}>
+          <BoolField
+            label={t('translationEnabled')}
+            description={t('translationEnabledDesc')}
+            value={draft['translation.enabled'] ?? ''}
+            onChange={(v) => set('translation.enabled', v)}
+            disabled={!hasGemini}
+            disabledReason={t('requireGeminiKey')}
+          />
+          <NumField
+            label={t('dailyLimit')}
+            description={t('dailyLimitDesc')}
+            value={draft['translation.dailyLimit'] ?? ''}
+            onChange={(v) => set('translation.dailyLimit', v)}
+            min={10}
+            max={1000}
+            disabled={!hasGemini || !translationOn}
+            disabledReason={!hasGemini ? t('requireGeminiKey') : t('requireTranslation')}
+          />
+          <SelectField
+            label={t('geminiModel')}
+            description={t('geminiModelDesc')}
+            value={draft['translation.model'] ?? ''}
+            onChange={(v) => set('translation.model', v)}
+            options={geminiModels}
+            disabled={!hasGemini || !translationOn}
+            disabledReason={!hasGemini ? t('requireGeminiKey') : t('requireTranslation')}
+          />
+        </SettingSection>
       </div>
     </div>
   );

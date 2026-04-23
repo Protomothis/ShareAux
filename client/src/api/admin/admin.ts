@@ -31,6 +31,7 @@ import type {
   AdminControllerGetRecentErrorsParams,
   AdminControllerGetReportsParams,
   AdminControllerGetRoomsParams,
+  AdminControllerGetSecrets200,
   AdminControllerGetSettings200,
   AdminControllerGetTopTracksParams,
   AdminControllerGetUsersParams,
@@ -2982,7 +2983,7 @@ export function useAdminControllerGetRoomLiveDetail<
 }
 
 /**
- * @summary 시스템 설정 조회
+ * @summary 시스템 설정 조회 (시크릿 제외)
  */
 export const getAdminControllerGetSettingsUrl = () => {
   return `/api/admin/settings`;
@@ -3070,7 +3071,7 @@ export function useAdminControllerGetSettings<
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
- * @summary 시스템 설정 조회
+ * @summary 시스템 설정 조회 (시크릿 제외)
  */
 
 export function useAdminControllerGetSettings<
@@ -3095,7 +3096,7 @@ export function useAdminControllerGetSettings<
 }
 
 /**
- * @summary 시스템 설정 일괄 수정
+ * @summary 시스템 설정 일괄 수정 (시크릿 포함)
  */
 export const getAdminControllerUpdateSettingsUrl = () => {
   return `/api/admin/settings`;
@@ -3153,7 +3154,7 @@ export type AdminControllerUpdateSettingsMutationBody = UpdateSettingsDto;
 export type AdminControllerUpdateSettingsMutationError = unknown;
 
 /**
- * @summary 시스템 설정 일괄 수정
+ * @summary 시스템 설정 일괄 수정 (시크릿 포함)
  */
 export const useAdminControllerUpdateSettings = <TError = unknown, TContext = unknown>(
   options?: {
@@ -3176,6 +3177,234 @@ export const useAdminControllerUpdateSettings = <TError = unknown, TContext = un
 
   return useMutation(mutationOptions, queryClient);
 };
+/**
+ * @summary 시크릿 설정 조회 (마스킹)
+ */
+export const getAdminControllerGetSecretsUrl = () => {
+  return `/api/admin/settings/secrets`;
+};
+
+export const adminControllerGetSecrets = async (options?: RequestInit): Promise<AdminControllerGetSecrets200> => {
+  return customFetch<AdminControllerGetSecrets200>(getAdminControllerGetSecretsUrl(), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getAdminControllerGetSecretsQueryKey = () => {
+  return [`/api/admin/settings/secrets`] as const;
+};
+
+export const getAdminControllerGetSecretsQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminControllerGetSecrets>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetSecrets>>, TError, TData>>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminControllerGetSecretsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminControllerGetSecrets>>> = ({ signal }) =>
+    adminControllerGetSecrets({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminControllerGetSecrets>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminControllerGetSecretsQueryResult = NonNullable<Awaited<ReturnType<typeof adminControllerGetSecrets>>>;
+export type AdminControllerGetSecretsQueryError = unknown;
+
+export function useAdminControllerGetSecrets<
+  TData = Awaited<ReturnType<typeof adminControllerGetSecrets>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetSecrets>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminControllerGetSecrets>>,
+          TError,
+          Awaited<ReturnType<typeof adminControllerGetSecrets>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminControllerGetSecrets<
+  TData = Awaited<ReturnType<typeof adminControllerGetSecrets>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetSecrets>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminControllerGetSecrets>>,
+          TError,
+          Awaited<ReturnType<typeof adminControllerGetSecrets>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminControllerGetSecrets<
+  TData = Awaited<ReturnType<typeof adminControllerGetSecrets>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetSecrets>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 시크릿 설정 조회 (마스킹)
+ */
+
+export function useAdminControllerGetSecrets<
+  TData = Awaited<ReturnType<typeof adminControllerGetSecrets>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetSecrets>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminControllerGetSecretsQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary Gemini 사용 가능 모델 목록
+ */
+export const getAdminControllerGetGeminiModelsUrl = () => {
+  return `/api/admin/settings/gemini-models`;
+};
+
+export const adminControllerGetGeminiModels = async (options?: RequestInit): Promise<void> => {
+  return customFetch<void>(getAdminControllerGetGeminiModelsUrl(), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getAdminControllerGetGeminiModelsQueryKey = () => {
+  return [`/api/admin/settings/gemini-models`] as const;
+};
+
+export const getAdminControllerGetGeminiModelsQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminControllerGetGeminiModels>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetGeminiModels>>, TError, TData>>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminControllerGetGeminiModelsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminControllerGetGeminiModels>>> = ({ signal }) =>
+    adminControllerGetGeminiModels({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminControllerGetGeminiModels>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminControllerGetGeminiModelsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminControllerGetGeminiModels>>
+>;
+export type AdminControllerGetGeminiModelsQueryError = unknown;
+
+export function useAdminControllerGetGeminiModels<
+  TData = Awaited<ReturnType<typeof adminControllerGetGeminiModels>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetGeminiModels>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminControllerGetGeminiModels>>,
+          TError,
+          Awaited<ReturnType<typeof adminControllerGetGeminiModels>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminControllerGetGeminiModels<
+  TData = Awaited<ReturnType<typeof adminControllerGetGeminiModels>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetGeminiModels>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminControllerGetGeminiModels>>,
+          TError,
+          Awaited<ReturnType<typeof adminControllerGetGeminiModels>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminControllerGetGeminiModels<
+  TData = Awaited<ReturnType<typeof adminControllerGetGeminiModels>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetGeminiModels>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Gemini 사용 가능 모델 목록
+ */
+
+export function useAdminControllerGetGeminiModels<
+  TData = Awaited<ReturnType<typeof adminControllerGetGeminiModels>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetGeminiModels>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminControllerGetGeminiModelsQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
 /**
  * @summary 정리 대상 요약
  */

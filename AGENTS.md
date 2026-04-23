@@ -78,11 +78,22 @@ NestJS 11 · TypeORM · PostgreSQL 16 · raw `ws` WebSocket · Passport (Google 
 
 ### 규칙
 
-- 환경 변수: `ConfigService` 사용 (`process.env` 직접 접근 금지)
+- 인프라 환경 변수 (`DATABASE_URL`, `JWT_SECRET`, `CLIENT_URL`): `ConfigService` 사용
+- 런타임 설정 (옵션): `SettingsService` 사용 — DB 기반, 어드민에서 변경 가능
+- `process.env` 직접 접근 금지
 - 엔티티: camelCase 프로퍼티, `@Column({ name: 'snake_case' })`
 - DTO: `class-validator` 데코레이터, `dto/` 하위 디렉토리
 - WebSocket: raw `ws` 라이브러리 (`socket.io` 아님)
 - 기능별 1모듈 (module + service + controller 같은 디렉토리)
+
+### 시스템 설정 (SettingsService)
+
+- `OptionKey` enum으로 설정 키 정의 (`types/settings.types.ts`)
+- `OPTION_METAS`에 타입/기본값/min/max/secret 플래그 정의
+- 시크릿 키 (`secret: true`): AES-256-GCM 암호화 저장, 캐시에는 평문
+- `.env` → DB 시딩: 첫 실행 시 `.env` 값이 DB에 없으면 자동 저장, 이후 DB 값 우선
+- 설정 변경 시 핫 리로드: `GoogleStrategy.reinitialize()`, `TranslationService.reinitialize()`
+- 새 설정 추가 시: `OptionKey` enum + `OPTION_METAS` + `SharedEnums`에 등록 → orval 재생성
 
 ### Swagger enum 노출 컨벤션
 
@@ -90,6 +101,7 @@ NestJS 11 · TypeORM · PostgreSQL 16 · raw `ws` WebSocket · Passport (Google 
 - 반드시 `enumName` 지정: `@ApiProperty({ enum: MyEnum, enumName: 'MyEnum' })`
 - `enumName` 미지정 시 orval이 `부모DTO명 + 프로퍼티명`으로 생성 (예: `WsEnumsSchemaLanguage`) — 금지
 - DTO 내부 enum도 동일: `@ApiProperty({ enum: ErrorCode, enumName: 'ErrorCode' })`
+- 현재 등록된 enum: `WsEvent`, `AutoDjStatus`, `Language`, `AuthProvider`, `SystemChatEvent`, `OptionKey`
 
 ### 오디오 스트리밍 (서버)
 
@@ -179,6 +191,21 @@ Next.js 16 · React 19 · Tailwind 4 · zustand · @tanstack/react-query · shad
 - `Language` enum은 서버에서 정의 → orval 자동생성 (`@/api/model`에서 import)
 - 클라이언트에서 locale 하드코딩 금지 — `Language` enum 사용
 - `global.d.ts`에 `Messages` 타입 augmentation → 잘못된 키 사용 시 tsc 에러
+
+#### t() 호출 규칙
+
+- **반드시 순수 문자열 리터럴 사용**: `t('guestLogin')` ✅
+- **변수/연결 금지**: `t(item.label)` ❌, `t(key + 'Desc')` ❌
+- 이유: next-intl 타입 augmentation이 리터럴만 체크 — 변수 넘기면 타입 안전성 상실
+- 도메인 컴포넌트: `useTranslations('namespace')` 직접 사용
+- 공통 컴포넌트: 텍스트를 props로 받음 (내부에서 t() 호출 금지)
+- 어드민 네임스페이스: `useTranslations('admin.xxx')` 서브 패턴
+
+#### 시스템 채팅 메시지
+
+- `SystemChatEvent` enum (서버 정의 → orval 자동생성)
+- `ChatMessageList`의 `sysLabel()`: switch/case로 이벤트별 명시적 t() 호출
+- 각 이벤트에 필요한 변수(nickname, trackName) 명확히 전달
 
 ### URL / 리버스 프록시
 

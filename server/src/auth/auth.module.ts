@@ -5,6 +5,7 @@ import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { CaptchaModule } from '../captcha/captcha.module.js';
+import { ServicesModule } from '../services/services.module.js';
 import { InviteCode } from '../entities/invite-code.entity.js';
 import { RefreshToken } from '../entities/refresh-token.entity.js';
 import { User } from '../entities/user.entity.js';
@@ -14,7 +15,7 @@ import { AuthService } from './auth.service.js';
 import { JwtStrategy } from './jwt.strategy.js';
 import { GoogleStrategy } from './strategies/google.strategy.js';
 
-const googleProvider = process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? [GoogleStrategy] : [];
+const googleProvider = [GoogleStrategy];
 
 @Module({
   imports: [
@@ -29,9 +30,10 @@ const googleProvider = process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT
     TypeOrmModule.forFeature([User, InviteCode, RefreshToken]),
     forwardRef(() => RoomsModule),
     CaptchaModule,
+    ServicesModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, ...googleProvider],
-  exports: [AuthService, JwtModule],
+  exports: [AuthService, JwtModule, GoogleStrategy],
 })
 export class AuthModule {}

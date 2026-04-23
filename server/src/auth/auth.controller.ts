@@ -19,6 +19,8 @@ import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 
 import { AUTH_COOKIE_REFRESH, AUTH_LOGIN_RATE_LIMIT, THROTTLE_TTL_MS, WS_CLOSE_ACCOUNT_DELETED } from '../constants.js';
+import { SettingsService } from '../services/settings.service.js';
+import { OptionKey } from '../types/settings.types.js';
 import { AppException } from '../exceptions/app.exception.js';
 import { CaptchaService } from '../captcha/captcha.module.js';
 import { User } from '../entities/user.entity.js';
@@ -48,13 +50,17 @@ export class AuthController {
     private readonly config: ConfigService,
     private readonly captcha: CaptchaService,
     private readonly translationService: TranslationService,
+    private readonly settingsService: SettingsService,
     @Inject(forwardRef(() => RoomsGateway)) private readonly gateway: RoomsGateway,
   ) {
     this.isProd = config.get('NODE_ENV') === 'production';
   }
 
   private get isGoogleEnabled() {
-    return !!(this.config.get<string>('GOOGLE_CLIENT_ID') && this.config.get<string>('GOOGLE_CLIENT_SECRET'));
+    return !!(
+      this.settingsService.getSecret(OptionKey.GoogleClientId) &&
+      this.settingsService.getSecret(OptionKey.GoogleClientSecret)
+    );
   }
 
   @Get('config')
@@ -86,9 +92,9 @@ export class AuthController {
   @ApiOperation({ summary: 'Google 계정 연동 시작' })
   startLinkGoogle(@Req() req: AuthenticatedRequest, @Res() res: Response) {
     if (!this.isGoogleEnabled) throw new AppException(ErrorCode.AUTH_015);
-    const clientId = this.config.get<string>('GOOGLE_CLIENT_ID', '');
+    const clientId = this.settingsService.getSecret(OptionKey.GoogleClientId);
     const callbackUrl =
-      this.config.get<string>('GOOGLE_CALLBACK_URL', '') || 'http://localhost:3000/api/auth/google/callback';
+      this.settingsService.get(OptionKey.GoogleCallbackUrl) || 'http://localhost:3000/api/auth/google/callback';
     const state = `link:${req.user.userId}`;
     const url =
       `https://accounts.google.com/o/oauth2/v2/auth` +

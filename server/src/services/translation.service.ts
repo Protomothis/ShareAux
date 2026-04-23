@@ -1,10 +1,10 @@
 import { Injectable, Logger, type OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Track } from '../entities/track.entity.js';
 import { SettingsService } from './settings.service.js';
+import { OptionKey } from '../types/settings.types.js';
 
 interface TranslationJob {
   trackId: string;
@@ -37,17 +37,16 @@ export class TranslationService implements OnModuleInit {
 
   constructor(
     @InjectRepository(Track) private readonly trackRepo: Repository<Track>,
-    private readonly config: ConfigService,
     private readonly settings: SettingsService,
   ) {}
 
   async onModuleInit(): Promise<void> {
-    const apiKey = this.config.get<string>('GEMINI_API_KEY');
+    const apiKey = this.settings.getSecret(OptionKey.GeminiApiKey);
     if (!apiKey) return;
     try {
       const { GoogleGenerativeAI } = await import('@google/generative-ai');
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = this.settings.get('translation.model', 'gemini-2.5-flash-lite');
+      const model = this.settings.get(OptionKey.TranslationModel);
       this.geminiModel = genAI.getGenerativeModel({ model });
       this.logger.log(`Gemini initialized (${model})`);
     } catch (e) {
@@ -56,7 +55,13 @@ export class TranslationService implements OnModuleInit {
   }
 
   get isEnabled(): boolean {
-    return !!this.geminiModel && this.settings.getBoolean('translation.enabled', true);
+    return !!this.geminiModel && this.settings.getBoolean(OptionKey.TranslationEnabled);
+  }
+
+  /** Gemini 키/모델 변경 시 핫 리로드 */
+  async reinitialize(): Promise<void> {
+    this.geminiModel = null;
+    await this.onModuleInit();
   }
 
   onUpdated(cb: (trackId: string, roomIds: string[]) => void): void {
@@ -281,7 +286,7 @@ ${numbered}`;
       this.dailyCount = 0;
       this.lastResetDate = today;
     }
-    const limit = this.settings.getNumber('translation.dailyLimit', 200);
+    const limit = this.settings.getNumber(OptionKey.TranslationDailyLimit);
     return this.dailyCount < limit;
   }
 }

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   DefaultValuePipe,
@@ -13,6 +14,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 
 import { InviteCode } from '../entities/invite-code.entity.js';
@@ -25,6 +27,9 @@ import { ErrorLogService } from '../services/error-log.service.js';
 import { IpBanService } from '../services/ip-ban.service.js';
 import { MetricsService } from '../services/metrics.service.js';
 import { SettingsService } from '../services/settings.service.js';
+import { TranslationService } from '../services/translation.service.js';
+import { OptionKey } from '../types/settings.types.js';
+import { GoogleStrategy } from '../auth/strategies/google.strategy.js';
 import type { AuthenticatedRequest } from '../types/index.js';
 import { ErrorCode } from '../types/error-code.enum.js';
 import { Permission } from '../types/index.js';
@@ -97,6 +102,9 @@ export class AdminController {
     private readonly metricsService: MetricsService,
     private readonly errorLogService: ErrorLogService,
     private readonly ipBanService: IpBanService,
+    private readonly config: ConfigService,
+    private readonly googleStrategy: GoogleStrategy,
+    private readonly translationService: TranslationService,
   ) {}
 
   @Get('dashboard')
@@ -335,17 +343,52 @@ export class AdminController {
   // --- System Settings ---
 
   @Get('settings')
-  @ApiOperation({ summary: '시스템 설정 조회' })
+  @ApiOperation({ summary: '시스템 설정 조회 (시크릿 제외)' })
   getSettings() {
     return this.settingsService.getAll();
   }
 
+  @Get('settings/secrets')
+  @ApiOperation({ summary: '시크릿 설정 조회 (마스킹)' })
+  getSecrets() {
+    return this.settingsService.getSecrets();
+  }
+
+  @Get('settings/gemini-models')
+  @ApiOperation({ summary: 'Gemini 사용 가능 모델 목록' })
+  async getGeminiModels() {
+    const apiKey = this.settingsService.getSecret(OptionKey.GeminiApiKey);
+    if (!apiKey) return { models: [] };
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+    if (!res.ok) return { models: [] };
+    const data = (await res.json()) as { models?: { name: string; supportedGenerationMethods?: string[] }[] };
+    return {
+      models: (data.models ?? [])
+        .filter((m) => m.supportedGenerationMethods?.includes('generateContent'))
+        .map((m) => m.name.replace('models/', '')),
+    };
+  }
+
   @Patch('settings')
-  @ApiOperation({ summary: '시스템 설정 일괄 수정' })
+  @ApiOperation({ summary: '시스템 설정 일괄 수정 (시크릿 포함)' })
   async updateSettings(@Body() dto: UpdateSettingsDto, @Req() req: AuthenticatedRequest) {
+    const errors: string[] = [];
+    for (const [key, value] of Object.entries(dto.settings)) {
+      const err = this.settingsService.validate(key, value);
+      if (err) errors.push(err);
+    }
+    if (errors.length) throw new BadRequestException(errors.join('; '));
     for (const [key, value] of Object.entries(dto.settings)) {
       await this.settingsService.set(key, value);
     }
+
+    // 시크릿 키 변경 시 핫 리로드
+    const keys = Object.keys(dto.settings);
+    if (keys.some((k) => k.startsWith('secret.google'))) this.googleStrategy.reinitialize();
+    if (keys.includes(OptionKey.GeminiApiKey) || keys.includes(OptionKey.TranslationModel)) {
+      await this.translationService.reinitialize();
+    }
+
     await this.auditService.log(req.user.userId, 'settings_update', 'system', null, dto.settings, req.ip);
     return { success: true };
   }

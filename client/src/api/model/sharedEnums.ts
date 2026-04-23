@@ -10,6 +10,7 @@ import type { AutoDjStatus } from './autoDjStatus';
 import type { Language } from './language';
 import type { AuthProvider } from './authProvider';
 import type { SystemChatEvent } from './systemChatEvent';
+import type { OptionKey } from './optionKey';
 
 export interface SharedEnums {
   wsEvent: WsEvent;
@@ -17,4 +18,5 @@ export interface SharedEnums {
   language: Language;
   authProvider: AuthProvider;
   systemChatEvent: SystemChatEvent;
+  optionKey: OptionKey;
 }
