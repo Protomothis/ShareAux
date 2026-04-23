@@ -89,7 +89,7 @@ export default function AdminInviteCodesPage() {
           ))}
         </div>
       ) : items.length === 0 ? (
-        <EmptyState title="{t('empty')}" />
+        <EmptyState title={t('empty')} />
       ) : (
         <div className="space-y-2">
           {items.map((item) => (
