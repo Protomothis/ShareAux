@@ -21,7 +21,7 @@ export function UserHistorySection({ user }: UserHistorySectionProps) {
 
       <h3 className="mb-3 text-sm font-medium text-sa-text-muted">{t('recentHistory')}</h3>
       {user.recentTracks.length === 0 ? (
-        <EmptyState title="{t('noHistory')}" />
+        <EmptyState title={t('noHistory')} />
       ) : (
         <div className="space-y-2">
           {user.recentTracks.map((tr) => (

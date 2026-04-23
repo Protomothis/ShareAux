@@ -100,7 +100,7 @@ export default function AdminTracksPage() {
       width: '5rem',
       render: (item) => (
         <StatusBadge variant="accent">
-          <TrendingUp size={10} className="mr-0.5" /> {item.score.toFixed(1)}
+          <TrendingUp size={10} className="mr-0.5" /> {(item.score ?? 0).toFixed(1)}
         </StatusBadge>
       ),
     },
