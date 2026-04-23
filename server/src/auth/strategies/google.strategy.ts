@@ -19,8 +19,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     const callbackURL = settings.get(OptionKey.GoogleCallbackUrl) || 'http://localhost:3000/api/auth/google/callback';
     super({ clientID, clientSecret, callbackURL, scope: ['email', 'profile'], passReqToCallback: true });
     if (clientID === 'placeholder') {
-      console.warn('[GoogleStrategy] Google OAuth credentials not set — disabled');
+      console.warn('[GoogleStrategy] Google OAuth credentials not set — will reinitialize after settings load');
     }
+    settings.onReady(async () => this.reinitialize());
   }
 
   /** 키 변경 시 Strategy 핫 리로드 */

@@ -41,8 +41,10 @@ import { LyricsStatus } from '@/types';
 import type { StreamState } from '@/types';
 
 import { getWsUrl } from '@/lib/urls';
+import { useTranslations } from 'next-intl';
 
 export default function RoomClient({ id }: { id: string }) {
+  const t = useTranslations('room');
   const router = useRouter();
   const queryClient = useQueryClient();
   const invalidate = useInvalidate();
@@ -263,7 +265,7 @@ export default function RoomClient({ id }: { id: string }) {
       }
     } else {
       await navigator.clipboard.writeText(url);
-      toast.success('링크가 복사되었습니다');
+      toast.success(t('linkCopied'));
     }
   };
 

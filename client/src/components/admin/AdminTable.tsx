@@ -60,7 +60,7 @@ export function AdminTable<T>({
   }
 
   if (data.length === 0) {
-    return <EmptyState title="{emptyMessage ?? tc('noData')}" />;
+    return <EmptyState title={emptyMessage ?? tc('noData')} />;
   }
 
   const visibleCols = columns.filter((c) => !c.hideOnMobile);

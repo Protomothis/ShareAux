@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { useTranslations } from 'next-intl';
+import { EmptyState } from '@/components/ui/empty-state';
 
 const COLORS = ['#8b5cf6', '#34d399', '#fbbf24', '#fb7185'];
 

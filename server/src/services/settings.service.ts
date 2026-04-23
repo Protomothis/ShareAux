@@ -12,6 +12,7 @@ export class SettingsService implements OnModuleInit {
   private readonly logger = new Logger(SettingsService.name);
   private readonly cache = new Map<string, string>();
   private jwtSecret!: string;
+  private readyCallbacks: (() => Promise<void>)[] = [];
 
   constructor(
     @InjectRepository(SystemSetting) private readonly repo: Repository<SystemSetting>,
@@ -56,6 +57,15 @@ export class SettingsService implements OnModuleInit {
     }
 
     this.logger.log(`Loaded ${rows.length} system settings`);
+
+    // 의존 서비스 초기화 트리거
+    for (const cb of this.readyCallbacks) await cb();
+    this.readyCallbacks = [];
+  }
+
+  /** SettingsService 초기화 완료 후 콜백 등록 */
+  onReady(cb: () => Promise<void>): void {
+    this.readyCallbacks.push(cb);
   }
 
   // ─── Getters ───────────────────────────────────────
@@ -126,6 +136,12 @@ export class SettingsService implements OnModuleInit {
 
   /** 시크릿 평문 조회 (서버 내부용) */
   getSecret(key: OptionKey): string {
-    return this.cache.get(key) ?? '';
+    const cached = this.cache.get(key);
+    if (cached) return cached;
+    // 시딩 전 fallback — .env에서 직접 조회
+    for (const [envKey, optionKey] of this.ENV_SEEDS) {
+      if (optionKey === key) return this.config.get<string>(envKey) ?? '';
+    }
+    return '';
   }
 }

@@ -365,7 +365,9 @@ export class AdminController {
     return {
       models: (data.models ?? [])
         .filter((m) => m.supportedGenerationMethods?.includes('generateContent'))
-        .map((m) => m.name.replace('models/', '')),
+        .map((m) => m.name.replace('models/', ''))
+        // gemini- 계열만 (exp 실험 모델 제외, preview는 포함)
+        .filter((n) => n.startsWith('gemini-') && !n.includes('exp')),
     };
   }
 

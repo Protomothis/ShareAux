@@ -1,6 +1,7 @@
 'use client';
 
 import { Settings, Share2, Users } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -25,13 +26,14 @@ export default function RoomNav({
   onSettings,
   onLeave,
 }: RoomNavProps) {
+  const t = useTranslations('room');
   return (
     <nav className="flex shrink-0 select-none items-center gap-2 border-b border-white/10 bg-black/60 px-4 py-3 backdrop-blur-2xl">
       <Tooltip>
         <TooltipTrigger render={<Button variant="ghost" size="icon" onClick={onShare} />}>
           <Share2 size={18} />
         </TooltipTrigger>
-        <TooltipContent>공유</TooltipContent>
+        <TooltipContent>{t('share')}</TooltipContent>
       </Tooltip>
 
       {isHost && (
@@ -39,7 +41,7 @@ export default function RoomNav({
           <TooltipTrigger render={<Button variant="ghost" size="icon" onClick={onSettings} />}>
             <Settings size={18} />
           </TooltipTrigger>
-          <TooltipContent>설정</TooltipContent>
+          <TooltipContent>{t('settings')}</TooltipContent>
         </Tooltip>
       )}
 
@@ -54,7 +56,7 @@ export default function RoomNav({
       </div>
 
       <Button variant="outline" size="sm" onClick={onLeave} className="ml-2 text-red-400 hover:text-red-300">
-        나가기
+        {t('leave')}
       </Button>
     </nav>
   );

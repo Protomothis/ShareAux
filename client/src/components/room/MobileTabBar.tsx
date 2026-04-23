@@ -1,18 +1,10 @@
 'use client';
 
 import { History, List, MessageSquare, Users } from 'lucide-react';
-
-import type { TabItem } from '@/components/common/TabBar';
-import TabBar from '@/components/common/TabBar';
-import type { MobileTab } from '@/types';
 import { useTranslations } from 'next-intl';
 
-const TABS: TabItem<MobileTab>[] = [
-  { key: 'chat', icon: <MessageSquare size={18} />, label: 'chat' },
-  { key: 'queue', icon: <List size={18} />, label: 'queue' },
-  { key: 'history', icon: <History size={18} />, label: 'history' },
-  { key: 'members', icon: <Users size={18} />, label: 'members' },
-];
+import TabBar from '@/components/common/TabBar';
+import type { MobileTab } from '@/types';
 
 interface MobileTabBarProps {
   activeTab: MobileTab;
@@ -21,5 +13,11 @@ interface MobileTabBarProps {
 
 export default function MobileTabBar({ activeTab, onTabChange }: MobileTabBarProps) {
   const t = useTranslations('room');
-  return <TabBar tabs={TABS} activeTab={activeTab} onTabChange={onTabChange} variant="bottom" />;
+  const tabs = [
+    { key: 'chat' as const, icon: <MessageSquare size={18} />, label: t('tabChat') },
+    { key: 'queue' as const, icon: <List size={18} />, label: t('tabQueue') },
+    { key: 'history' as const, icon: <History size={18} />, label: t('tabHistory') },
+    { key: 'members' as const, icon: <Users size={18} />, label: t('tabMembers') },
+  ];
+  return <TabBar tabs={tabs} activeTab={activeTab} onTabChange={onTabChange} variant="bottom" />;
 }

@@ -41,6 +41,10 @@ export class TranslationService implements OnModuleInit {
   ) {}
 
   async onModuleInit(): Promise<void> {
+    this.settings.onReady(() => this.initGemini());
+  }
+
+  private async initGemini(): Promise<void> {
     const apiKey = this.settings.getSecret(OptionKey.GeminiApiKey);
     if (!apiKey) return;
     try {
@@ -61,7 +65,7 @@ export class TranslationService implements OnModuleInit {
   /** Gemini 키/모델 변경 시 핫 리로드 */
   async reinitialize(): Promise<void> {
     this.geminiModel = null;
-    await this.onModuleInit();
+    await this.initGemini();
   }
 
   onUpdated(cb: (trackId: string, roomIds: string[]) => void): void {

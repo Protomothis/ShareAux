@@ -11,6 +11,7 @@ import Modal from '@/components/common/Modal';
 import { Button } from '@/components/ui/button';
 import { adminControllerDeleteInviteCodeGuests, useAdminControllerGetInviteCodeUsers } from '@/api/admin/admin';
 import { useTranslations } from 'next-intl';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface InviteCodeUsersModalProps {
   inviteCodeId: string | null;
@@ -60,7 +61,7 @@ export function InviteCodeUsersModal({
             <Loader2 size={20} className="animate-spin text-sa-text-muted" />
           </div>
         ) : users.length === 0 ? (
-          <p className="py-6 text-center text-sm text-sa-text-muted">{t('noUsers')}</p>
+          <EmptyState title={t('noUsers')} />
         ) : (
           <div className="space-y-1.5">
             {users.map((u) => (
