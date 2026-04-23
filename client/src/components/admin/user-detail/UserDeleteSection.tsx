@@ -1,5 +1,7 @@
 'use client';
 
+import { Surface } from '@/components/ui/surface';
+
 import { Loader2, Trash2 } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -38,7 +40,7 @@ export function UserDeleteSection({ user }: UserDeleteSectionProps) {
   if (isSuperAdmin) return null;
 
   return (
-    <div className="mt-4 rounded-2xl border border-red-500/10 bg-red-500/[0.03] p-4 sm:p-6">
+    <Surface variant="danger" padding="lg" className="mt-4">
       <h3 className="mb-3 flex items-center gap-2 text-sm font-medium text-red-400">
         <Trash2 size={16} /> {t('accountDelete')}
       </h3>
@@ -56,6 +58,6 @@ export function UserDeleteSection({ user }: UserDeleteSectionProps) {
         onConfirm={handleDelete}
         loading={deleteUser.isPending}
       />
-    </div>
+    </Surface>
   );
 }

@@ -7,12 +7,14 @@ import { useEffect, useState } from 'react';
 
 import { authControllerGuestLogin } from '@/api/auth/auth';
 import { ApiError } from '@/api/mutator';
+import type { ErrorCode } from '@/api/model';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useCaptcha } from '@/hooks/useCaptcha';
 import { useAuthStore } from '@/stores/auth';
 import { cn } from '@/lib/utils';
+import { Surface } from '@/components/ui/surface';
 
 interface GuestLoginFormProps {
   onSuccess: () => void;
@@ -22,6 +24,7 @@ interface GuestLoginFormProps {
 
 export function GuestLoginForm({ onSuccess, onBack, initialCode }: GuestLoginFormProps) {
   const t = useTranslations('auth');
+  const te = useTranslations('errorTitle');
   const [code, setCode] = useState(initialCode ?? '');
   const [nickname, setNickname] = useState('');
   const [error, setError] = useState('');
@@ -44,7 +47,7 @@ export function GuestLoginForm({ onSuccess, onBack, initialCode }: GuestLoginFor
       }
     } catch (err) {
       if (err instanceof ApiError && err.code) {
-        setError((err.body.description ?? err.body.title ?? err.message) as string);
+        setError(te(err.code as ErrorCode) || (err.body.description as string));
       } else {
         setError(t('guestForm.errorFallback'));
       }
@@ -56,7 +59,7 @@ export function GuestLoginForm({ onSuccess, onBack, initialCode }: GuestLoginFor
 
   return (
     <div className="w-full max-w-md lg:max-w-2xl">
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-5 sm:p-6">
+      <Surface variant="elevated" padding="lg">
         <div className="mb-5 flex items-center gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sa-accent/20">
             <Ticket size={18} className="text-sa-accent" />
@@ -112,7 +115,7 @@ export function GuestLoginForm({ onSuccess, onBack, initialCode }: GuestLoginFor
             {loading ? <Loader2 size={16} className="animate-spin" /> : t('guestForm.submitButton')}
           </Button>
         </form>
-      </div>
+      </Surface>
 
       <Button variant="ghost" onClick={onBack} className="mt-4 w-full text-sa-text-muted hover:text-white">
         {t('backToMethods')}

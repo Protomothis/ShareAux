@@ -9,6 +9,7 @@ import MarqueeText from '@/components/common/MarqueeText';
 import Thumbnail from '@/components/common/Thumbnail';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { surfaceVariants } from '@/components/ui/surface';
 
 interface RoomCardProps {
   room: RoomListItem;
@@ -33,8 +34,9 @@ export default memo(function RoomCard({ room, onClick }: RoomCardProps) {
         }
       }}
       className={cn(
-        'group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-2xl transition-all duration-300 cursor-pointer',
-        'hover:border-white/20 hover:bg-white/[0.07] hover:shadow-lg hover:shadow-sa-accent/5',
+        surfaceVariants({ variant: 'interactive', padding: 'none' }),
+        'group relative overflow-hidden backdrop-blur-2xl',
+        'hover:shadow-lg hover:shadow-sa-accent/5',
       )}
     >
       {/* 썸네일 배경 블러 */}

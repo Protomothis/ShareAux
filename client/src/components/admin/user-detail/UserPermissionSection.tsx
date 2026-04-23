@@ -1,5 +1,7 @@
 'use client';
 
+import { Surface } from '@/components/ui/surface';
+
 import { Save } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -75,7 +77,7 @@ export function UserPermissionSection({ user }: UserPermissionSectionProps) {
   }, [user, role, permissions, isAdmin, updateRole, updatePermissions]);
 
   return (
-    <div className="mb-6 rounded-2xl border border-white/5 bg-white/[0.03] p-4 sm:p-6">
+    <Surface padding="lg" className="mb-6">
       <h3 className="mb-4 text-sm font-medium text-white">{t('accountSettings')}</h3>
 
       <FormField label={t('roleLabel')}>
@@ -113,6 +115,6 @@ export function UserPermissionSection({ user }: UserPermissionSectionProps) {
           {saving ? t('saving') : t('save')}
         </Button>
       )}
-    </div>
+    </Surface>
   );
 }

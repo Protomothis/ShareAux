@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 
 import { authControllerLogin } from '@/api/auth/auth';
 import { ApiError } from '@/api/mutator';
+import type { ErrorCode } from '@/api/model';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -16,6 +17,7 @@ import { useCaptcha } from '@/hooks/useCaptcha';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { getApiUrl } from '@/lib/urls';
 import { useAuthStore } from '@/stores/auth';
+import { Surface } from '@/components/ui/surface';
 
 interface LoginFormProps {
   onSuccess: () => void;
@@ -29,6 +31,7 @@ interface LoginValues {
 
 export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
   const t = useTranslations('auth');
+  const te = useTranslations('errorTitle');
   const rules = {
     username: (v: string) => !v.trim() && t('loginForm.usernameRequired'),
     password: (v: string) => !v.trim() && t('loginForm.passwordRequired'),
@@ -61,7 +64,7 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
       onSuccess();
     } catch (err) {
       if (err instanceof ApiError && err.code) {
-        setServerError((err.body.description ?? err.body.title ?? err.message) as string);
+        setServerError(te(err.code as ErrorCode) || (err.body.description as string));
       } else {
         setServerError(t('loginForm.errorFallback'));
       }
@@ -73,7 +76,7 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
 
   return (
     <div className="w-full max-w-md lg:max-w-2xl">
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-5 sm:p-6">
+      <Surface variant="elevated" padding="lg">
         <div className="mb-5 flex items-center gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sa-accent/20">
             <LogIn size={18} className="text-sa-accent" />
@@ -154,7 +157,7 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
             </>
           )}
         </form>
-      </div>
+      </Surface>
 
       <Button variant="ghost" onClick={onBack} className="mt-4 w-full text-sa-text-muted hover:text-white">
         {t('backToMethods')}

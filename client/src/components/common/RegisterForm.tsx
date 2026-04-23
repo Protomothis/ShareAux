@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 
 import { authControllerRegister } from '@/api/auth/auth';
 import { ApiError } from '@/api/mutator';
+import type { ErrorCode } from '@/api/model';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -23,6 +24,7 @@ import {
   AUTH_USERNAME_REGEX,
 } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import { Surface } from '@/components/ui/surface';
 
 interface RegisterFormProps {
   onSuccess: () => void;
@@ -60,6 +62,7 @@ const getRules = (t: ReturnType<typeof useTranslations<'auth'>>) => ({
 
 export function RegisterForm({ onSuccess, onBack, initialCode, skipInviteCode }: RegisterFormProps) {
   const t = useTranslations('auth');
+  const te = useTranslations('errorTitle');
   const rules = getRules(t);
   const [values, setValues] = useState<RegisterValues>({
     code: initialCode ?? '',
@@ -106,8 +109,10 @@ export function RegisterForm({ onSuccess, onBack, initialCode, skipInviteCode }:
           AUTH_008: 'username',
         };
         const field = fieldMap[err.code];
-        if (field) setError(field, err.body.description as string);
-        else setServerError((err.body.description ?? err.body.title ?? err.message) as string);
+
+        const msg = te(err.code as ErrorCode) || (err.body.description as string);
+        if (field) setError(field, msg);
+        else setServerError(msg);
       } else {
         setServerError(t('registerForm.errorFallback'));
       }
@@ -119,7 +124,7 @@ export function RegisterForm({ onSuccess, onBack, initialCode, skipInviteCode }:
 
   return (
     <div className="w-full max-w-md lg:max-w-2xl">
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-5 sm:p-6">
+      <Surface variant="elevated" padding="lg">
         <div className="mb-5 flex items-center gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sa-accent/20">
             <UserPlus size={18} className="text-sa-accent" />
@@ -195,7 +200,7 @@ export function RegisterForm({ onSuccess, onBack, initialCode, skipInviteCode }:
             {loading ? <Loader2 size={16} className="animate-spin" /> : t('registerForm.submitButton')}
           </Button>
         </form>
-      </div>
+      </Surface>
 
       {!skipInviteCode && (
         <Button variant="ghost" onClick={onBack} className="mt-4 w-full text-sa-text-muted hover:text-white">

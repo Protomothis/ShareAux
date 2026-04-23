@@ -1,3 +1,4 @@
+import { EmptyState } from '@/components/ui/empty-state';
 import { Music, User as UserIcon } from 'lucide-react';
 
 import type { UserDetailResponse } from '@/api/model';
@@ -20,9 +21,7 @@ export function UserHistorySection({ user }: UserHistorySectionProps) {
 
       <h3 className="mb-3 text-sm font-medium text-sa-text-muted">{t('recentHistory')}</h3>
       {user.recentTracks.length === 0 ? (
-        <div className="rounded-2xl border border-white/5 bg-white/[0.03] px-5 py-8 text-center text-sm text-sa-text-muted">
-          {t('noHistory')}
-        </div>
+        <EmptyState title="{t('noHistory')}" />
       ) : (
         <div className="space-y-2">
           {user.recentTracks.map((tr) => (

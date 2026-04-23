@@ -18,15 +18,17 @@ import JoinPasswordModal from '@/components/room/JoinPasswordModal';
 import ProfileDropdown from '@/components/room/ProfileDropdown';
 import RoomCard from '@/components/room/RoomCard';
 import { Button } from '@/components/ui/button';
+import { SkeletonLine } from '@/components/ui/skeleton';
+import { Surface } from '@/components/ui/surface';
 import { useAuthStore } from '@/stores/auth';
 
-function SkeletonCard() {
+function RoomCardSkeleton() {
   return (
-    <div className="animate-pulse rounded-2xl border border-white/5 bg-white/5 p-5">
-      <div className="mb-3 h-5 w-2/3 rounded bg-white/10" />
-      <div className="mb-2 h-4 w-1/2 rounded bg-white/5" />
-      <div className="h-4 w-1/3 rounded bg-white/5" />
-    </div>
+    <Surface variant="elevated" padding="md">
+      <SkeletonLine className="mb-3 h-5 w-2/3" />
+      <SkeletonLine className="mb-2 h-4 w-1/2" />
+      <SkeletonLine className="h-4 w-1/3" />
+    </Surface>
   );
 }
 
@@ -121,7 +123,7 @@ export default function RoomsPage() {
           fallback={
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
-                <SkeletonCard key={i} />
+                <RoomCardSkeleton key={i} />
               ))}
             </div>
           }

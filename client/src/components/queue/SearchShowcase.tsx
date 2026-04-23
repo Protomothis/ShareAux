@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { formatDuration } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
+import { SkeletonCard, SkeletonLine, SkeletonCircle } from '@/components/ui/skeleton';
 
 interface SearchShowcaseProps {
   roomId: string;
@@ -125,10 +126,10 @@ function GridSkeleton({ count = 6 }: { count?: number }) {
     <div className="grid grid-cols-3 gap-1">
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} className="flex flex-col gap-2 rounded-xl p-1.5">
-          <div className="aspect-video w-full animate-pulse rounded-lg bg-white/[0.06]" />
+          <SkeletonLine className="aspect-video w-full rounded-lg" />
           <div className="space-y-1 px-0.5">
-            <div className="h-3 w-full animate-pulse rounded bg-white/[0.06]" />
-            <div className="h-2.5 w-2/3 animate-pulse rounded bg-white/[0.04]" />
+            <SkeletonLine className="h-3 w-full" />
+            <SkeletonLine className="h-2.5 w-2/3" />
           </div>
         </div>
       ))}
@@ -219,8 +220,8 @@ export default function SearchShowcase({
       {showcaseLoading ? (
         <div>
           <div className="mb-3 flex items-center gap-2 px-1">
-            <div className="size-3.5 animate-pulse rounded bg-white/10" />
-            <div className="h-3 w-16 animate-pulse rounded bg-white/10" />
+            <SkeletonLine className="size-3.5" />
+            <SkeletonLine className="h-3 w-16" />
           </div>
           <GridSkeleton />
         </div>
@@ -248,8 +249,8 @@ export default function SearchShowcase({
       {recLoading ? (
         <div>
           <div className="mb-3 flex items-center gap-2 px-1">
-            <div className="size-3.5 animate-pulse rounded bg-white/10" />
-            <div className="h-3 w-16 animate-pulse rounded bg-white/10" />
+            <SkeletonLine className="size-3.5" />
+            <SkeletonLine className="h-3 w-16" />
           </div>
           <GridSkeleton />
         </div>
