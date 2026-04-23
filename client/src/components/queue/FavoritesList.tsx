@@ -1,5 +1,7 @@
 'use client';
 
+import { EmptyState } from '@/components/ui/empty-state';
+
 import {
   DndContext,
   PointerSensor,
@@ -156,7 +158,7 @@ export default function FavoritesList({
   };
 
   if (isLoading) {
-    return <p className="py-12 text-center text-sm text-sa-text-muted">{t('loading')}</p>;
+    return <EmptyState title={t('loading')} />;
   }
 
   if (!favorites?.length && !folders.length) {

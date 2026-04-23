@@ -380,7 +380,7 @@ function DeletePage({ onBack, router }: { onBack: () => void; router: ReturnType
       </Modal.Body>
       <Modal.Footer>
         <Button variant="destructive" className="w-full" onClick={() => setConfirmOpen(true)} disabled={!password}>
-          회원 탈퇴
+          {t('deleteAccount')}
         </Button>
       </Modal.Footer>
 
@@ -391,7 +391,7 @@ function DeletePage({ onBack, router }: { onBack: () => void; router: ReturnType
         </Modal.Header>
         <Modal.Footer>
           <Button variant="outline" onClick={() => setConfirmOpen(false)}>
-            취소
+            {t('cancel')}
           </Button>
           <Button variant="destructive" onClick={handleDelete} disabled={loading}>
             {loading ? <Loader2 size={14} className="animate-spin" /> : t('deleteSubmit')}

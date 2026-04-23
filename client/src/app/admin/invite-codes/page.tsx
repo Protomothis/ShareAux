@@ -9,12 +9,14 @@ import { usePermissionMeta, usePermLookup } from '@/hooks/usePermissionMeta';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminPagination } from '@/components/admin/AdminPagination';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
-import { CreateInviteCodeModal } from '@/components/admin/CreateInviteCodeModal';
+import { CreateInviteCodeModal } from '@/components/admin/invite-codes';
 import { InviteCodeUsersModal } from '@/components/admin/InviteCodeUsersModal';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { useAdminInviteCodes, useDeactivateInviteCode, useDeleteInviteCode } from '@/hooks/admin/useAdminInviteCodes';
 import { useTranslations } from 'next-intl';
+import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 
 const LIMIT = 20;
 
@@ -83,13 +85,11 @@ export default function AdminInviteCodesPage() {
       {isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-20 animate-pulse rounded-xl bg-white/5" />
+            <SkeletonCard key={i} className="h-20 rounded-xl" />
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div className="rounded-2xl border border-white/5 bg-white/[0.03] px-5 py-12 text-center text-sm text-sa-text-muted">
-          {t('empty')}
-        </div>
+        <EmptyState title="{t('empty')}" />
       ) : (
         <div className="space-y-2">
           {items.map((item) => (

@@ -1,22 +1,20 @@
 import { Controller, Get, Injectable, Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { InMemoryCaptchaService, WoodallAliases } from '@p-captcha/node';
 
 import { CAPTCHA_DIFFICULTY, CAPTCHA_ROUNDS } from '../constants.js';
+import { SettingsService } from '../services/settings.service.js';
+import { OptionKey } from '../types/settings.types.js';
 import { CaptchaChallengeResponse } from './dto/captcha-challenge-response.dto.js';
 
 @Injectable()
 export class CaptchaService {
   private readonly pow = new InMemoryCaptchaService();
-  private readonly enabled: boolean;
 
-  constructor(config: ConfigService) {
-    this.enabled = config.get<string>('CAPTCHA_ENABLED', 'false') === 'true';
-  }
+  constructor(private readonly settings: SettingsService) {}
 
   isEnabled(): boolean {
-    return this.enabled;
+    return this.settings.getBoolean(OptionKey.CaptchaEnabled);
   }
 
   generateChallenge() {
@@ -48,7 +46,10 @@ class CaptchaController {
   }
 }
 
+import { ServicesModule } from '../services/services.module.js';
+
 @Module({
+  imports: [ServicesModule],
   controllers: [CaptchaController],
   providers: [CaptchaService],
   exports: [CaptchaService],

@@ -15,6 +15,9 @@ import { useAdminDashboard, useAdminSystemStats } from '@/hooks/admin/useAdminDa
 import type { TimeRange } from '@/hooks/admin/useAdminMetrics';
 import { usePlaysMetrics, useRealtimeMetrics, useUsersBreakdown } from '@/hooks/admin/useAdminMetrics';
 import { useTranslations } from 'next-intl';
+import { Surface, surfaceVariants } from '@/components/ui/surface';
+import { cn } from '@/lib/utils';
+import { SkeletonLine } from '@/components/ui/skeleton';
 
 function formatUptime(sec: number, t: (key: string, values: Record<string, number>) => string): string {
   const h = Math.floor(sec / 3600);
@@ -33,7 +36,7 @@ function QuickAction({ href, icon: Icon, label, description }: QuickActionProps)
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 rounded-2xl border border-white/5 bg-white/[0.03] p-4 transition hover:bg-white/[0.05]"
+      className={cn(surfaceVariants({ padding: 'sm' }), 'flex items-center gap-3 transition hover:bg-white/[0.05]')}
     >
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sa-accent/10">
         <Icon size={18} className="text-sa-accent" />
@@ -56,13 +59,13 @@ function ChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-5">
+    <Surface>
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-sm font-medium text-white">{title}</h3>
         {action}
       </div>
       {children}
-    </div>
+    </Surface>
   );
 }
 
@@ -70,11 +73,11 @@ function SystemStatsSkeleton() {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="rounded-2xl border border-white/5 bg-white/[0.03] p-6">
-          <div className="mb-3 h-10 w-10 animate-pulse rounded-xl bg-white/5" />
-          <div className="h-9 w-20 animate-pulse rounded-lg bg-white/5" />
-          <div className="mt-2 h-4 w-16 animate-pulse rounded-lg bg-white/5" />
-        </div>
+        <Surface key={i} padding="lg">
+          <SkeletonLine className="mb-3 h-10 w-10 rounded-xl" />
+          <SkeletonLine className="h-9 w-20 rounded-lg" />
+          <SkeletonLine className="mt-2 h-4 w-16 rounded-lg" />
+        </Surface>
       ))}
     </div>
   );

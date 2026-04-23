@@ -9,6 +9,8 @@ import { AdminPagination } from '@/components/admin/AdminPagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAdminAuditLogs } from '@/hooks/admin/useAdminAuditLogs';
 import { useTranslations } from 'next-intl';
+import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 
 const TARGET_OPTIONS = [
   { value: '', label: 'allTargets' },
@@ -131,13 +133,9 @@ export default function AdminAuditLogsPage() {
 
       <div className="space-y-2">
         {isLoading
-          ? Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-16 animate-pulse rounded-xl bg-white/5" />
-            ))
+          ? Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} className="h-16 rounded-xl" />)
           : data?.items.map((log) => <LogEntry key={log.id} log={log} />)}
-        {!isLoading && data?.items.length === 0 && (
-          <p className="py-12 text-center text-sm text-sa-text-muted">{t('empty')}</p>
-        )}
+        {!isLoading && data?.items.length === 0 && <EmptyState title={t('empty')} />}
       </div>
 
       <AdminPagination page={page} totalPages={Math.ceil((data?.total ?? 0) / LIMIT)} onPageChange={setPage} />

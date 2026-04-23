@@ -1,5 +1,6 @@
 'use client';
 import { useCallback, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import { debug } from '@/lib/debug';
@@ -11,6 +12,7 @@ export function useRoomAudio(
   setAudioLoading: (v: boolean) => void,
   onTimeUpdate?: (ms: number) => void,
 ) {
+  const tRoom = useTranslations('room');
   const audio = useAudio(
     () => {
       if (audioLoadingRef.current) {
@@ -55,7 +57,7 @@ export function useRoomAudio(
       debug('[roomAudio] toggle listening:', listening, '→', !listening);
       if (!listening) {
         if (!audio.supported) {
-          toast.error('이 브라우저에서는 실시간 오디오를 지원하지 않습니다');
+          toast.error(tRoom('mseNotSupported'));
           return;
         }
         setAudioLoading(true);

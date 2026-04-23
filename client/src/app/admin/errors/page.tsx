@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAdminErrors, useErrorFile, useErrorFiles } from '@/hooks/admin/useAdminErrors';
 import { useTranslations } from 'next-intl';
+import { EmptyState } from '@/components/ui/empty-state';
 
 type Tab = 'memory' | 'files';
 type StatusFilter = 'all' | '4xx' | '5xx';
@@ -71,7 +72,7 @@ function ErrorRow({ item }: { item: ErrorLogItem }) {
 function ErrorTable({ items }: { items: ErrorLogItem[] }) {
   const t = useTranslations('admin.errors');
   if (!items.length) {
-    return <p className="py-12 text-center text-sm text-sa-text-muted">{t('empty')}</p>;
+    return <EmptyState title={t('empty')} />;
   }
   return (
     <div className="overflow-x-auto rounded-xl border border-white/5">
@@ -178,7 +179,7 @@ function FileTab() {
   if (!selected) {
     return (
       <div className="space-y-2">
-        {!files?.length && <p className="py-12 text-center text-sm text-sa-text-muted">{t('noFiles')}</p>}
+        {!files?.length && <EmptyState title={t('noFiles')} />}
         {files?.map((f) => (
           <button
             key={f.filename}

@@ -61,10 +61,11 @@ export class RoomsController {
   @ApiOperation({ summary: '방 설정 수정' })
   @ApiBearerAuth()
   async update(@Param('id', ParseUUIDPipe) id: string, @Req() req: AuthenticatedRequest, @Body() dto: UpdateRoomDto) {
+    const prevAutoDj = dto.autoDjEnabled !== undefined ? await this.rooms.getAutoDjEnabled(id) : undefined;
     const result = await this.rooms.update(id, req.user.userId, dto);
     this.gateway.broadcastSystem(id, WsEvent.RoomUpdated, '');
-    // AutoDJ 토글 시 즉시 트리거
-    if (dto.autoDjEnabled !== undefined) {
+    // AutoDJ 토글 시 즉시 트리거 (실제 변경된 경우만)
+    if (dto.autoDjEnabled !== undefined && prevAutoDj !== dto.autoDjEnabled) {
       if (dto.autoDjEnabled) {
         this.autoDj.resetFailCount(id);
         this.autoDj.trigger(id);

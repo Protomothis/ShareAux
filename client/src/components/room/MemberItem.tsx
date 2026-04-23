@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { useTranslations } from 'next-intl';
 
 import type { MemberWithPermission } from '@/api/model';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -13,6 +14,7 @@ interface MemberItemProps {
 }
 
 export default memo(function MemberItem({ member: m, isHostUser, hasEnqueuePermission, onSelect }: MemberItemProps) {
+  const t = useTranslations('room');
   const dr = getDisplayRole(m.user?.role, isHostUser);
   const cfg = ROLE_CONFIG[dr];
 
@@ -38,13 +40,13 @@ export default memo(function MemberItem({ member: m, isHostUser, hasEnqueuePermi
         <span className={cfg.color}>{m.user?.nickname ?? 'Unknown'}</span>
         <span className="ml-1 text-[10px] text-sa-text-muted">#{m.userId.slice(-4)}</span>
         {dr === 'guest' && (
-          <span className="ml-1.5 rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/40">게스트</span>
+          <span className="ml-1.5 rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/40">{t('guest')}</span>
         )}
       </span>
       {!hasEnqueuePermission && (
         <Tooltip>
           <TooltipTrigger className="text-xs text-red-400">🚫</TooltipTrigger>
-          <TooltipContent>곡 신청 금지</TooltipContent>
+          <TooltipContent>{t('enqueueBanned')}</TooltipContent>
         </Tooltip>
       )}
     </div>

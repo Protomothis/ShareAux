@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
+import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Surface } from '@/components/ui/surface';
 
 export interface Column<T> {
   key: string;
@@ -41,27 +44,23 @@ export function AdminTable<T>({
   const tc = useTranslations('admin.common');
   if (loading) {
     return (
-      <div className="overflow-hidden rounded-2xl border border-white/5 bg-white/[0.03]">
+      <Surface padding="none" className="overflow-hidden">
         {Array.from({ length: skeletonRows }, (_, i) => (
           <div key={i} className="flex items-center gap-4 border-b border-white/5 px-5 py-4 last:border-0">
-            <div className="h-4 w-8 animate-pulse rounded bg-white/5" />
+            <SkeletonLine className="h-4 w-8" />
             <div className="flex-1">
-              <div className="mb-1.5 h-4 w-2/3 animate-pulse rounded bg-white/5" />
-              <div className="h-3 w-1/3 animate-pulse rounded bg-white/5" />
+              <SkeletonLine className="mb-1.5 h-4 w-2/3" />
+              <SkeletonLine className="h-3 w-1/3" />
             </div>
-            <div className="h-4 w-16 animate-pulse rounded bg-white/5" />
+            <SkeletonLine className="h-4 w-16" />
           </div>
         ))}
-      </div>
+      </Surface>
     );
   }
 
   if (data.length === 0) {
-    return (
-      <div className="rounded-2xl border border-white/5 bg-white/[0.03] px-5 py-12 text-center text-sm text-sa-text-muted">
-        {emptyMessage ?? tc('noData')}
-      </div>
-    );
+    return <EmptyState title={emptyMessage ?? tc('noData')} />;
   }
 
   const visibleCols = columns.filter((c) => !c.hideOnMobile);
@@ -69,8 +68,9 @@ export function AdminTable<T>({
   const secondaryCols = visibleCols.filter((c) => !c.primary);
 
   return (
-    <div
-      className="overflow-hidden rounded-2xl border border-white/5 bg-white/[0.03]"
+    <Surface
+      padding="none"
+      className="overflow-hidden"
       style={maxHeight ? { maxHeight, overflowY: 'auto' } : undefined}
     >
       {/* 데스크톱: 테이블 */}
@@ -142,6 +142,6 @@ export function AdminTable<T>({
           </div>
         ))}
       </div>
-    </div>
+    </Surface>
   );
 }

@@ -11,6 +11,8 @@ import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { useAdminReports, useResolveReport } from '@/hooks/admin/useAdminReports';
+import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 
 const TABS = [
   { value: 'pending', label: 'pending' },
@@ -127,9 +129,7 @@ export default function AdminReportsPage() {
       {/* 신고 목록 */}
       <div className="space-y-2">
         {isLoading
-          ? Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-24 animate-pulse rounded-xl bg-white/5" />
-            ))
+          ? Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} className="h-24 rounded-xl" />)
           : data?.items.map((report) => (
               <ReportCard
                 key={report.id}
@@ -138,9 +138,7 @@ export default function AdminReportsPage() {
                 onDismiss={(id) => setResolveTarget({ id, status: 'dismissed' })}
               />
             ))}
-        {!isLoading && data?.items.length === 0 && (
-          <p className="py-12 text-center text-sm text-sa-text-muted">{t('empty')}</p>
-        )}
+        {!isLoading && data?.items.length === 0 && <EmptyState title={t('empty')} />}
       </div>
 
       <AdminPagination page={page} totalPages={Math.ceil((data?.total ?? 0) / LIMIT)} onPageChange={setPage} />

@@ -155,6 +155,11 @@ export class RoomsService implements OnModuleInit {
     return Object.assign(room, { members: membersWithPerms, playback });
   }
 
+  async getAutoDjEnabled(id: string): Promise<boolean> {
+    const room = await this.roomRepo.findOneBy({ id, isActive: true });
+    return room?.autoDjEnabled ?? false;
+  }
+
   async join(roomId: string, userId: string, password?: string): Promise<RoomMember> {
     // password는 select:false이므로 is_private로 판단 후 필요 시 명시적 select
     const room = await this.roomRepo.findOneBy({ id: roomId, isActive: true });

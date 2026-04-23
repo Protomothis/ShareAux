@@ -1,5 +1,7 @@
 'use client';
 
+import { EmptyState } from '@/components/ui/empty-state';
+
 import { ChevronDown, ListMusic, Loader2 } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 
@@ -134,7 +136,7 @@ export function SearchPlaylistItem({
 
           {/* Empty */}
           {!loading && !error && fetched.current && tracks.length === 0 && (
-            <p className="py-3 text-center text-xs text-sa-text-muted">{t('playlist.noTracks')}</p>
+            <EmptyState title={t('playlist.noTracks')} className="py-3" />
           )}
 
           {/* Load more */}

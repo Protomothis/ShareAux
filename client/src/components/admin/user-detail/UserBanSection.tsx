@@ -1,5 +1,7 @@
 'use client';
 
+import { Surface } from '@/components/ui/surface';
+
 import { Loader2, ShieldBan } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
@@ -44,7 +46,7 @@ export function UserBanSection({ user }: UserBanSectionProps) {
   }, [user, banUser, unbanUser]);
 
   return (
-    <div className="mt-6 rounded-2xl border border-white/5 bg-white/[0.03] p-4 sm:p-6">
+    <Surface padding="lg" className="mt-6">
       <h3 className="mb-3 flex items-center gap-2 text-sm font-medium text-white">
         <ShieldBan size={16} /> {t('accountBan')}
       </h3>
@@ -75,6 +77,6 @@ export function UserBanSection({ user }: UserBanSectionProps) {
           />
         </>
       )}
-    </div>
+    </Surface>
   );
 }

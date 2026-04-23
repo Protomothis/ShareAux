@@ -2,9 +2,9 @@
 
 import { History, List } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
-import type { TabItem } from '@/components/common/TabBar';
 import TabBar from '@/components/common/TabBar';
 
 import type { FavoriteActions, TrackVoteMap } from '@/types';
@@ -13,11 +13,6 @@ import HistoryPanel from './HistoryPanel';
 import Queue from './Queue';
 
 type Tab = 'queue' | 'history';
-
-const TABS: TabItem<Tab>[] = [
-  { key: 'queue', icon: <List size={14} />, label: '신청곡' },
-  { key: 'history', icon: <History size={14} />, label: '재생 기록' },
-];
 
 interface DesktopQueuePanelProps {
   roomId: string;
@@ -32,12 +27,18 @@ interface DesktopQueuePanelProps {
 }
 
 export default function DesktopQueuePanel(props: DesktopQueuePanelProps) {
+  const t = useTranslations('queue');
   const [tab, setTab] = useState<Tab>('queue');
+
+  const tabs = [
+    { key: 'queue' as const, icon: <List size={14} />, label: t('tabQueue') },
+    { key: 'history' as const, icon: <History size={14} />, label: t('tabHistory') },
+  ];
 
   return (
     <div className="flex h-full flex-col">
       <div className="border-b border-white/[0.06]">
-        <TabBar tabs={TABS} activeTab={tab} onTabChange={setTab} />
+        <TabBar tabs={tabs} activeTab={tab} onTabChange={setTab} />
       </div>
       <AnimatePresence mode="wait">
         <motion.div

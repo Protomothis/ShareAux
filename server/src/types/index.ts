@@ -23,3 +23,5 @@ export type { AutoDjStatus } from './auto-dj.types.js';
 export { WsEvent } from './ws-event.enum.js';
 export { ErrorCode } from './error-code.enum.js';
 export { Language } from './language.enum.js';
+export { OptionKey, OPTION_METAS } from './settings.types.js';
+export type { OptionMeta, OptionType } from './settings.types.js';
