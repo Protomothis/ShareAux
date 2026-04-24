@@ -806,7 +806,8 @@
         "admin": "Admin",
         "superAdmin": "Super Admin",
         "guest": "Guest"
-      }
+      },
+      "guestFixed": "Guest (cannot change)"
     },
     "charts": {
       "connections": "Connections",

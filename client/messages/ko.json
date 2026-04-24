@@ -806,7 +806,8 @@
         "admin": "관리자",
         "superAdmin": "최고 관리자",
         "guest": "게스트"
-      }
+      },
+      "guestFixed": "게스트 (변경 불가)"
     },
     "charts": {
       "connections": "접속자",

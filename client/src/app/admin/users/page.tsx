@@ -158,6 +158,9 @@ export default function AdminUsersPage() {
         if (user.role === UserRole.superAdmin)
           return <StatusBadge variant="accent">{t('roles.superAdmin')}</StatusBadge>;
         if (user.role === UserRole.guest) return <StatusBadge variant="muted">{t('guest')}</StatusBadge>;
+        if ((user.role as string) === UserRole.guest) {
+          return <StatusBadge variant="muted">{t('roles.guest')}</StatusBadge>;
+        }
         return (
           <Select value={user.role} onValueChange={(v) => handleRoleChange(user.id, v as UpdateRoleDtoRole)}>
             <SelectTrigger className="h-8 w-28 border-white/10 bg-white/5 text-sm">
