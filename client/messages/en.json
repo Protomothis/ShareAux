@@ -842,7 +842,8 @@
     "tabHistory": "History",
     "tabMembers": "Members",
     "linkCopied": "Link copied",
-    "mseNotSupported": "Real-time audio is not supported in this browser"
+    "mseNotSupported": "Real-time audio is not supported in this browser",
+    "roomGone": "This room has been closed or is no longer accessible."
   },
   "authCallback": {
     "loginFailed": "Login failed",

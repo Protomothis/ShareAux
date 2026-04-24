@@ -2,9 +2,11 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 import { SystemChatEvent } from '@/api/model';
 import type { RoomQueue, Track, TrackLyricsType } from '@/api/model';
+import { roomsControllerFindOne } from '@/api/rooms/rooms';
 import { useInvalidate } from '@/hooks/useQueries';
 import { debug } from '@/lib/debug';
 import type { AutoDjStatus, ChatMessage, StreamState, TrackVoteMap } from '@/types';
@@ -24,6 +26,7 @@ export function useRoomEvents(
 ) {
   const router = useRouter();
   const invalidate = useInvalidate();
+  const t = useTranslations('room');
   const goneRef = useRef(false);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -307,6 +310,22 @@ export function useRoomEvents(
   const markGone = useCallback(() => {
     goneRef.current = true;
   }, []);
+
+  // 모바일 백그라운드 복귀 시 방 유효성 체크
+  useEffect(() => {
+    const onVisibility = async () => {
+      if (document.visibilityState !== 'visible' || goneRef.current) return;
+      try {
+        await roomsControllerFindOne(roomId);
+      } catch {
+        goneRef.current = true;
+        toast.error(t('roomGone'));
+        router.push('/rooms');
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, [roomId, router]);
 
   // listening 중 audio.currentTime → timeSync 갱신은 useAudio의 onTimeUpdate 콜백으로 처리
 

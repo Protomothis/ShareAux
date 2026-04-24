@@ -453,6 +453,17 @@ export function useAudio(onPlaying?: () => void, onError?: () => void, onTimeUpd
     };
   }, []);
 
+  // 모바일 백그라운드 복귀 시 AudioContext resume
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        audioCtxRef.current?.resume().catch(() => {});
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, []);
+
   return {
     init,
     pause,

@@ -842,7 +842,8 @@
     "tabHistory": "기록",
     "tabMembers": "멤버",
     "linkCopied": "링크가 복사되었습니다",
-    "mseNotSupported": "이 브라우저에서는 실시간 오디오를 지원하지 않습니다"
+    "mseNotSupported": "이 브라우저에서는 실시간 오디오를 지원하지 않습니다",
+    "roomGone": "방이 종료되었거나 접근할 수 없습니다."
   },
   "authCallback": {
     "loginFailed": "로그인에 실패했습니다",
