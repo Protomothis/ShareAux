@@ -10,7 +10,7 @@ import { Track } from '../entities/track.entity.js';
 import { TrackStats } from '../entities/track-stats.entity.js';
 import { UserTrackHistory } from '../entities/user-track-history.entity.js';
 import { type YtdlpSearchResult, YtdlpService } from '../services/ytdlp.service.js';
-import { fetchMusicCredits } from '../services/innertube-parser.js';
+import { fetchMusicCredits, fetchYtMusicMeta } from '../services/innertube-parser.js';
 import { MusicBrainzService } from '../services/musicbrainz.service.js';
 import { cleanArtist, extractTitle } from '../services/title-cleaner.js';
 import type { SearchResultItem } from './dto/search-result-item.dto.js';
@@ -201,28 +201,37 @@ export class SearchService {
       update.songTitle = credits.songTitle;
       update.songArtist = credits.songArtist;
       update.songAlbum = credits.songAlbum;
-      this.logger.log(`[enrich] ${sourceId} → "${credits.songTitle}" by ${credits.songArtist}`);
+      this.logger.log(`[enrich] ${sourceId} → Content ID: "${credits.songTitle}" by ${credits.songArtist}`);
     } else {
-      // Content ID 없으면 MusicBrainz 폴백
-      const track = await this.trackRepo.findOneBy({ id: trackId });
-      if (track) {
-        const artist = cleanArtist(track.artist ?? '');
-        const title = extractTitle(track.name);
-        const dur = track.durationMs ?? undefined;
-        // 1차: artist + title, 2차: title only
-        let mb = await this.musicBrainz.search(artist, title, dur);
-        if (!mb && artist) {
-          mb = await this.musicBrainz.search('', title, dur);
-        }
-        if (mb) {
-          update.metaStatus = MetaStatus.Matched;
-          update.songTitle = mb.title;
-          update.songArtist = mb.artist;
-          update.songAlbum = mb.album ?? null;
-          this.logger.log(`[enrich] ${sourceId} → MusicBrainz: "${mb.title}" by ${mb.artist}`);
-        } else {
-          update.metaStatus = MetaStatus.NotFound;
-          this.logger.log(`[enrich] ${sourceId} → no credits found`);
+      // 2순위: YouTube Music (WEB_REMIX) — OMV만
+      const ytm = await fetchYtMusicMeta(sourceId);
+      if (ytm.songTitle) {
+        update.metaStatus = MetaStatus.Matched;
+        update.songTitle = ytm.songTitle;
+        update.songArtist = ytm.songArtist;
+        this.logger.log(`[enrich] ${sourceId} → YT Music: "${ytm.songTitle}" by ${ytm.songArtist}`);
+      } else {
+        // 3순위: MusicBrainz 폴백
+        const track = await this.trackRepo.findOneBy({ id: trackId });
+        if (track) {
+          const artist = cleanArtist(track.artist ?? '');
+          const title = extractTitle(track.name);
+          const dur = track.durationMs ?? undefined;
+          // 1차: artist + title, 2차: title only
+          let mb = await this.musicBrainz.search(artist, title, dur);
+          if (!mb && artist) {
+            mb = await this.musicBrainz.search('', title, dur);
+          }
+          if (mb) {
+            update.metaStatus = MetaStatus.Matched;
+            update.songTitle = mb.title;
+            update.songArtist = mb.artist;
+            update.songAlbum = mb.album ?? null;
+            this.logger.log(`[enrich] ${sourceId} → MusicBrainz: "${mb.title}" by ${mb.artist}`);
+          } else {
+            update.metaStatus = MetaStatus.NotFound;
+            this.logger.log(`[enrich] ${sourceId} → no credits found`);
+          }
         }
       }
     }

@@ -4,6 +4,7 @@ import type { InnertubeSearchResponse, YtdlpPlaylistResult, YtdlpSearchResult } 
 
 const INNERTUBE_CTX = { client: { clientName: 'WEB', clientVersion: '2.20240101', hl: 'ko', gl: 'KR' } };
 const INNERTUBE_MWEB_CTX = { client: { clientName: 'MWEB', clientVersion: '2.20260101', hl: 'en', gl: 'US' } };
+const INNERTUBE_MUSIC_CTX = { client: { clientName: 'WEB_REMIX', clientVersion: '1.20240101.01.00' } };
 
 export interface MusicCredits {
   songTitle: string | null;
@@ -261,6 +262,24 @@ export async function fetchMusicCredits(videoId: string): Promise<MusicCredits> 
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.warn(`[fetchMusicCredits] ${videoId} failed: ${msg}`);
+    return empty;
+  }
+}
+
+/** YouTube Music (WEB_REMIX) 메타데이터 — OMV(공식 뮤직비디오)만 신뢰 */
+export async function fetchYtMusicMeta(videoId: string): Promise<MusicCredits> {
+  const empty: MusicCredits = { songTitle: null, songArtist: null, songAlbum: null };
+  try {
+    const res = await fetch('https://music.youtube.com/youtubei/v1/player', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ context: INNERTUBE_MUSIC_CTX, videoId }),
+    });
+    const data = (await res.json()) as any;
+    const vd = data?.videoDetails;
+    if (!vd || vd.musicVideoType !== 'MUSIC_VIDEO_TYPE_OMV') return empty;
+    return { songTitle: vd.title ?? null, songArtist: vd.author ?? null, songAlbum: null };
+  } catch {
     return empty;
   }
 }
