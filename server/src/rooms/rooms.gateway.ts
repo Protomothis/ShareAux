@@ -253,7 +253,7 @@ export class RoomsGateway {
             // mute 체크
             const mutedSec = this.chatMute.isMuted(rid, userId);
             if (mutedSec > 0) {
-              this.sendToUser(rid, userId, WsEvent.ChatMuted, `채팅이 제한되었습니다 (${mutedSec}초 후 해제)`);
+              this.sendToUser(rid, userId, WsEvent.ChatMuted, `${mutedSec}`);
               return;
             }
 
@@ -268,7 +268,7 @@ export class RoomsGateway {
             if (!isAdmin) {
               const muteSec = this.chatMute.recordAndCheck(rid, userId, trimmed);
               if (muteSec > 0) {
-                this.sendToUser(rid, userId, WsEvent.ChatMuted, `도배로 인해 채팅이 ${muteSec}초간 제한되었습니다`);
+                this.sendToUser(rid, userId, WsEvent.ChatMuted, `${muteSec}`);
                 return;
               }
             }
@@ -341,7 +341,7 @@ export class RoomsGateway {
       // mute 상태 전송 (재접속 시 카운트다운 복원)
       const mutedSec = this.chatMute.isMuted(roomId, userId);
       if (mutedSec > 0) {
-        this.sendToUser(roomId, userId, WsEvent.ChatMuted, `채팅이 제한되었습니다 (${mutedSec}초 후 해제)`);
+        this.sendToUser(roomId, userId, WsEvent.ChatMuted, `${mutedSec}`);
       }
       this.broadcastListenerCount(roomId);
       this.logger.log(`Client ${userId} connected to room ${roomId}`);

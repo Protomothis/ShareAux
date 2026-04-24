@@ -650,7 +650,8 @@
       "changeKey": "변경",
       "requireGeminiKey": "Gemini API Key를 먼저 설정하세요",
       "requireGoogleKey": "Google OAuth 키를 먼저 설정하세요",
-      "requireTranslation": "번역 기능을 먼저 활성화하세요"
+      "requireTranslation": "번역 기능을 먼저 활성화하세요",
+      "secretPlaceholder": "새 값 입력"
     },
     "cleanup": {
       "title": "🧹 DB 정리",
@@ -843,7 +844,15 @@
     "tabMembers": "멤버",
     "linkCopied": "링크가 복사되었습니다",
     "mseNotSupported": "이 브라우저에서는 실시간 오디오를 지원하지 않습니다",
-    "roomGone": "방이 종료되었거나 접근할 수 없습니다."
+    "roomGone": "방이 종료되었거나 접근할 수 없습니다.",
+    "chatMuted": "채팅이 {seconds}초간 제한되었습니다",
+    "nav": {
+      "roomClosed": "방이 종료되었습니다",
+      "kicked": "방에서 추방되었습니다",
+      "duplicateSession": "다른 기기에서 접속하여 연결이 종료되었습니다",
+      "permissionChanged": "권한이 변경되었습니다",
+      "djTransferred": "DJ 권한을 위임받았습니다"
+    }
   },
   "authCallback": {
     "loginFailed": "로그인에 실패했습니다",
