@@ -1,3 +1,4 @@
+import { MetaStatus } from '../../types/meta-status.enum.js';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 import { LyricsType } from '../../types/lyrics-type.enum.js';
@@ -27,8 +28,8 @@ export class TrackRankingTrackInfo {
   @ApiPropertyOptional({ nullable: true })
   lyricsLang!: string | null;
 
-  @ApiProperty({ enum: ['pending', 'done'] })
-  metaStatus!: 'pending' | 'done';
+  @ApiProperty({ enum: MetaStatus, enumName: 'MetaStatus' })
+  metaStatus!: MetaStatus;
 
   @ApiPropertyOptional({ enum: LyricsType, nullable: true })
   lyricsType!: LyricsType | null;

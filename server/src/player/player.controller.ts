@@ -1,3 +1,4 @@
+import { MetaStatus } from '../types/meta-status.enum.js';
 import { Body, Controller, Get, Logger, Param, ParseUUIDPipe, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -140,7 +141,7 @@ export class PlayerController {
         });
     };
 
-    if (track.metaStatus === 'done') {
+    if (track.metaStatus !== MetaStatus.Pending) {
       doSearch(track);
       return;
     }
@@ -150,7 +151,7 @@ export class PlayerController {
     const poll = setInterval(async () => {
       attempts++;
       const fresh = await this.queueRepo.manager.findOneBy(Track, { id: track.id });
-      if (fresh?.metaStatus === 'done' || attempts >= 10) {
+      if (fresh?.metaStatus !== MetaStatus.Pending || attempts >= 10) {
         clearInterval(poll);
         doSearch(fresh ?? track);
       }

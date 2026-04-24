@@ -553,7 +553,10 @@
       "contentIdDelete": "Delete Content ID",
       "trackDelete": "Delete Track",
       "trackDeleteConfirm": "Delete this track? Related queue/stats will also be deleted.",
-      "trackDeleted": "Track deleted"
+      "trackDeleted": "Track deleted",
+      "matched": "Matched",
+      "notFound": "Not Found",
+      "pending": "Pending"
     },
     "inviteCodes": {
       "title": "Invite Code Management",

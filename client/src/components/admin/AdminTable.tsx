@@ -74,7 +74,7 @@ export function AdminTable<T>({
       style={maxHeight ? { maxHeight, overflowY: 'auto' } : undefined}
     >
       {/* 데스크톱: 테이블 */}
-      <table className="hidden w-full table-fixed text-left text-sm md:table">
+      <table className="hidden w-full table-auto text-left text-sm md:table">
         <thead className="sticky top-0 z-10 bg-sa-bg-primary/95 backdrop-blur-sm">
           <tr className="border-b border-white/5">
             {columns.map((col) => (

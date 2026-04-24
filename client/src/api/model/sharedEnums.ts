@@ -11,6 +11,7 @@ import type { Language } from './language';
 import type { AuthProvider } from './authProvider';
 import type { SystemChatEvent } from './systemChatEvent';
 import type { OptionKey } from './optionKey';
+import type { MetaStatus } from './metaStatus';
 
 export interface SharedEnums {
   wsEvent: WsEvent;
@@ -19,4 +20,5 @@ export interface SharedEnums {
   authProvider: AuthProvider;
   systemChatEvent: SystemChatEvent;
   optionKey: OptionKey;
+  metaStatus: MetaStatus;
 }

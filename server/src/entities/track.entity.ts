@@ -3,6 +3,7 @@ import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
 import { Provider } from '../types/provider.enum.js';
 import { LyricsType } from '../types/lyrics-type.enum.js';
+import { MetaStatus } from '../types/meta-status.enum.js';
 
 import type { TrackStats } from './track-stats.entity.js';
 
@@ -65,9 +66,9 @@ export class Track {
   bitrateKbps!: number;
 
   /** Content ID fetch 상태: pending → done */
-  @ApiProperty({ default: 'pending' })
-  @Column({ type: 'varchar', name: 'meta_status', default: 'pending' })
-  metaStatus!: 'pending' | 'done';
+  @ApiProperty({ enum: MetaStatus, enumName: 'MetaStatus', default: MetaStatus.Pending })
+  @Column({ type: 'varchar', name: 'meta_status', default: MetaStatus.Pending })
+  metaStatus!: MetaStatus;
 
   /** 가사 검색 상태: searching → found / not_found */
   @ApiProperty({ enum: ['searching', 'found', 'not_found'], default: 'searching' })

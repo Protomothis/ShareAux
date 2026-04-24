@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 import type { TrackProvider } from './trackProvider';
-import type { TrackMetaStatus } from './trackMetaStatus';
+import type { MetaStatus } from './metaStatus';
 import type { TrackLyricsStatus } from './trackLyricsStatus';
 import type { TrackLyricsType } from './trackLyricsType';
 import type { TrackStatsProperty } from './trackStatsProperty';
@@ -33,7 +33,7 @@ export interface Track {
   codec?: string | null;
   /** @nullable */
   bitrateKbps?: number | null;
-  metaStatus: TrackMetaStatus;
+  metaStatus: MetaStatus;
   lyricsStatus: TrackLyricsStatus;
   /** @nullable */
   lyricsType: TrackLyricsType;

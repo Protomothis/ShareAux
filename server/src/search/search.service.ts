@@ -1,4 +1,5 @@
 import { Provider } from '../types/provider.enum.js';
+import { MetaStatus } from '../types/meta-status.enum.js';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -194,8 +195,9 @@ export class SearchService {
       this.logger.warn(`[enrich] fetchMusicCredits error for ${sourceId}: ${e instanceof Error ? e.message : e}`);
       return null;
     });
-    const update: Partial<Track> = { metaStatus: 'done' as const };
+    const update: Partial<Track> = {};
     if (credits?.songTitle) {
+      update.metaStatus = MetaStatus.Matched;
       update.songTitle = credits.songTitle;
       update.songArtist = credits.songArtist;
       update.songAlbum = credits.songAlbum;
@@ -213,11 +215,13 @@ export class SearchService {
           mb = await this.musicBrainz.search('', title, dur);
         }
         if (mb) {
+          update.metaStatus = MetaStatus.Matched;
           update.songTitle = mb.title;
           update.songArtist = mb.artist;
           update.songAlbum = mb.album ?? null;
           this.logger.log(`[enrich] ${sourceId} → MusicBrainz: "${mb.title}" by ${mb.artist}`);
         } else {
+          update.metaStatus = MetaStatus.NotFound;
           this.logger.log(`[enrich] ${sourceId} → no credits found`);
         }
       }

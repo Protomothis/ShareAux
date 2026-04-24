@@ -553,7 +553,10 @@
       "contentIdDelete": "Content ID 삭제",
       "trackDelete": "트랙 삭제",
       "trackDeleteConfirm": "이 트랙을 삭제하시겠습니까? 관련 큐/통계도 함께 삭제됩니다.",
-      "trackDeleted": "트랙 삭제 완료"
+      "trackDeleted": "트랙 삭제 완료",
+      "matched": "매칭됨",
+      "notFound": "미매칭",
+      "pending": "대기"
     },
     "inviteCodes": {
       "title": "초대코드 관리",

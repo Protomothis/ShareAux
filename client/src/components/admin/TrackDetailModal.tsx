@@ -11,11 +11,7 @@ import {
   adminControllerResetTrackMeta,
 } from '@/api/admin/admin';
 import type { TrackRankingItem } from '@/api/model';
-import {
-  TrackRankingTrackInfoLyricsStatus,
-  TrackRankingTrackInfoLyricsType,
-  TrackRankingTrackInfoMetaStatus,
-} from '@/api/model';
+import { TrackRankingTrackInfoLyricsStatus, TrackRankingTrackInfoLyricsType, MetaStatus } from '@/api/model';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import Modal from '@/components/common/Modal';
 import { useTranslations } from 'next-intl';
@@ -26,8 +22,7 @@ interface TrackDetailModalProps {
   onDeleted?: () => void;
 }
 
-export function TrackDetailModal({
-  track: trackProp, onOpenChange, onDeleted }: TrackDetailModalProps) {
+export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: TrackDetailModalProps) {
   const t = useTranslations('admin.tracks');
   const [localTrack, setLocalTrack] = useState(trackProp);
   const [lyrics, setLyrics] = useState<string | null>(null);
@@ -70,9 +65,17 @@ export function TrackDetailModal({
           {/* 원본 YouTube 정보 */}
           {track.track.songTitle && (
             <div className="space-y-1 rounded-xl bg-white/[0.03] p-3 text-xs text-sa-text-muted">
-              <div className="truncate">{t('original')}: {track.track.name}</div>
-              <div className="truncate">{t('channel')}: {track.track.artist}</div>
-              {track.track.songAlbum && <div className="truncate">{t('album')}: {track.track.songAlbum}</div>}
+              <div className="truncate">
+                {t('original')}: {track.track.name}
+              </div>
+              <div className="truncate">
+                {t('channel')}: {track.track.artist}
+              </div>
+              {track.track.songAlbum && (
+                <div className="truncate">
+                  {t('album')}: {track.track.songAlbum}
+                </div>
+              )}
             </div>
           )}
           <div className="flex items-center justify-between">
@@ -155,21 +158,19 @@ export function TrackDetailModal({
           <div className="flex items-center justify-between">
             <span className="text-sa-text-muted">{t('contentId')}</span>
             <div className="flex items-center gap-1.5">
-              {track.track.metaStatus === TrackRankingTrackInfoMetaStatus.done ? (
+              {track.track.metaStatus === MetaStatus.matched ? (
                 <StatusBadge variant="success">{t('contentIdDone')}</StatusBadge>
               ) : (
                 <StatusBadge variant="muted">{t('contentIdPending')}</StatusBadge>
               )}
-              {track.track.metaStatus === TrackRankingTrackInfoMetaStatus.done && (
+              {track.track.metaStatus === MetaStatus.matched && (
                 <button
                   onClick={async () => {
                     if (!confirm(t('contentIdDeleteConfirm'))) return;
                     await adminControllerResetTrackMeta(track.trackId);
                     toast.success(t('contentIdDeleted'));
                     setLocalTrack((prev) =>
-                      prev
-                        ? { ...prev, track: { ...prev.track, metaStatus: TrackRankingTrackInfoMetaStatus.pending } }
-                        : prev,
+                      prev ? { ...prev, track: { ...prev.track, metaStatus: MetaStatus.pending } } : prev,
                     );
                   }}
                   className="text-red-400/60 hover:text-red-400"
