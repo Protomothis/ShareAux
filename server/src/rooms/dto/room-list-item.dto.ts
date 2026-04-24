@@ -7,6 +7,9 @@ export class RoomListItem extends Room {
   @ApiProperty()
   memberCount!: number;
 
+  @ApiProperty({ type: [String] })
+  memberPreview!: string[];
+
   @ApiProperty({ type: () => RoomPlayback, nullable: true })
   playback!: RoomPlayback | null;
 }

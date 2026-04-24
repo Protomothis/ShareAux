@@ -134,8 +134,27 @@ export class RoomsService implements OnModuleInit {
 
     const countMap = new Map(counts.map((c) => [c.room_id, Number(c.count)]));
     const pbMap = new Map(playbacks.map((p) => [p.roomId, p]));
+
+    // 멤버 닉네임 미리보기 (최대 3명)
+    const members = await this.memberRepo
+      .createQueryBuilder('m')
+      .leftJoin('m.user', 'u')
+      .select(['m.room_id', 'u.nickname'])
+      .where('m.room_id IN (:...ids)', { ids })
+      .getMany();
+    const previewMap = new Map<string, string[]>();
+    for (const m of members) {
+      const list = previewMap.get(m.roomId) ?? [];
+      if (list.length < 3) list.push(m.user?.nickname ?? '');
+      previewMap.set(m.roomId, list);
+    }
+
     return rooms.map((r) =>
-      Object.assign(r, { memberCount: countMap.get(r.id) ?? 0, playback: pbMap.get(r.id) ?? null }),
+      Object.assign(r, {
+        memberCount: countMap.get(r.id) ?? 0,
+        memberPreview: previewMap.get(r.id) ?? [],
+        playback: pbMap.get(r.id) ?? null,
+      }),
     );
   }
 
