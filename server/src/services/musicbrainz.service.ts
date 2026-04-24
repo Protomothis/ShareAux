@@ -39,8 +39,13 @@ export class MusicBrainzService {
   }
 
   /** 후보 중 duration이 가장 가까운 recording 선택 */
-  private pickBest(recordings: MbRecording[], durationMs?: number): MbRecording | null {
-    const valid = recordings.filter((r) => r.score >= 80);
+  private pickBest(
+    recordings: MbRecording[],
+    durationMs?: number,
+    minScore = 80,
+    maxDiffMs = 10_000,
+  ): MbRecording | null {
+    const valid = recordings.filter((r) => r.score >= minScore);
     if (!valid.length) return null;
     if (!durationMs || valid.length === 1) return valid[0];
 
@@ -54,8 +59,8 @@ export class MusicBrainzService {
         best = r;
       }
     }
-    // duration 차이 10초 초과면 오매칭 가능성 — score 1위 우선
-    return bestDiff > 10_000 ? valid[0] : best;
+    // duration 차이 초과면 오매칭 가능성 — score 1위 우선
+    return bestDiff > maxDiffMs ? valid[0] : best;
   }
 
   /** MusicBrainz recording 검색 (rate limit: 1req/sec) */
@@ -76,7 +81,9 @@ export class MusicBrainzService {
       if (!res.ok) return null;
 
       const data = (await res.json()) as { recordings?: MbRecording[] };
-      const best = this.pickBest(data.recordings ?? [], durationMs);
+      const minScore = artist ? 80 : 95;
+      const maxDiff = artist ? 10_000 : 5_000;
+      const best = this.pickBest(data.recordings ?? [], durationMs, minScore, maxDiff);
       if (!best) return null;
 
       return {
