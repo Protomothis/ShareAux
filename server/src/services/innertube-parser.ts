@@ -172,7 +172,7 @@ export async function searchPlaylists(query: string): Promise<YtdlpPlaylistResul
       if (fromRenderer) playlists.push(fromRenderer);
     }
   }
-  return playlists.slice(0, 5);
+  return playlists.slice(0, 20);
 }
 
 export async function getRelatedVideos(videoId: string, limit: number): Promise<YtdlpSearchResult[]> {

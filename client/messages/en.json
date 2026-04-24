@@ -189,7 +189,9 @@
       "noTracks": "No playable tracks",
       "loadMore": "Load more ({loaded}/{total})"
     },
-    "showcaseTab": "Showcase"
+    "showcaseTab": "Showcase",
+    "playlists": "Playlists",
+    "tracks": "Tracks"
   },
   "favorites": {
     "loading": "Loading...",

@@ -189,7 +189,9 @@
       "noTracks": "재생 가능한 곡이 없습니다",
       "loadMore": "더 보기 ({loaded}/{total})"
     },
-    "showcaseTab": "추천"
+    "showcaseTab": "추천",
+    "playlists": "재생목록",
+    "tracks": "검색 결과"
   },
   "favorites": {
     "loading": "불러오는 중...",
