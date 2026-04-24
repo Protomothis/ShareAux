@@ -4,7 +4,7 @@ import { Music, ThumbsDown, ThumbsUp, TrendingUp } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import type { TrackRankingItem } from '@/api/model';
-import { TrackRankingTrackInfoLyricsStatus, TrackRankingTrackInfoLyricsType } from '@/api/model';
+import { MetaStatus, TrackRankingTrackInfoLyricsStatus, TrackRankingTrackInfoLyricsType } from '@/api/model';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminTable } from '@/components/admin/AdminTable';
 import type { Column } from '@/components/admin/AdminTable';
@@ -42,7 +42,7 @@ export default function AdminTracksPage() {
     {
       key: 'plays',
       header: t('plays'),
-      width: '5rem',
+
       render: (item) => (
         <span className="flex items-center gap-1 text-white">
           <Music size={12} className="text-sa-accent" /> {item.totalPlays}
@@ -52,7 +52,7 @@ export default function AdminTracksPage() {
     {
       key: 'votes',
       header: t('votes'),
-      width: '7rem',
+
       hideOnMobile: true,
       render: (item) => (
         <div className="flex items-center gap-2 text-xs">
@@ -68,14 +68,14 @@ export default function AdminTracksPage() {
     {
       key: 'users',
       header: t('users'),
-      width: '4rem',
+
       hideOnMobile: true,
       render: (item) => <span className="text-sa-text-muted">{item.uniqueUsers}</span>,
     },
     {
       key: 'lyrics',
       header: t('lyrics'),
-      width: '7rem',
+
       hideOnMobile: true,
       render: (item) => {
         const s = item.track.lyricsStatus;
@@ -95,9 +95,24 @@ export default function AdminTracksPage() {
       },
     },
     {
+      key: 'metaStatus',
+      header: t('contentId'),
+
+      render: (item) => {
+        const s = item.track.metaStatus;
+        return s === MetaStatus.matched ? (
+          <StatusBadge variant="success">{t('matched')}</StatusBadge>
+        ) : s === MetaStatus.notFound ? (
+          <StatusBadge variant="danger">{t('notFound')}</StatusBadge>
+        ) : (
+          <StatusBadge variant="muted">{t('pending')}</StatusBadge>
+        );
+      },
+    },
+    {
       key: 'score',
       header: t('score'),
-      width: '5rem',
+
       render: (item) => (
         <StatusBadge variant="accent">
           <TrendingUp size={10} className="mr-0.5" /> {(item.score ?? 0).toFixed(1)}

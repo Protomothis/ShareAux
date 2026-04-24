@@ -2,6 +2,7 @@
 
 import { Eye, EyeOff, Pencil, X } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 import { FormField } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -27,6 +28,7 @@ export function SecretField({
   notConfiguredLabel,
   onSave,
 }: SecretFieldProps) {
+  const t = useTranslations('admin.settings');
   const [editing, setEditing] = useState(false);
   const [visible, setVisible] = useState(false);
   const [value, setValue] = useState('');
@@ -48,12 +50,12 @@ export function SecretField({
               type="text"
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              placeholder="새 값 입력"
+              placeholder={t('secretPlaceholder')}
               className="w-72 font-mono text-xs"
               autoFocus
             />
             <Button variant="accent" size="sm" onClick={handleToggleEdit} disabled={!value}>
-              저장
+              {t('save')}
             </Button>
             <Button
               variant="ghost"

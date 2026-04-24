@@ -189,7 +189,9 @@
       "noTracks": "재생 가능한 곡이 없습니다",
       "loadMore": "더 보기 ({loaded}/{total})"
     },
-    "showcaseTab": "추천"
+    "showcaseTab": "추천",
+    "playlists": "재생목록",
+    "tracks": "검색 결과"
   },
   "favorites": {
     "loading": "불러오는 중...",
@@ -551,7 +553,10 @@
       "contentIdDelete": "Content ID 삭제",
       "trackDelete": "트랙 삭제",
       "trackDeleteConfirm": "이 트랙을 삭제하시겠습니까? 관련 큐/통계도 함께 삭제됩니다.",
-      "trackDeleted": "트랙 삭제 완료"
+      "trackDeleted": "트랙 삭제 완료",
+      "matched": "매칭됨",
+      "notFound": "미매칭",
+      "pending": "대기"
     },
     "inviteCodes": {
       "title": "초대코드 관리",
@@ -648,7 +653,8 @@
       "changeKey": "변경",
       "requireGeminiKey": "Gemini API Key를 먼저 설정하세요",
       "requireGoogleKey": "Google OAuth 키를 먼저 설정하세요",
-      "requireTranslation": "번역 기능을 먼저 활성화하세요"
+      "requireTranslation": "번역 기능을 먼저 활성화하세요",
+      "secretPlaceholder": "새 값 입력"
     },
     "cleanup": {
       "title": "🧹 DB 정리",
@@ -800,7 +806,8 @@
         "admin": "관리자",
         "superAdmin": "최고 관리자",
         "guest": "게스트"
-      }
+      },
+      "guestFixed": "게스트 (변경 불가)"
     },
     "charts": {
       "connections": "접속자",
@@ -840,7 +847,16 @@
     "tabHistory": "기록",
     "tabMembers": "멤버",
     "linkCopied": "링크가 복사되었습니다",
-    "mseNotSupported": "이 브라우저에서는 실시간 오디오를 지원하지 않습니다"
+    "mseNotSupported": "이 브라우저에서는 실시간 오디오를 지원하지 않습니다",
+    "roomGone": "방이 종료되었거나 접근할 수 없습니다.",
+    "chatMuted": "채팅이 {seconds}초간 제한되었습니다",
+    "nav": {
+      "roomClosed": "방이 종료되었습니다",
+      "kicked": "방에서 추방되었습니다",
+      "duplicateSession": "다른 기기에서 접속하여 연결이 종료되었습니다",
+      "permissionChanged": "권한이 변경되었습니다",
+      "djTransferred": "DJ 권한을 위임받았습니다"
+    }
   },
   "authCallback": {
     "loginFailed": "로그인에 실패했습니다",

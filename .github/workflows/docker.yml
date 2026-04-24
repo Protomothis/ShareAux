@@ -42,3 +42,10 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.image }}:latest
             ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.image }}:${{ env.VERSION }}
           build-args: ${{ matrix.build-args }}
+
+      - name: Delete untagged versions
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: ${{ matrix.image }}
+          package-type: container
+          delete-only-untagged-versions: true

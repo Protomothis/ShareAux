@@ -15,7 +15,7 @@ interface DatePickerProps {
   className?: string;
 }
 
-export function DatePicker({ value, onChange, placeholder = '날짜 선택', className }: DatePickerProps) {
+export function DatePicker({ value, onChange, placeholder = 'Select date', className }: DatePickerProps) {
   return (
     <Popover>
       <PopoverTrigger

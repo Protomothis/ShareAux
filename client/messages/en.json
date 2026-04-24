@@ -189,7 +189,9 @@
       "noTracks": "No playable tracks",
       "loadMore": "Load more ({loaded}/{total})"
     },
-    "showcaseTab": "Showcase"
+    "showcaseTab": "Showcase",
+    "playlists": "Playlists",
+    "tracks": "Tracks"
   },
   "favorites": {
     "loading": "Loading...",
@@ -551,7 +553,10 @@
       "contentIdDelete": "Delete Content ID",
       "trackDelete": "Delete Track",
       "trackDeleteConfirm": "Delete this track? Related queue/stats will also be deleted.",
-      "trackDeleted": "Track deleted"
+      "trackDeleted": "Track deleted",
+      "matched": "Matched",
+      "notFound": "Not Found",
+      "pending": "Pending"
     },
     "inviteCodes": {
       "title": "Invite Code Management",
@@ -648,7 +653,8 @@
       "changeKey": "Change",
       "requireGeminiKey": "Set Gemini API Key first",
       "requireGoogleKey": "Set Google OAuth keys first",
-      "requireTranslation": "Enable translation first"
+      "requireTranslation": "Enable translation first",
+      "secretPlaceholder": "Enter new value"
     },
     "cleanup": {
       "title": "🧹 DB Cleanup",
@@ -800,7 +806,8 @@
         "admin": "Admin",
         "superAdmin": "Super Admin",
         "guest": "Guest"
-      }
+      },
+      "guestFixed": "Guest (cannot change)"
     },
     "charts": {
       "connections": "Connections",
@@ -840,7 +847,16 @@
     "tabHistory": "History",
     "tabMembers": "Members",
     "linkCopied": "Link copied",
-    "mseNotSupported": "Real-time audio is not supported in this browser"
+    "mseNotSupported": "Real-time audio is not supported in this browser",
+    "roomGone": "This room has been closed or is no longer accessible.",
+    "chatMuted": "Chat restricted for {seconds} seconds",
+    "nav": {
+      "roomClosed": "Room has been closed",
+      "kicked": "You have been kicked from the room",
+      "duplicateSession": "Connected from another device",
+      "permissionChanged": "Your permissions have been updated",
+      "djTransferred": "You have been granted DJ permissions"
+    }
   },
   "authCallback": {
     "loginFailed": "Login failed",

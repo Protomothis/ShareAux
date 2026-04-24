@@ -1,3 +1,4 @@
+import { MetaStatus } from '../types/meta-status.enum.js';
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
@@ -68,7 +69,7 @@ export class QueueController {
     const addedTracks = updatedQueue.filter((q) => sourceIds.includes(q.track.sourceId)).map((q) => q.track);
 
     // Content ID 메타데이터 백그라운드 enrich
-    const needsEnrich = addedTracks.filter((t) => t.metaStatus !== 'done');
+    const needsEnrich = addedTracks.filter((t) => t.metaStatus === MetaStatus.Pending);
     if (needsEnrich.length) {
       Promise.all(needsEnrich.map((t) => this.search.enrichTrackCredits(t.id, t.sourceId)))
         .then(async () => {

@@ -139,7 +139,7 @@ export class RoomsController {
   ) {
     const result = await this.rooms.updatePermissions(id, req.user.userId, targetUserId, body.permissions);
     this.gateway.broadcastSystem(id, WsEvent.RoomUpdated, '');
-    this.gateway.sendToUser(id, targetUserId, WsEvent.PermissionChanged, '권한이 변경되었습니다');
+    this.gateway.sendToUser(id, targetUserId, WsEvent.PermissionChanged, 'changed');
     return result;
   }
 
@@ -164,7 +164,7 @@ export class RoomsController {
   ) {
     const newHost = await this.rooms.transferHostTo(id, req.user.userId, targetUserId);
     this.gateway.broadcastSystem(id, WsEvent.HostChanged, '', { nickname: newHost.nickname });
-    this.gateway.sendToUser(id, targetUserId, WsEvent.PermissionChanged, 'DJ 권한을 위임받았습니다');
+    this.gateway.sendToUser(id, targetUserId, WsEvent.PermissionChanged, 'djTransferred');
     return { ok: true };
   }
 

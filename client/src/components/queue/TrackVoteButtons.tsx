@@ -62,8 +62,17 @@ export default function TrackVoteButtons({ trackId, roomId, votes }: TrackVoteBu
     prevDislikesRef.current = dislikes;
   }, [dislikes, spawn]);
 
+  const [popped, setPopped] = useState<1 | -1 | null>(null);
+
+  useEffect(() => {
+    if (!popped) return;
+    const t = setTimeout(() => setPopped(null), 400);
+    return () => clearTimeout(t);
+  }, [popped]);
+
   const handleVote = useCallback(
     (v: VoteDtoVote) => {
+      setPopped(v as 1 | -1);
       voteMutate(
         { id: trackId, data: { vote: v, roomId } },
         {
@@ -104,7 +113,7 @@ export default function TrackVoteButtons({ trackId, roomId, votes }: TrackVoteBu
         onClick={() => handleVote(1 as VoteDtoVote)}
         className={cn('gap-0.5 transition', current === 1 ? 'text-sa-accent' : 'text-sa-text-muted hover:text-white')}
       >
-        <ThumbsUp size={12} className={cn(current === 1 && 'animate-vote-pop')} />
+        <ThumbsUp size={12} className={cn(popped === 1 && 'animate-vote-pop')} />
         {likes > 0 && <span className="text-[10px] tabular-nums">{likes}</span>}
       </Button>
       <Button
@@ -113,7 +122,7 @@ export default function TrackVoteButtons({ trackId, roomId, votes }: TrackVoteBu
         onClick={() => handleVote(-1 as VoteDtoVote)}
         className={cn('gap-0.5 transition', current === -1 ? 'text-red-400' : 'text-sa-text-muted hover:text-white')}
       >
-        <ThumbsDown size={12} className={cn(current === -1 && 'animate-vote-pop')} />
+        <ThumbsDown size={12} className={cn(popped === -1 && 'animate-vote-pop')} />
         {dislikes > 0 && <span className="text-[10px] tabular-nums">{dislikes}</span>}
       </Button>
     </div>

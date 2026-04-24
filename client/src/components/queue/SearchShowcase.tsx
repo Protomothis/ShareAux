@@ -1,13 +1,13 @@
 'use client';
 
 import { Flame, History, Loader2, Music, Radio, RefreshCw } from 'lucide-react';
-import type { ReactNode } from 'react';
 
 import type { SearchResultItem, Track } from '@/api/model';
 import { useSearchControllerGetRecommended, useSearchControllerGetShowcase } from '@/api/search/search';
 import { FavoriteButton } from '@/components/common/FavoriteButton';
 import Thumbnail from '@/components/common/Thumbnail';
 import { Button } from '@/components/ui/button';
+import { CollapsibleSection } from '@/components/ui/collapsible-section';
 import { formatDuration } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
@@ -24,40 +24,6 @@ interface SearchShowcaseProps {
   favLoadingIds?: Set<string>;
   onToggleFavorite?: (track: SearchResultItem) => void;
   isGuest?: boolean;
-}
-
-function Section({
-  icon,
-  title,
-  onRefresh,
-  refreshing,
-  children,
-}: {
-  icon: ReactNode;
-  title: string;
-  onRefresh?: () => void;
-  refreshing?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <section>
-      <div className="mb-3 flex items-center gap-2 px-1">
-        {icon}
-        <h3 className="text-xs font-bold uppercase tracking-wider text-sa-text-secondary">{title}</h3>
-        {onRefresh && (
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            onClick={onRefresh}
-            className="ml-auto text-sa-text-muted hover:text-white"
-          >
-            {refreshing ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
-          </Button>
-        )}
-      </div>
-      {children}
-    </section>
-  );
 }
 
 function GridCard({
@@ -113,8 +79,10 @@ function GridCard({
           />
         )}
       </div>
-      <div className="min-w-0 w-full px-0.5">
-        <p className="line-clamp-2 text-left text-[11px] font-medium leading-tight text-white">{track.name}</p>
+      <div className="min-w-0 w-full flex-1 px-0.5">
+        <p className="line-clamp-2 break-words text-left text-[11px] font-medium leading-tight text-white">
+          {track.name}
+        </p>
         <p className="mt-0.5 truncate text-left text-[10px] text-sa-text-muted">{track.artist}</p>
       </div>
     </Button>
@@ -228,19 +196,22 @@ export default function SearchShowcase({
       ) : (
         <>
           {popular.length > 0 && (
-            <Section icon={<Flame size={14} className="text-orange-400" />} title={t('showcase.popular')}>
+            <CollapsibleSection icon={<Flame size={14} className="text-orange-400" />} title={t('showcase.popular')}>
               {grid(popular.map(toSearchItem))}
-            </Section>
+            </CollapsibleSection>
           )}
           {myHistory.length > 0 && (
-            <Section icon={<Music size={14} className="text-sa-accent" />} title={t('showcase.myHistory')}>
+            <CollapsibleSection icon={<Music size={14} className="text-sa-accent" />} title={t('showcase.myHistory')}>
               {grid(myHistory.map(toSearchItem))}
-            </Section>
+            </CollapsibleSection>
           )}
           {recent.length > 0 && (
-            <Section icon={<History size={14} className="text-sa-text-muted" />} title={t('showcase.recentPlays')}>
+            <CollapsibleSection
+              icon={<History size={14} className="text-sa-text-muted" />}
+              title={t('showcase.recentPlays')}
+            >
               {grid(recent.map(toSearchItem))}
-            </Section>
+            </CollapsibleSection>
           )}
         </>
       )}
@@ -255,14 +226,22 @@ export default function SearchShowcase({
           <GridSkeleton />
         </div>
       ) : recommended.length > 0 ? (
-        <Section
+        <CollapsibleSection
           icon={<Radio size={14} className="text-green-400" />}
           title={t('showcase.recommended')}
-          onRefresh={() => recRefetch()}
-          refreshing={recFetching}
+          action={
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              onClick={() => recRefetch()}
+              className="text-sa-text-muted hover:text-white"
+            >
+              {recFetching ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+            </Button>
+          }
         >
           {grid(recommended)}
-        </Section>
+        </CollapsibleSection>
       ) : null}
     </div>
   );

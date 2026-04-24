@@ -41,6 +41,7 @@ export interface RoomListItem {
   autoDjFavFallbackMixed: boolean;
   createdAt: string;
   memberCount: number;
+  memberPreview: string[];
   /** @nullable */
   playback: RoomListItemPlayback;
 }

@@ -124,6 +124,15 @@ export default function RoomClient({ id }: { id: string }) {
   useEffect(() => {
     listeningRef.current = listening;
   }, [listening, listeningRef]);
+
+  // 듣는 중 실수로 페이지 이탈 방지
+  useEffect(() => {
+    if (!listening) return;
+    const handler = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [listening]);
+
   useEffect(() => {
     trackRef.current = currentTrack;
   }, [currentTrack, trackRef]);

@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 import type { TrackRankingTrackInfoLyricsStatus } from './trackRankingTrackInfoLyricsStatus';
-import type { TrackRankingTrackInfoMetaStatus } from './trackRankingTrackInfoMetaStatus';
+import type { MetaStatus } from './metaStatus';
 import type { TrackRankingTrackInfoLyricsType } from './trackRankingTrackInfoLyricsType';
 
 export interface TrackRankingTrackInfo {
@@ -23,7 +23,7 @@ export interface TrackRankingTrackInfo {
   lyricsStatus: TrackRankingTrackInfoLyricsStatus;
   /** @nullable */
   lyricsLang?: string | null;
-  metaStatus: TrackRankingTrackInfoMetaStatus;
+  metaStatus: MetaStatus;
   /** @nullable */
   lyricsType?: TrackRankingTrackInfoLyricsType;
   /** 번역 가사 존재 여부 */

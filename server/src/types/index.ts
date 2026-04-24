@@ -25,3 +25,4 @@ export { ErrorCode } from './error-code.enum.js';
 export { Language } from './language.enum.js';
 export { OptionKey, OPTION_METAS } from './settings.types.js';
 export type { OptionMeta, OptionType } from './settings.types.js';
+export { MetaStatus } from './meta-status.enum.js';

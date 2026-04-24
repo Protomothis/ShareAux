@@ -14,7 +14,7 @@ export function VolumeSlider({ value, onChange, className = 'w-16' }: VolumeSlid
       value={value}
       onChange={(e) => onChange(Number(e.target.value))}
       className={`accent-sa-accent opacity-60 transition hover:opacity-100 ${className}`}
-      aria-label="볼륨"
+      aria-label="Volume"
     />
   );
 }

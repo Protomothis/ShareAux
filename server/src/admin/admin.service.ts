@@ -1,3 +1,4 @@
+import { MetaStatus } from '../types/meta-status.enum.js';
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -685,7 +686,7 @@ export class AdminService {
 
   async resetTrackMeta(trackId: string) {
     await this.trackRepo.update(trackId, {
-      metaStatus: 'pending',
+      metaStatus: MetaStatus.Pending,
       songTitle: null,
       songArtist: null,
       songAlbum: null,

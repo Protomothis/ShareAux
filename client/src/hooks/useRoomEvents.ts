@@ -2,9 +2,11 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 import { SystemChatEvent } from '@/api/model';
 import type { RoomQueue, Track, TrackLyricsType } from '@/api/model';
+import { roomsControllerFindOne } from '@/api/rooms/rooms';
 import { useInvalidate } from '@/hooks/useQueries';
 import { debug } from '@/lib/debug';
 import type { AutoDjStatus, ChatMessage, StreamState, TrackVoteMap } from '@/types';
@@ -24,6 +26,7 @@ export function useRoomEvents(
 ) {
   const router = useRouter();
   const invalidate = useInvalidate();
+  const t = useTranslations('room');
   const goneRef = useRef(false);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -53,13 +56,13 @@ export function useRoomEvents(
   const handleNavigation = useCallback(
     (event: string, detail: string) => {
       if (goneRef.current) return true;
-      const nav: Record<string, { msg: string; level: 'info' | 'error' }> = {
-        [WsEvent.roomClosed]: { msg: '방이 종료되었습니다', level: 'info' },
-        kicked: { msg: '방에서 추방되었습니다', level: 'error' },
-        duplicateSession: { msg: '다른 기기에서 접속하여 연결이 종료되었습니다', level: 'info' },
-        joinedOtherRoom: { msg: '', level: 'info' },
+      const nav: Partial<Record<WsEvent, { msg: string; level: 'info' | 'error' }>> = {
+        [WsEvent.roomClosed]: { msg: t('nav.roomClosed'), level: 'info' },
+        [WsEvent.userKicked]: { msg: t('nav.kicked'), level: 'error' },
+        [WsEvent.duplicateSession]: { msg: t('nav.duplicateSession'), level: 'info' },
+        [WsEvent.joinedOtherRoom]: { msg: '', level: 'info' },
       };
-      const entry = nav[event];
+      const entry = nav[event as WsEvent];
       if (!entry) return false;
       goneRef.current = true;
       if (entry.msg) toast[entry.level](entry.msg);
@@ -182,10 +185,10 @@ export function useRoomEvents(
   const onSystem = useCallback(
     (data: { event: string; detail: string; data?: Record<string, unknown> }) => {
       // 채팅 제한
-      if (data.event === 'chatMuted') {
-        const seconds = parseInt(data.detail.match(/\d+/)?.[0] ?? '30', 10);
+      if (data.event === WsEvent.chatMuted) {
+        const seconds = parseInt(data.detail, 10) || 30;
         setMutedUntil(Date.now() + seconds * 1000);
-        toast.error(data.detail);
+        toast.error(t('chatMuted', { seconds }));
         return;
       }
 
@@ -194,7 +197,8 @@ export function useRoomEvents(
 
       // 권한 변경
       if (data.event === WsEvent.permissionChanged) {
-        toast.info(data.detail);
+        const key = data.detail === 'djTransferred' ? 'djTransferred' : 'permissionChanged';
+        toast.info(t(`nav.${key}` as 'nav.djTransferred' | 'nav.permissionChanged'));
         invalidate.permissions(roomId);
         return;
       }
@@ -307,6 +311,22 @@ export function useRoomEvents(
   const markGone = useCallback(() => {
     goneRef.current = true;
   }, []);
+
+  // 모바일 백그라운드 복귀 시 방 유효성 체크
+  useEffect(() => {
+    const onVisibility = async () => {
+      if (document.visibilityState !== 'visible' || goneRef.current) return;
+      try {
+        await roomsControllerFindOne(roomId);
+      } catch {
+        goneRef.current = true;
+        toast.error(t('roomGone'));
+        router.push('/rooms');
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, [roomId, router]);
 
   // listening 중 audio.currentTime → timeSync 갱신은 useAudio의 onTimeUpdate 콜백으로 처리
 
