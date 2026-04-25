@@ -1,5 +1,30 @@
 # Changelog
 
+## v0.1.11
+
+### 🔔 Push 알림
+
+- 곡 변경, 투표 스킵, 호스트 변경, 추방 시 Push 알림 (#10)
+- 곡 변경 알림에 썸네일 + ⭐ 즐겨찾기 액션 버튼
+- 알림 클릭 시 해당 방 탭으로 포커스
+- 방별 알림 음소거 + 트리거별 ON/OFF 설정
+- 알림 설정: 방 내 벨 아이콘 + 프로필 설정
+- 브라우저 권한 상태 표시 + OS 알림 차단 안내
+- 구독 등록 시 테스트 알림 발송 (파이프라인 검증)
+- VAPID 키 자동 생성 (설정 불필요)
+
+### 🎵 메타데이터 매칭
+
+- MusicBrainz title-only 검색 시 score 95 + duration 5초로 오매칭 방지 강화
+
+### ⚙️ 인프라
+
+- NestJS 라이프사이클 개선 — onReady 패턴 제거, OnApplicationBootstrap 전환
+- 개발 환경 전용 TestModule (토큰 발급 + Push 테스트)
+- Service Worker 버전 package.json 연동
+
+---
+
 ## v0.1.10
 
 ### 🔍 검색 개선
