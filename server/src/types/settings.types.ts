@@ -31,6 +31,11 @@ export enum OptionKey {
   TranslationEnabled = 'translation.enabled',
   TranslationDailyLimit = 'translation.dailyLimit',
   TranslationModel = 'translation.model',
+
+  // Push 알림
+  VapidPublicKey = 'secret.vapidPublicKey',
+  VapidPrivateKey = 'secret.vapidPrivateKey',
+  VapidMailto = 'push.vapidMailto',
 }
 
 export type OptionType = 'boolean' | 'number' | 'string' | 'select';
@@ -76,4 +81,9 @@ export const OPTION_METAS: Record<OptionKey, OptionMeta> = {
   [OptionKey.TranslationEnabled]: { type: 'boolean', defaultValue: 'true' },
   [OptionKey.TranslationDailyLimit]: { type: 'number', defaultValue: '200', min: 10, max: 1000 },
   [OptionKey.TranslationModel]: { type: 'select', defaultValue: 'gemini-2.5-flash-lite' },
+
+  // Push 알림
+  [OptionKey.VapidPublicKey]: { type: 'string', defaultValue: '', secret: true },
+  [OptionKey.VapidPrivateKey]: { type: 'string', defaultValue: '', secret: true },
+  [OptionKey.VapidMailto]: { type: 'string', defaultValue: 'mailto:admin@example.com' },
 };

@@ -12,7 +12,6 @@ export class SettingsService implements OnModuleInit {
   private readonly logger = new Logger(SettingsService.name);
   private readonly cache = new Map<string, string>();
   private jwtSecret!: string;
-  private readyCallbacks: (() => Promise<void>)[] = [];
 
   constructor(
     @InjectRepository(SystemSetting) private readonly repo: Repository<SystemSetting>,
@@ -58,14 +57,17 @@ export class SettingsService implements OnModuleInit {
 
     this.logger.log(`Loaded ${rows.length} system settings`);
 
-    // 의존 서비스 초기화 트리거
-    for (const cb of this.readyCallbacks) await cb();
-    this.readyCallbacks = [];
-  }
-
-  /** SettingsService 초기화 완료 후 콜백 등록 */
-  onReady(cb: () => Promise<void>): void {
-    this.readyCallbacks.push(cb);
+    // VAPID 키 자동 생성 (미설정 시)
+    if (!this.cache.has(OptionKey.VapidPublicKey) || !this.cache.has(OptionKey.VapidPrivateKey)) {
+      const wp = await import('web-push');
+      const gen = ('default' in wp ? wp.default : wp) as {
+        generateVAPIDKeys: () => { publicKey: string; privateKey: string };
+      };
+      const keys = gen.generateVAPIDKeys();
+      await this.set(OptionKey.VapidPublicKey, keys.publicKey);
+      await this.set(OptionKey.VapidPrivateKey, keys.privateKey);
+      this.logger.log('VAPID keys auto-generated');
+    }
   }
 
   // ─── Getters ───────────────────────────────────────

@@ -468,4 +468,13 @@ export class RoomsGateway {
       if (c !== exclude && c.readyState === WebSocket.OPEN) c.send(data);
     });
   }
+
+  /** 방에 연결된 유저 ID 목록 */
+  getRoomUserIds(roomId: string): string[] {
+    const ids = new Set<string>();
+    this.roomClients.get(roomId)?.forEach((c) => {
+      if (c.data?.userId) ids.add(c.data.userId);
+    });
+    return [...ids];
+  }
 }

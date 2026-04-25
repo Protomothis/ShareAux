@@ -1,3 +1,6 @@
+// ─── Environment ────────────────────────────────────────
+export const IS_DEV = process.env.NODE_ENV !== 'production';
+
 // ─── Throttle ───────────────────────────────────────────
 export const THROTTLE_TTL_MS = 60_000;
 export const THROTTLE_LIMIT_DEFAULT = 60;

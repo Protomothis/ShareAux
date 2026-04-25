@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, type OnApplicationBootstrap } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import type { Request } from 'express';
 import { Strategy, type VerifyCallback } from 'passport-google-oauth20';
@@ -9,7 +9,7 @@ import { OptionKey } from '../../types/settings.types.js';
 import { AuthService } from '../auth.service.js';
 
 @Injectable()
-export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
+export class GoogleStrategy extends PassportStrategy(Strategy, 'google') implements OnApplicationBootstrap {
   constructor(
     private readonly authService: AuthService,
     private readonly settings: SettingsService,
@@ -19,9 +19,12 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     const callbackURL = settings.get(OptionKey.GoogleCallbackUrl) || 'http://localhost:3000/api/auth/google/callback';
     super({ clientID, clientSecret, callbackURL, scope: ['email', 'profile'], passReqToCallback: true });
     if (clientID === 'placeholder') {
-      console.warn('[GoogleStrategy] Google OAuth credentials not set — will reinitialize after settings load');
+      console.warn('[GoogleStrategy] Google OAuth credentials not set — will reinitialize on bootstrap');
     }
-    settings.onReady(async () => this.reinitialize());
+  }
+
+  onApplicationBootstrap(): void {
+    this.reinitialize();
   }
 
   /** 키 변경 시 Strategy 핫 리로드 */

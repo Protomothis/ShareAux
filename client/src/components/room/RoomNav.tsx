@@ -1,13 +1,17 @@
 'use client';
 
-import { Settings, Share2, Users } from 'lucide-react';
+import { Bell, Settings, Share2, Users } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
+import { NotificationSettings } from '@/components/common/NotificationSettings';
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface RoomNavProps {
+  roomId: string;
   roomName: string;
   memberCount: number;
   listenerCount: number;
@@ -18,6 +22,7 @@ interface RoomNavProps {
 }
 
 export default function RoomNav({
+  roomId,
   roomName,
   memberCount,
   listenerCount,
@@ -44,6 +49,18 @@ export default function RoomNav({
           <TooltipContent>{t('settings')}</TooltipContent>
         </Tooltip>
       )}
+
+      <Popover>
+        <Tooltip>
+          <TooltipTrigger render={<PopoverTrigger render={<Button variant="ghost" size="icon" />} />}>
+            <Bell size={18} />
+          </TooltipTrigger>
+          <TooltipContent>{t('notifications')}</TooltipContent>
+        </Tooltip>
+        <PopoverContent className="w-72 border-white/10 bg-sa-bg-secondary p-4">
+          <NotificationSettings roomId={roomId} />
+        </PopoverContent>
+      </Popover>
 
       <h1 className="flex-1 truncate text-center font-semibold text-white">{roomName}</h1>
 

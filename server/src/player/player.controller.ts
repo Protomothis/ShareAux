@@ -1,4 +1,5 @@
 import { MetaStatus } from '../types/meta-status.enum.js';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Body, Controller, Get, Logger, Param, ParseUUIDPipe, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -17,7 +18,8 @@ import { LyricsService } from '../services/lyrics.service.js';
 import { TranslationService } from '../services/translation.service.js';
 import type { AuthenticatedRequest } from '../types/index.js';
 import { ErrorCode } from '../types/error-code.enum.js';
-import { LyricsStatus, Permission, WsEvent } from '../types/index.js';
+import { LyricsStatus, Permission, PushEvent, WsEvent } from '../types/index.js';
+import { PUSH_EVENT, pushPayload } from '../types/push-event-payload.js';
 import { LyricsResponse } from './dto/lyrics-response.dto.js';
 import { PlaybackStatus } from './dto/playback-status.dto.js';
 import { VoteSkipResponse } from './dto/vote-skip-response.dto.js';
@@ -34,6 +36,7 @@ export class PlayerController {
     private readonly memberService: MemberService,
     private readonly autoDjService: AutoDjService,
     private readonly translationService: TranslationService,
+    private readonly eventEmitter: EventEmitter2,
     @InjectRepository(RoomMember) private readonly memberRepo: Repository<RoomMember>,
     @InjectRepository(RoomQueue) private readonly queueRepo: Repository<RoomQueue>,
   ) {
@@ -49,6 +52,20 @@ export class PlayerController {
 
       if (status?.track) {
         this.searchLyricsWhenReady(roomId, status.track, true);
+        // Push 알림 — streaming 전환 시에만 (preparing에서는 스킵)
+        if (status.streamState === 'streaming') {
+          this.eventEmitter.emit(
+            PUSH_EVENT,
+            pushPayload(PushEvent.TrackChanged, {
+              roomId,
+              userIds: this.gateway.getRoomUserIds(roomId),
+              icon: status.track.thumbnail ?? undefined,
+              image: status.track.thumbnail ?? undefined,
+              tag: `track:${roomId}`,
+              data: { trackName: status.track.name, artist: status.track.artist },
+            }),
+          );
+        }
       }
       for (const q of queue.slice(0, 3)) {
         this.searchLyricsWhenReady(roomId, q.track);
@@ -243,6 +260,16 @@ export class PlayerController {
     if (r.skipped) {
       this.gateway.broadcastSystem(roomId, WsEvent.PlaybackUpdated, '', { streamState: 'skipping' });
       this.gateway.broadcastSystem(roomId, WsEvent.VoteSkipPassed, '');
+      this.eventEmitter.emit(
+        PUSH_EVENT,
+        pushPayload(PushEvent.VoteSkipPassed, {
+          roomId,
+          userIds: this.gateway.getRoomUserIds(roomId),
+          excludeUserId: req.user.userId,
+          tag: `skip:${roomId}`,
+          data: {},
+        }),
+      );
     }
 
     await this.broadcastPlayback(roomId);

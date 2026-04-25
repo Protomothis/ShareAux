@@ -1,6 +1,14 @@
 import type { NextConfig } from 'next';
+import { readFileSync, writeFileSync } from 'fs';
 import createMDX from '@next/mdx';
 import createNextIntlPlugin from 'next-intl/plugin';
+
+// SW 버전을 package.json에서 주입
+const pkg = JSON.parse(readFileSync('./package.json', 'utf8')) as { version: string };
+const swPath = './public/sw.js';
+const sw = readFileSync(swPath, 'utf8');
+const updated = sw.replace(/const SW_VERSION = '.*?'/, `const SW_VERSION = '${pkg.version}'`);
+if (sw !== updated) writeFileSync(swPath, updated);
 
 const nextConfig: NextConfig = {
   output: 'standalone',

@@ -1,4 +1,4 @@
-import { Injectable, Logger, type OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, type OnApplicationBootstrap } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -26,7 +26,7 @@ const JA_REGEX = /[\u3040-\u30FF\u4E00-\u9FFF]/;
 import { detectLang } from './detect-lang.js';
 
 @Injectable()
-export class TranslationService implements OnModuleInit {
+export class TranslationService implements OnApplicationBootstrap {
   private readonly logger = new Logger(TranslationService.name);
   private readonly queue: TranslationJob[] = [];
   private processing = false;
@@ -40,8 +40,8 @@ export class TranslationService implements OnModuleInit {
     private readonly settings: SettingsService,
   ) {}
 
-  async onModuleInit(): Promise<void> {
-    this.settings.onReady(() => this.initGemini());
+  async onApplicationBootstrap(): Promise<void> {
+    await this.initGemini();
   }
 
   private async initGemini(): Promise<void> {

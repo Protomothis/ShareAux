@@ -346,7 +346,9 @@
     "deleteConfirmTitle": "정말 탈퇴하시겠습니까?",
     "deleteConfirmDesc": "이 작업은 되돌릴 수 없습니다.",
     "deleteSubmit": "탈퇴하기",
-    "cancel": "취소"
+    "cancel": "취소",
+    "notifications": "알림 설정",
+    "notificationsDesc": "알림 트리거 설정"
   },
   "permission": {
     "dj": "🎧 DJ",
@@ -856,7 +858,8 @@
       "duplicateSession": "다른 기기에서 접속하여 연결이 종료되었습니다",
       "permissionChanged": "권한이 변경되었습니다",
       "djTransferred": "DJ 권한을 위임받았습니다"
-    }
+    },
+    "notifications": "알림 설정"
   },
   "authCallback": {
     "loginFailed": "로그인에 실패했습니다",
@@ -1059,5 +1062,44 @@
     "FAV_002": "즐겨찾기는 로그인 회원만 사용할 수 있습니다",
     "FAV_003": "폴더는 최대 20개까지 생성할 수 있습니다",
     "FAV_004": "해당 폴더를 찾을 수 없습니다"
+  },
+  "notification": {
+    "trackChanged": {
+      "title": "{trackName}",
+      "body": "{artist}"
+    },
+    "voteSkipPassed": {
+      "title": "투표 스킵",
+      "body": "투표로 곡이 넘어갔습니다"
+    },
+    "hostChanged": {
+      "title": "호스트 변경",
+      "body": "호스트가 되었습니다"
+    },
+    "kicked": {
+      "title": "추방",
+      "body": "방에서 추방되었습니다"
+    },
+    "actions": {
+      "favorite": "⭐ 즐겨찾기"
+    },
+    "test": {
+      "title": "🔔 알림 활성화",
+      "body": "푸시 알림이 정상적으로 설정되었습니다."
+    }
+  },
+  "notificationSettings": {
+    "permissionDenied": "브라우저에서 알림이 차단되어 있습니다. 브라우저 설정에서 허용해주세요.",
+    "permissionDefault": "알림을 받으려면 권한을 허용해주세요.",
+    "permissionGranted": "알림이 활성화되어 있습니다.",
+    "allow": "알림 허용",
+    "muteRoom": "이 방 알림 끄기",
+    "events": {
+      "trackChanged": "곡 변경 알림",
+      "voteSkipPassed": "투표 스킵 알림",
+      "hostChanged": "호스트 변경 알림"
+    },
+    "registering": "알림 등록 중...",
+    "osHint": "OS 알림 설정에서 브라우저 알림이 차단되어 있으면 표시되지 않을 수 있습니다."
   }
 }

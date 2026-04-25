@@ -28,4 +28,7 @@ export const OptionKey = {
   translationenabled: 'translation.enabled',
   translationdailyLimit: 'translation.dailyLimit',
   translationmodel: 'translation.model',
+  secretvapidPublicKey: 'secret.vapidPublicKey',
+  secretvapidPrivateKey: 'secret.vapidPrivateKey',
+  pushvapidMailto: 'push.vapidMailto',
 } as const;

@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, ChevronRight, KeyRound, Link2, Loader2, Trash2, User as UserIcon } from 'lucide-react';
+import { ArrowLeft, Bell, ChevronRight, KeyRound, Link2, Loader2, Trash2, User as UserIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import Modal from '@/components/common/Modal';
+import { NotificationSettings } from '@/components/common/NotificationSettings';
 import { FormField } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
@@ -22,7 +23,7 @@ import {
 } from '@/api/auth/auth';
 import { useAuthStore } from '@/stores/auth';
 
-type Page = 'menu' | 'nickname' | 'password' | 'google' | 'delete';
+type Page = 'menu' | 'nickname' | 'password' | 'google' | 'delete' | 'notifications';
 
 interface ProfileSettingsModalProps {
   open: boolean;
@@ -106,6 +107,7 @@ export default function ProfileSettingsModal({ open, onClose }: ProfileSettingsM
       {page === 'password' && <PasswordPage onBack={() => setPage('menu')} onDone={done} />}
       {page === 'google' && <GooglePage me={me} onBack={() => setPage('menu')} />}
       {page === 'delete' && <DeletePage onBack={() => setPage('menu')} router={router} />}
+      {page === 'notifications' && <NotificationsPage onBack={() => setPage('menu')} />}
     </Modal>
   );
 }
@@ -144,6 +146,13 @@ function MenuPage({ setPage, me, role }: { setPage: (p: Page) => void; me: User 
             onClick={() => setPage('google')}
           />
         )}
+        <div className="my-1 h-px bg-white/[0.06]" />
+        <MenuItem
+          icon={<Bell size={16} />}
+          label={t('notifications')}
+          description={t('notificationsDesc')}
+          onClick={() => setPage('notifications')}
+        />
         {!isGuest && role !== 'superAdmin' && (
           <>
             <div className="my-1 h-px bg-white/[0.06]" />
@@ -398,6 +407,20 @@ function DeletePage({ onBack, router }: { onBack: () => void; router: ReturnType
           </Button>
         </Modal.Footer>
       </Modal>
+    </>
+  );
+}
+
+function NotificationsPage({ onBack }: { onBack: () => void }) {
+  const t = useTranslations('profile');
+  return (
+    <>
+      <Modal.Header>
+        <SubHeader title={t('notifications')} onBack={onBack} />
+      </Modal.Header>
+      <Modal.Body>
+        <NotificationSettings />
+      </Modal.Body>
     </>
   );
 }

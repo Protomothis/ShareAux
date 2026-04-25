@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { Room } from '../entities/room.entity.js';
@@ -7,7 +8,8 @@ import { JwtAuthGuard } from '../guards/jwt-auth.guard.js';
 import { AutoDjService } from '../services/auto-dj.service.js';
 import { ChatMuteService } from '../services/chat-mute.service.js';
 import type { AuthenticatedRequest } from '../types/index.js';
-import { WsEvent } from '../types/index.js';
+import { PushEvent, WsEvent } from '../types/index.js';
+import { PUSH_EVENT, pushPayload } from '../types/push-event-payload.js';
 import { BanInfo } from './dto/ban-info.dto.js';
 import { CreateRoomDto } from './dto/create-room.dto.js';
 import { JoinRoomDto } from './dto/join-room.dto.js';
@@ -28,6 +30,7 @@ export class RoomsController {
     private gateway: RoomsGateway,
     private autoDj: AutoDjService,
     private chatMute: ChatMuteService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   @Post()
@@ -165,6 +168,15 @@ export class RoomsController {
     const newHost = await this.rooms.transferHostTo(id, req.user.userId, targetUserId);
     this.gateway.broadcastSystem(id, WsEvent.HostChanged, '', { nickname: newHost.nickname });
     this.gateway.sendToUser(id, targetUserId, WsEvent.PermissionChanged, 'djTransferred');
+    this.eventEmitter.emit(
+      PUSH_EVENT,
+      pushPayload(PushEvent.HostChanged, {
+        roomId: id,
+        userIds: [targetUserId],
+        tag: `host:${id}`,
+        data: {},
+      }),
+    );
     return { ok: true };
   }
 
@@ -180,6 +192,15 @@ export class RoomsController {
     await this.rooms.kick(id, req.user.userId, targetUserId);
     this.gateway.kickUser(id, targetUserId);
     this.gateway.broadcastSystem(id, WsEvent.UserKicked, '');
+    this.eventEmitter.emit(
+      PUSH_EVENT,
+      pushPayload(PushEvent.Kicked, {
+        roomId: id,
+        userIds: [targetUserId],
+        tag: `kicked:${id}`,
+        data: {},
+      }),
+    );
     return { ok: true };
   }
 

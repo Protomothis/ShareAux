@@ -2,13 +2,14 @@ import type { MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AdminModule } from './admin/admin.module.js';
 import { FavoritesModule } from './favorites/favorites.module.js';
-import { THROTTLE_LIMIT_DEFAULT, THROTTLE_TTL_MS } from './constants.js';
+import { THROTTLE_LIMIT_DEFAULT, THROTTLE_TTL_MS, IS_DEV } from './constants.js';
 import { HealthController, SetupController } from './app.controller.js';
 import { AuthModule } from './auth/auth.module.js';
 import { CaptchaModule } from './captcha/captcha.module.js';
@@ -16,11 +17,13 @@ import { User } from './entities/user.entity.js';
 import { GlobalExceptionFilter } from './filters/http-exception.filter.js';
 import { IpBanMiddleware } from './middleware/ip-ban.middleware.js';
 import { PlayerModule } from './player/player.module.js';
+import { PushModule } from './push/push.module.js';
 import { QueueModule } from './queue/queue.module.js';
 import { RoomsModule } from './rooms/rooms.module.js';
 import { SearchModule } from './search/search.module.js';
 import { ServicesModule } from './services/services.module.js';
 import { TracksModule } from './tracks/tracks.module.js';
+import { TestModule } from './test/test.module.js';
 
 @Module({
   imports: [
@@ -36,17 +39,22 @@ import { TracksModule } from './tracks/tracks.module.js';
     }),
     ThrottlerModule.forRoot([{ ttl: THROTTLE_TTL_MS, limit: THROTTLE_LIMIT_DEFAULT }]),
     ScheduleModule.forRoot(),
+    EventEmitterModule.forRoot(),
     ServicesModule,
     AuthModule,
     CaptchaModule,
     RoomsModule,
     PlayerModule,
+    PushModule,
     QueueModule,
     SearchModule,
     AdminModule,
     FavoritesModule,
     TracksModule,
     TypeOrmModule.forFeature([User]),
+
+    // 개발 환경 전용 (테스트 토큰 발급 등)
+    ...(IS_DEV ? [TestModule] : []),
   ],
   controllers: [HealthController, SetupController],
   providers: [

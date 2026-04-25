@@ -65,6 +65,9 @@ export function useRoomEvents(
       const entry = nav[event as WsEvent];
       if (!entry) return false;
       goneRef.current = true;
+      if (event === WsEvent.userKicked) {
+        // Push 알림은 서버에서 발송
+      }
       if (entry.msg) toast[entry.level](entry.msg);
       router.push('/rooms');
       return true;
@@ -264,8 +267,15 @@ export function useRoomEvents(
         if (!goneRef.current) {
           invalidate.room(roomId);
           invalidate.quota(roomId);
-          if (data.event === WsEvent.hostChanged) invalidate.permissions(roomId);
+          if (data.event === WsEvent.hostChanged) {
+            invalidate.permissions(roomId);
+          }
         }
+      }
+
+      // 투표 스킵 통과
+      if (data.event === WsEvent.voteSkipPassed) {
+        // Push 알림은 서버에서 발송
       }
 
       // 투표

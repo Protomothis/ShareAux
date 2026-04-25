@@ -346,7 +346,9 @@
     "deleteConfirmTitle": "Are you sure you want to delete your account?",
     "deleteConfirmDesc": "This action cannot be undone.",
     "deleteSubmit": "Delete account",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "notifications": "Notifications",
+    "notificationsDesc": "Configure notification triggers"
   },
   "permission": {
     "dj": "🎧 DJ",
@@ -856,7 +858,8 @@
       "duplicateSession": "Connected from another device",
       "permissionChanged": "Your permissions have been updated",
       "djTransferred": "You have been granted DJ permissions"
-    }
+    },
+    "notifications": "Notification settings"
   },
   "authCallback": {
     "loginFailed": "Login failed",
@@ -1059,5 +1062,44 @@
     "FAV_002": "Favorites are only available for registered users",
     "FAV_003": "Maximum 20 folders",
     "FAV_004": "Folder not found"
+  },
+  "notification": {
+    "trackChanged": {
+      "title": "{trackName}",
+      "body": "{artist}"
+    },
+    "voteSkipPassed": {
+      "title": "Vote Skip",
+      "body": "Track skipped by vote"
+    },
+    "hostChanged": {
+      "title": "Host Changed",
+      "body": "You are now the host"
+    },
+    "kicked": {
+      "title": "Kicked",
+      "body": "You have been kicked from the room"
+    },
+    "actions": {
+      "favorite": "⭐ Favorite"
+    },
+    "test": {
+      "title": "🔔 Push Active",
+      "body": "Push notifications are working!"
+    }
+  },
+  "notificationSettings": {
+    "permissionDenied": "Notifications are blocked. Please enable them in your browser settings.",
+    "permissionDefault": "Allow notifications to stay updated.",
+    "permissionGranted": "Notifications are enabled.",
+    "allow": "Allow",
+    "muteRoom": "Mute this room",
+    "events": {
+      "trackChanged": "Track change",
+      "voteSkipPassed": "Vote skip",
+      "hostChanged": "Host change"
+    },
+    "registering": "Registering notifications...",
+    "osHint": "Notifications may not appear if blocked in your OS notification settings."
   }
 }

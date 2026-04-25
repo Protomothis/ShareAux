@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import type { Track } from '@/api/model';
+import { usePushSubscription } from '@/hooks/usePushSubscription';
 import { usePlayerControllerGetStatus } from '@/api/player/player';
 import { useQueueControllerGetHistory, useQueueControllerGetQueue } from '@/api/queue/queue';
 import { roomsControllerJoin, roomsControllerLeave, useRoomsControllerFindOne } from '@/api/rooms/rooms';
@@ -79,6 +80,7 @@ export default function RoomClient({ id }: { id: string }) {
   );
 
   // --- Events ---
+  usePushSubscription();
   const listeningRef = useRef(false);
   const trackRef = useRef<Track | null>(null);
   const getOneWayRef = useRef<() => number>(() => 0);
@@ -361,6 +363,7 @@ export default function RoomClient({ id }: { id: string }) {
       style={kbOffset ? { height: `${window.innerHeight - kbOffset}px` } : undefined}
     >
       <RoomNav
+        roomId={id}
         roomName={room.name}
         memberCount={members.length}
         listenerCount={listenerCount}
