@@ -217,9 +217,9 @@ export class SearchService {
           const artist = cleanArtist(track.artist ?? '');
           const title = extractTitle(track.name);
           const dur = track.durationMs ?? undefined;
-          // 1차: artist + title, 2차: title only
+          // 1차: artist + title, 2차: title only (제목이 충분히 구체적일 때만)
           let mb = await this.musicBrainz.search(artist, title, dur);
-          if (!mb && artist) {
+          if (!mb && artist && title.length >= 5) {
             mb = await this.musicBrainz.search('', title, dur);
           }
           if (mb) {
