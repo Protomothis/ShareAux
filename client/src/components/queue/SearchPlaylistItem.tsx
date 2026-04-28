@@ -3,7 +3,7 @@
 import { EmptyState } from '@/components/ui/empty-state';
 
 import { ChevronDown, ListMusic, Loader2 } from 'lucide-react';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import type { PlaylistResult } from '@/api/model';
 import { searchControllerGetPlaylistTracks } from '@/api/search/search';
@@ -45,7 +45,7 @@ export function SearchPlaylistItem({
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
-  const fetched = useRef(false);
+  const [fetched, setFetched] = useState(false);
 
   const fetchPage = useCallback(
     async (p: number) => {
@@ -67,8 +67,8 @@ export function SearchPlaylistItem({
 
   const handleToggle = () => {
     setOpen((prev) => {
-      if (!prev && !fetched.current) {
-        fetched.current = true;
+      if (!prev && !fetched) {
+        setFetched(true);
         void fetchPage(1);
       }
       return !prev;
@@ -135,7 +135,7 @@ export function SearchPlaylistItem({
           )}
 
           {/* Empty */}
-          {!loading && !error && fetched.current && tracks.length === 0 && (
+          {!loading && !error && fetched && tracks.length === 0 && (
             <EmptyState title={t('playlist.noTracks')} className="py-3" />
           )}
 
