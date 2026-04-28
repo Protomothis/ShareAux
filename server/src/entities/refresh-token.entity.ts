@@ -1,8 +1,9 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 import { User } from './user.entity.js';
 
 @Entity('refresh_tokens')
+@Index(['tokenHash'])
 export class RefreshToken {
   @PrimaryGeneratedColumn('uuid')
   id!: string;

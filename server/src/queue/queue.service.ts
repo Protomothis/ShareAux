@@ -1,7 +1,7 @@
 import type { TrackSource } from './dto/add-tracks-body.dto.js';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, MoreThan, Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 import { PlayHistory } from '../entities/play-history.entity.js';
 
@@ -212,14 +212,19 @@ export class QueueService {
 
     // 재신청 쿨다운 체크 (0=제한없음, -1=방 종료까지, >0=N분)
     if (!isPrivileged && room && room.replayCooldownMin !== 0) {
-      for (const track of unique) {
-        const where: Record<string, unknown> = { room: { id: roomId }, sourceId: track.sourceId };
-        if (room.replayCooldownMin > 0) {
-          where.playedAt = MoreThan(new Date(Date.now() - room.replayCooldownMin * 60_000));
-        }
-        const recent = await this.playHistoryRepo.findOne({ where, order: { playedAt: 'DESC' } });
-        if (recent) throw new AppException(ErrorCode.QUEUE_008);
+      const sourceIds = unique.map((t) => t.sourceId);
+      const qb = this.playHistoryRepo
+        .createQueryBuilder('ph')
+        .select('ph.source_id')
+        .where('ph.room_id = :roomId', { roomId })
+        .andWhere('ph.source_id IN (:...sourceIds)', { sourceIds });
+      if (room.replayCooldownMin > 0) {
+        qb.andWhere('ph.played_at > :cutoff', {
+          cutoff: new Date(Date.now() - room.replayCooldownMin * 60_000),
+        });
       }
+      const recent = await qb.getRawMany<{ source_id: string }>();
+      if (recent.length) throw new AppException(ErrorCode.QUEUE_008);
     }
 
     if (!isPrivileged && room) {
