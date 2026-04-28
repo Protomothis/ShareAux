@@ -4,6 +4,7 @@ import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@ne
 
 import { Room } from '../entities/room.entity.js';
 import { RoomMember } from '../entities/room-member.entity.js';
+import { ControllerGuard } from '../guards/controller.guard.js';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard.js';
 import { AutoDjService } from '../services/auto-dj.service.js';
 import { ChatMuteService } from '../services/chat-mute.service.js';
@@ -250,7 +251,7 @@ export class RoomsController {
   }
 
   @Post(':id/mute/:userId')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ControllerGuard)
   @ApiOperation({ summary: '채팅 제한' })
   @ApiBearerAuth()
   async muteUser(
@@ -263,7 +264,7 @@ export class RoomsController {
   }
 
   @Delete(':id/mute/:userId')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ControllerGuard)
   @ApiOperation({ summary: '채팅 제한 해제' })
   @ApiBearerAuth()
   async unmuteUser(@Param('id', ParseUUIDPipe) id: string, @Param('userId', ParseUUIDPipe) userId: string) {
