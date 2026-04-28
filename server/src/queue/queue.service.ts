@@ -1,7 +1,7 @@
 import type { TrackSource } from './dto/add-tracks-body.dto.js';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MoreThan, Repository } from 'typeorm';
+import { In, MoreThan, Repository } from 'typeorm';
 
 import { PlayHistory } from '../entities/play-history.entity.js';
 
@@ -170,12 +170,15 @@ export class QueueService {
       throw new AppException(ErrorCode.QUEUE_007);
     }
 
-    // sourceId → Track upsert
-    const tracks: Track[] = [];
-    for (const item of items) {
-      let track = await this.trackRepo.findOneBy({ sourceId: item.sourceId });
-      if (!track) {
-        track = await this.trackRepo.save(
+    // sourceId → Track 배치 upsert
+    const sourceIds = items.map((i) => i.sourceId);
+    const existingTracks = await this.trackRepo.findBy({ sourceId: In(sourceIds) });
+    const existingMap = new Map(existingTracks.map((t) => [t.sourceId, t]));
+
+    const newItems = items.filter((i) => !existingMap.has(i.sourceId));
+    if (newItems.length) {
+      const created = await this.trackRepo.save(
+        newItems.map((item) =>
           this.trackRepo.create({
             provider: item.provider,
             sourceId: item.sourceId,
@@ -185,10 +188,12 @@ export class QueueService {
             durationMs: item.durationMs,
             fetchedAt: new Date(),
           }),
-        );
-      }
-      tracks.push(track);
+        ),
+      );
+      for (const t of created) existingMap.set(t.sourceId, t);
     }
+
+    const tracks = items.map((i) => existingMap.get(i.sourceId)!);
 
     // 중복 제거 (큐 + 현재 재생 중인 곡)
     const existing = await this.queueRepo.find({
