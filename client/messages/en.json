@@ -1100,6 +1100,7 @@
       "hostChanged": "Host change"
     },
     "registering": "Registering notifications...",
-    "osHint": "Notifications may not appear if blocked in your OS notification settings."
+    "osHint": "Notifications may not appear if blocked in your OS notification settings.",
+    "iosAddToHome": "To receive notifications on iOS, tap the Share button (□↑) and select 'Add to Home Screen', then enable notifications from the app."
   }
 }
