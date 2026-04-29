@@ -72,12 +72,9 @@ export default function Queue({
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
   // 이미 본 아이템 ID 추적 — shimmer/stagger는 처음 나타날 때만
-  const seenIdsRef = useRef<Set<string>>(null);
-  if (!seenIdsRef.current) {
-    seenIdsRef.current = new Set(queue.map((q) => q.id));
-  }
+  const seenIdsRef = useRef(new Set(queue.map((q) => q.id)));
   const staggerMap = useMemo(() => {
-    const seen = seenIdsRef.current!;
+    const seen = seenIdsRef.current;
     const stagger = new Map<string, number>();
     let idx = 0;
     for (const q of queue) {

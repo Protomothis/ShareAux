@@ -1,11 +1,12 @@
 import { thumbs } from '@dicebear/collection';
 import { createAvatar } from '@dicebear/core';
 
+const MAX_CACHE = 200;
 const cache = new Map<string, string>();
 
 export function getAvatar(seed: string) {
-  const key = seed;
-  if (cache.has(key)) return cache.get(key)!;
+  const cached = cache.get(seed);
+  if (cached) return cached;
   const svg = createAvatar(thumbs, {
     seed,
     backgroundColor: [
@@ -39,6 +40,7 @@ export function getAvatar(seed: string) {
     ],
   }).toString();
   const uri = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-  cache.set(key, uri);
+  if (cache.size >= MAX_CACHE) cache.delete(cache.keys().next().value!);
+  cache.set(seed, uri);
   return uri;
 }

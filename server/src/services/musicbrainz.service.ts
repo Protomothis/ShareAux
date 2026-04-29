@@ -38,14 +38,24 @@ export class MusicBrainzService {
     });
   }
 
-  /** 후보 중 duration이 가장 가까운 recording 선택 */
+  /** 간이 텍스트 유사도 — 소문자 정규화 후 포함 관계 확인 */
+  private titleMatches(query: string, candidate: string): boolean {
+    const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9\u3040-\u9fff\uac00-\ud7af]/g, '');
+    const q = norm(query);
+    const c = norm(candidate);
+    if (!q || !c) return false;
+    return c.includes(q) || q.includes(c);
+  }
+
+  /** 후보 중 title 유사도 + duration이 가장 가까운 recording 선택 */
   private pickBest(
     recordings: MbRecording[],
+    queryTitle: string,
     durationMs?: number,
     minScore = 80,
     maxDiffMs = 10_000,
   ): MbRecording | null {
-    const valid = recordings.filter((r) => r.score >= minScore);
+    const valid = recordings.filter((r) => r.score >= minScore && this.titleMatches(queryTitle, r.title));
     if (!valid.length) return null;
     if (!durationMs || valid.length === 1) return valid[0];
 
@@ -59,8 +69,7 @@ export class MusicBrainzService {
         best = r;
       }
     }
-    // duration 차이 초과면 오매칭 가능성 — score 1위 우선
-    return bestDiff > maxDiffMs ? valid[0] : best;
+    return bestDiff > maxDiffMs ? null : best;
   }
 
   /** MusicBrainz recording 검색 (rate limit: 1req/sec) */
@@ -81,9 +90,9 @@ export class MusicBrainzService {
       if (!res.ok) return null;
 
       const data = (await res.json()) as { recordings?: MbRecording[] };
-      const minScore = artist ? 80 : 95;
-      const maxDiff = artist ? 10_000 : 5_000;
-      const best = this.pickBest(data.recordings ?? [], durationMs, minScore, maxDiff);
+      const minScore = artist ? 85 : 95;
+      const maxDiff = artist ? 5_000 : 3_000;
+      const best = this.pickBest(data.recordings ?? [], title, durationMs, minScore, maxDiff);
       if (!best) return null;
 
       return {

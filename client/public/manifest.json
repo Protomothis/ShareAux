@@ -1,0 +1,17 @@
+{
+  "name": "ShareAux",
+  "short_name": "ShareAux",
+  "description": "Real-time music sharing platform",
+  "start_url": "/rooms",
+  "display": "standalone",
+  "background_color": "#0a0a1a",
+  "theme_color": "#ff4081",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

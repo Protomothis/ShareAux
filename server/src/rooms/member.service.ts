@@ -48,18 +48,22 @@ export class MemberService {
     return this.memberRepo.countBy({ roomId });
   }
 
-  /** 호스트 제외, voteSkip 권한이 있는 멤버 수 */
+  /** 호스트 제외, voteSkip 권한이 있는 멤버 수 (단일 쿼리) */
   async getVoteSkipEligibleCount(roomId: string): Promise<number> {
     const room = await this.roomRepo.findOneBy({ id: roomId });
     if (!room) return 0;
-    const members = await this.memberRepo.find({ where: { roomId } });
-    let count = 0;
-    for (const m of members) {
-      if (m.userId === room.hostId) continue;
-      const { permissions } = await this.getEffectivePermissions(roomId, m.userId);
-      if (permissions.includes(Permission.VoteSkip)) count++;
-    }
-    return count;
+
+    const result = await this.memberRepo
+      .createQueryBuilder('m')
+      .innerJoin(RoomPermission, 'rp', 'rp.room_id = m.room_id AND rp.user_id = m.user_id')
+      .innerJoin('m.user', 'u')
+      .where('m.room_id = :roomId', { roomId })
+      .andWhere('m.user_id != :hostId', { hostId: room.hostId })
+      .andWhere(`rp.permissions @> '"voteSkip"'`)
+      .andWhere(`(u.role != :guest OR u.account_permissions @> '"voteSkip"')`, { guest: UserRole.Guest })
+      .getCount();
+
+    return result;
   }
 
   async isHost(roomId: string, userId: string): Promise<boolean> {

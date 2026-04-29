@@ -15,9 +15,9 @@ export function useSearch(isOpen: boolean) {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [highlightIdx, setHighlightIdx] = useState(-1);
-  const suggestTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const suggestTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const suggestAbortRef = useRef<AbortController>(undefined);
-  const searchCache = useRef(
+  const searchCacheRef = useRef(
     new Map<string, { tracks: SearchResultItem[]; playlists: PlaylistResult[]; continuation?: string }>(),
   );
 
@@ -49,9 +49,9 @@ export function useSearch(isOpen: boolean) {
       }, 0);
       return () => clearTimeout(id);
     }
-    clearTimeout(suggestTimer.current);
+    clearTimeout(suggestTimerRef.current);
     if (query.trim() === debouncedQuery) return;
-    suggestTimer.current = setTimeout(() => {
+    suggestTimerRef.current = setTimeout(() => {
       suggestAbortRef.current?.abort();
       const ac = new AbortController();
       suggestAbortRef.current = ac;
@@ -64,13 +64,13 @@ export function useSearch(isOpen: boolean) {
         })
         .catch(() => {});
     }, 200);
-    return () => clearTimeout(suggestTimer.current);
+    return () => clearTimeout(suggestTimerRef.current);
   }, [query, debouncedQuery]);
 
   // 검색 실행
   useEffect(() => {
     if (!debouncedQuery) return;
-    const cached = searchCache.current.get(debouncedQuery);
+    const cached = searchCacheRef.current.get(debouncedQuery);
     if (cached) {
       setResults(cached.tracks);
       setPlaylists(cached.playlists);
@@ -83,7 +83,7 @@ export function useSearch(isOpen: boolean) {
       try {
         const data = await searchControllerSearch({ q: debouncedQuery });
         if (!cancelled) {
-          searchCache.current.set(debouncedQuery, data);
+          searchCacheRef.current.set(debouncedQuery, data);
           setResults(data.tracks);
           setPlaylists(data.playlists ?? []);
           setContinuation(data.continuation);
@@ -117,7 +117,7 @@ export function useSearch(isOpen: boolean) {
   const executeSearch = useCallback((q: string) => {
     const trimmed = q.trim();
     if (!trimmed) return;
-    clearTimeout(suggestTimer.current);
+    clearTimeout(suggestTimerRef.current);
     suggestAbortRef.current?.abort();
     setDebouncedQuery(trimmed);
     setShowSuggestions(false);

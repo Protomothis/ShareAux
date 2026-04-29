@@ -33,6 +33,7 @@ export async function generateMetadata() {
     metadataBase: new URL(baseUrl),
     title: { default: 'ShareAux', template: '%s | ShareAux' },
     description: t('description'),
+    manifest: '/manifest.json',
     openGraph: {
       title: 'ShareAux',
       description: t('description'),

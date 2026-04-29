@@ -1,14 +1,25 @@
 'use client';
 
 import { Activity, Clock, Cpu, DoorOpen, HardDrive, LayoutDashboard, Music, Ticket, Trash2, Users } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { DailyPlaysChart } from '@/components/admin/charts/DailyPlaysChart';
-import { RealtimeChart } from '@/components/admin/charts/RealtimeChart';
-import { ResourceChart } from '@/components/admin/charts/ResourceChart';
+const DailyPlaysChart = dynamic(
+  () => import('@/components/admin/charts/DailyPlaysChart').then((m) => m.DailyPlaysChart),
+  { ssr: false },
+);
+const RealtimeChart = dynamic(() => import('@/components/admin/charts/RealtimeChart').then((m) => m.RealtimeChart), {
+  ssr: false,
+});
+const ResourceChart = dynamic(() => import('@/components/admin/charts/ResourceChart').then((m) => m.ResourceChart), {
+  ssr: false,
+});
+const UserDistributionChart = dynamic(
+  () => import('@/components/admin/charts/UserDistributionChart').then((m) => m.UserDistributionChart),
+  { ssr: false },
+);
 import { TimeRangeToggle } from '@/components/admin/charts/TimeRangeToggle';
-import { UserDistributionChart } from '@/components/admin/charts/UserDistributionChart';
 import { MinLoading } from '@/components/common/MinLoading';
 import { StatCard } from '@/components/admin/StatCard';
 import { useAdminDashboard, useAdminSystemStats } from '@/hooks/admin/useAdminDashboard';

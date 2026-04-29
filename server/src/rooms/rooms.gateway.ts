@@ -1,3 +1,4 @@
+import type { OnModuleDestroy } from '@nestjs/common';
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -24,12 +25,13 @@ import { Permission, WsEvent, WsOpCode } from '../types/index.js';
 import { RoomsService } from './rooms.service.js';
 
 @Injectable()
-export class RoomsGateway {
+export class RoomsGateway implements OnModuleDestroy {
   private readonly logger = new Logger(RoomsGateway.name);
   private roomClients = new Map<string, Set<WsClient>>();
   private chatHistory = new Map<string, ChatHistoryEntry[]>();
   private lastHeartbeat = new Map<string, number>();
   private pendingDisconnects = new Map<string, ReturnType<typeof setTimeout>>();
+  private connectAttempts = new Map<string, { count: number; resetAt: number; violations: number }>();
   private heartbeatInterval?: ReturnType<typeof setInterval>;
   private wss?: WebSocketServer;
 
@@ -43,13 +45,17 @@ export class RoomsGateway {
     @Inject(forwardRef(() => AuthService)) private auth: AuthService,
   ) {}
 
+  onModuleDestroy(): void {
+    clearInterval(this.heartbeatInterval);
+    this.wss?.close();
+  }
+
   attachToServer(httpServer: HttpServer): void {
     this.wss = new WebSocketServer({ noServer: true });
 
     const allowedOrigin = this.config.get<string>('CLIENT_URL');
 
     // WS pre-auth flood 방어: IP별 연결 시도 추적
-    const connectAttempts = new Map<string, { count: number; resetAt: number; violations: number }>();
     const WS_RATE_WINDOW_MS = 10_000;
     const WS_RATE_LIMIT = 10;
 
@@ -79,10 +85,10 @@ export class RoomsGateway {
       const hasCookie = !!req.headers.cookie?.includes('sat=');
       if (!hasCookie) {
         const now = Date.now();
-        let entry = connectAttempts.get(ip);
+        let entry = this.connectAttempts.get(ip);
         if (!entry || now > entry.resetAt) {
           entry = { count: 0, resetAt: now + WS_RATE_WINDOW_MS, violations: entry?.violations ?? 0 };
-          connectAttempts.set(ip, entry);
+          this.connectAttempts.set(ip, entry);
         }
         entry.count++;
 
@@ -114,6 +120,12 @@ export class RoomsGateway {
 
   private async checkHeartbeats(): Promise<void> {
     const now = Date.now();
+
+    // 만료된 connectAttempts 엔트리 정리
+    for (const [ip, entry] of this.connectAttempts) {
+      if (now > entry.resetAt) this.connectAttempts.delete(ip);
+    }
+
     for (const [roomId, clients] of this.roomClients) {
       for (const c of clients) {
         if (!c.data) continue;
@@ -411,6 +423,7 @@ export class RoomsGateway {
     const count = await this.rooms.getMemberCount(roomId).catch(() => 0);
     if (count === 0) {
       this.audio.destroyRoom(roomId);
+      this.chatHistory.delete(roomId);
       await this.rooms.deactivateRoom(roomId).catch(() => {});
       this.logger.log(`Room ${roomId} deactivated (no members)`);
     } else {

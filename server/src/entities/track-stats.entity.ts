@@ -1,9 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 
 import { Track } from './track.entity.js';
 
 @Entity('track_stats')
+@Index(['score'])
+@Index(['lastPlayedAt'])
 export class TrackStats {
   @ApiProperty()
   @PrimaryColumn({ type: 'uuid', name: 'track_id' })
