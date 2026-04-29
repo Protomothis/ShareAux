@@ -31,7 +31,8 @@ interface TranslationResult {
 // ─── Constants ───────────────────────────────────────────
 
 const CHUNK_SIZE = 40;
-const CONCURRENCY = 3;
+const CONCURRENCY = 2;
+const CONTEXT_OVERLAP = 5;
 
 /** N|번역 또는 N|번역|발음 — 구분자 유연 (|, │, /, 탭) */
 const LINE_WITH_READING = /^\s*(\d+)\s*[|│/\t]\s*([^|│/\t]*?)\s*[|│/\t]\s*(.+?)\s*$/;
@@ -66,7 +67,10 @@ export class TranslationService implements OnApplicationBootstrap {
       const { GoogleGenerativeAI } = await import('@google/generative-ai');
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = this.settings.get(OptionKey.TranslationModel);
-      this.geminiModel = genAI.getGenerativeModel({ model });
+      this.geminiModel = genAI.getGenerativeModel({
+        model,
+        generationConfig: { temperature: 0 },
+      });
       this.logger.log(`Gemini initialized (${model})`);
     } catch (e) {
       this.logger.warn(`Gemini init failed: ${(e as Error).message}`);
@@ -191,7 +195,7 @@ export class TranslationService implements OnApplicationBootstrap {
     includeReading: boolean,
   ): Promise<TranslationResult | null> {
     if (lines.length <= CHUNK_SIZE) {
-      return this.callGemini(lines, 0, lang, includeReading);
+      return this.callGemini(lines, 0, lang, includeReading, []);
     }
 
     const translations = new Map<number, string>();
@@ -199,7 +203,9 @@ export class TranslationService implements OnApplicationBootstrap {
 
     for (let offset = 0; offset < lines.length; offset += CHUNK_SIZE) {
       const chunk = lines.slice(offset, offset + CHUNK_SIZE);
-      const result = await this.callGemini(chunk, offset, lang, includeReading);
+      // 이전 청크 마지막 줄을 컨텍스트로 포함 (번역 대상 아님, 문체 참고용)
+      const context = offset > 0 ? lines.slice(Math.max(0, offset - CONTEXT_OVERLAP), offset) : [];
+      const result = await this.callGemini(chunk, offset, lang, includeReading, context);
       if (!result) continue;
       for (const [k, v] of result.translations) translations.set(k, v);
       for (const [k, v] of result.readings) readings.set(k, v);
@@ -226,6 +232,7 @@ export class TranslationService implements OnApplicationBootstrap {
     offset: number,
     lang: string,
     includeReading: boolean,
+    context: ParsedLine[],
   ): Promise<TranslationResult | null> {
     const numbered = lines.map((l, i) => `${offset + i + 1}|${l.text}`).join('\n');
     const langName = lang === 'ja' ? '일본어' : lang === 'zh' ? '중국어' : '영어';
@@ -242,13 +249,15 @@ export class TranslationService implements OnApplicationBootstrap {
       ? '\n예시:\n1|砂を払えば → 1|모래를 털면|스나오 하라에바\n2|I love you → 2|널 사랑해|I love you\n3|La la la → 3|La la la|La la la'
       : '';
 
+    const contextBlock =
+      context.length > 0 ? `\n앞 가사 (참고용, 번역하지 말 것):\n${context.map((l) => l.text).join('\n')}\n` : '';
+
     const prompt = `${langName}→한국어 가사 번역.
 규칙:
 - 정확히 ${lines.length}줄 출력. 절대 생략하지 말 것
 - ${format} 형식만 출력. 설명/주석 금지
 - 가사체 직역. 의역 최소화
-- 감탄사/의성어(oh, yeah, la la 등)는 번역하지 않고 원문 유지${readingRule}${example}
-
+- 감탄사/의성어(oh, yeah, la la 등)는 번역하지 않고 원문 유지${readingRule}${example}${contextBlock}
 ${numbered}`;
 
     try {
