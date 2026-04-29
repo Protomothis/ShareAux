@@ -46,6 +46,7 @@ jobs:
           build-args: ${{ matrix.build-args }}
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+          provenance: false
 
       - name: Delete untagged versions
         uses: actions/delete-package-versions@v5
