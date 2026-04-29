@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { ExternalLink, Music, ThumbsDown, ThumbsUp, Trash2, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { Button } from '@/components/ui/button';
+
 import {
   adminControllerDeleteTrack,
   adminControllerGetTrackLyrics,
@@ -124,7 +126,9 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
                 <StatusBadge variant="muted">{t('searching')}</StatusBadge>
               )}
               {track.track.lyricsStatus !== TrackRankingTrackInfoLyricsStatus.searching && (
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
                   onClick={async () => {
                     if (!confirm(t('lyricsDeleteConfirm'))) return;
                     await adminControllerResetTrackLyrics(track.trackId);
@@ -150,7 +154,7 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
                   title={t('lyricsDelete')}
                 >
                   <Trash2 size={12} />
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -164,7 +168,9 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
                 <StatusBadge variant="muted">{t('contentIdPending')}</StatusBadge>
               )}
               {track.track.metaStatus === MetaStatus.matched && (
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
                   onClick={async () => {
                     if (!confirm(t('contentIdDeleteConfirm'))) return;
                     await adminControllerResetTrackMeta(track.trackId);
@@ -177,7 +183,7 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
                   title={t('contentIdDelete')}
                 >
                   <Trash2 size={12} />
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -185,19 +191,27 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
           {lyrics && (
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
-                <button
+                <Button
+                  variant="ghost"
+                  size="xs"
                   onClick={() => setLyricsTab('original')}
-                  className={`text-xs ${lyricsTab === 'original' ? 'text-sa-accent' : 'text-sa-text-muted hover:text-sa-text-secondary'}`}
+                  className={
+                    lyricsTab === 'original' ? 'text-sa-accent' : 'text-sa-text-muted hover:text-sa-text-secondary'
+                  }
                 >
                   {t('lyricsOriginal')}
-                </button>
+                </Button>
                 {translated && (
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="xs"
                     onClick={() => setLyricsTab('translated')}
-                    className={`text-xs ${lyricsTab === 'translated' ? 'text-sa-accent' : 'text-sa-text-muted hover:text-sa-text-secondary'}`}
+                    className={
+                      lyricsTab === 'translated' ? 'text-sa-accent' : 'text-sa-text-muted hover:text-sa-text-secondary'
+                    }
                   >
                     {t('lyricsTranslation')}
-                  </button>
+                  </Button>
                 )}
               </div>
               <div className="max-h-48 overflow-y-auto rounded-lg bg-white/[0.03] p-3 text-xs leading-relaxed text-sa-text-secondary">
@@ -209,7 +223,9 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
         </div>
       </Modal.Body>
       <Modal.Footer>
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={async () => {
             if (!confirm(t('trackDeleteConfirm'))) return;
             await adminControllerDeleteTrack(track.trackId);
@@ -220,7 +236,7 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
           className="text-xs text-red-400 hover:text-red-300"
         >
           {t('trackDelete')}
-        </button>
+        </Button>
       </Modal.Footer>
     </Modal>
   );
