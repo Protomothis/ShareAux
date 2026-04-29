@@ -2,9 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { execFile } from 'child_process';
-import { readFile, rm } from 'fs/promises';
-import { tmpdir } from 'os';
-import { join } from 'path';
 import { promisify } from 'util';
 import { Repository } from 'typeorm';
 
@@ -13,13 +10,6 @@ import { LyricsType } from '../types/lyrics-type.enum.js';
 import type { LyricsResult } from '../types/index.js';
 
 const execFileAsync = promisify(execFile);
-
-interface Json3Event {
-  tStartMs: number;
-  dDurationMs?: number;
-  aAppend?: number;
-  segs?: { utf8: string }[];
-}
 
 import { cleanArtist, extractTitle, smartClean } from './title-cleaner.js';
 import { detectLang } from './detect-lang.js';
@@ -86,7 +76,7 @@ export class LyricsService {
     await this.acquireSlot();
     let result: LyricsResult | null;
     try {
-      result = await this.searchLyrics(trackName, duration, artist, sourceId, songTitle, songArtist);
+      result = await this.searchLyrics(trackName, duration, artist, songTitle, songArtist);
     } finally {
       this.releaseSlot();
     }
@@ -110,7 +100,6 @@ export class LyricsService {
     trackName: string,
     duration?: number,
     artist?: string,
-    sourceId?: string,
     songTitle?: string | null,
     songArtist?: string | null,
   ): Promise<LyricsResult | null> {
@@ -127,16 +116,7 @@ export class LyricsService {
       }
     }
 
-    // 2순위: YouTube 공식 자막 (LRC)
-    if (sourceId) {
-      const ytLyrics = await this.getYouTubeSubtitles(sourceId);
-      if (ytLyrics) {
-        this.logger.log(`YouTube subtitles found for ${sourceId}`);
-        return ytLyrics;
-      }
-    }
-
-    // 3순위: Content ID 기반 LRC (innertube 메타에서 추출한 곡명/아티스트)
+    // 2순위: Content ID 기반 LRC (innertube 메타에서 추출한 곡명/아티스트)
     if (songTitle && songArtist) {
       const creditQuery = `${songArtist} ${songTitle}`;
       this.logger.log(`Lyrics search (Content ID): "${creditQuery}"`);
@@ -148,7 +128,7 @@ export class LyricsService {
       if (result) return result;
     }
 
-    // 4순위: LRCLIB + syncedlyrics (YouTube 제목 기반)
+    // 3순위: LRCLIB + syncedlyrics (YouTube 제목 기반)
     const title = extractTitle(trackName);
     const cleanedFull = smartClean(trackName);
 
@@ -175,74 +155,6 @@ export class LyricsService {
     }
 
     return null;
-  }
-
-  private async getYouTubeSubtitles(videoId: string): Promise<LyricsResult | null> {
-    const outPath = join(tmpdir(), `shareaux-sub-${videoId}`);
-    try {
-      // ko → en → ja 순서로 시도
-      await execFileAsync(
-        this.ytdlpPath,
-        [
-          '--write-auto-sub',
-          '--sub-lang',
-          'ko,en,ja',
-          '--sub-format',
-          'json3',
-          '--skip-download',
-          '--no-warnings',
-          '-o',
-          outPath,
-          `https://www.youtube.com/watch?v=${videoId}`,
-        ],
-        { timeout: 15_000 },
-      );
-
-      // 다운로드된 파일 찾기 (ko → en → ja 우선)
-      for (const lang of ['ko', 'en', 'ja']) {
-        const filePath = `${outPath}.${lang}.json3`;
-        try {
-          const raw = await readFile(filePath, 'utf-8');
-          const lrc = this.json3ToLrc(raw);
-          if (lrc) return { syncedLyrics: lrc, lyricsType: LyricsType.SYNCED };
-        } catch {
-          // 해당 언어 파일 없음
-        } finally {
-          rm(filePath, { force: true }).catch(() => {});
-        }
-      }
-      return null;
-    } catch (e) {
-      this.logger.warn(`YouTube subtitle fetch failed for ${videoId}`, e instanceof Error ? e.message : e);
-      return null;
-    }
-  }
-
-  private json3ToLrc(raw: string): string | null {
-    const data = JSON.parse(raw) as { events?: Json3Event[] };
-    if (!data.events?.length) return null;
-
-    const lines: string[] = [];
-    for (const ev of data.events) {
-      // aAppend는 이전 줄에 이어붙이는 이벤트 — 스킵
-      if (ev.aAppend || !ev.segs) continue;
-      const text = ev.segs
-        .map((s) => s.utf8)
-        .join('')
-        .trim();
-      // 빈 줄, 뮤직 마커 필터
-      if (!text || /^\[.*]$/.test(text)) continue;
-
-      const ms = ev.tStartMs;
-      const m = Math.floor(ms / 60000);
-      const s = Math.floor((ms % 60000) / 1000);
-      const cs = Math.floor((ms % 1000) / 10);
-      lines.push(
-        `[${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(cs).padStart(2, '0')}] ${text}`,
-      );
-    }
-
-    return lines.length >= 3 ? lines.join('\n') : null;
   }
 
   private async trySearch(query: string): Promise<LyricsResult | null> {
@@ -280,7 +192,7 @@ export class LyricsService {
         duration?: number;
       }[];
       if (!results.length) return null;
-      const matched = results.find((r) => r.duration && Math.abs(r.duration - duration) < 5 && r.syncedLyrics);
+      const matched = results.find((r) => r.duration && Math.abs(r.duration - duration) < 10 && r.syncedLyrics);
       if (matched?.syncedLyrics) return { syncedLyrics: matched.syncedLyrics, lyricsType: LyricsType.SYNCED };
       return null;
     } catch (e) {
