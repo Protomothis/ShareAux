@@ -60,13 +60,14 @@ export function smartClean(title: string): string {
   return quoted ? `${cleaned} ${quoted}`.trim() : cleaned;
 }
 
-/** 곡명만 추출 — 아티스트 - 제목 패턴에서 제목 부분 */
+/** 곡명만 추출 — 아티스트 - 제목 패턴에서 제목 부분 (첫 구분자만 사용) */
 export function extractTitle(name: string): string {
   const quoted = /['"]([^'"]+)['"]/.exec(name)?.[1];
   if (quoted) return quoted;
   const noBracket = name.replace(BRACKET_RE, '');
-  const parts = noBracket.split(/\s*[-–—|~]\s*/);
-  const raw = parts.length >= 2 ? parts.slice(1).join(' ') : noBracket;
+  // 첫 번째 구분자만 기준으로 분리 — 제목 내부 하이픈 보존
+  const sep = noBracket.match(/\s+[-–—|~]\s+/);
+  const raw = sep ? noBracket.slice(sep.index! + sep[0].length) : noBracket;
   return raw
     .replace(/\s*\/\s*THE FIRST TAKE.*/i, '')
     .replace(/\s*\/\s*/g, ' ')

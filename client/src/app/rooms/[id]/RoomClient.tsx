@@ -184,12 +184,13 @@ export default function RoomClient({ id }: { id: string }) {
       }
     }, [id, invalidate]),
   });
-  // 렌더 중 즉시 할당 — useEffect보다 먼저 실행되어야 WS 이벤트에서 사용 가능
-  wsActionsRef.current = { sendListening, sendResync };
-  onResyncNeededRef.current = (action) => {
-    if (action === 'prepare') void audio.prepareResync();
-    else sendResync();
-  };
+  useEffect(() => {
+    wsActionsRef.current = { sendListening, sendResync };
+    onResyncNeededRef.current = (action) => {
+      if (action === 'prepare') void audio.prepareResync();
+      else sendResync();
+    };
+  }, [sendListening, sendResync, audio]);
   useEffect(() => {
     getOneWayRef.current = getOneWay;
   }, [getOneWay]);

@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, BellOff, BellRing, Loader2 } from 'lucide-react';
+import { Bell, BellOff, BellRing, Loader2, Share } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
@@ -20,6 +20,15 @@ const TOGGLEABLE_KEYS: { key: ToggleableKey; label: string }[] = [
   { key: 'hostChanged', label: 'events.hostChanged' },
 ];
 
+/** iOS Safari 브라우저 감지 (standalone PWA 제외) */
+function isIosSafari(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent;
+  const isIos = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isStandalone = 'standalone' in navigator && (navigator as unknown as { standalone: boolean }).standalone;
+  return isIos && !isStandalone;
+}
+
 interface NotificationSettingsProps {
   roomId?: string;
 }
@@ -29,9 +38,15 @@ export function NotificationSettings({ roomId }: NotificationSettingsProps) {
   const { data: settings, refetch } = usePushControllerGetSettings();
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [registering, setRegistering] = useState(false);
+  const [needsPwa, setNeedsPwa] = useState(false);
 
   useEffect(() => {
-    if (typeof Notification !== 'undefined') setPermission(Notification.permission);
+    // iOS Safari(비-standalone)에서는 Notification API 자체가 없음
+    if (typeof Notification === 'undefined') {
+      if (isIosSafari()) setNeedsPwa(true);
+      return;
+    }
+    setPermission(Notification.permission);
     const onVisibility = () => {
       if (document.visibilityState === 'visible' && typeof Notification !== 'undefined') {
         setPermission(Notification.permission);
@@ -61,11 +76,19 @@ export function NotificationSettings({ roomId }: NotificationSettingsProps) {
     [settings, refetch],
   );
 
-  const disabled = permission !== 'granted';
+  const disabled = needsPwa || permission !== 'granted';
 
   return (
     <div className="space-y-3">
-      {permission === 'denied' && (
+      {needsPwa && (
+        <Surface variant="elevated" padding="sm">
+          <div className="flex items-start gap-2 text-xs text-sa-text-muted">
+            <Share size={14} className="mt-0.5 shrink-0" />
+            <span>{t('iosAddToHome')}</span>
+          </div>
+        </Surface>
+      )}
+      {!needsPwa && permission === 'denied' && (
         <Surface variant="danger" padding="sm">
           <div className="flex items-center gap-2 text-xs text-red-400">
             <BellOff size={14} />
@@ -73,7 +96,7 @@ export function NotificationSettings({ roomId }: NotificationSettingsProps) {
           </div>
         </Surface>
       )}
-      {permission === 'default' && (
+      {!needsPwa && permission === 'default' && (
         <Surface variant="elevated" padding="sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs text-sa-text-muted">
