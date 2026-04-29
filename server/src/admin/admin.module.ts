@@ -16,6 +16,11 @@ import { TrackVote } from '../entities/track-vote.entity.js';
 import { User } from '../entities/user.entity.js';
 import { UserTrackHistory } from '../entities/user-track-history.entity.js';
 import { RoomsModule } from '../rooms/rooms.module.js';
+import { AdminCleanupService } from './admin-cleanup.service.js';
+import { AdminMetricsController } from './admin-metrics.controller.js';
+import { AdminMetricsService } from './admin-metrics.service.js';
+import { AdminTracksController } from './admin-tracks.controller.js';
+import { AdminTracksService } from './admin-tracks.service.js';
 import { AdminController } from './admin.controller.js';
 import { AdminService } from './admin.service.js';
 import { ReportController } from './report.controller.js';
@@ -39,7 +44,7 @@ import { ReportController } from './report.controller.js';
     RoomsModule,
     forwardRef(() => AuthModule),
   ],
-  controllers: [AdminController, ReportController],
-  providers: [AdminService],
+  controllers: [AdminController, AdminMetricsController, AdminTracksController, ReportController],
+  providers: [AdminService, AdminCleanupService, AdminMetricsService, AdminTracksService],
 })
 export class AdminModule {}

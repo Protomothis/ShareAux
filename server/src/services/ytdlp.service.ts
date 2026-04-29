@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- YouTube innertube API has no types */
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { execFile } from 'child_process';

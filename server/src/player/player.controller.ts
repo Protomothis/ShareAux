@@ -15,6 +15,7 @@ import { MemberService } from '../rooms/member.service.js';
 import { AutoDjService } from '../services/auto-dj.service.js';
 import { RoomsGateway } from '../rooms/rooms.gateway.js';
 import { LyricsService } from '../services/lyrics.service.js';
+import { SearchService } from '../search/search.service.js';
 import { TranslationService } from '../services/translation.service.js';
 import type { AuthenticatedRequest } from '../types/index.js';
 import { ErrorCode } from '../types/error-code.enum.js';
@@ -36,6 +37,7 @@ export class PlayerController {
     private readonly memberService: MemberService,
     private readonly autoDjService: AutoDjService,
     private readonly translationService: TranslationService,
+    private readonly searchService: SearchService,
     private readonly eventEmitter: EventEmitter2,
     @InjectRepository(RoomMember) private readonly memberRepo: Repository<RoomMember>,
     @InjectRepository(RoomQueue) private readonly queueRepo: Repository<RoomQueue>,
@@ -51,6 +53,12 @@ export class PlayerController {
       this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue });
 
       if (status?.track) {
+        // Content ID가 notFound/pending이면 재시도
+        if (status.track.metaStatus !== MetaStatus.Matched) {
+          this.searchService
+            .enrichTrackCredits(status.track.id, status.track.sourceId)
+            .catch((e) => this.logger.warn(`[enrich retry] ${(e as Error).message}`));
+        }
         this.searchLyricsWhenReady(roomId, status.track, true);
         // Push 알림 — streaming 전환 시에만 (preparing에서는 스킵)
         if (status.streamState === 'streaming') {

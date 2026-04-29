@@ -5,6 +5,9 @@ import { Repository } from 'typeorm';
 import { Track } from '../entities/track.entity.js';
 import { SettingsService } from './settings.service.js';
 import { OptionKey } from '../types/settings.types.js';
+import { detectLang } from './detect-lang.js';
+
+// ─── Types ───────────────────────────────────────────────
 
 interface TranslationJob {
   trackId: string;
@@ -20,16 +23,25 @@ interface ParsedLine {
   text: string;
 }
 
-const JA_REGEX = /[\u3040-\u30FF\u4E00-\u9FFF]/;
+interface TranslationResult {
+  translations: Map<number, string>;
+  readings: Map<number, string>;
+}
 
-/** 가사 텍스트에서 언어 감지 */
-import { detectLang } from './detect-lang.js';
+// ─── Constants ───────────────────────────────────────────
+
+const CHUNK_SIZE = 40;
+const CONCURRENCY = 3;
+
+/** N|번역 또는 N|번역|발음 — 구분자 유연 (|, │, /, 탭) */
+const LINE_WITH_READING = /^\s*(\d+)\s*[|│/\t]\s*([^|│/\t]*?)\s*[|│/\t]\s*(.+?)\s*$/;
+const LINE_TRANSLATION = /^\s*(\d+)\s*[.|)│/\t]\s*(.+?)\s*$/;
 
 @Injectable()
 export class TranslationService implements OnApplicationBootstrap {
   private readonly logger = new Logger(TranslationService.name);
   private readonly queue: TranslationJob[] = [];
-  private processing = false;
+  private activeCount = 0;
   private dailyCount = 0;
   private lastResetDate = '';
   private geminiModel: GeminiModel | null = null;
@@ -42,7 +54,10 @@ export class TranslationService implements OnApplicationBootstrap {
 
   async onApplicationBootstrap(): Promise<void> {
     await this.initGemini();
+    await this.restoreQueue();
   }
+
+  // ─── Init ──────────────────────────────────────────────
 
   private async initGemini(): Promise<void> {
     const apiKey = this.settings.getSecret(OptionKey.GeminiApiKey);
@@ -62,7 +77,6 @@ export class TranslationService implements OnApplicationBootstrap {
     return !!this.geminiModel && this.settings.getBoolean(OptionKey.TranslationEnabled);
   }
 
-  /** Gemini 키/모델 변경 시 핫 리로드 */
   async reinitialize(): Promise<void> {
     this.geminiModel = null;
     await this.initGemini();
@@ -72,6 +86,24 @@ export class TranslationService implements OnApplicationBootstrap {
     this.onUpdatedCallback = cb;
   }
 
+  // ─── Queue (영속성) ────────────────────────────────────
+
+  /** 서버 재시작 시 pending 상태 트랙 복구 */
+  private async restoreQueue(): Promise<void> {
+    const pending = await this.trackRepo.find({
+      where: { lyricsTransStatus: 'pending' },
+      select: ['id'],
+    });
+    if (!pending.length) return;
+
+    // pending → 큐에 복원 (roomIds 비워둠 — 알림은 안 가지만 번역은 완료됨)
+    for (const t of pending) {
+      this.queue.push({ trackId: t.id, roomIds: [] });
+    }
+    this.logger.log(`Restored ${pending.length} pending translation(s)`);
+    this.drain();
+  }
+
   enqueue(trackId: string, roomId: string): void {
     const existing = this.queue.find((j) => j.trackId === trackId);
     if (existing) {
@@ -79,25 +111,25 @@ export class TranslationService implements OnApplicationBootstrap {
       return;
     }
     this.queue.push({ trackId, roomIds: [roomId] });
-    void this.processNext();
+    this.drain();
   }
 
-  // ─── Queue Processing ─────────────────────────────────
+  // ─── Concurrency ───────────────────────────────────────
 
-  private async processNext(): Promise<void> {
-    if (this.processing || !this.queue.length) return;
-    this.processing = true;
-    const job = this.queue.shift()!;
-
-    try {
-      await this.processTrack(job);
-    } catch (e) {
-      this.logger.error(`Translation failed for ${job.trackId}: ${(e as Error).message}`);
+  private drain(): void {
+    while (this.activeCount < CONCURRENCY && this.queue.length > 0) {
+      const job = this.queue.shift()!;
+      this.activeCount++;
+      this.processTrack(job)
+        .catch((e) => this.logger.error(`Translation failed for ${job.trackId}: ${(e as Error).message}`))
+        .finally(() => {
+          this.activeCount--;
+          this.drain();
+        });
     }
-
-    this.processing = false;
-    void this.processNext();
   }
+
+  // ─── Process ───────────────────────────────────────────
 
   private async processTrack(job: TranslationJob): Promise<void> {
     const track = await this.trackRepo
@@ -106,7 +138,9 @@ export class TranslationService implements OnApplicationBootstrap {
       .where('t.id = :id', { id: job.trackId })
       .getOne();
 
-    if (!track?.lyricsData || track.lyricsTransStatus === 'done' || track.lyricsTransStatus === 'pending') return;
+    if (!track?.lyricsData || track.lyricsTransStatus === 'done') return;
+    // failed도 재시도 허용 (pending은 이미 다른 worker가 처리 중일 수 있으므로 스킵)
+    if (track.lyricsTransStatus === 'pending') return;
 
     await this.trackRepo.update(track.id, { lyricsTransStatus: 'pending' });
 
@@ -116,7 +150,6 @@ export class TranslationService implements OnApplicationBootstrap {
       if (lang) await this.trackRepo.update(track.id, { lyricsLang: lang });
 
       if (lang === 'ko') {
-        // 한국어는 번역 불필요 — done 처리만, 클라이언트 알림 없음
         await this.trackRepo.update(track.id, { lyricsTransStatus: 'done' });
         return;
       }
@@ -129,16 +162,14 @@ export class TranslationService implements OnApplicationBootstrap {
       const lines = this.parseLrc(track.lyricsData);
       const isJa = lang === 'ja';
 
-      // Gemini 1회 호출: 번역 + (일본어면 한글 발음도)
-      const result = await this.callGemini(lines, lang ?? 'en', isJa);
+      const result = await this.translateWithChunks(lines, lang ?? 'en', isJa);
 
-      if (!result) {
+      if (!result || result.translations.size < lines.length * 0.5) {
         await this.trackRepo.update(track.id, { lyricsTransStatus: 'failed' });
         return;
       }
 
       const translatedLrc = lines.map((l, i) => `${l.time} ${result.translations.get(i + 1) ?? ''}`).join('\n');
-
       const update: Partial<Track> = { lyricsTranslated: translatedLrc, lyricsTransStatus: 'done' as const };
 
       if (isJa && result.readings.size > 0) {
@@ -152,14 +183,51 @@ export class TranslationService implements OnApplicationBootstrap {
     }
   }
 
+  // ─── Chunk Translation ─────────────────────────────────
+
+  private async translateWithChunks(
+    lines: ParsedLine[],
+    lang: string,
+    includeReading: boolean,
+  ): Promise<TranslationResult | null> {
+    if (lines.length <= CHUNK_SIZE) {
+      return this.callGemini(lines, 0, lang, includeReading);
+    }
+
+    const translations = new Map<number, string>();
+    const readings = new Map<number, string>();
+
+    for (let offset = 0; offset < lines.length; offset += CHUNK_SIZE) {
+      const chunk = lines.slice(offset, offset + CHUNK_SIZE);
+      const result = await this.callGemini(chunk, offset, lang, includeReading);
+      if (!result) continue;
+      for (const [k, v] of result.translations) translations.set(k, v);
+      for (const [k, v] of result.readings) readings.set(k, v);
+    }
+
+    // 누락 보충 (1회)
+    const missing = lines.map((l, i) => ({ idx: i + 1, text: l.text })).filter((m) => !translations.has(m.idx));
+
+    if (missing.length > 0 && missing.length <= lines.length * 0.3) {
+      const partial = await this.callGeminiPartial(missing, lang, includeReading);
+      if (partial) {
+        for (const [k, v] of partial.translations) translations.set(k, v);
+        for (const [k, v] of partial.readings) readings.set(k, v);
+      }
+    }
+
+    return { translations, readings };
+  }
+
   // ─── Gemini ────────────────────────────────────────────
 
   private async callGemini(
     lines: ParsedLine[],
+    offset: number,
     lang: string,
     includeReading: boolean,
-  ): Promise<{ translations: Map<number, string>; readings: Map<number, string> } | null> {
-    const numbered = lines.map((l, i) => `${i + 1}|${l.text}`).join('\n');
+  ): Promise<TranslationResult | null> {
+    const numbered = lines.map((l, i) => `${offset + i + 1}|${l.text}`).join('\n');
     const langName = lang === 'ja' ? '일본어' : lang === 'zh' ? '중국어' : '영어';
 
     const format = includeReading ? 'N|한국어번역|한글발음' : 'N|한국어번역';
@@ -179,8 +247,7 @@ export class TranslationService implements OnApplicationBootstrap {
 - 정확히 ${lines.length}줄 출력. 절대 생략하지 말 것
 - ${format} 형식만 출력. 설명/주석 금지
 - 가사체 직역. 의역 최소화
-- 감탄사/의성어(oh, yeah, la la 등)는 번역하지 않고 원문 유지
-- 영어 가사는 한국어로 번역하되, 발음란에는 영어 원문 유지${readingRule}${example}
+- 감탄사/의성어(oh, yeah, la la 등)는 번역하지 않고 원문 유지${readingRule}${example}
 
 ${numbered}`;
 
@@ -188,46 +255,18 @@ ${numbered}`;
       const result = await this.geminiModel!.generateContent(prompt);
       const text = result.response.text();
       this.dailyCount++;
-
-      const translations = new Map<number, string>();
-      const readings = new Map<number, string>();
-
-      for (const line of text.split('\n')) {
-        if (includeReading) {
-          const m = line.match(/^(\d+)\|([^|]*)\|(.+)/);
-          if (m) {
-            translations.set(Number(m[1]), m[2].trim());
-            readings.set(Number(m[1]), m[3].trim());
-            continue;
-          }
-        }
-        const m2 = line.match(/^(\d+)\|(.+)/);
-        if (m2) translations.set(Number(m2[1]), m2[2].trim());
-      }
-
-      if (translations.size < lines.length * 0.8) {
-        this.logger.warn(`Translation incomplete: ${translations.size}/${lines.length}, requesting missing lines`);
-        const missing = lines.map((l, i) => ({ idx: i + 1, text: l.text })).filter((m) => !translations.has(m.idx));
-        const partial = await this.callGeminiPartial(missing, lang, includeReading);
-        if (partial) {
-          for (const [k, v] of partial.translations) translations.set(k, v);
-          for (const [k, v] of partial.readings) readings.set(k, v);
-        }
-      }
-
-      return { translations, readings };
+      return this.parseResponse(text, includeReading);
     } catch (e) {
       this.logger.error(`Gemini error: ${(e as Error).message}`);
       return null;
     }
   }
 
-  /** 누락된 줄만 보충 번역 요청 */
   private async callGeminiPartial(
     missing: { idx: number; text: string }[],
     lang: string,
     includeReading: boolean,
-  ): Promise<{ translations: Map<number, string>; readings: Map<number, string> } | null> {
+  ): Promise<TranslationResult | null> {
     if (!missing.length) return null;
     const langName = lang === 'ja' ? '일본어' : lang === 'zh' ? '중국어' : '영어';
     const format = includeReading ? 'N|한국어번역|한글발음' : 'N|한국어번역';
@@ -239,27 +278,37 @@ ${numbered}`;
       const result = await this.geminiModel!.generateContent(prompt);
       const text = result.response.text();
       this.dailyCount++;
-
-      const translations = new Map<number, string>();
-      const readings = new Map<number, string>();
-
-      for (const line of text.split('\n')) {
-        if (includeReading) {
-          const m = line.match(/^(\d+)\|([^|]*)\|(.+)/);
-          if (m) {
-            translations.set(Number(m[1]), m[2].trim());
-            readings.set(Number(m[1]), m[3].trim());
-            continue;
-          }
-        }
-        const m2 = line.match(/^(\d+)\|(.+)/);
-        if (m2) translations.set(Number(m2[1]), m2[2].trim());
-      }
-      return { translations, readings };
+      return this.parseResponse(text, includeReading);
     } catch (e) {
       this.logger.warn(`Gemini partial error: ${(e as Error).message}`);
       return null;
     }
+  }
+
+  // ─── Response Parsing (강화) ───────────────────────────
+
+  private parseResponse(text: string, includeReading: boolean): TranslationResult {
+    const translations = new Map<number, string>();
+    const readings = new Map<number, string>();
+
+    for (const raw of text.split('\n')) {
+      const line = raw.trim();
+      if (!line) continue;
+
+      if (includeReading) {
+        const m = LINE_WITH_READING.exec(line);
+        if (m) {
+          translations.set(Number(m[1]), m[2].trim());
+          readings.set(Number(m[1]), m[3].trim());
+          continue;
+        }
+      }
+
+      const m2 = LINE_TRANSLATION.exec(line);
+      if (m2) translations.set(Number(m2[1]), m2[2].trim());
+    }
+
+    return { translations, readings };
   }
 
   // ─── Helpers ───────────────────────────────────────────
