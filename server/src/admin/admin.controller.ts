@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
-import { SkipThrottle, Throttle } from '@nestjs/throttler';
+import { Throttle } from '@nestjs/throttler';
 
 import { InviteCode } from '../entities/invite-code.entity.js';
 import { Room } from '../entities/room.entity.js';
@@ -23,9 +23,7 @@ import { User } from '../entities/user.entity.js';
 import { AppException } from '../exceptions/app.exception.js';
 import { AdminGuard } from '../guards/admin.guard.js';
 import { AuditService } from '../services/audit.service.js';
-import { ErrorLogService } from '../services/error-log.service.js';
 import { IpBanService } from '../services/ip-ban.service.js';
-import { MetricsService } from '../services/metrics.service.js';
 import { SettingsService } from '../services/settings.service.js';
 import { TranslationService } from '../services/translation.service.js';
 import { OptionKey } from '../types/settings.types.js';
@@ -59,6 +57,7 @@ import { TrackLyricsResponse } from './dto/track-lyrics-response.dto.js';
 import { UpdateRoleDto } from './dto/update-role.dto.js';
 import { UserDetailResponse } from './dto/user-detail-response.dto.js';
 import { UsersBreakdownResponse } from './dto/users-breakdown-response.dto.js';
+import { AdminCleanupService } from './admin-cleanup.service.js';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
@@ -89,6 +88,8 @@ import { UsersBreakdownResponse } from './dto/users-breakdown-response.dto.js';
   ErrorFileItem,
   BannedIpItem,
   PaginatedBannedIpsResponse,
+  PaginatedTrackRankingResponse,
+  TrackLyricsResponse,
 )
 @UseGuards(AdminGuard)
 @Throttle({ default: { ttl: THROTTLE_TTL_MS, limit: 300 } })
@@ -96,16 +97,17 @@ import { UsersBreakdownResponse } from './dto/users-breakdown-response.dto.js';
 export class AdminController {
   constructor(
     private readonly adminService: AdminService,
+    private readonly cleanupService: AdminCleanupService,
     private readonly gateway: RoomsGateway,
     private readonly settingsService: SettingsService,
     private readonly auditService: AuditService,
-    private readonly metricsService: MetricsService,
-    private readonly errorLogService: ErrorLogService,
     private readonly ipBanService: IpBanService,
     private readonly config: ConfigService,
     private readonly googleStrategy: GoogleStrategy,
     private readonly translationService: TranslationService,
   ) {}
+
+  // --- Dashboard ---
 
   @Get('dashboard')
   @ApiOperation({ summary: 'Get admin dashboard stats' })
@@ -113,6 +115,8 @@ export class AdminController {
   getDashboard() {
     return this.adminService.getDashboard();
   }
+
+  // --- Users ---
 
   @Get('users')
   @ApiOperation({ summary: 'List users (paginated)' })
@@ -168,6 +172,15 @@ export class AdminController {
     return { success: true };
   }
 
+  @Get('users/:id/detail')
+  @ApiOperation({ summary: '유저 상세 정보' })
+  @ApiOkResponse({ type: UserDetailResponse })
+  getUserDetail(@Param('id') id: string) {
+    return this.adminService.getUserDetail(id);
+  }
+
+  // --- Rooms ---
+
   @Get('rooms')
   @ApiOperation({ summary: 'List rooms (paginated)' })
   @ApiOkResponse({ type: PaginatedRoomsResponse })
@@ -184,6 +197,8 @@ export class AdminController {
   deleteRoom(@Param('id') id: string) {
     return this.adminService.deleteRoom(id);
   }
+
+  // --- Invite Codes ---
 
   @Post('invite-codes')
   @ApiOperation({ summary: 'Create invite code' })
@@ -233,114 +248,10 @@ export class AdminController {
   @ApiOperation({ summary: 'Delete expired guest users (>12h)' })
   @ApiOkResponse({ description: '만료된 게스트 삭제 결과' })
   deleteExpiredGuests() {
-    return this.adminService.deleteExpiredGuests();
+    return this.cleanupService.deleteExpiredGuests();
   }
 
-  @Get('tracks/ranking')
-  @ApiOperation({ summary: '인기 트랙 순위' })
-  @ApiOkResponse({ type: PaginatedTrackRankingResponse })
-  getTopTracks(
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
-  ) {
-    return this.adminService.getTopTracks(page, limit);
-  }
-
-  @Get('live-rooms')
-  @ApiOperation({ summary: '실시간 활성 방 상태' })
-  @ApiOkResponse({ type: [LiveRoomItem] })
-  getLiveRooms() {
-    return this.adminService.getLiveRooms();
-  }
-
-  @SkipThrottle()
-  @Get('system-stats')
-  @ApiOperation({ summary: '서버 리소스 모니터링' })
-  @ApiOkResponse({ type: SystemStatsResponse })
-  getSystemStats() {
-    return this.adminService.getSystemStats();
-  }
-
-  @Get('users/:id/detail')
-  @ApiOperation({ summary: '유저 상세 정보' })
-  @ApiOkResponse({ type: UserDetailResponse })
-  getUserDetail(@Param('id') id: string) {
-    return this.adminService.getUserDetail(id);
-  }
-
-  // --- Metrics (throttle 제외 — 10초 폴링) ---
-
-  @SkipThrottle()
-  @Get('metrics/realtime')
-  @ApiOperation({ summary: '실시간 메트릭' })
-  @ApiOkResponse({ type: RealtimeMetricsResponse })
-  @ApiQuery({ name: 'since', required: false })
-  getRealtimeMetrics(@Query('since') since?: string) {
-    return this.adminService.getRealtimeMetrics(since ? Number(since) : undefined);
-  }
-
-  @Get('metrics/plays')
-  @ApiOperation({ summary: '일별 재생 수' })
-  @ApiOkResponse({ type: PlaysMetricsResponse })
-  @ApiQuery({ name: 'days', required: false })
-  getDailyPlays(@Query('days', new DefaultValuePipe(7), ParseIntPipe) days: number) {
-    return this.adminService.getDailyPlays(days);
-  }
-
-  @Get('metrics/users-breakdown')
-  @ApiOperation({ summary: '유저 분포' })
-  @ApiOkResponse({ type: UsersBreakdownResponse })
-  getUsersBreakdown() {
-    return this.adminService.getUsersBreakdown();
-  }
-
-  @SkipThrottle()
-  @Get('metrics/streaming')
-  @ApiOperation({ summary: '스트리밍 현황' })
-  @ApiOkResponse({ type: StreamingMetricsResponse })
-  getStreamingMetrics() {
-    return this.adminService.getStreamingMetrics();
-  }
-
-  // --- Error Logs ---
-
-  @Get('errors')
-  @ApiOperation({ summary: '최근 에러 로그' })
-  @ApiOkResponse({ type: PaginatedErrorLogsResponse })
-  getRecentErrors(
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit: number,
-  ) {
-    return this.errorLogService.getRecentErrors(page, limit);
-  }
-
-  @Get('errors/files')
-  @ApiOperation({ summary: '에러 로그 파일 목록' })
-  @ApiOkResponse({ type: [ErrorFileItem] })
-  getErrorFiles() {
-    return this.errorLogService.getErrorFiles();
-  }
-
-  @Get('errors/files/:filename')
-  @ApiOperation({ summary: '에러 로그 파일 조회' })
-  @ApiOkResponse({ type: PaginatedErrorLogsResponse })
-  getErrorFile(
-    @Param('filename') filename: string,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit: number,
-  ) {
-    return this.errorLogService.getErrorFile(filename, page, limit);
-  }
-
-  // --- Room Live Detail ---
-
-  @Get('rooms/:id/live-detail')
-  @ApiOperation({ summary: '방 실시간 상세' })
-  getRoomLiveDetail(@Param('id') id: string) {
-    return this.adminService.getRoomLiveDetail(id);
-  }
-
-  // --- System Settings ---
+  // --- Settings ---
 
   @Get('settings')
   @ApiOperation({ summary: '시스템 설정 조회 (시크릿 제외)' })
@@ -366,7 +277,6 @@ export class AdminController {
       models: (data.models ?? [])
         .filter((m) => m.supportedGenerationMethods?.includes('generateContent'))
         .map((m) => m.name.replace('models/', ''))
-        // gemini- 계열만 (exp 실험 모델 제외, preview는 포함)
         .filter((n) => n.startsWith('gemini-') && !n.includes('exp')),
     };
   }
@@ -384,7 +294,6 @@ export class AdminController {
       await this.settingsService.set(key, value);
     }
 
-    // 시크릿 키 변경 시 핫 리로드
     const keys = Object.keys(dto.settings);
     if (keys.some((k) => k.startsWith('secret.google'))) this.googleStrategy.reinitialize();
     if (keys.includes(OptionKey.GeminiApiKey) || keys.includes(OptionKey.TranslationModel)) {
@@ -393,48 +302,6 @@ export class AdminController {
 
     await this.auditService.log(req.user.userId, 'settings_update', 'system', null, dto.settings, req.ip);
     return { success: true };
-  }
-
-  // --- Cleanup ---
-
-  @Get('cleanup/summary')
-  @ApiOperation({ summary: '정리 대상 요약' })
-  @ApiOkResponse({ type: CleanupSummaryResponse })
-  getCleanupSummary() {
-    return this.adminService.getCleanupSummary();
-  }
-
-  @Delete('cleanup/:type')
-  @ApiOperation({ summary: '데이터 정리 실행' })
-  async runCleanup(@Param('type') type: string, @Req() req: AuthenticatedRequest) {
-    let deleted: number;
-    switch (type) {
-      case 'unplayed-tracks':
-        deleted = await this.adminService.cleanupUnplayedTracks();
-        break;
-      case 'stale-tracks':
-        deleted = await this.adminService.cleanupStaleTracks(30);
-        break;
-      case 'old-histories-30d':
-        deleted = await this.adminService.cleanupOldHistories(30);
-        break;
-      case 'inactive-rooms-7d':
-        deleted = await this.adminService.cleanupInactiveRooms(7);
-        break;
-      case 'empty-inactive-rooms':
-        deleted = await this.adminService.cleanupEmptyInactiveRooms();
-        break;
-      case 'expired-guests':
-        deleted = await this.adminService.cleanupExpiredGuests();
-        break;
-      case 'inactive-guests-30d':
-        deleted = await this.adminService.cleanupInactiveGuests(30);
-        break;
-      default:
-        throw new AppException(ErrorCode.ADMIN_007);
-    }
-    await this.auditService.log(req.user.userId, 'cleanup', type, null, { deleted }, req.ip);
-    return { deleted };
   }
 
   // --- IP Bans ---
@@ -521,33 +388,5 @@ export class AdminController {
     const report = await this.adminService.resolveReport(id, req.user.userId, status);
     await this.auditService.log(req.user.userId, 'report_resolve', 'report', id, { status }, req.ip);
     return report;
-  }
-
-  @Get('tracks/:id/lyrics')
-  @ApiOperation({ summary: '트랙 가사 조회' })
-  @ApiOkResponse({ type: TrackLyricsResponse })
-  async getTrackLyrics(@Param('id') id: string): Promise<TrackLyricsResponse> {
-    return this.adminService.getTrackLyrics(id);
-  }
-
-  @Delete('tracks/:id/lyrics')
-  @ApiOperation({ summary: '트랙 가사 초기화' })
-  async resetTrackLyrics(@Param('id') id: string) {
-    await this.adminService.resetTrackLyrics(id);
-    return { ok: true };
-  }
-
-  @Delete('tracks/:id/meta')
-  @ApiOperation({ summary: '트랙 Content ID 메타 초기화' })
-  async resetTrackMeta(@Param('id') id: string) {
-    await this.adminService.resetTrackMeta(id);
-    return { ok: true };
-  }
-
-  @Delete('tracks/:id')
-  @ApiOperation({ summary: '트랙 삭제' })
-  async deleteTrack(@Param('id') id: string) {
-    await this.adminService.deleteTrack(id);
-    return { ok: true };
   }
 }

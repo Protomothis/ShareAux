@@ -9,6 +9,7 @@ import { Track } from '../entities/track.entity.js';
 import { TrackStats } from '../entities/track-stats.entity.js';
 import { UserTrackHistory } from '../entities/user-track-history.entity.js';
 import { RoomsModule } from '../rooms/rooms.module.js';
+import { SearchModule } from '../search/search.module.js';
 import { LyricsService } from '../services/lyrics.service.js';
 import { PlayerController } from './player.controller.js';
 import { PlayerService } from './player.service.js';
@@ -17,6 +18,7 @@ import { PlayerService } from './player.service.js';
   imports: [
     TypeOrmModule.forFeature([RoomPlayback, PlayHistory, RoomQueue, RoomMember, Track, TrackStats, UserTrackHistory]),
     RoomsModule,
+    SearchModule,
   ],
   controllers: [PlayerController],
   providers: [PlayerService, LyricsService],

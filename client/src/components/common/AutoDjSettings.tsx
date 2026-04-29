@@ -1,3 +1,4 @@
+import { Switch } from '@/components/ui/switch';
 import { useFavoritesControllerListFolders } from '@/api/favorites/favorites';
 import { FormField } from '@/components/ui/form';
 import { useTranslations } from 'next-intl';
@@ -109,12 +110,7 @@ export default function AutoDjSettings({
       )}
       {mode === 'favorites' && (
         <label className="mt-2 flex items-center gap-2 text-xs text-sa-text-secondary">
-          <input
-            type="checkbox"
-            checked={favFallbackMixed}
-            onChange={(e) => onFavFallbackMixedChange?.(e.target.checked)}
-            className="accent-sa-accent"
-          />
+          <Switch size="sm" checked={favFallbackMixed} onCheckedChange={(v) => onFavFallbackMixedChange?.(v)} />
           {t('autoDjFavFallback')}
         </label>
       )}
