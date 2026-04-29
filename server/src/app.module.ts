@@ -34,7 +34,7 @@ import { TestModule } from './test/test.module.js';
         type: 'postgres',
         url: config.get<string>('DATABASE_URL'),
         autoLoadEntities: true,
-        synchronize: true,
+        synchronize: IS_DEV,
       }),
     }),
     ThrottlerModule.forRoot([{ ttl: THROTTLE_TTL_MS, limit: THROTTLE_LIMIT_DEFAULT }]),
