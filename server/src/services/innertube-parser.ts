@@ -274,16 +274,15 @@ export async function fetchMusicCredits(videoId: string): Promise<MusicCredits> 
       songArtist: fields.get('Artist') ?? null,
       songAlbum: fields.get('Album') ?? null,
     };
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    console.warn(`[fetchMusicCredits] ${videoId} failed: ${msg}`);
+  } catch {
     return empty;
   }
 }
 
-/** YouTube Music (WEB_REMIX) 메타데이터 — OMV(공식 뮤직비디오)만 신뢰 */
+/** YouTube Music (WEB_REMIX) 메타데이터 — OMV(공식 뮤직비디오) + ATV(Art Track) 신뢰 */
 export async function fetchYtMusicMeta(videoId: string): Promise<MusicCredits> {
   const empty: MusicCredits = { songTitle: null, songArtist: null, songAlbum: null };
+  const trusted = new Set(['MUSIC_VIDEO_TYPE_OMV', 'MUSIC_VIDEO_TYPE_ATV']);
   try {
     const res = await fetch('https://music.youtube.com/youtubei/v1/player', {
       method: 'POST',
@@ -292,7 +291,7 @@ export async function fetchYtMusicMeta(videoId: string): Promise<MusicCredits> {
     });
     const data = (await res.json()) as InnertubeYtMusicPlayerData;
     const vd = data?.videoDetails;
-    if (!vd || vd.musicVideoType !== 'MUSIC_VIDEO_TYPE_OMV') return empty;
+    if (!vd?.musicVideoType || !trusted.has(vd.musicVideoType)) return empty;
     return { songTitle: vd.title ?? null, songArtist: vd.author ?? null, songAlbum: null };
   } catch {
     return empty;

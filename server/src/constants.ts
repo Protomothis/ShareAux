@@ -1,3 +1,11 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+// ─── App ────────────────────────────────────────────────
+export const APP_VERSION = (
+  JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf-8')) as { version: string }
+).version;
+
 // ─── Environment ────────────────────────────────────────
 export const IS_DEV = process.env.NODE_ENV !== 'production';
 

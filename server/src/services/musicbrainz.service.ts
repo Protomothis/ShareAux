@@ -1,5 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 
+import { APP_VERSION } from '../constants.js';
+
+const UA = `ShareAux/${APP_VERSION} (https://github.com/Protomothis/ShareAux)`;
+
 export interface MusicBrainzResult {
   title: string;
   artist: string;
@@ -83,7 +87,7 @@ export class MusicBrainzService {
       const res = await fetch(
         `https://musicbrainz.org/ws/2/recording?query=${encodeURIComponent(query)}&limit=25&fmt=json`,
         {
-          headers: { 'User-Agent': 'ShareAux/0.1.6 (https://github.com/Protomothis/ShareAux)' },
+          headers: { 'User-Agent': UA },
           signal: AbortSignal.timeout(10_000),
         },
       );
