@@ -26,14 +26,14 @@ export default function AutoDjSettings({
   threshold,
   folderId,
   favFallbackMixed = false,
-  hasFavorites = true,
+  hasFavorites = false,
   onEnabledChange,
   onModeChange,
   onThresholdChange,
   onFolderIdChange,
   onFavFallbackMixedChange,
 }: AutoDjSettingsProps) {
-  const { data: folders = [] } = useFavoritesControllerListFolders();
+  const { data: folders = [] } = useFavoritesControllerListFolders({ query: { enabled: hasFavorites } });
   const t = useTranslations('settings');
   const modeLabels: Record<string, string> = {
     related: t('autoDjRelated'),
