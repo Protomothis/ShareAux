@@ -23,18 +23,18 @@ import type {
 
 import type {
   AdminControllerGetAuditLogsParams,
-  AdminControllerGetDailyPlaysParams,
-  AdminControllerGetErrorFileParams,
   AdminControllerGetInviteCodesParams,
   AdminControllerGetIpBansParams,
-  AdminControllerGetRealtimeMetricsParams,
-  AdminControllerGetRecentErrorsParams,
   AdminControllerGetReportsParams,
   AdminControllerGetRoomsParams,
   AdminControllerGetSecrets200,
   AdminControllerGetSettings200,
-  AdminControllerGetTopTracksParams,
   AdminControllerGetUsersParams,
+  AdminMetricsControllerGetDailyPlaysParams,
+  AdminMetricsControllerGetErrorFileParams,
+  AdminMetricsControllerGetRealtimeMetricsParams,
+  AdminMetricsControllerGetRecentErrorsParams,
+  AdminTracksControllerGetTopTracksParams,
   BannedIp,
   CleanupSummaryResponse,
   CreateInviteCodeDto,
@@ -652,6 +652,128 @@ export const useAdminControllerDeleteUser = <TError = unknown, TContext = unknow
 
   return useMutation(mutationOptions, queryClient);
 };
+/**
+ * @summary 유저 상세 정보
+ */
+export const getAdminControllerGetUserDetailUrl = (id: string) => {
+  return `/api/admin/users/${id}/detail`;
+};
+
+export const adminControllerGetUserDetail = async (id: string, options?: RequestInit): Promise<UserDetailResponse> => {
+  return customFetch<UserDetailResponse>(getAdminControllerGetUserDetailUrl(id), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getAdminControllerGetUserDetailQueryKey = (id?: string) => {
+  return [`/api/admin/users/${id}/detail`] as const;
+};
+
+export const getAdminControllerGetUserDetailQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminControllerGetUserDetail>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetUserDetail>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminControllerGetUserDetailQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminControllerGetUserDetail>>> = ({ signal }) =>
+    adminControllerGetUserDetail(id, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, enabled: !!id, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminControllerGetUserDetail>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminControllerGetUserDetailQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminControllerGetUserDetail>>
+>;
+export type AdminControllerGetUserDetailQueryError = unknown;
+
+export function useAdminControllerGetUserDetail<
+  TData = Awaited<ReturnType<typeof adminControllerGetUserDetail>>,
+  TError = unknown,
+>(
+  id: string,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetUserDetail>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminControllerGetUserDetail>>,
+          TError,
+          Awaited<ReturnType<typeof adminControllerGetUserDetail>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminControllerGetUserDetail<
+  TData = Awaited<ReturnType<typeof adminControllerGetUserDetail>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetUserDetail>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminControllerGetUserDetail>>,
+          TError,
+          Awaited<ReturnType<typeof adminControllerGetUserDetail>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminControllerGetUserDetail<
+  TData = Awaited<ReturnType<typeof adminControllerGetUserDetail>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetUserDetail>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 유저 상세 정보
+ */
+
+export function useAdminControllerGetUserDetail<
+  TData = Awaited<ReturnType<typeof adminControllerGetUserDetail>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetUserDetail>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminControllerGetUserDetailQueryOptions(id, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
 /**
  * @summary List rooms (paginated)
  */
@@ -1476,1513 +1598,6 @@ export const useAdminControllerDeleteExpiredGuests = <TError = unknown, TContext
   return useMutation(mutationOptions, queryClient);
 };
 /**
- * @summary 인기 트랙 순위
- */
-export const getAdminControllerGetTopTracksUrl = (params: AdminControllerGetTopTracksParams) => {
-  const normalizedParams = new URLSearchParams();
-
-  Object.entries(params || {}).forEach(([key, value]) => {
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString());
-    }
-  });
-
-  const stringifiedParams = normalizedParams.toString();
-
-  return stringifiedParams.length > 0 ? `/api/admin/tracks/ranking?${stringifiedParams}` : `/api/admin/tracks/ranking`;
-};
-
-export const adminControllerGetTopTracks = async (
-  params: AdminControllerGetTopTracksParams,
-  options?: RequestInit,
-): Promise<PaginatedTrackRankingResponse> => {
-  return customFetch<PaginatedTrackRankingResponse>(getAdminControllerGetTopTracksUrl(params), {
-    ...options,
-    method: 'GET',
-  });
-};
-
-export const getAdminControllerGetTopTracksQueryKey = (params?: AdminControllerGetTopTracksParams) => {
-  return [`/api/admin/tracks/ranking`, ...(params ? [params] : [])] as const;
-};
-
-export const getAdminControllerGetTopTracksQueryOptions = <
-  TData = Awaited<ReturnType<typeof adminControllerGetTopTracks>>,
-  TError = unknown,
->(
-  params: AdminControllerGetTopTracksParams,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetTopTracks>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-
-  const queryKey = queryOptions?.queryKey ?? getAdminControllerGetTopTracksQueryKey(params);
-
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminControllerGetTopTracks>>> = ({ signal }) =>
-    adminControllerGetTopTracks(params, { signal, ...requestOptions });
-
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof adminControllerGetTopTracks>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type AdminControllerGetTopTracksQueryResult = NonNullable<
-  Awaited<ReturnType<typeof adminControllerGetTopTracks>>
->;
-export type AdminControllerGetTopTracksQueryError = unknown;
-
-export function useAdminControllerGetTopTracks<
-  TData = Awaited<ReturnType<typeof adminControllerGetTopTracks>>,
-  TError = unknown,
->(
-  params: AdminControllerGetTopTracksParams,
-  options: {
-    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetTopTracks>>, TError, TData>> &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetTopTracks>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetTopTracks>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetTopTracks<
-  TData = Awaited<ReturnType<typeof adminControllerGetTopTracks>>,
-  TError = unknown,
->(
-  params: AdminControllerGetTopTracksParams,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetTopTracks>>, TError, TData>> &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetTopTracks>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetTopTracks>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetTopTracks<
-  TData = Awaited<ReturnType<typeof adminControllerGetTopTracks>>,
-  TError = unknown,
->(
-  params: AdminControllerGetTopTracksParams,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetTopTracks>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-/**
- * @summary 인기 트랙 순위
- */
-
-export function useAdminControllerGetTopTracks<
-  TData = Awaited<ReturnType<typeof adminControllerGetTopTracks>>,
-  TError = unknown,
->(
-  params: AdminControllerGetTopTracksParams,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetTopTracks>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getAdminControllerGetTopTracksQueryOptions(params, options);
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-
-  query.queryKey = queryOptions.queryKey;
-
-  return query;
-}
-
-/**
- * @summary 실시간 활성 방 상태
- */
-export const getAdminControllerGetLiveRoomsUrl = () => {
-  return `/api/admin/live-rooms`;
-};
-
-export const adminControllerGetLiveRooms = async (options?: RequestInit): Promise<LiveRoomItem[]> => {
-  return customFetch<LiveRoomItem[]>(getAdminControllerGetLiveRoomsUrl(), {
-    ...options,
-    method: 'GET',
-  });
-};
-
-export const getAdminControllerGetLiveRoomsQueryKey = () => {
-  return [`/api/admin/live-rooms`] as const;
-};
-
-export const getAdminControllerGetLiveRoomsQueryOptions = <
-  TData = Awaited<ReturnType<typeof adminControllerGetLiveRooms>>,
-  TError = unknown,
->(options?: {
-  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetLiveRooms>>, TError, TData>>;
-  request?: SecondParameter<typeof customFetch>;
-}) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-
-  const queryKey = queryOptions?.queryKey ?? getAdminControllerGetLiveRoomsQueryKey();
-
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminControllerGetLiveRooms>>> = ({ signal }) =>
-    adminControllerGetLiveRooms({ signal, ...requestOptions });
-
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof adminControllerGetLiveRooms>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type AdminControllerGetLiveRoomsQueryResult = NonNullable<
-  Awaited<ReturnType<typeof adminControllerGetLiveRooms>>
->;
-export type AdminControllerGetLiveRoomsQueryError = unknown;
-
-export function useAdminControllerGetLiveRooms<
-  TData = Awaited<ReturnType<typeof adminControllerGetLiveRooms>>,
-  TError = unknown,
->(
-  options: {
-    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetLiveRooms>>, TError, TData>> &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetLiveRooms>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetLiveRooms>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetLiveRooms<
-  TData = Awaited<ReturnType<typeof adminControllerGetLiveRooms>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetLiveRooms>>, TError, TData>> &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetLiveRooms>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetLiveRooms>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetLiveRooms<
-  TData = Awaited<ReturnType<typeof adminControllerGetLiveRooms>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetLiveRooms>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-/**
- * @summary 실시간 활성 방 상태
- */
-
-export function useAdminControllerGetLiveRooms<
-  TData = Awaited<ReturnType<typeof adminControllerGetLiveRooms>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetLiveRooms>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getAdminControllerGetLiveRoomsQueryOptions(options);
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-
-  query.queryKey = queryOptions.queryKey;
-
-  return query;
-}
-
-/**
- * @summary 서버 리소스 모니터링
- */
-export const getAdminControllerGetSystemStatsUrl = () => {
-  return `/api/admin/system-stats`;
-};
-
-export const adminControllerGetSystemStats = async (options?: RequestInit): Promise<SystemStatsResponse> => {
-  return customFetch<SystemStatsResponse>(getAdminControllerGetSystemStatsUrl(), {
-    ...options,
-    method: 'GET',
-  });
-};
-
-export const getAdminControllerGetSystemStatsQueryKey = () => {
-  return [`/api/admin/system-stats`] as const;
-};
-
-export const getAdminControllerGetSystemStatsQueryOptions = <
-  TData = Awaited<ReturnType<typeof adminControllerGetSystemStats>>,
-  TError = unknown,
->(options?: {
-  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetSystemStats>>, TError, TData>>;
-  request?: SecondParameter<typeof customFetch>;
-}) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-
-  const queryKey = queryOptions?.queryKey ?? getAdminControllerGetSystemStatsQueryKey();
-
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminControllerGetSystemStats>>> = ({ signal }) =>
-    adminControllerGetSystemStats({ signal, ...requestOptions });
-
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof adminControllerGetSystemStats>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type AdminControllerGetSystemStatsQueryResult = NonNullable<
-  Awaited<ReturnType<typeof adminControllerGetSystemStats>>
->;
-export type AdminControllerGetSystemStatsQueryError = unknown;
-
-export function useAdminControllerGetSystemStats<
-  TData = Awaited<ReturnType<typeof adminControllerGetSystemStats>>,
-  TError = unknown,
->(
-  options: {
-    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetSystemStats>>, TError, TData>> &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetSystemStats>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetSystemStats>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetSystemStats<
-  TData = Awaited<ReturnType<typeof adminControllerGetSystemStats>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetSystemStats>>, TError, TData>> &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetSystemStats>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetSystemStats>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetSystemStats<
-  TData = Awaited<ReturnType<typeof adminControllerGetSystemStats>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetSystemStats>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-/**
- * @summary 서버 리소스 모니터링
- */
-
-export function useAdminControllerGetSystemStats<
-  TData = Awaited<ReturnType<typeof adminControllerGetSystemStats>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetSystemStats>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getAdminControllerGetSystemStatsQueryOptions(options);
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-
-  query.queryKey = queryOptions.queryKey;
-
-  return query;
-}
-
-/**
- * @summary 유저 상세 정보
- */
-export const getAdminControllerGetUserDetailUrl = (id: string) => {
-  return `/api/admin/users/${id}/detail`;
-};
-
-export const adminControllerGetUserDetail = async (id: string, options?: RequestInit): Promise<UserDetailResponse> => {
-  return customFetch<UserDetailResponse>(getAdminControllerGetUserDetailUrl(id), {
-    ...options,
-    method: 'GET',
-  });
-};
-
-export const getAdminControllerGetUserDetailQueryKey = (id?: string) => {
-  return [`/api/admin/users/${id}/detail`] as const;
-};
-
-export const getAdminControllerGetUserDetailQueryOptions = <
-  TData = Awaited<ReturnType<typeof adminControllerGetUserDetail>>,
-  TError = unknown,
->(
-  id: string,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetUserDetail>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-
-  const queryKey = queryOptions?.queryKey ?? getAdminControllerGetUserDetailQueryKey(id);
-
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminControllerGetUserDetail>>> = ({ signal }) =>
-    adminControllerGetUserDetail(id, { signal, ...requestOptions });
-
-  return { queryKey, queryFn, enabled: !!id, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof adminControllerGetUserDetail>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type AdminControllerGetUserDetailQueryResult = NonNullable<
-  Awaited<ReturnType<typeof adminControllerGetUserDetail>>
->;
-export type AdminControllerGetUserDetailQueryError = unknown;
-
-export function useAdminControllerGetUserDetail<
-  TData = Awaited<ReturnType<typeof adminControllerGetUserDetail>>,
-  TError = unknown,
->(
-  id: string,
-  options: {
-    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetUserDetail>>, TError, TData>> &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetUserDetail>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetUserDetail>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetUserDetail<
-  TData = Awaited<ReturnType<typeof adminControllerGetUserDetail>>,
-  TError = unknown,
->(
-  id: string,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetUserDetail>>, TError, TData>> &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetUserDetail>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetUserDetail>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetUserDetail<
-  TData = Awaited<ReturnType<typeof adminControllerGetUserDetail>>,
-  TError = unknown,
->(
-  id: string,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetUserDetail>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-/**
- * @summary 유저 상세 정보
- */
-
-export function useAdminControllerGetUserDetail<
-  TData = Awaited<ReturnType<typeof adminControllerGetUserDetail>>,
-  TError = unknown,
->(
-  id: string,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetUserDetail>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getAdminControllerGetUserDetailQueryOptions(id, options);
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-
-  query.queryKey = queryOptions.queryKey;
-
-  return query;
-}
-
-/**
- * @summary 실시간 메트릭
- */
-export const getAdminControllerGetRealtimeMetricsUrl = (params?: AdminControllerGetRealtimeMetricsParams) => {
-  const normalizedParams = new URLSearchParams();
-
-  Object.entries(params || {}).forEach(([key, value]) => {
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString());
-    }
-  });
-
-  const stringifiedParams = normalizedParams.toString();
-
-  return stringifiedParams.length > 0
-    ? `/api/admin/metrics/realtime?${stringifiedParams}`
-    : `/api/admin/metrics/realtime`;
-};
-
-export const adminControllerGetRealtimeMetrics = async (
-  params?: AdminControllerGetRealtimeMetricsParams,
-  options?: RequestInit,
-): Promise<RealtimeMetricsResponse> => {
-  return customFetch<RealtimeMetricsResponse>(getAdminControllerGetRealtimeMetricsUrl(params), {
-    ...options,
-    method: 'GET',
-  });
-};
-
-export const getAdminControllerGetRealtimeMetricsQueryKey = (params?: AdminControllerGetRealtimeMetricsParams) => {
-  return [`/api/admin/metrics/realtime`, ...(params ? [params] : [])] as const;
-};
-
-export const getAdminControllerGetRealtimeMetricsQueryOptions = <
-  TData = Awaited<ReturnType<typeof adminControllerGetRealtimeMetrics>>,
-  TError = unknown,
->(
-  params?: AdminControllerGetRealtimeMetricsParams,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetRealtimeMetrics>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-
-  const queryKey = queryOptions?.queryKey ?? getAdminControllerGetRealtimeMetricsQueryKey(params);
-
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminControllerGetRealtimeMetrics>>> = ({ signal }) =>
-    adminControllerGetRealtimeMetrics(params, { signal, ...requestOptions });
-
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof adminControllerGetRealtimeMetrics>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type AdminControllerGetRealtimeMetricsQueryResult = NonNullable<
-  Awaited<ReturnType<typeof adminControllerGetRealtimeMetrics>>
->;
-export type AdminControllerGetRealtimeMetricsQueryError = unknown;
-
-export function useAdminControllerGetRealtimeMetrics<
-  TData = Awaited<ReturnType<typeof adminControllerGetRealtimeMetrics>>,
-  TError = unknown,
->(
-  params: undefined | AdminControllerGetRealtimeMetricsParams,
-  options: {
-    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetRealtimeMetrics>>, TError, TData>> &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetRealtimeMetrics>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetRealtimeMetrics>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetRealtimeMetrics<
-  TData = Awaited<ReturnType<typeof adminControllerGetRealtimeMetrics>>,
-  TError = unknown,
->(
-  params?: AdminControllerGetRealtimeMetricsParams,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetRealtimeMetrics>>, TError, TData>> &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetRealtimeMetrics>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetRealtimeMetrics>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetRealtimeMetrics<
-  TData = Awaited<ReturnType<typeof adminControllerGetRealtimeMetrics>>,
-  TError = unknown,
->(
-  params?: AdminControllerGetRealtimeMetricsParams,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetRealtimeMetrics>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-/**
- * @summary 실시간 메트릭
- */
-
-export function useAdminControllerGetRealtimeMetrics<
-  TData = Awaited<ReturnType<typeof adminControllerGetRealtimeMetrics>>,
-  TError = unknown,
->(
-  params?: AdminControllerGetRealtimeMetricsParams,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetRealtimeMetrics>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getAdminControllerGetRealtimeMetricsQueryOptions(params, options);
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-
-  query.queryKey = queryOptions.queryKey;
-
-  return query;
-}
-
-/**
- * @summary 일별 재생 수
- */
-export const getAdminControllerGetDailyPlaysUrl = (params?: AdminControllerGetDailyPlaysParams) => {
-  const normalizedParams = new URLSearchParams();
-
-  Object.entries(params || {}).forEach(([key, value]) => {
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString());
-    }
-  });
-
-  const stringifiedParams = normalizedParams.toString();
-
-  return stringifiedParams.length > 0 ? `/api/admin/metrics/plays?${stringifiedParams}` : `/api/admin/metrics/plays`;
-};
-
-export const adminControllerGetDailyPlays = async (
-  params?: AdminControllerGetDailyPlaysParams,
-  options?: RequestInit,
-): Promise<PlaysMetricsResponse> => {
-  return customFetch<PlaysMetricsResponse>(getAdminControllerGetDailyPlaysUrl(params), {
-    ...options,
-    method: 'GET',
-  });
-};
-
-export const getAdminControllerGetDailyPlaysQueryKey = (params?: AdminControllerGetDailyPlaysParams) => {
-  return [`/api/admin/metrics/plays`, ...(params ? [params] : [])] as const;
-};
-
-export const getAdminControllerGetDailyPlaysQueryOptions = <
-  TData = Awaited<ReturnType<typeof adminControllerGetDailyPlays>>,
-  TError = unknown,
->(
-  params?: AdminControllerGetDailyPlaysParams,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetDailyPlays>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-
-  const queryKey = queryOptions?.queryKey ?? getAdminControllerGetDailyPlaysQueryKey(params);
-
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminControllerGetDailyPlays>>> = ({ signal }) =>
-    adminControllerGetDailyPlays(params, { signal, ...requestOptions });
-
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof adminControllerGetDailyPlays>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type AdminControllerGetDailyPlaysQueryResult = NonNullable<
-  Awaited<ReturnType<typeof adminControllerGetDailyPlays>>
->;
-export type AdminControllerGetDailyPlaysQueryError = unknown;
-
-export function useAdminControllerGetDailyPlays<
-  TData = Awaited<ReturnType<typeof adminControllerGetDailyPlays>>,
-  TError = unknown,
->(
-  params: undefined | AdminControllerGetDailyPlaysParams,
-  options: {
-    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetDailyPlays>>, TError, TData>> &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetDailyPlays>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetDailyPlays>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetDailyPlays<
-  TData = Awaited<ReturnType<typeof adminControllerGetDailyPlays>>,
-  TError = unknown,
->(
-  params?: AdminControllerGetDailyPlaysParams,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetDailyPlays>>, TError, TData>> &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetDailyPlays>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetDailyPlays>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetDailyPlays<
-  TData = Awaited<ReturnType<typeof adminControllerGetDailyPlays>>,
-  TError = unknown,
->(
-  params?: AdminControllerGetDailyPlaysParams,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetDailyPlays>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-/**
- * @summary 일별 재생 수
- */
-
-export function useAdminControllerGetDailyPlays<
-  TData = Awaited<ReturnType<typeof adminControllerGetDailyPlays>>,
-  TError = unknown,
->(
-  params?: AdminControllerGetDailyPlaysParams,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetDailyPlays>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getAdminControllerGetDailyPlaysQueryOptions(params, options);
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-
-  query.queryKey = queryOptions.queryKey;
-
-  return query;
-}
-
-/**
- * @summary 유저 분포
- */
-export const getAdminControllerGetUsersBreakdownUrl = () => {
-  return `/api/admin/metrics/users-breakdown`;
-};
-
-export const adminControllerGetUsersBreakdown = async (options?: RequestInit): Promise<UsersBreakdownResponse> => {
-  return customFetch<UsersBreakdownResponse>(getAdminControllerGetUsersBreakdownUrl(), {
-    ...options,
-    method: 'GET',
-  });
-};
-
-export const getAdminControllerGetUsersBreakdownQueryKey = () => {
-  return [`/api/admin/metrics/users-breakdown`] as const;
-};
-
-export const getAdminControllerGetUsersBreakdownQueryOptions = <
-  TData = Awaited<ReturnType<typeof adminControllerGetUsersBreakdown>>,
-  TError = unknown,
->(options?: {
-  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetUsersBreakdown>>, TError, TData>>;
-  request?: SecondParameter<typeof customFetch>;
-}) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-
-  const queryKey = queryOptions?.queryKey ?? getAdminControllerGetUsersBreakdownQueryKey();
-
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminControllerGetUsersBreakdown>>> = ({ signal }) =>
-    adminControllerGetUsersBreakdown({ signal, ...requestOptions });
-
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof adminControllerGetUsersBreakdown>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type AdminControllerGetUsersBreakdownQueryResult = NonNullable<
-  Awaited<ReturnType<typeof adminControllerGetUsersBreakdown>>
->;
-export type AdminControllerGetUsersBreakdownQueryError = unknown;
-
-export function useAdminControllerGetUsersBreakdown<
-  TData = Awaited<ReturnType<typeof adminControllerGetUsersBreakdown>>,
-  TError = unknown,
->(
-  options: {
-    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetUsersBreakdown>>, TError, TData>> &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetUsersBreakdown>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetUsersBreakdown>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetUsersBreakdown<
-  TData = Awaited<ReturnType<typeof adminControllerGetUsersBreakdown>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetUsersBreakdown>>, TError, TData>> &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetUsersBreakdown>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetUsersBreakdown>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetUsersBreakdown<
-  TData = Awaited<ReturnType<typeof adminControllerGetUsersBreakdown>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetUsersBreakdown>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-/**
- * @summary 유저 분포
- */
-
-export function useAdminControllerGetUsersBreakdown<
-  TData = Awaited<ReturnType<typeof adminControllerGetUsersBreakdown>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetUsersBreakdown>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getAdminControllerGetUsersBreakdownQueryOptions(options);
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-
-  query.queryKey = queryOptions.queryKey;
-
-  return query;
-}
-
-/**
- * @summary 스트리밍 현황
- */
-export const getAdminControllerGetStreamingMetricsUrl = () => {
-  return `/api/admin/metrics/streaming`;
-};
-
-export const adminControllerGetStreamingMetrics = async (options?: RequestInit): Promise<StreamingMetricsResponse> => {
-  return customFetch<StreamingMetricsResponse>(getAdminControllerGetStreamingMetricsUrl(), {
-    ...options,
-    method: 'GET',
-  });
-};
-
-export const getAdminControllerGetStreamingMetricsQueryKey = () => {
-  return [`/api/admin/metrics/streaming`] as const;
-};
-
-export const getAdminControllerGetStreamingMetricsQueryOptions = <
-  TData = Awaited<ReturnType<typeof adminControllerGetStreamingMetrics>>,
-  TError = unknown,
->(options?: {
-  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetStreamingMetrics>>, TError, TData>>;
-  request?: SecondParameter<typeof customFetch>;
-}) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-
-  const queryKey = queryOptions?.queryKey ?? getAdminControllerGetStreamingMetricsQueryKey();
-
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminControllerGetStreamingMetrics>>> = ({ signal }) =>
-    adminControllerGetStreamingMetrics({ signal, ...requestOptions });
-
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof adminControllerGetStreamingMetrics>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type AdminControllerGetStreamingMetricsQueryResult = NonNullable<
-  Awaited<ReturnType<typeof adminControllerGetStreamingMetrics>>
->;
-export type AdminControllerGetStreamingMetricsQueryError = unknown;
-
-export function useAdminControllerGetStreamingMetrics<
-  TData = Awaited<ReturnType<typeof adminControllerGetStreamingMetrics>>,
-  TError = unknown,
->(
-  options: {
-    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetStreamingMetrics>>, TError, TData>> &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetStreamingMetrics>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetStreamingMetrics>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetStreamingMetrics<
-  TData = Awaited<ReturnType<typeof adminControllerGetStreamingMetrics>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetStreamingMetrics>>, TError, TData>> &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetStreamingMetrics>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetStreamingMetrics>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetStreamingMetrics<
-  TData = Awaited<ReturnType<typeof adminControllerGetStreamingMetrics>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetStreamingMetrics>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-/**
- * @summary 스트리밍 현황
- */
-
-export function useAdminControllerGetStreamingMetrics<
-  TData = Awaited<ReturnType<typeof adminControllerGetStreamingMetrics>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetStreamingMetrics>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getAdminControllerGetStreamingMetricsQueryOptions(options);
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-
-  query.queryKey = queryOptions.queryKey;
-
-  return query;
-}
-
-/**
- * @summary 최근 에러 로그
- */
-export const getAdminControllerGetRecentErrorsUrl = (params: AdminControllerGetRecentErrorsParams) => {
-  const normalizedParams = new URLSearchParams();
-
-  Object.entries(params || {}).forEach(([key, value]) => {
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString());
-    }
-  });
-
-  const stringifiedParams = normalizedParams.toString();
-
-  return stringifiedParams.length > 0 ? `/api/admin/errors?${stringifiedParams}` : `/api/admin/errors`;
-};
-
-export const adminControllerGetRecentErrors = async (
-  params: AdminControllerGetRecentErrorsParams,
-  options?: RequestInit,
-): Promise<PaginatedErrorLogsResponse> => {
-  return customFetch<PaginatedErrorLogsResponse>(getAdminControllerGetRecentErrorsUrl(params), {
-    ...options,
-    method: 'GET',
-  });
-};
-
-export const getAdminControllerGetRecentErrorsQueryKey = (params?: AdminControllerGetRecentErrorsParams) => {
-  return [`/api/admin/errors`, ...(params ? [params] : [])] as const;
-};
-
-export const getAdminControllerGetRecentErrorsQueryOptions = <
-  TData = Awaited<ReturnType<typeof adminControllerGetRecentErrors>>,
-  TError = unknown,
->(
-  params: AdminControllerGetRecentErrorsParams,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetRecentErrors>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-
-  const queryKey = queryOptions?.queryKey ?? getAdminControllerGetRecentErrorsQueryKey(params);
-
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminControllerGetRecentErrors>>> = ({ signal }) =>
-    adminControllerGetRecentErrors(params, { signal, ...requestOptions });
-
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof adminControllerGetRecentErrors>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type AdminControllerGetRecentErrorsQueryResult = NonNullable<
-  Awaited<ReturnType<typeof adminControllerGetRecentErrors>>
->;
-export type AdminControllerGetRecentErrorsQueryError = unknown;
-
-export function useAdminControllerGetRecentErrors<
-  TData = Awaited<ReturnType<typeof adminControllerGetRecentErrors>>,
-  TError = unknown,
->(
-  params: AdminControllerGetRecentErrorsParams,
-  options: {
-    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetRecentErrors>>, TError, TData>> &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetRecentErrors>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetRecentErrors>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetRecentErrors<
-  TData = Awaited<ReturnType<typeof adminControllerGetRecentErrors>>,
-  TError = unknown,
->(
-  params: AdminControllerGetRecentErrorsParams,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetRecentErrors>>, TError, TData>> &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetRecentErrors>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetRecentErrors>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetRecentErrors<
-  TData = Awaited<ReturnType<typeof adminControllerGetRecentErrors>>,
-  TError = unknown,
->(
-  params: AdminControllerGetRecentErrorsParams,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetRecentErrors>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-/**
- * @summary 최근 에러 로그
- */
-
-export function useAdminControllerGetRecentErrors<
-  TData = Awaited<ReturnType<typeof adminControllerGetRecentErrors>>,
-  TError = unknown,
->(
-  params: AdminControllerGetRecentErrorsParams,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetRecentErrors>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getAdminControllerGetRecentErrorsQueryOptions(params, options);
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-
-  query.queryKey = queryOptions.queryKey;
-
-  return query;
-}
-
-/**
- * @summary 에러 로그 파일 목록
- */
-export const getAdminControllerGetErrorFilesUrl = () => {
-  return `/api/admin/errors/files`;
-};
-
-export const adminControllerGetErrorFiles = async (options?: RequestInit): Promise<ErrorFileItem[]> => {
-  return customFetch<ErrorFileItem[]>(getAdminControllerGetErrorFilesUrl(), {
-    ...options,
-    method: 'GET',
-  });
-};
-
-export const getAdminControllerGetErrorFilesQueryKey = () => {
-  return [`/api/admin/errors/files`] as const;
-};
-
-export const getAdminControllerGetErrorFilesQueryOptions = <
-  TData = Awaited<ReturnType<typeof adminControllerGetErrorFiles>>,
-  TError = unknown,
->(options?: {
-  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetErrorFiles>>, TError, TData>>;
-  request?: SecondParameter<typeof customFetch>;
-}) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-
-  const queryKey = queryOptions?.queryKey ?? getAdminControllerGetErrorFilesQueryKey();
-
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminControllerGetErrorFiles>>> = ({ signal }) =>
-    adminControllerGetErrorFiles({ signal, ...requestOptions });
-
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof adminControllerGetErrorFiles>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type AdminControllerGetErrorFilesQueryResult = NonNullable<
-  Awaited<ReturnType<typeof adminControllerGetErrorFiles>>
->;
-export type AdminControllerGetErrorFilesQueryError = unknown;
-
-export function useAdminControllerGetErrorFiles<
-  TData = Awaited<ReturnType<typeof adminControllerGetErrorFiles>>,
-  TError = unknown,
->(
-  options: {
-    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetErrorFiles>>, TError, TData>> &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetErrorFiles>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetErrorFiles>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetErrorFiles<
-  TData = Awaited<ReturnType<typeof adminControllerGetErrorFiles>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetErrorFiles>>, TError, TData>> &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetErrorFiles>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetErrorFiles>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetErrorFiles<
-  TData = Awaited<ReturnType<typeof adminControllerGetErrorFiles>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetErrorFiles>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-/**
- * @summary 에러 로그 파일 목록
- */
-
-export function useAdminControllerGetErrorFiles<
-  TData = Awaited<ReturnType<typeof adminControllerGetErrorFiles>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetErrorFiles>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getAdminControllerGetErrorFilesQueryOptions(options);
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-
-  query.queryKey = queryOptions.queryKey;
-
-  return query;
-}
-
-/**
- * @summary 에러 로그 파일 조회
- */
-export const getAdminControllerGetErrorFileUrl = (filename: string, params: AdminControllerGetErrorFileParams) => {
-  const normalizedParams = new URLSearchParams();
-
-  Object.entries(params || {}).forEach(([key, value]) => {
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString());
-    }
-  });
-
-  const stringifiedParams = normalizedParams.toString();
-
-  return stringifiedParams.length > 0
-    ? `/api/admin/errors/files/${filename}?${stringifiedParams}`
-    : `/api/admin/errors/files/${filename}`;
-};
-
-export const adminControllerGetErrorFile = async (
-  filename: string,
-  params: AdminControllerGetErrorFileParams,
-  options?: RequestInit,
-): Promise<PaginatedErrorLogsResponse> => {
-  return customFetch<PaginatedErrorLogsResponse>(getAdminControllerGetErrorFileUrl(filename, params), {
-    ...options,
-    method: 'GET',
-  });
-};
-
-export const getAdminControllerGetErrorFileQueryKey = (
-  filename?: string,
-  params?: AdminControllerGetErrorFileParams,
-) => {
-  return [`/api/admin/errors/files/${filename}`, ...(params ? [params] : [])] as const;
-};
-
-export const getAdminControllerGetErrorFileQueryOptions = <
-  TData = Awaited<ReturnType<typeof adminControllerGetErrorFile>>,
-  TError = unknown,
->(
-  filename: string,
-  params: AdminControllerGetErrorFileParams,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetErrorFile>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-
-  const queryKey = queryOptions?.queryKey ?? getAdminControllerGetErrorFileQueryKey(filename, params);
-
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminControllerGetErrorFile>>> = ({ signal }) =>
-    adminControllerGetErrorFile(filename, params, { signal, ...requestOptions });
-
-  return { queryKey, queryFn, enabled: !!filename, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof adminControllerGetErrorFile>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type AdminControllerGetErrorFileQueryResult = NonNullable<
-  Awaited<ReturnType<typeof adminControllerGetErrorFile>>
->;
-export type AdminControllerGetErrorFileQueryError = unknown;
-
-export function useAdminControllerGetErrorFile<
-  TData = Awaited<ReturnType<typeof adminControllerGetErrorFile>>,
-  TError = unknown,
->(
-  filename: string,
-  params: AdminControllerGetErrorFileParams,
-  options: {
-    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetErrorFile>>, TError, TData>> &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetErrorFile>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetErrorFile>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetErrorFile<
-  TData = Awaited<ReturnType<typeof adminControllerGetErrorFile>>,
-  TError = unknown,
->(
-  filename: string,
-  params: AdminControllerGetErrorFileParams,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetErrorFile>>, TError, TData>> &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetErrorFile>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetErrorFile>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetErrorFile<
-  TData = Awaited<ReturnType<typeof adminControllerGetErrorFile>>,
-  TError = unknown,
->(
-  filename: string,
-  params: AdminControllerGetErrorFileParams,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetErrorFile>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-/**
- * @summary 에러 로그 파일 조회
- */
-
-export function useAdminControllerGetErrorFile<
-  TData = Awaited<ReturnType<typeof adminControllerGetErrorFile>>,
-  TError = unknown,
->(
-  filename: string,
-  params: AdminControllerGetErrorFileParams,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetErrorFile>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getAdminControllerGetErrorFileQueryOptions(filename, params, options);
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-
-  query.queryKey = queryOptions.queryKey;
-
-  return query;
-}
-
-/**
- * @summary 방 실시간 상세
- */
-export const getAdminControllerGetRoomLiveDetailUrl = (id: string) => {
-  return `/api/admin/rooms/${id}/live-detail`;
-};
-
-export const adminControllerGetRoomLiveDetail = async (id: string, options?: RequestInit): Promise<void> => {
-  return customFetch<void>(getAdminControllerGetRoomLiveDetailUrl(id), {
-    ...options,
-    method: 'GET',
-  });
-};
-
-export const getAdminControllerGetRoomLiveDetailQueryKey = (id?: string) => {
-  return [`/api/admin/rooms/${id}/live-detail`] as const;
-};
-
-export const getAdminControllerGetRoomLiveDetailQueryOptions = <
-  TData = Awaited<ReturnType<typeof adminControllerGetRoomLiveDetail>>,
-  TError = unknown,
->(
-  id: string,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetRoomLiveDetail>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-
-  const queryKey = queryOptions?.queryKey ?? getAdminControllerGetRoomLiveDetailQueryKey(id);
-
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminControllerGetRoomLiveDetail>>> = ({ signal }) =>
-    adminControllerGetRoomLiveDetail(id, { signal, ...requestOptions });
-
-  return { queryKey, queryFn, enabled: !!id, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof adminControllerGetRoomLiveDetail>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type AdminControllerGetRoomLiveDetailQueryResult = NonNullable<
-  Awaited<ReturnType<typeof adminControllerGetRoomLiveDetail>>
->;
-export type AdminControllerGetRoomLiveDetailQueryError = unknown;
-
-export function useAdminControllerGetRoomLiveDetail<
-  TData = Awaited<ReturnType<typeof adminControllerGetRoomLiveDetail>>,
-  TError = unknown,
->(
-  id: string,
-  options: {
-    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetRoomLiveDetail>>, TError, TData>> &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetRoomLiveDetail>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetRoomLiveDetail>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetRoomLiveDetail<
-  TData = Awaited<ReturnType<typeof adminControllerGetRoomLiveDetail>>,
-  TError = unknown,
->(
-  id: string,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetRoomLiveDetail>>, TError, TData>> &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetRoomLiveDetail>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetRoomLiveDetail>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetRoomLiveDetail<
-  TData = Awaited<ReturnType<typeof adminControllerGetRoomLiveDetail>>,
-  TError = unknown,
->(
-  id: string,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetRoomLiveDetail>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-/**
- * @summary 방 실시간 상세
- */
-
-export function useAdminControllerGetRoomLiveDetail<
-  TData = Awaited<ReturnType<typeof adminControllerGetRoomLiveDetail>>,
-  TError = unknown,
->(
-  id: string,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetRoomLiveDetail>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getAdminControllerGetRoomLiveDetailQueryOptions(id, options);
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-
-  query.queryKey = queryOptions.queryKey;
-
-  return query;
-}
-
-/**
  * @summary 시스템 설정 조회 (시크릿 제외)
  */
 export const getAdminControllerGetSettingsUrl = () => {
@@ -3405,187 +2020,6 @@ export function useAdminControllerGetGeminiModels<
   return query;
 }
 
-/**
- * @summary 정리 대상 요약
- */
-export const getAdminControllerGetCleanupSummaryUrl = () => {
-  return `/api/admin/cleanup/summary`;
-};
-
-export const adminControllerGetCleanupSummary = async (options?: RequestInit): Promise<CleanupSummaryResponse> => {
-  return customFetch<CleanupSummaryResponse>(getAdminControllerGetCleanupSummaryUrl(), {
-    ...options,
-    method: 'GET',
-  });
-};
-
-export const getAdminControllerGetCleanupSummaryQueryKey = () => {
-  return [`/api/admin/cleanup/summary`] as const;
-};
-
-export const getAdminControllerGetCleanupSummaryQueryOptions = <
-  TData = Awaited<ReturnType<typeof adminControllerGetCleanupSummary>>,
-  TError = unknown,
->(options?: {
-  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetCleanupSummary>>, TError, TData>>;
-  request?: SecondParameter<typeof customFetch>;
-}) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-
-  const queryKey = queryOptions?.queryKey ?? getAdminControllerGetCleanupSummaryQueryKey();
-
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminControllerGetCleanupSummary>>> = ({ signal }) =>
-    adminControllerGetCleanupSummary({ signal, ...requestOptions });
-
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof adminControllerGetCleanupSummary>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type AdminControllerGetCleanupSummaryQueryResult = NonNullable<
-  Awaited<ReturnType<typeof adminControllerGetCleanupSummary>>
->;
-export type AdminControllerGetCleanupSummaryQueryError = unknown;
-
-export function useAdminControllerGetCleanupSummary<
-  TData = Awaited<ReturnType<typeof adminControllerGetCleanupSummary>>,
-  TError = unknown,
->(
-  options: {
-    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetCleanupSummary>>, TError, TData>> &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetCleanupSummary>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetCleanupSummary>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetCleanupSummary<
-  TData = Awaited<ReturnType<typeof adminControllerGetCleanupSummary>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetCleanupSummary>>, TError, TData>> &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetCleanupSummary>>,
-          TError,
-          Awaited<ReturnType<typeof adminControllerGetCleanupSummary>>
-        >,
-        'initialData'
-      >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetCleanupSummary<
-  TData = Awaited<ReturnType<typeof adminControllerGetCleanupSummary>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetCleanupSummary>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-/**
- * @summary 정리 대상 요약
- */
-
-export function useAdminControllerGetCleanupSummary<
-  TData = Awaited<ReturnType<typeof adminControllerGetCleanupSummary>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetCleanupSummary>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getAdminControllerGetCleanupSummaryQueryOptions(options);
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-
-  query.queryKey = queryOptions.queryKey;
-
-  return query;
-}
-
-/**
- * @summary 데이터 정리 실행
- */
-export const getAdminControllerRunCleanupUrl = (type: string) => {
-  return `/api/admin/cleanup/${type}`;
-};
-
-export const adminControllerRunCleanup = async (type: string, options?: RequestInit): Promise<void> => {
-  return customFetch<void>(getAdminControllerRunCleanupUrl(type), {
-    ...options,
-    method: 'DELETE',
-  });
-};
-
-export const getAdminControllerRunCleanupMutationOptions = <TError = unknown, TContext = unknown>(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof adminControllerRunCleanup>>,
-    TError,
-    { type: string },
-    TContext
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseMutationOptions<Awaited<ReturnType<typeof adminControllerRunCleanup>>, TError, { type: string }, TContext> => {
-  const mutationKey = ['adminControllerRunCleanup'];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<Awaited<ReturnType<typeof adminControllerRunCleanup>>, { type: string }> = (
-    props,
-  ) => {
-    const { type } = props ?? {};
-
-    return adminControllerRunCleanup(type, requestOptions);
-  };
-
-  return { mutationFn, ...mutationOptions };
-};
-
-export type AdminControllerRunCleanupMutationResult = NonNullable<
-  Awaited<ReturnType<typeof adminControllerRunCleanup>>
->;
-
-export type AdminControllerRunCleanupMutationError = unknown;
-
-/**
- * @summary 데이터 정리 실행
- */
-export const useAdminControllerRunCleanup = <TError = unknown, TContext = unknown>(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof adminControllerRunCleanup>>,
-      TError,
-      { type: string },
-      TContext
-    >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-  queryClient?: QueryClient,
-): UseMutationResult<Awaited<ReturnType<typeof adminControllerRunCleanup>>, TError, { type: string }, TContext> => {
-  const mutationOptions = getAdminControllerRunCleanupMutationOptions(options);
-
-  return useMutation(mutationOptions, queryClient);
-};
 /**
  * @summary IP 차단 목록
  */
@@ -4202,67 +2636,60 @@ export const useAdminControllerResolveReport = <TError = unknown, TContext = unk
   return useMutation(mutationOptions, queryClient);
 };
 /**
- * @summary 트랙 가사 조회
+ * @summary 서버 리소스 모니터링
  */
-export const getAdminControllerGetTrackLyricsUrl = (id: string) => {
-  return `/api/admin/tracks/${id}/lyrics`;
+export const getAdminMetricsControllerGetSystemStatsUrl = () => {
+  return `/api/admin/system-stats`;
 };
 
-export const adminControllerGetTrackLyrics = async (
-  id: string,
-  options?: RequestInit,
-): Promise<TrackLyricsResponse> => {
-  return customFetch<TrackLyricsResponse>(getAdminControllerGetTrackLyricsUrl(id), {
+export const adminMetricsControllerGetSystemStats = async (options?: RequestInit): Promise<SystemStatsResponse> => {
+  return customFetch<SystemStatsResponse>(getAdminMetricsControllerGetSystemStatsUrl(), {
     ...options,
     method: 'GET',
   });
 };
 
-export const getAdminControllerGetTrackLyricsQueryKey = (id?: string) => {
-  return [`/api/admin/tracks/${id}/lyrics`] as const;
+export const getAdminMetricsControllerGetSystemStatsQueryKey = () => {
+  return [`/api/admin/system-stats`] as const;
 };
 
-export const getAdminControllerGetTrackLyricsQueryOptions = <
-  TData = Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>,
+export const getAdminMetricsControllerGetSystemStatsQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetSystemStats>>,
   TError = unknown,
->(
-  id: string,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>, TError, TData>>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-) => {
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetSystemStats>>, TError, TData>>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getAdminControllerGetTrackLyricsQueryKey(id);
+  const queryKey = queryOptions?.queryKey ?? getAdminMetricsControllerGetSystemStatsQueryKey();
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>> = ({ signal }) =>
-    adminControllerGetTrackLyrics(id, { signal, ...requestOptions });
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminMetricsControllerGetSystemStats>>> = ({ signal }) =>
+    adminMetricsControllerGetSystemStats({ signal, ...requestOptions });
 
-  return { queryKey, queryFn, enabled: !!id, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>,
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminMetricsControllerGetSystemStats>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type AdminControllerGetTrackLyricsQueryResult = NonNullable<
-  Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>
+export type AdminMetricsControllerGetSystemStatsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminMetricsControllerGetSystemStats>>
 >;
-export type AdminControllerGetTrackLyricsQueryError = unknown;
+export type AdminMetricsControllerGetSystemStatsQueryError = unknown;
 
-export function useAdminControllerGetTrackLyrics<
-  TData = Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>,
+export function useAdminMetricsControllerGetSystemStats<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetSystemStats>>,
   TError = unknown,
 >(
-  id: string,
   options: {
-    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>, TError, TData>> &
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetSystemStats>>, TError, TData>> &
       Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>,
+          Awaited<ReturnType<typeof adminMetricsControllerGetSystemStats>>,
           TError,
-          Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>
+          Awaited<ReturnType<typeof adminMetricsControllerGetSystemStats>>
         >,
         'initialData'
       >;
@@ -4270,18 +2697,17 @@ export function useAdminControllerGetTrackLyrics<
   },
   queryClient?: QueryClient,
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetTrackLyrics<
-  TData = Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>,
+export function useAdminMetricsControllerGetSystemStats<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetSystemStats>>,
   TError = unknown,
 >(
-  id: string,
   options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>, TError, TData>> &
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetSystemStats>>, TError, TData>> &
       Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>,
+          Awaited<ReturnType<typeof adminMetricsControllerGetSystemStats>>,
           TError,
-          Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>
+          Awaited<ReturnType<typeof adminMetricsControllerGetSystemStats>>
         >,
         'initialData'
       >;
@@ -4289,13 +2715,1658 @@ export function useAdminControllerGetTrackLyrics<
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminControllerGetTrackLyrics<
-  TData = Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>,
+export function useAdminMetricsControllerGetSystemStats<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetSystemStats>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetSystemStats>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 서버 리소스 모니터링
+ */
+
+export function useAdminMetricsControllerGetSystemStats<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetSystemStats>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetSystemStats>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminMetricsControllerGetSystemStatsQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 실시간 활성 방 상태
+ */
+export const getAdminMetricsControllerGetLiveRoomsUrl = () => {
+  return `/api/admin/live-rooms`;
+};
+
+export const adminMetricsControllerGetLiveRooms = async (options?: RequestInit): Promise<LiveRoomItem[]> => {
+  return customFetch<LiveRoomItem[]>(getAdminMetricsControllerGetLiveRoomsUrl(), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getAdminMetricsControllerGetLiveRoomsQueryKey = () => {
+  return [`/api/admin/live-rooms`] as const;
+};
+
+export const getAdminMetricsControllerGetLiveRoomsQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetLiveRooms>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetLiveRooms>>, TError, TData>>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminMetricsControllerGetLiveRoomsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminMetricsControllerGetLiveRooms>>> = ({ signal }) =>
+    adminMetricsControllerGetLiveRooms({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminMetricsControllerGetLiveRooms>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminMetricsControllerGetLiveRoomsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminMetricsControllerGetLiveRooms>>
+>;
+export type AdminMetricsControllerGetLiveRoomsQueryError = unknown;
+
+export function useAdminMetricsControllerGetLiveRooms<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetLiveRooms>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetLiveRooms>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminMetricsControllerGetLiveRooms>>,
+          TError,
+          Awaited<ReturnType<typeof adminMetricsControllerGetLiveRooms>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminMetricsControllerGetLiveRooms<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetLiveRooms>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetLiveRooms>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminMetricsControllerGetLiveRooms>>,
+          TError,
+          Awaited<ReturnType<typeof adminMetricsControllerGetLiveRooms>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminMetricsControllerGetLiveRooms<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetLiveRooms>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetLiveRooms>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 실시간 활성 방 상태
+ */
+
+export function useAdminMetricsControllerGetLiveRooms<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetLiveRooms>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetLiveRooms>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminMetricsControllerGetLiveRoomsQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 방 실시간 상세
+ */
+export const getAdminMetricsControllerGetRoomLiveDetailUrl = (id: string) => {
+  return `/api/admin/rooms/${id}/live-detail`;
+};
+
+export const adminMetricsControllerGetRoomLiveDetail = async (id: string, options?: RequestInit): Promise<void> => {
+  return customFetch<void>(getAdminMetricsControllerGetRoomLiveDetailUrl(id), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getAdminMetricsControllerGetRoomLiveDetailQueryKey = (id?: string) => {
+  return [`/api/admin/rooms/${id}/live-detail`] as const;
+};
+
+export const getAdminMetricsControllerGetRoomLiveDetailQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetRoomLiveDetail>>,
   TError = unknown,
 >(
   id: string,
   options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>, TError, TData>>;
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetRoomLiveDetail>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminMetricsControllerGetRoomLiveDetailQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminMetricsControllerGetRoomLiveDetail>>> = ({ signal }) =>
+    adminMetricsControllerGetRoomLiveDetail(id, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, enabled: !!id, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminMetricsControllerGetRoomLiveDetail>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminMetricsControllerGetRoomLiveDetailQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminMetricsControllerGetRoomLiveDetail>>
+>;
+export type AdminMetricsControllerGetRoomLiveDetailQueryError = unknown;
+
+export function useAdminMetricsControllerGetRoomLiveDetail<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetRoomLiveDetail>>,
+  TError = unknown,
+>(
+  id: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetRoomLiveDetail>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminMetricsControllerGetRoomLiveDetail>>,
+          TError,
+          Awaited<ReturnType<typeof adminMetricsControllerGetRoomLiveDetail>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminMetricsControllerGetRoomLiveDetail<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetRoomLiveDetail>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetRoomLiveDetail>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminMetricsControllerGetRoomLiveDetail>>,
+          TError,
+          Awaited<ReturnType<typeof adminMetricsControllerGetRoomLiveDetail>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminMetricsControllerGetRoomLiveDetail<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetRoomLiveDetail>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetRoomLiveDetail>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 방 실시간 상세
+ */
+
+export function useAdminMetricsControllerGetRoomLiveDetail<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetRoomLiveDetail>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetRoomLiveDetail>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminMetricsControllerGetRoomLiveDetailQueryOptions(id, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 실시간 메트릭
+ */
+export const getAdminMetricsControllerGetRealtimeMetricsUrl = (
+  params?: AdminMetricsControllerGetRealtimeMetricsParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/admin/metrics/realtime?${stringifiedParams}`
+    : `/api/admin/metrics/realtime`;
+};
+
+export const adminMetricsControllerGetRealtimeMetrics = async (
+  params?: AdminMetricsControllerGetRealtimeMetricsParams,
+  options?: RequestInit,
+): Promise<RealtimeMetricsResponse> => {
+  return customFetch<RealtimeMetricsResponse>(getAdminMetricsControllerGetRealtimeMetricsUrl(params), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getAdminMetricsControllerGetRealtimeMetricsQueryKey = (
+  params?: AdminMetricsControllerGetRealtimeMetricsParams,
+) => {
+  return [`/api/admin/metrics/realtime`, ...(params ? [params] : [])] as const;
+};
+
+export const getAdminMetricsControllerGetRealtimeMetricsQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetRealtimeMetrics>>,
+  TError = unknown,
+>(
+  params?: AdminMetricsControllerGetRealtimeMetricsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetRealtimeMetrics>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminMetricsControllerGetRealtimeMetricsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminMetricsControllerGetRealtimeMetrics>>> = ({ signal }) =>
+    adminMetricsControllerGetRealtimeMetrics(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminMetricsControllerGetRealtimeMetrics>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminMetricsControllerGetRealtimeMetricsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminMetricsControllerGetRealtimeMetrics>>
+>;
+export type AdminMetricsControllerGetRealtimeMetricsQueryError = unknown;
+
+export function useAdminMetricsControllerGetRealtimeMetrics<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetRealtimeMetrics>>,
+  TError = unknown,
+>(
+  params: undefined | AdminMetricsControllerGetRealtimeMetricsParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetRealtimeMetrics>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminMetricsControllerGetRealtimeMetrics>>,
+          TError,
+          Awaited<ReturnType<typeof adminMetricsControllerGetRealtimeMetrics>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminMetricsControllerGetRealtimeMetrics<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetRealtimeMetrics>>,
+  TError = unknown,
+>(
+  params?: AdminMetricsControllerGetRealtimeMetricsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetRealtimeMetrics>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminMetricsControllerGetRealtimeMetrics>>,
+          TError,
+          Awaited<ReturnType<typeof adminMetricsControllerGetRealtimeMetrics>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminMetricsControllerGetRealtimeMetrics<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetRealtimeMetrics>>,
+  TError = unknown,
+>(
+  params?: AdminMetricsControllerGetRealtimeMetricsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetRealtimeMetrics>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 실시간 메트릭
+ */
+
+export function useAdminMetricsControllerGetRealtimeMetrics<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetRealtimeMetrics>>,
+  TError = unknown,
+>(
+  params?: AdminMetricsControllerGetRealtimeMetricsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetRealtimeMetrics>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminMetricsControllerGetRealtimeMetricsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 일별 재생 수
+ */
+export const getAdminMetricsControllerGetDailyPlaysUrl = (params?: AdminMetricsControllerGetDailyPlaysParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/admin/metrics/plays?${stringifiedParams}` : `/api/admin/metrics/plays`;
+};
+
+export const adminMetricsControllerGetDailyPlays = async (
+  params?: AdminMetricsControllerGetDailyPlaysParams,
+  options?: RequestInit,
+): Promise<PlaysMetricsResponse> => {
+  return customFetch<PlaysMetricsResponse>(getAdminMetricsControllerGetDailyPlaysUrl(params), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getAdminMetricsControllerGetDailyPlaysQueryKey = (params?: AdminMetricsControllerGetDailyPlaysParams) => {
+  return [`/api/admin/metrics/plays`, ...(params ? [params] : [])] as const;
+};
+
+export const getAdminMetricsControllerGetDailyPlaysQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetDailyPlays>>,
+  TError = unknown,
+>(
+  params?: AdminMetricsControllerGetDailyPlaysParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetDailyPlays>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminMetricsControllerGetDailyPlaysQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminMetricsControllerGetDailyPlays>>> = ({ signal }) =>
+    adminMetricsControllerGetDailyPlays(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminMetricsControllerGetDailyPlays>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminMetricsControllerGetDailyPlaysQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminMetricsControllerGetDailyPlays>>
+>;
+export type AdminMetricsControllerGetDailyPlaysQueryError = unknown;
+
+export function useAdminMetricsControllerGetDailyPlays<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetDailyPlays>>,
+  TError = unknown,
+>(
+  params: undefined | AdminMetricsControllerGetDailyPlaysParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetDailyPlays>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminMetricsControllerGetDailyPlays>>,
+          TError,
+          Awaited<ReturnType<typeof adminMetricsControllerGetDailyPlays>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminMetricsControllerGetDailyPlays<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetDailyPlays>>,
+  TError = unknown,
+>(
+  params?: AdminMetricsControllerGetDailyPlaysParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetDailyPlays>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminMetricsControllerGetDailyPlays>>,
+          TError,
+          Awaited<ReturnType<typeof adminMetricsControllerGetDailyPlays>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminMetricsControllerGetDailyPlays<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetDailyPlays>>,
+  TError = unknown,
+>(
+  params?: AdminMetricsControllerGetDailyPlaysParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetDailyPlays>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 일별 재생 수
+ */
+
+export function useAdminMetricsControllerGetDailyPlays<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetDailyPlays>>,
+  TError = unknown,
+>(
+  params?: AdminMetricsControllerGetDailyPlaysParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetDailyPlays>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminMetricsControllerGetDailyPlaysQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 유저 분포
+ */
+export const getAdminMetricsControllerGetUsersBreakdownUrl = () => {
+  return `/api/admin/metrics/users-breakdown`;
+};
+
+export const adminMetricsControllerGetUsersBreakdown = async (
+  options?: RequestInit,
+): Promise<UsersBreakdownResponse> => {
+  return customFetch<UsersBreakdownResponse>(getAdminMetricsControllerGetUsersBreakdownUrl(), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getAdminMetricsControllerGetUsersBreakdownQueryKey = () => {
+  return [`/api/admin/metrics/users-breakdown`] as const;
+};
+
+export const getAdminMetricsControllerGetUsersBreakdownQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetUsersBreakdown>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetUsersBreakdown>>, TError, TData>>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminMetricsControllerGetUsersBreakdownQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminMetricsControllerGetUsersBreakdown>>> = ({ signal }) =>
+    adminMetricsControllerGetUsersBreakdown({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminMetricsControllerGetUsersBreakdown>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminMetricsControllerGetUsersBreakdownQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminMetricsControllerGetUsersBreakdown>>
+>;
+export type AdminMetricsControllerGetUsersBreakdownQueryError = unknown;
+
+export function useAdminMetricsControllerGetUsersBreakdown<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetUsersBreakdown>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetUsersBreakdown>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminMetricsControllerGetUsersBreakdown>>,
+          TError,
+          Awaited<ReturnType<typeof adminMetricsControllerGetUsersBreakdown>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminMetricsControllerGetUsersBreakdown<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetUsersBreakdown>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetUsersBreakdown>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminMetricsControllerGetUsersBreakdown>>,
+          TError,
+          Awaited<ReturnType<typeof adminMetricsControllerGetUsersBreakdown>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminMetricsControllerGetUsersBreakdown<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetUsersBreakdown>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetUsersBreakdown>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 유저 분포
+ */
+
+export function useAdminMetricsControllerGetUsersBreakdown<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetUsersBreakdown>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetUsersBreakdown>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminMetricsControllerGetUsersBreakdownQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 스트리밍 현황
+ */
+export const getAdminMetricsControllerGetStreamingMetricsUrl = () => {
+  return `/api/admin/metrics/streaming`;
+};
+
+export const adminMetricsControllerGetStreamingMetrics = async (
+  options?: RequestInit,
+): Promise<StreamingMetricsResponse> => {
+  return customFetch<StreamingMetricsResponse>(getAdminMetricsControllerGetStreamingMetricsUrl(), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getAdminMetricsControllerGetStreamingMetricsQueryKey = () => {
+  return [`/api/admin/metrics/streaming`] as const;
+};
+
+export const getAdminMetricsControllerGetStreamingMetricsQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetStreamingMetrics>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetStreamingMetrics>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminMetricsControllerGetStreamingMetricsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminMetricsControllerGetStreamingMetrics>>> = ({ signal }) =>
+    adminMetricsControllerGetStreamingMetrics({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminMetricsControllerGetStreamingMetrics>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminMetricsControllerGetStreamingMetricsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminMetricsControllerGetStreamingMetrics>>
+>;
+export type AdminMetricsControllerGetStreamingMetricsQueryError = unknown;
+
+export function useAdminMetricsControllerGetStreamingMetrics<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetStreamingMetrics>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetStreamingMetrics>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminMetricsControllerGetStreamingMetrics>>,
+          TError,
+          Awaited<ReturnType<typeof adminMetricsControllerGetStreamingMetrics>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminMetricsControllerGetStreamingMetrics<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetStreamingMetrics>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetStreamingMetrics>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminMetricsControllerGetStreamingMetrics>>,
+          TError,
+          Awaited<ReturnType<typeof adminMetricsControllerGetStreamingMetrics>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminMetricsControllerGetStreamingMetrics<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetStreamingMetrics>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetStreamingMetrics>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 스트리밍 현황
+ */
+
+export function useAdminMetricsControllerGetStreamingMetrics<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetStreamingMetrics>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetStreamingMetrics>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminMetricsControllerGetStreamingMetricsQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 최근 에러 로그
+ */
+export const getAdminMetricsControllerGetRecentErrorsUrl = (params: AdminMetricsControllerGetRecentErrorsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/admin/errors?${stringifiedParams}` : `/api/admin/errors`;
+};
+
+export const adminMetricsControllerGetRecentErrors = async (
+  params: AdminMetricsControllerGetRecentErrorsParams,
+  options?: RequestInit,
+): Promise<PaginatedErrorLogsResponse> => {
+  return customFetch<PaginatedErrorLogsResponse>(getAdminMetricsControllerGetRecentErrorsUrl(params), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getAdminMetricsControllerGetRecentErrorsQueryKey = (
+  params?: AdminMetricsControllerGetRecentErrorsParams,
+) => {
+  return [`/api/admin/errors`, ...(params ? [params] : [])] as const;
+};
+
+export const getAdminMetricsControllerGetRecentErrorsQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetRecentErrors>>,
+  TError = unknown,
+>(
+  params: AdminMetricsControllerGetRecentErrorsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetRecentErrors>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminMetricsControllerGetRecentErrorsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminMetricsControllerGetRecentErrors>>> = ({ signal }) =>
+    adminMetricsControllerGetRecentErrors(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminMetricsControllerGetRecentErrors>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminMetricsControllerGetRecentErrorsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminMetricsControllerGetRecentErrors>>
+>;
+export type AdminMetricsControllerGetRecentErrorsQueryError = unknown;
+
+export function useAdminMetricsControllerGetRecentErrors<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetRecentErrors>>,
+  TError = unknown,
+>(
+  params: AdminMetricsControllerGetRecentErrorsParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetRecentErrors>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminMetricsControllerGetRecentErrors>>,
+          TError,
+          Awaited<ReturnType<typeof adminMetricsControllerGetRecentErrors>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminMetricsControllerGetRecentErrors<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetRecentErrors>>,
+  TError = unknown,
+>(
+  params: AdminMetricsControllerGetRecentErrorsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetRecentErrors>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminMetricsControllerGetRecentErrors>>,
+          TError,
+          Awaited<ReturnType<typeof adminMetricsControllerGetRecentErrors>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminMetricsControllerGetRecentErrors<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetRecentErrors>>,
+  TError = unknown,
+>(
+  params: AdminMetricsControllerGetRecentErrorsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetRecentErrors>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 최근 에러 로그
+ */
+
+export function useAdminMetricsControllerGetRecentErrors<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetRecentErrors>>,
+  TError = unknown,
+>(
+  params: AdminMetricsControllerGetRecentErrorsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetRecentErrors>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminMetricsControllerGetRecentErrorsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 에러 로그 파일 목록
+ */
+export const getAdminMetricsControllerGetErrorFilesUrl = () => {
+  return `/api/admin/errors/files`;
+};
+
+export const adminMetricsControllerGetErrorFiles = async (options?: RequestInit): Promise<ErrorFileItem[]> => {
+  return customFetch<ErrorFileItem[]>(getAdminMetricsControllerGetErrorFilesUrl(), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getAdminMetricsControllerGetErrorFilesQueryKey = () => {
+  return [`/api/admin/errors/files`] as const;
+};
+
+export const getAdminMetricsControllerGetErrorFilesQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetErrorFiles>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetErrorFiles>>, TError, TData>>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminMetricsControllerGetErrorFilesQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminMetricsControllerGetErrorFiles>>> = ({ signal }) =>
+    adminMetricsControllerGetErrorFiles({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminMetricsControllerGetErrorFiles>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminMetricsControllerGetErrorFilesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminMetricsControllerGetErrorFiles>>
+>;
+export type AdminMetricsControllerGetErrorFilesQueryError = unknown;
+
+export function useAdminMetricsControllerGetErrorFiles<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetErrorFiles>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetErrorFiles>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminMetricsControllerGetErrorFiles>>,
+          TError,
+          Awaited<ReturnType<typeof adminMetricsControllerGetErrorFiles>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminMetricsControllerGetErrorFiles<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetErrorFiles>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetErrorFiles>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminMetricsControllerGetErrorFiles>>,
+          TError,
+          Awaited<ReturnType<typeof adminMetricsControllerGetErrorFiles>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminMetricsControllerGetErrorFiles<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetErrorFiles>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetErrorFiles>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 에러 로그 파일 목록
+ */
+
+export function useAdminMetricsControllerGetErrorFiles<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetErrorFiles>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetErrorFiles>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminMetricsControllerGetErrorFilesQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 에러 로그 파일 조회
+ */
+export const getAdminMetricsControllerGetErrorFileUrl = (
+  filename: string,
+  params: AdminMetricsControllerGetErrorFileParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/admin/errors/files/${filename}?${stringifiedParams}`
+    : `/api/admin/errors/files/${filename}`;
+};
+
+export const adminMetricsControllerGetErrorFile = async (
+  filename: string,
+  params: AdminMetricsControllerGetErrorFileParams,
+  options?: RequestInit,
+): Promise<PaginatedErrorLogsResponse> => {
+  return customFetch<PaginatedErrorLogsResponse>(getAdminMetricsControllerGetErrorFileUrl(filename, params), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getAdminMetricsControllerGetErrorFileQueryKey = (
+  filename?: string,
+  params?: AdminMetricsControllerGetErrorFileParams,
+) => {
+  return [`/api/admin/errors/files/${filename}`, ...(params ? [params] : [])] as const;
+};
+
+export const getAdminMetricsControllerGetErrorFileQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetErrorFile>>,
+  TError = unknown,
+>(
+  filename: string,
+  params: AdminMetricsControllerGetErrorFileParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetErrorFile>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminMetricsControllerGetErrorFileQueryKey(filename, params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminMetricsControllerGetErrorFile>>> = ({ signal }) =>
+    adminMetricsControllerGetErrorFile(filename, params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, enabled: !!filename, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminMetricsControllerGetErrorFile>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminMetricsControllerGetErrorFileQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminMetricsControllerGetErrorFile>>
+>;
+export type AdminMetricsControllerGetErrorFileQueryError = unknown;
+
+export function useAdminMetricsControllerGetErrorFile<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetErrorFile>>,
+  TError = unknown,
+>(
+  filename: string,
+  params: AdminMetricsControllerGetErrorFileParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetErrorFile>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminMetricsControllerGetErrorFile>>,
+          TError,
+          Awaited<ReturnType<typeof adminMetricsControllerGetErrorFile>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminMetricsControllerGetErrorFile<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetErrorFile>>,
+  TError = unknown,
+>(
+  filename: string,
+  params: AdminMetricsControllerGetErrorFileParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetErrorFile>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminMetricsControllerGetErrorFile>>,
+          TError,
+          Awaited<ReturnType<typeof adminMetricsControllerGetErrorFile>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminMetricsControllerGetErrorFile<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetErrorFile>>,
+  TError = unknown,
+>(
+  filename: string,
+  params: AdminMetricsControllerGetErrorFileParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetErrorFile>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 에러 로그 파일 조회
+ */
+
+export function useAdminMetricsControllerGetErrorFile<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetErrorFile>>,
+  TError = unknown,
+>(
+  filename: string,
+  params: AdminMetricsControllerGetErrorFileParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetErrorFile>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminMetricsControllerGetErrorFileQueryOptions(filename, params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 정리 대상 요약
+ */
+export const getAdminMetricsControllerGetCleanupSummaryUrl = () => {
+  return `/api/admin/cleanup/summary`;
+};
+
+export const adminMetricsControllerGetCleanupSummary = async (
+  options?: RequestInit,
+): Promise<CleanupSummaryResponse> => {
+  return customFetch<CleanupSummaryResponse>(getAdminMetricsControllerGetCleanupSummaryUrl(), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getAdminMetricsControllerGetCleanupSummaryQueryKey = () => {
+  return [`/api/admin/cleanup/summary`] as const;
+};
+
+export const getAdminMetricsControllerGetCleanupSummaryQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetCleanupSummary>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetCleanupSummary>>, TError, TData>>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminMetricsControllerGetCleanupSummaryQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminMetricsControllerGetCleanupSummary>>> = ({ signal }) =>
+    adminMetricsControllerGetCleanupSummary({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminMetricsControllerGetCleanupSummary>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminMetricsControllerGetCleanupSummaryQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminMetricsControllerGetCleanupSummary>>
+>;
+export type AdminMetricsControllerGetCleanupSummaryQueryError = unknown;
+
+export function useAdminMetricsControllerGetCleanupSummary<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetCleanupSummary>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetCleanupSummary>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminMetricsControllerGetCleanupSummary>>,
+          TError,
+          Awaited<ReturnType<typeof adminMetricsControllerGetCleanupSummary>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminMetricsControllerGetCleanupSummary<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetCleanupSummary>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetCleanupSummary>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminMetricsControllerGetCleanupSummary>>,
+          TError,
+          Awaited<ReturnType<typeof adminMetricsControllerGetCleanupSummary>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminMetricsControllerGetCleanupSummary<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetCleanupSummary>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetCleanupSummary>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 정리 대상 요약
+ */
+
+export function useAdminMetricsControllerGetCleanupSummary<
+  TData = Awaited<ReturnType<typeof adminMetricsControllerGetCleanupSummary>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminMetricsControllerGetCleanupSummary>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminMetricsControllerGetCleanupSummaryQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 데이터 정리 실행
+ */
+export const getAdminMetricsControllerRunCleanupUrl = (type: string) => {
+  return `/api/admin/cleanup/${type}`;
+};
+
+export const adminMetricsControllerRunCleanup = async (type: string, options?: RequestInit): Promise<void> => {
+  return customFetch<void>(getAdminMetricsControllerRunCleanupUrl(type), {
+    ...options,
+    method: 'DELETE',
+  });
+};
+
+export const getAdminMetricsControllerRunCleanupMutationOptions = <TError = unknown, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminMetricsControllerRunCleanup>>,
+    TError,
+    { type: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminMetricsControllerRunCleanup>>,
+  TError,
+  { type: string },
+  TContext
+> => {
+  const mutationKey = ['adminMetricsControllerRunCleanup'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof adminMetricsControllerRunCleanup>>, { type: string }> = (
+    props,
+  ) => {
+    const { type } = props ?? {};
+
+    return adminMetricsControllerRunCleanup(type, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminMetricsControllerRunCleanupMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminMetricsControllerRunCleanup>>
+>;
+
+export type AdminMetricsControllerRunCleanupMutationError = unknown;
+
+/**
+ * @summary 데이터 정리 실행
+ */
+export const useAdminMetricsControllerRunCleanup = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminMetricsControllerRunCleanup>>,
+      TError,
+      { type: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminMetricsControllerRunCleanup>>,
+  TError,
+  { type: string },
+  TContext
+> => {
+  const mutationOptions = getAdminMetricsControllerRunCleanupMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
+ * @summary 인기 트랙 순위
+ */
+export const getAdminTracksControllerGetTopTracksUrl = (params: AdminTracksControllerGetTopTracksParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/admin/tracks/ranking?${stringifiedParams}` : `/api/admin/tracks/ranking`;
+};
+
+export const adminTracksControllerGetTopTracks = async (
+  params: AdminTracksControllerGetTopTracksParams,
+  options?: RequestInit,
+): Promise<PaginatedTrackRankingResponse> => {
+  return customFetch<PaginatedTrackRankingResponse>(getAdminTracksControllerGetTopTracksUrl(params), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getAdminTracksControllerGetTopTracksQueryKey = (params?: AdminTracksControllerGetTopTracksParams) => {
+  return [`/api/admin/tracks/ranking`, ...(params ? [params] : [])] as const;
+};
+
+export const getAdminTracksControllerGetTopTracksQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminTracksControllerGetTopTracks>>,
+  TError = unknown,
+>(
+  params: AdminTracksControllerGetTopTracksParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminTracksControllerGetTopTracks>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminTracksControllerGetTopTracksQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminTracksControllerGetTopTracks>>> = ({ signal }) =>
+    adminTracksControllerGetTopTracks(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminTracksControllerGetTopTracks>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminTracksControllerGetTopTracksQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminTracksControllerGetTopTracks>>
+>;
+export type AdminTracksControllerGetTopTracksQueryError = unknown;
+
+export function useAdminTracksControllerGetTopTracks<
+  TData = Awaited<ReturnType<typeof adminTracksControllerGetTopTracks>>,
+  TError = unknown,
+>(
+  params: AdminTracksControllerGetTopTracksParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminTracksControllerGetTopTracks>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminTracksControllerGetTopTracks>>,
+          TError,
+          Awaited<ReturnType<typeof adminTracksControllerGetTopTracks>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminTracksControllerGetTopTracks<
+  TData = Awaited<ReturnType<typeof adminTracksControllerGetTopTracks>>,
+  TError = unknown,
+>(
+  params: AdminTracksControllerGetTopTracksParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminTracksControllerGetTopTracks>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminTracksControllerGetTopTracks>>,
+          TError,
+          Awaited<ReturnType<typeof adminTracksControllerGetTopTracks>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminTracksControllerGetTopTracks<
+  TData = Awaited<ReturnType<typeof adminTracksControllerGetTopTracks>>,
+  TError = unknown,
+>(
+  params: AdminTracksControllerGetTopTracksParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminTracksControllerGetTopTracks>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 인기 트랙 순위
+ */
+
+export function useAdminTracksControllerGetTopTracks<
+  TData = Awaited<ReturnType<typeof adminTracksControllerGetTopTracks>>,
+  TError = unknown,
+>(
+  params: AdminTracksControllerGetTopTracksParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminTracksControllerGetTopTracks>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminTracksControllerGetTopTracksQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 트랙 가사 조회
+ */
+export const getAdminTracksControllerGetTrackLyricsUrl = (id: string) => {
+  return `/api/admin/tracks/${id}/lyrics`;
+};
+
+export const adminTracksControllerGetTrackLyrics = async (
+  id: string,
+  options?: RequestInit,
+): Promise<TrackLyricsResponse> => {
+  return customFetch<TrackLyricsResponse>(getAdminTracksControllerGetTrackLyricsUrl(id), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getAdminTracksControllerGetTrackLyricsQueryKey = (id?: string) => {
+  return [`/api/admin/tracks/${id}/lyrics`] as const;
+};
+
+export const getAdminTracksControllerGetTrackLyricsQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminTracksControllerGetTrackLyrics>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminTracksControllerGetTrackLyrics>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminTracksControllerGetTrackLyricsQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminTracksControllerGetTrackLyrics>>> = ({ signal }) =>
+    adminTracksControllerGetTrackLyrics(id, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, enabled: !!id, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminTracksControllerGetTrackLyrics>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminTracksControllerGetTrackLyricsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminTracksControllerGetTrackLyrics>>
+>;
+export type AdminTracksControllerGetTrackLyricsQueryError = unknown;
+
+export function useAdminTracksControllerGetTrackLyrics<
+  TData = Awaited<ReturnType<typeof adminTracksControllerGetTrackLyrics>>,
+  TError = unknown,
+>(
+  id: string,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminTracksControllerGetTrackLyrics>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminTracksControllerGetTrackLyrics>>,
+          TError,
+          Awaited<ReturnType<typeof adminTracksControllerGetTrackLyrics>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminTracksControllerGetTrackLyrics<
+  TData = Awaited<ReturnType<typeof adminTracksControllerGetTrackLyrics>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminTracksControllerGetTrackLyrics>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminTracksControllerGetTrackLyrics>>,
+          TError,
+          Awaited<ReturnType<typeof adminTracksControllerGetTrackLyrics>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminTracksControllerGetTrackLyrics<
+  TData = Awaited<ReturnType<typeof adminTracksControllerGetTrackLyrics>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminTracksControllerGetTrackLyrics>>, TError, TData>>;
     request?: SecondParameter<typeof customFetch>;
   },
   queryClient?: QueryClient,
@@ -4304,18 +4375,18 @@ export function useAdminControllerGetTrackLyrics<
  * @summary 트랙 가사 조회
  */
 
-export function useAdminControllerGetTrackLyrics<
-  TData = Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>,
+export function useAdminTracksControllerGetTrackLyrics<
+  TData = Awaited<ReturnType<typeof adminTracksControllerGetTrackLyrics>>,
   TError = unknown,
 >(
   id: string,
   options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetTrackLyrics>>, TError, TData>>;
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminTracksControllerGetTrackLyrics>>, TError, TData>>;
     request?: SecondParameter<typeof customFetch>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getAdminControllerGetTrackLyricsQueryOptions(id, options);
+  const queryOptions = getAdminTracksControllerGetTrackLyricsQueryOptions(id, options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>;
@@ -4329,62 +4400,66 @@ export function useAdminControllerGetTrackLyrics<
 /**
  * @summary 트랙 가사 초기화
  */
-export const getAdminControllerResetTrackLyricsUrl = (id: string) => {
+export const getAdminTracksControllerResetTrackLyricsUrl = (id: string) => {
   return `/api/admin/tracks/${id}/lyrics`;
 };
 
-export const adminControllerResetTrackLyrics = async (id: string, options?: RequestInit): Promise<void> => {
-  return customFetch<void>(getAdminControllerResetTrackLyricsUrl(id), {
+export const adminTracksControllerResetTrackLyrics = async (id: string, options?: RequestInit): Promise<void> => {
+  return customFetch<void>(getAdminTracksControllerResetTrackLyricsUrl(id), {
     ...options,
     method: 'DELETE',
   });
 };
 
-export const getAdminControllerResetTrackLyricsMutationOptions = <TError = unknown, TContext = unknown>(options?: {
+export const getAdminTracksControllerResetTrackLyricsMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof adminControllerResetTrackLyrics>>,
+    Awaited<ReturnType<typeof adminTracksControllerResetTrackLyrics>>,
     TError,
     { id: string },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof adminControllerResetTrackLyrics>>,
+  Awaited<ReturnType<typeof adminTracksControllerResetTrackLyrics>>,
   TError,
   { id: string },
   TContext
 > => {
-  const mutationKey = ['adminControllerResetTrackLyrics'];
+  const mutationKey = ['adminTracksControllerResetTrackLyrics'];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
     : { mutation: { mutationKey }, request: undefined };
 
-  const mutationFn: MutationFunction<Awaited<ReturnType<typeof adminControllerResetTrackLyrics>>, { id: string }> = (
-    props,
-  ) => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminTracksControllerResetTrackLyrics>>,
+    { id: string }
+  > = (props) => {
     const { id } = props ?? {};
 
-    return adminControllerResetTrackLyrics(id, requestOptions);
+    return adminTracksControllerResetTrackLyrics(id, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type AdminControllerResetTrackLyricsMutationResult = NonNullable<
-  Awaited<ReturnType<typeof adminControllerResetTrackLyrics>>
+export type AdminTracksControllerResetTrackLyricsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminTracksControllerResetTrackLyrics>>
 >;
 
-export type AdminControllerResetTrackLyricsMutationError = unknown;
+export type AdminTracksControllerResetTrackLyricsMutationError = unknown;
 
 /**
  * @summary 트랙 가사 초기화
  */
-export const useAdminControllerResetTrackLyrics = <TError = unknown, TContext = unknown>(
+export const useAdminTracksControllerResetTrackLyrics = <TError = unknown, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof adminControllerResetTrackLyrics>>,
+      Awaited<ReturnType<typeof adminTracksControllerResetTrackLyrics>>,
       TError,
       { id: string },
       TContext
@@ -4392,65 +4467,76 @@ export const useAdminControllerResetTrackLyrics = <TError = unknown, TContext = 
     request?: SecondParameter<typeof customFetch>;
   },
   queryClient?: QueryClient,
-): UseMutationResult<Awaited<ReturnType<typeof adminControllerResetTrackLyrics>>, TError, { id: string }, TContext> => {
-  const mutationOptions = getAdminControllerResetTrackLyricsMutationOptions(options);
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminTracksControllerResetTrackLyrics>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions = getAdminTracksControllerResetTrackLyricsMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };
 /**
  * @summary 트랙 Content ID 메타 초기화
  */
-export const getAdminControllerResetTrackMetaUrl = (id: string) => {
+export const getAdminTracksControllerResetTrackMetaUrl = (id: string) => {
   return `/api/admin/tracks/${id}/meta`;
 };
 
-export const adminControllerResetTrackMeta = async (id: string, options?: RequestInit): Promise<void> => {
-  return customFetch<void>(getAdminControllerResetTrackMetaUrl(id), {
+export const adminTracksControllerResetTrackMeta = async (id: string, options?: RequestInit): Promise<void> => {
+  return customFetch<void>(getAdminTracksControllerResetTrackMetaUrl(id), {
     ...options,
     method: 'DELETE',
   });
 };
 
-export const getAdminControllerResetTrackMetaMutationOptions = <TError = unknown, TContext = unknown>(options?: {
+export const getAdminTracksControllerResetTrackMetaMutationOptions = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof adminControllerResetTrackMeta>>,
+    Awaited<ReturnType<typeof adminTracksControllerResetTrackMeta>>,
     TError,
     { id: string },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
-}): UseMutationOptions<Awaited<ReturnType<typeof adminControllerResetTrackMeta>>, TError, { id: string }, TContext> => {
-  const mutationKey = ['adminControllerResetTrackMeta'];
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminTracksControllerResetTrackMeta>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ['adminTracksControllerResetTrackMeta'];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
     : { mutation: { mutationKey }, request: undefined };
 
-  const mutationFn: MutationFunction<Awaited<ReturnType<typeof adminControllerResetTrackMeta>>, { id: string }> = (
-    props,
-  ) => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminTracksControllerResetTrackMeta>>,
+    { id: string }
+  > = (props) => {
     const { id } = props ?? {};
 
-    return adminControllerResetTrackMeta(id, requestOptions);
+    return adminTracksControllerResetTrackMeta(id, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type AdminControllerResetTrackMetaMutationResult = NonNullable<
-  Awaited<ReturnType<typeof adminControllerResetTrackMeta>>
+export type AdminTracksControllerResetTrackMetaMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminTracksControllerResetTrackMeta>>
 >;
 
-export type AdminControllerResetTrackMetaMutationError = unknown;
+export type AdminTracksControllerResetTrackMetaMutationError = unknown;
 
 /**
  * @summary 트랙 Content ID 메타 초기화
  */
-export const useAdminControllerResetTrackMeta = <TError = unknown, TContext = unknown>(
+export const useAdminTracksControllerResetTrackMeta = <TError = unknown, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof adminControllerResetTrackMeta>>,
+      Awaited<ReturnType<typeof adminTracksControllerResetTrackMeta>>,
       TError,
       { id: string },
       TContext
@@ -4458,65 +4544,75 @@ export const useAdminControllerResetTrackMeta = <TError = unknown, TContext = un
     request?: SecondParameter<typeof customFetch>;
   },
   queryClient?: QueryClient,
-): UseMutationResult<Awaited<ReturnType<typeof adminControllerResetTrackMeta>>, TError, { id: string }, TContext> => {
-  const mutationOptions = getAdminControllerResetTrackMetaMutationOptions(options);
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminTracksControllerResetTrackMeta>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions = getAdminTracksControllerResetTrackMetaMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };
 /**
  * @summary 트랙 삭제
  */
-export const getAdminControllerDeleteTrackUrl = (id: string) => {
+export const getAdminTracksControllerDeleteTrackUrl = (id: string) => {
   return `/api/admin/tracks/${id}`;
 };
 
-export const adminControllerDeleteTrack = async (id: string, options?: RequestInit): Promise<void> => {
-  return customFetch<void>(getAdminControllerDeleteTrackUrl(id), {
+export const adminTracksControllerDeleteTrack = async (id: string, options?: RequestInit): Promise<void> => {
+  return customFetch<void>(getAdminTracksControllerDeleteTrackUrl(id), {
     ...options,
     method: 'DELETE',
   });
 };
 
-export const getAdminControllerDeleteTrackMutationOptions = <TError = unknown, TContext = unknown>(options?: {
+export const getAdminTracksControllerDeleteTrackMutationOptions = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof adminControllerDeleteTrack>>,
+    Awaited<ReturnType<typeof adminTracksControllerDeleteTrack>>,
     TError,
     { id: string },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
-}): UseMutationOptions<Awaited<ReturnType<typeof adminControllerDeleteTrack>>, TError, { id: string }, TContext> => {
-  const mutationKey = ['adminControllerDeleteTrack'];
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminTracksControllerDeleteTrack>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ['adminTracksControllerDeleteTrack'];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
     : { mutation: { mutationKey }, request: undefined };
 
-  const mutationFn: MutationFunction<Awaited<ReturnType<typeof adminControllerDeleteTrack>>, { id: string }> = (
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof adminTracksControllerDeleteTrack>>, { id: string }> = (
     props,
   ) => {
     const { id } = props ?? {};
 
-    return adminControllerDeleteTrack(id, requestOptions);
+    return adminTracksControllerDeleteTrack(id, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type AdminControllerDeleteTrackMutationResult = NonNullable<
-  Awaited<ReturnType<typeof adminControllerDeleteTrack>>
+export type AdminTracksControllerDeleteTrackMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminTracksControllerDeleteTrack>>
 >;
 
-export type AdminControllerDeleteTrackMutationError = unknown;
+export type AdminTracksControllerDeleteTrackMutationError = unknown;
 
 /**
  * @summary 트랙 삭제
  */
-export const useAdminControllerDeleteTrack = <TError = unknown, TContext = unknown>(
+export const useAdminTracksControllerDeleteTrack = <TError = unknown, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof adminControllerDeleteTrack>>,
+      Awaited<ReturnType<typeof adminTracksControllerDeleteTrack>>,
       TError,
       { id: string },
       TContext
@@ -4524,8 +4620,13 @@ export const useAdminControllerDeleteTrack = <TError = unknown, TContext = unkno
     request?: SecondParameter<typeof customFetch>;
   },
   queryClient?: QueryClient,
-): UseMutationResult<Awaited<ReturnType<typeof adminControllerDeleteTrack>>, TError, { id: string }, TContext> => {
-  const mutationOptions = getAdminControllerDeleteTrackMutationOptions(options);
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminTracksControllerDeleteTrack>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions = getAdminTracksControllerDeleteTrackMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

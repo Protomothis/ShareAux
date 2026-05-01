@@ -19,6 +19,7 @@ import type { AuthenticatedRequest } from '../types/auth.types.js';
 import { ErrorCode } from '../types/error-code.enum.js';
 import {
   PlaylistTracksResponse,
+  RadioResponse,
   RecommendedResponse,
   SearchResponse,
   ShowcaseResponse,
@@ -64,10 +65,19 @@ export class SearchController {
   @Get('recommended/:roomId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: '추천곡 (YouTube 관련 영상 기반)' })
+  @ApiOperation({ summary: '관련곡 (YouTube 관련 영상 기반)' })
   @ApiResponse({ status: 200, type: RecommendedResponse })
   getRecommended(@Param('roomId', ParseUUIDPipe) roomId: string) {
     return this.searchService.getRecommendedTracks(roomId);
+  }
+
+  @Get('radio/:roomId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '라디오 (YT Music 비슷한 아티스트 기반)' })
+  @ApiResponse({ status: 200, type: RadioResponse })
+  getRadio(@Param('roomId', ParseUUIDPipe) roomId: string) {
+    return this.searchService.getRadioTracks(roomId);
   }
 
   @Get('playlist/:id')

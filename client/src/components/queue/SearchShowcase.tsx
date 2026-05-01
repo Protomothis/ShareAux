@@ -1,9 +1,13 @@
 'use client';
 
-import { Flame, History, Loader2, Music, Radio, RefreshCw } from 'lucide-react';
+import { Flame, History, Link2, Loader2, Music, Radio, RefreshCw } from 'lucide-react';
 
 import type { SearchResultItem, Track } from '@/api/model';
-import { useSearchControllerGetRecommended, useSearchControllerGetShowcase } from '@/api/search/search';
+import {
+  useSearchControllerGetRadio,
+  useSearchControllerGetRecommended,
+  useSearchControllerGetShowcase,
+} from '@/api/search/search';
 import { FavoriteButton } from '@/components/common/FavoriteButton';
 import Thumbnail from '@/components/common/Thumbnail';
 import { Button } from '@/components/ui/button';
@@ -125,6 +129,12 @@ export default function SearchShowcase({
     isFetching: recFetching,
     refetch: recRefetch,
   } = useSearchControllerGetRecommended(roomId);
+  const {
+    data: radioData,
+    isLoading: radioLoading,
+    isFetching: radioFetching,
+    refetch: radioRefetch,
+  } = useSearchControllerGetRadio(roomId);
 
   const handleClick = (track: SearchResultItem) => {
     if (disabledIds.has(track.sourceId) || (maxReached && !selectedIds.has(track.sourceId))) return;
@@ -169,8 +179,16 @@ export default function SearchShowcase({
 
   const { popular = [], recent = [], myHistory = [] } = showcaseData ?? {};
   const recommended = recData?.recommended ?? [];
+  const radio = radioData?.radio ?? [];
   const allEmpty =
-    !showcaseLoading && !recLoading && !popular.length && !recent.length && !myHistory.length && !recommended.length;
+    !showcaseLoading &&
+    !recLoading &&
+    !radioLoading &&
+    !popular.length &&
+    !recent.length &&
+    !myHistory.length &&
+    !recommended.length &&
+    !radio.length;
 
   if (allEmpty) {
     return (
@@ -216,7 +234,7 @@ export default function SearchShowcase({
         </>
       )}
 
-      {/* 추천 — 별도 쿼리, 독립 로딩 (느림) */}
+      {/* 관련곡 — 별도 쿼리, 독립 로딩 */}
       {recLoading ? (
         <div>
           <div className="mb-3 flex items-center gap-2 px-1">
@@ -227,7 +245,7 @@ export default function SearchShowcase({
         </div>
       ) : recommended.length > 0 ? (
         <CollapsibleSection
-          icon={<Radio size={14} className="text-green-400" />}
+          icon={<Link2 size={14} className="text-blue-400" />}
           title={t('showcase.recommended')}
           action={
             <Button
@@ -241,6 +259,34 @@ export default function SearchShowcase({
           }
         >
           {grid(recommended)}
+        </CollapsibleSection>
+      ) : null}
+
+      {/* 라디오 — YT Music 비슷한 아티스트 기반 (느림) */}
+      {radioLoading ? (
+        <div>
+          <div className="mb-3 flex items-center gap-2 px-1">
+            <SkeletonLine className="size-3.5" />
+            <SkeletonLine className="h-3 w-16" />
+          </div>
+          <GridSkeleton />
+        </div>
+      ) : radio.length > 0 ? (
+        <CollapsibleSection
+          icon={<Radio size={14} className="text-green-400" />}
+          title={t('showcase.radio')}
+          action={
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              onClick={() => radioRefetch()}
+              className="text-sa-text-muted hover:text-white"
+            >
+              {radioFetching ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+            </Button>
+          }
+        >
+          {grid(radio)}
         </CollapsibleSection>
       ) : null}
     </div>

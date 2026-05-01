@@ -34,6 +34,10 @@ export class RecommendedResponse {
   @ApiProperty({ type: () => [SearchResultItem] }) recommended!: SearchResultItem[];
 }
 
+export class RadioResponse {
+  @ApiProperty({ type: () => [SearchResultItem] }) radio!: SearchResultItem[];
+}
+
 export class SuggestResponse {
   @ApiProperty({ type: [String] })
   suggestions!: string[];

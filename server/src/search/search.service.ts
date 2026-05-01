@@ -98,6 +98,11 @@ export class SearchService {
     return { recommended };
   }
 
+  async getRadioTracks(roomId: string) {
+    const radio = await this.getRadio(roomId);
+    return { radio };
+  }
+
   private async getPopularTracks(limit = 10): Promise<Track[]> {
     const stats = await this.statsRepo.find({
       order: { score: 'DESC' },
@@ -130,29 +135,35 @@ export class SearchService {
     try {
       const videoId = await this.resolveVideoId(roomId);
       if (!videoId) return [];
-
-      // 1순위: YT Music 비슷한 아티스트 기반 검색
-      const related = await fetchYtMusicRelated(videoId);
-      if (related.similarArtists.length > 0) {
-        const picks = related.similarArtists.sort(() => Math.random() - 0.5).slice(0, 3);
-        const results: SearchResultItem[] = [];
-        for (const artist of picks) {
-          const tracks = await this.ytdlp.search(artist.name, Math.ceil(limit / picks.length));
-          results.push(...tracks.map((r) => this.toSearchResult(r)));
-        }
-        // 중복 제거 + 셔플
-        const unique = [...new Map(results.map((r) => [r.sourceId, r])).values()];
-        return unique.sort(() => Math.random() - 0.5).slice(0, limit);
-      }
-
-      // 폴백: 기존 YouTube 관련 동영상
-      const fallback = await this.ytdlp.getRelated(videoId, limit * 3);
-      return fallback
+      const related = await this.ytdlp.getRelated(videoId, limit * 3);
+      return related
         .sort(() => Math.random() - 0.5)
         .slice(0, limit)
         .map((r) => this.toSearchResult(r));
     } catch (e) {
       this.logger.warn('getRecommended failed', e instanceof Error ? e.message : e);
+      return [];
+    }
+  }
+
+  private async getRadio(roomId: string, limit = 20): Promise<SearchResultItem[]> {
+    try {
+      const videoId = await this.resolveVideoId(roomId);
+      if (!videoId) return [];
+
+      const related = await fetchYtMusicRelated(videoId);
+      if (!related.similarArtists.length) return [];
+
+      const picks = related.similarArtists.sort(() => Math.random() - 0.5).slice(0, 4);
+      const results: SearchResultItem[] = [];
+      for (const artist of picks) {
+        const tracks = await this.ytdlp.search(artist.name, Math.ceil(limit / picks.length));
+        results.push(...tracks.map((r) => this.toSearchResult(r)));
+      }
+      const unique = [...new Map(results.map((r) => [r.sourceId, r])).values()];
+      return unique.sort(() => Math.random() - 0.5).slice(0, limit);
+    } catch (e) {
+      this.logger.warn('getRadio failed', e instanceof Error ? e.message : e);
       return [];
     }
   }
