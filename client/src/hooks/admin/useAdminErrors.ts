@@ -1,18 +1,21 @@
 import {
-  useAdminControllerGetErrorFile,
-  useAdminControllerGetErrorFiles,
-  useAdminControllerGetRecentErrors,
+  useAdminMetricsControllerGetErrorFile,
+  useAdminMetricsControllerGetErrorFiles,
+  useAdminMetricsControllerGetRecentErrors,
 } from '@/api/admin/admin';
-import type { AdminControllerGetErrorFileParams, AdminControllerGetRecentErrorsParams } from '@/api/model';
+import type {
+  AdminMetricsControllerGetErrorFileParams,
+  AdminMetricsControllerGetRecentErrorsParams,
+} from '@/api/model';
 
-export function useAdminErrors(params: AdminControllerGetRecentErrorsParams) {
-  return useAdminControllerGetRecentErrors(params);
+export function useAdminErrors(params: AdminMetricsControllerGetRecentErrorsParams) {
+  return useAdminMetricsControllerGetRecentErrors(params);
 }
 
 export function useErrorFiles() {
-  return useAdminControllerGetErrorFiles();
+  return useAdminMetricsControllerGetErrorFiles();
 }
 
-export function useErrorFile(filename: string, params: AdminControllerGetErrorFileParams) {
-  return useAdminControllerGetErrorFile(filename, params, { query: { enabled: !!filename } });
+export function useErrorFile(filename: string, params: AdminMetricsControllerGetErrorFileParams) {
+  return useAdminMetricsControllerGetErrorFile(filename, params, { query: { enabled: !!filename } });
 }

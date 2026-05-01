@@ -1,21 +1,21 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import {
-  getAdminControllerGetCleanupSummaryQueryKey,
-  useAdminControllerGetCleanupSummary,
-  useAdminControllerRunCleanup,
+  getAdminMetricsControllerGetCleanupSummaryQueryKey,
+  useAdminMetricsControllerGetCleanupSummary,
+  useAdminMetricsControllerRunCleanup,
 } from '@/api/admin/admin';
 
 export function useCleanupSummary() {
-  return useAdminControllerGetCleanupSummary();
+  return useAdminMetricsControllerGetCleanupSummary();
 }
 
 export function useCleanup() {
   const qc = useQueryClient();
-  return useAdminControllerRunCleanup({
+  return useAdminMetricsControllerRunCleanup({
     mutation: {
       onSuccess: () => {
-        void qc.invalidateQueries({ queryKey: getAdminControllerGetCleanupSummaryQueryKey() });
+        void qc.invalidateQueries({ queryKey: getAdminMetricsControllerGetCleanupSummaryQueryKey() });
       },
     },
   });
