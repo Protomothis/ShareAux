@@ -310,7 +310,8 @@
     "autoDjFolder": "폴더 필터",
     "autoDjFolderAll": "전체",
     "autoDjFolderItem": "{name} ({count}곡)",
-    "autoDjFavFallback": "즐겨찾기 곡 소진 시 혼합 모드로 전환"
+    "autoDjFavFallback": "즐겨찾기 곡 소진 시 혼합 모드로 전환",
+    "autoDjRadio": "비슷한 음악 (YT Music)"
   },
   "profile": {
     "title": "프로필 설정",

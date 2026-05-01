@@ -37,6 +37,7 @@ export default function AutoDjSettings({
   const t = useTranslations('settings');
   const modeLabels: Record<string, string> = {
     related: t('autoDjRelated'),
+    radio: t('autoDjRadio'),
     history: t('autoDjHistory'),
     popular: t('autoDjPopular'),
     mixed: t('autoDjMixed'),
@@ -60,6 +61,7 @@ export default function AutoDjSettings({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="related">{t('autoDjRelated')}</SelectItem>
+              <SelectItem value="radio">{t('autoDjRadio')}</SelectItem>
               <SelectItem value="history">{t('autoDjHistory')}</SelectItem>
               <SelectItem value="popular">{t('autoDjPopular')}</SelectItem>
               <SelectItem value="mixed">{t('autoDjMixed')}</SelectItem>

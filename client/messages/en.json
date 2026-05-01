@@ -310,7 +310,8 @@
     "autoDjFolder": "Folder filter",
     "autoDjFolderAll": "All",
     "autoDjFolderItem": "{name} ({count} tracks)",
-    "autoDjFavFallback": "Switch to mixed mode when favorites run out"
+    "autoDjFavFallback": "Switch to mixed mode when favorites run out",
+    "autoDjRadio": "Similar Music (YT Music)"
   },
   "profile": {
     "title": "Profile Settings",
