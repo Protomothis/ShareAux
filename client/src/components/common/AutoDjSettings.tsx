@@ -44,6 +44,15 @@ export default function AutoDjSettings({
     favorites: t('autoDjFavorites'),
   };
 
+  const modeDescs: Record<string, string> = {
+    related: t('autoDjRelatedDesc'),
+    radio: t('autoDjRadioDesc'),
+    history: t('autoDjHistoryDesc'),
+    popular: t('autoDjPopularDesc'),
+    mixed: t('autoDjMixedDesc'),
+    favorites: t('autoDjFavoritesDesc'),
+  };
+
   return (
     <SettingCard
       icon="🤖"
@@ -54,24 +63,27 @@ export default function AutoDjSettings({
       onCheckedChange={onEnabledChange}
     >
       <div className="grid gap-3 sm:grid-cols-2">
-        <FormField label={t('autoDjMode')}>
-          <Select value={mode} onValueChange={(v) => v && onModeChange(v as AutoDjMode)}>
-            <SelectTrigger size="sm">
-              <SelectValue placeholder={t('autoDjModePlaceholder')}>{modeLabels[mode] ?? mode}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="related">{t('autoDjRelated')}</SelectItem>
-              <SelectItem value="radio">{t('autoDjRadio')}</SelectItem>
-              <SelectItem value="history">{t('autoDjHistory')}</SelectItem>
-              <SelectItem value="popular">{t('autoDjPopular')}</SelectItem>
-              <SelectItem value="mixed">{t('autoDjMixed')}</SelectItem>
-              <SelectItem value="favorites" disabled={!hasFavorites}>
-                {t('autoDjFavorites')}
-                {!hasFavorites ? t('autoDjFavEmpty') : ''}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </FormField>
+        <div className="space-y-1.5">
+          <FormField label={t('autoDjMode')}>
+            <Select value={mode} onValueChange={(v) => v && onModeChange(v as AutoDjMode)}>
+              <SelectTrigger size="sm">
+                <SelectValue placeholder={t('autoDjModePlaceholder')}>{modeLabels[mode] ?? mode}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="related">{t('autoDjRelated')}</SelectItem>
+                <SelectItem value="radio">{t('autoDjRadio')}</SelectItem>
+                <SelectItem value="history">{t('autoDjHistory')}</SelectItem>
+                <SelectItem value="popular">{t('autoDjPopular')}</SelectItem>
+                <SelectItem value="mixed">{t('autoDjMixed')}</SelectItem>
+                <SelectItem value="favorites" disabled={!hasFavorites}>
+                  {t('autoDjFavorites')}
+                  {!hasFavorites ? t('autoDjFavEmpty') : ''}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </FormField>
+          <p className="text-xs text-sa-text-muted">{modeDescs[mode]}</p>
+        </div>
         <FormField label={t('autoDjThreshold')}>
           <Select value={String(threshold)} onValueChange={(v) => v && onThresholdChange(+v)}>
             <SelectTrigger size="sm">

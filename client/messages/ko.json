@@ -312,7 +312,13 @@
     "autoDjFolderAll": "전체",
     "autoDjFolderItem": "{name} ({count}곡)",
     "autoDjFavFallback": "즐겨찾기 곡 소진 시 혼합 모드로 전환",
-    "autoDjRadio": "비슷한 음악 (YT Music)"
+    "autoDjRadio": "라디오",
+    "autoDjRelatedDesc": "현재 곡과 비슷한 영상을 자동 추가합니다",
+    "autoDjRadioDesc": "비슷한 아티스트의 곡을 자동으로 찾아 추가합니다",
+    "autoDjHistoryDesc": "이 방에서 이전에 재생된 곡을 다시 추가합니다",
+    "autoDjPopularDesc": "전체 방에서 인기 있는 곡을 추가합니다",
+    "autoDjMixedDesc": "관련곡 + 재생 이력 + 인기곡을 섞어서 추가합니다",
+    "autoDjFavoritesDesc": "호스트의 즐겨찾기에서 곡을 추가합니다"
   },
   "profile": {
     "title": "프로필 설정",
