@@ -71,7 +71,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </Providers>
           <ApiErrorToaster />
         </NextIntlClientProvider>
-        <Toaster theme="dark" position="top-center" />
+        <Toaster theme="dark" position="top-center" closeButton duration={3000} />
       </body>
     </html>
   );

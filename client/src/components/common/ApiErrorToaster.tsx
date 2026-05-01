@@ -25,7 +25,7 @@ export function ApiErrorToaster() {
           if (title && !title.startsWith('errorTitle.')) {
             const desc = td(ec);
             const description = (desc.startsWith('errorDesc.') ? '' : desc) + dev || undefined;
-            toast.error(title, { description });
+            toast.error(title, { id: `err-${ec}`, description });
             return;
           }
         }
@@ -33,6 +33,7 @@ export function ApiErrorToaster() {
         const title = status >= 500 ? ta('serverError') : (ta(`${status}` as never) as string) || ta('fallback');
         const fallback = message ?? `Error ${status}`;
         toast.error(title.startsWith('apiError.') ? fallback : title, {
+          id: `err-${status}`,
           description: isDev ? `${status} ${method} ${path}\n${fallback}` : status >= 500 ? fallback : undefined,
         });
       }),

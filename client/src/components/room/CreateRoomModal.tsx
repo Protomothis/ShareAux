@@ -9,6 +9,7 @@ import { roomsControllerCreate } from '@/api/rooms/rooms';
 import RoomSettingsForm, { DEFAULT_FORM_VALUES } from '@/components/common/RoomSettingsForm';
 import type { RoomFormValues } from '@/components/common/RoomSettingsForm';
 import { Button } from '@/components/ui/button';
+import { useAuthStore } from '@/stores/auth';
 import { useFormValidation } from '@/hooks/useFormValidation';
 
 interface CreateRoomModalProps {
@@ -19,6 +20,7 @@ interface CreateRoomModalProps {
 
 export default function CreateRoomModal({ open, onClose, onCreated }: CreateRoomModalProps) {
   const t = useTranslations('rooms');
+  const role = useAuthStore((s) => s.role);
   const [values, setValues] = useState<RoomFormValues>({ ...DEFAULT_FORM_VALUES });
   const [loading, setLoading] = useState(false);
 
@@ -80,7 +82,14 @@ export default function CreateRoomModal({ open, onClose, onCreated }: CreateRoom
         </Modal.Header>
 
         <Modal.Body>
-          <RoomSettingsForm mode="create" values={values} onChange={set} errors={errors} onClearError={clearError} />
+          <RoomSettingsForm
+            mode="create"
+            isGuest={role === 'guest'}
+            values={values}
+            onChange={set}
+            errors={errors}
+            onClearError={clearError}
+          />
         </Modal.Body>
 
         <Modal.Footer>
