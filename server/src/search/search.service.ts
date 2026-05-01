@@ -4,7 +4,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { SHOWCASE_CACHE_TTL_MS } from '../constants.js';
+import { RADIO_CACHE_TTL_MS, SHOWCASE_CACHE_TTL_MS } from '../constants.js';
 import { RoomPlayback } from '../entities/room-playback.entity.js';
 import { Track } from '../entities/track.entity.js';
 import { TrackStats } from '../entities/track-stats.entity.js';
@@ -19,6 +19,7 @@ import type { SearchResultItem } from './dto/search-result-item.dto.js';
 export class SearchService {
   private readonly logger = new Logger(SearchService.name);
   private readonly playlistCache = new Map<string, { tracks: SearchResultItem[]; fetchedAt: number }>();
+  private readonly radioCache = new Map<string, { items: SearchResultItem[]; fetchedAt: number }>();
 
   constructor(
     private readonly ytdlp: YtdlpService,
@@ -151,6 +152,10 @@ export class SearchService {
       const videoId = await this.resolveVideoId(roomId);
       if (!videoId) return [];
 
+      // 시드곡 동일 시 5분 캐시
+      const cached = this.radioCache.get(videoId);
+      if (cached && Date.now() - cached.fetchedAt < RADIO_CACHE_TTL_MS) return cached.items;
+
       const related = await fetchYtMusicRelated(videoId);
       if (!related.similarArtists.length) return [];
 
@@ -161,7 +166,9 @@ export class SearchService {
         results.push(...tracks.map((r) => this.toSearchResult(r)));
       }
       const unique = [...new Map(results.map((r) => [r.sourceId, r])).values()];
-      return unique.sort(() => Math.random() - 0.5).slice(0, limit);
+      const items = unique.sort(() => Math.random() - 0.5).slice(0, limit);
+      this.radioCache.set(videoId, { items, fetchedAt: Date.now() });
+      return items;
     } catch (e) {
       this.logger.warn('getRadio failed', e instanceof Error ? e.message : e);
       return [];
