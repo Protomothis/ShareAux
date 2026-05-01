@@ -15,7 +15,7 @@ import { CollapsibleSection } from '@/components/ui/collapsible-section';
 import { formatDuration } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
-import { SkeletonCard, SkeletonLine, SkeletonCircle } from '@/components/ui/skeleton';
+import { SkeletonLine } from '@/components/ui/skeleton';
 
 interface SearchShowcaseProps {
   roomId: string;

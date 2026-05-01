@@ -312,7 +312,7 @@
     "autoDjFolderAll": "All",
     "autoDjFolderItem": "{name} ({count} tracks)",
     "autoDjFavFallback": "Switch to mixed mode when favorites run out",
-    "autoDjRadio": "Radio",
+    "autoDjRadio": "📻 Radio",
     "autoDjRelatedDesc": "Adds similar videos based on the current track",
     "autoDjRadioDesc": "Finds and adds songs from similar artists",
     "autoDjHistoryDesc": "Re-adds previously played tracks from this room",

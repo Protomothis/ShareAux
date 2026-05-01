@@ -312,7 +312,7 @@
     "autoDjFolderAll": "전체",
     "autoDjFolderItem": "{name} ({count}곡)",
     "autoDjFavFallback": "즐겨찾기 곡 소진 시 혼합 모드로 전환",
-    "autoDjRadio": "라디오",
+    "autoDjRadio": "📻 라디오",
     "autoDjRelatedDesc": "현재 곡과 비슷한 영상을 자동 추가합니다",
     "autoDjRadioDesc": "비슷한 아티스트의 곡을 자동으로 찾아 추가합니다",
     "autoDjHistoryDesc": "이 방에서 이전에 재생된 곡을 다시 추가합니다",
