@@ -10,11 +10,22 @@ import type {
   InnertubeItemSection,
   InnertubeVideoRenderer,
   InnertubeYtMusicPlayerData,
+  InnertubeYtMusicNextData,
+  InnertubeYtMusicBrowseData,
+  InnertubeYtMusicCarouselItem,
 } from '../types/innertube.types.js';
+import type { MusicRelatedResult, SimilarArtist, RecommendedPlaylist } from '../types/recommendation.types.js';
+
+// ─── Constants ───────────────────────────────────────────
+
+const YT_INNERTUBE_URL = 'https://www.youtube.com/youtubei/v1';
+const YTM_INNERTUBE_URL = 'https://music.youtube.com/youtubei/v1';
 
 const INNERTUBE_CTX = { client: { clientName: 'WEB', clientVersion: '2.20240101', hl: 'ko', gl: 'KR' } };
 const INNERTUBE_MWEB_CTX = { client: { clientName: 'MWEB', clientVersion: '2.20260101', hl: 'en', gl: 'US' } };
-const INNERTUBE_MUSIC_CTX = { client: { clientName: 'WEB_REMIX', clientVersion: '1.20240101.01.00' } };
+const INNERTUBE_MUSIC_CTX = {
+  client: { clientName: 'WEB_REMIX', clientVersion: '1.20240101.01.00', hl: 'ko', gl: 'KR' },
+};
 
 export interface MusicCredits {
   songTitle: string | null;
@@ -26,7 +37,7 @@ async function fetchInnertube<T = Record<string, unknown>>(
   endpoint: string,
   body: Record<string, unknown>,
 ): Promise<T> {
-  const res = await fetch(`https://www.youtube.com/youtubei/v1/${endpoint}`, {
+  const res = await fetch(`${YT_INNERTUBE_URL}/${endpoint}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ context: INNERTUBE_CTX, ...body }),
@@ -232,7 +243,7 @@ export async function getRelatedVideos(videoId: string, limit: number): Promise<
 export async function fetchMusicCredits(videoId: string): Promise<MusicCredits> {
   const empty: MusicCredits = { songTitle: null, songArtist: null, songAlbum: null };
   try {
-    const res = await fetch('https://www.youtube.com/youtubei/v1/next', {
+    const res = await fetch(`${YT_INNERTUBE_URL}/next`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ context: INNERTUBE_MWEB_CTX, videoId }),
@@ -284,7 +295,7 @@ export async function fetchYtMusicMeta(videoId: string): Promise<MusicCredits> {
   const empty: MusicCredits = { songTitle: null, songArtist: null, songAlbum: null };
   const trusted = new Set(['MUSIC_VIDEO_TYPE_OMV', 'MUSIC_VIDEO_TYPE_ATV']);
   try {
-    const res = await fetch('https://music.youtube.com/youtubei/v1/player', {
+    const res = await fetch(`${YTM_INNERTUBE_URL}/player`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ context: INNERTUBE_MUSIC_CTX, videoId }),
@@ -296,4 +307,111 @@ export async function fetchYtMusicMeta(videoId: string): Promise<MusicCredits> {
   } catch {
     return empty;
   }
+}
+
+// ─── YouTube Music 관련 항목 ─────────────────────────────
+
+async function fetchInnertubeMusic<T = Record<string, unknown>>(
+  endpoint: string,
+  body: Record<string, unknown>,
+): Promise<T> {
+  const res = await fetch(`${YTM_INNERTUBE_URL}/${endpoint}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ context: INNERTUBE_MUSIC_CTX, ...body }),
+  });
+  return (await res.json()) as T;
+}
+
+/**
+ * YT Music "관련 항목" 탭에서 비슷한 아티스트 + 추천 재생목록 추출
+ * 1. next API → browseId 획득
+ * 2. browse API → 섹션 파싱
+ */
+export async function fetchYtMusicRelated(videoId: string): Promise<MusicRelatedResult> {
+  const empty: MusicRelatedResult = { similarArtists: [], playlists: [] };
+
+  // 1단계: next → 관련 항목 탭의 browseId
+  const nextData = await fetchInnertubeMusic<InnertubeYtMusicNextData>('next', {
+    videoId,
+    isAudioOnly: true,
+  });
+
+  const tabs =
+    nextData?.contents?.singleColumnMusicWatchNextResultsRenderer?.tabbedRenderer?.watchNextTabbedResultsRenderer
+      ?.tabs ?? [];
+
+  const browseId = tabs.find((t) => t.tabRenderer?.endpoint?.browseEndpoint?.browseId?.startsWith('MPTR'))?.tabRenderer
+    ?.endpoint?.browseEndpoint?.browseId;
+
+  if (!browseId) return empty;
+
+  // 2단계: browse → 섹션 파싱
+  const browseData = await fetchInnertubeMusic<InnertubeYtMusicBrowseData>('browse', { browseId });
+  const sections = browseData?.contents?.sectionListRenderer?.contents ?? [];
+
+  const similarArtists: SimilarArtist[] = [];
+  const playlists: RecommendedPlaylist[] = [];
+
+  for (const section of sections) {
+    const renderer = section.musicCarouselShelfRenderer;
+    if (!renderer) continue;
+
+    const header = renderer.header?.musicCarouselShelfBasicHeaderRenderer?.title?.runs?.[0]?.text ?? '';
+    const items = renderer.contents ?? [];
+
+    if (isArtistSection(header)) {
+      for (const item of items) {
+        const artist = parseCarouselArtist(item);
+        if (artist) similarArtists.push(artist);
+      }
+    } else if (isPlaylistSection(header)) {
+      for (const item of items) {
+        const pl = parseCarouselPlaylist(item);
+        if (pl) playlists.push(pl);
+      }
+    }
+  }
+
+  return { similarArtists, playlists };
+}
+
+// ─── 섹션 헤더 판별 ──────────────────────────────────────
+
+const ARTIST_HEADERS = ['비슷한 아티스트', 'similar artists', '似ているアーティスト'];
+const PLAYLIST_HEADERS = ['추천 재생목록', 'recommended playlists', 'おすすめのプレイリスト'];
+
+function isArtistSection(header: string): boolean {
+  return ARTIST_HEADERS.some((h) => header.toLowerCase().includes(h.toLowerCase()));
+}
+
+function isPlaylistSection(header: string): boolean {
+  return PLAYLIST_HEADERS.some((h) => header.toLowerCase().includes(h.toLowerCase()));
+}
+
+// ─── 캐러셀 아이템 파싱 ──────────────────────────────────
+
+function parseCarouselArtist(item: InnertubeYtMusicCarouselItem): SimilarArtist | null {
+  const r = item.musicTwoRowItemRenderer;
+  if (!r) return null;
+  const name = r.title?.runs?.[0]?.text;
+  if (!name) return null;
+  return {
+    name,
+    channelId: r.navigationEndpoint?.browseEndpoint?.browseId ?? null,
+    thumbnail: r.thumbnailRenderer?.musicThumbnailRenderer?.thumbnail?.thumbnails?.[0]?.url ?? null,
+  };
+}
+
+function parseCarouselPlaylist(item: InnertubeYtMusicCarouselItem): RecommendedPlaylist | null {
+  const r = item.musicTwoRowItemRenderer;
+  if (!r) return null;
+  const title = r.title?.runs?.[0]?.text;
+  if (!title) return null;
+  return {
+    title,
+    playlistId:
+      r.navigationEndpoint?.watchEndpoint?.playlistId ?? r.navigationEndpoint?.browseEndpoint?.browseId ?? null,
+    thumbnail: r.thumbnailRenderer?.musicThumbnailRenderer?.thumbnail?.thumbnails?.[0]?.url ?? null,
+  };
 }
