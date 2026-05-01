@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Suspense, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 import AnimatedBackground from '@/components/common/AnimatedBackground';
 import { GuestLoginForm } from '@/components/common/GuestLoginForm';
@@ -33,9 +34,21 @@ function LoginInner() {
   const tc = useTranslations('common');
   const codeParam = searchParams.get('code');
   const errorParam = searchParams.get('error');
+  const expiredParam = searchParams.get('expired');
   const [mode, setMode] = useState<Mode>(codeParam ? 'register' : 'select');
   const [inviteRoomName, setInviteRoomName] = useState<string | null>(null);
   const { connState, retry } = useServerStatus();
+
+  useEffect(() => {
+    if (!expiredParam && !errorParam) return;
+    if (expiredParam) toast.error(t('sessionExpired'), { id: 'session-expired' });
+    // 일회성 쿼리 파라미터 제거 — 새로고침 시 재발 방지
+    const clean = new URLSearchParams(window.location.search);
+    clean.delete('expired');
+    clean.delete('error');
+    const qs = clean.toString();
+    router.replace(`/login${qs ? `?${qs}` : ''}`, { scroll: false });
+  }, [expiredParam, errorParam, t, router]);
 
   useEffect(() => {
     const inviteRoomId = localStorage.getItem('inviteRoomId');

@@ -52,7 +52,8 @@
     "registerTitle": "회원가입",
     "registerDescription": "초대코드로 계정 만들기",
     "guestTitle": "게스트 입장",
-    "guestDescription": "초대코드로 바로 참여하기"
+    "guestDescription": "초대코드로 바로 참여하기",
+    "sessionExpired": "세션이 만료되었습니다"
   },
   "auth": {
     "backToMethods": "← 다른 방법으로 로그인",

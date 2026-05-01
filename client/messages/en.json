@@ -52,7 +52,8 @@
     "registerTitle": "Sign up",
     "registerDescription": "Create an account with invite code",
     "guestTitle": "Guest access",
-    "guestDescription": "Join instantly with invite code"
+    "guestDescription": "Join instantly with invite code",
+    "sessionExpired": "Session expired"
   },
   "auth": {
     "backToMethods": "← Back to login methods",

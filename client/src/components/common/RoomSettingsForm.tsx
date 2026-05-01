@@ -49,6 +49,7 @@ export const DEFAULT_FORM_VALUES: RoomFormValues = {
 
 interface RoomSettingsFormProps {
   mode: 'create' | 'edit';
+  isGuest?: boolean;
   values: RoomFormValues;
   onChange: <K extends keyof RoomFormValues>(key: K, value: RoomFormValues[K]) => void;
   errors?: Partial<Record<keyof RoomFormValues, string>>;
@@ -57,6 +58,7 @@ interface RoomSettingsFormProps {
 
 export default function RoomSettingsForm({
   mode,
+  isGuest = false,
   values: v,
   onChange: set,
   errors,
@@ -210,6 +212,7 @@ export default function RoomSettingsForm({
           threshold={v.autoDjThreshold}
           folderId={v.autoDjFolderId}
           favFallbackMixed={v.autoDjFavFallbackMixed}
+          hasFavorites={!isGuest}
           onEnabledChange={(c) => change('autoDjEnabled', c)}
           onModeChange={(m) => change('autoDjMode', m)}
           onThresholdChange={(n) => change('autoDjThreshold', n)}
