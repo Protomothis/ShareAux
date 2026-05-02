@@ -1,0 +1,9 @@
+#!/bin/sh
+
+echo "🔍 Type checking server..."
+cd server && npx tsc --noEmit || exit 1
+
+echo "🔍 Type checking client..."
+cd ../client && npx tsc --noEmit || exit 1
+
+echo "✅ Type check passed"

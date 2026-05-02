@@ -9,6 +9,12 @@
   },
   "author": "Protomothis",
   "private": true,
+  "overrides": {
+    "@p-captcha/react": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
+  },
   "scripts": {
     "dev": "node dev.js",
     "build": "next build",
