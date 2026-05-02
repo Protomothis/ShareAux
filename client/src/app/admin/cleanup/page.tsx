@@ -99,7 +99,7 @@ export default function AdminCleanupPage() {
     );
   }, [confirmType, cleanup]);
 
-  const totalDB = summary?.tableSizes?.reduce((sum, t) => sum + t.sizeMB, 0) ?? 0;
+  const totalDB = summary?.tableSizes?.reduce((sum: number, ts) => sum + ts.sizeMB, 0) ?? 0;
 
   return (
     <div>
@@ -125,10 +125,10 @@ export default function AdminCleanupPage() {
             <span className="text-xs text-sa-text-muted">{t('totalSize', { size: formatSize(totalDB) })}</span>
           </div>
           <div className="space-y-1.5">
-            {summary.tableSizes.map((t) => (
-              <div key={t.name} className="flex items-center justify-between text-xs">
-                <span className="font-mono text-sa-text-muted">{t.name}</span>
-                <span className="tabular-nums text-white">{formatSize(t.sizeMB)}</span>
+            {summary.tableSizes.map((ts) => (
+              <div key={ts.name} className="flex items-center justify-between text-xs">
+                <span className="font-mono text-sa-text-muted">{ts.name}</span>
+                <span className="tabular-nums text-white">{formatSize(ts.sizeMB)}</span>
               </div>
             ))}
           </div>

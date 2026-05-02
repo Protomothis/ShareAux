@@ -40,12 +40,16 @@ export function useQueueDnd(roomId: string, queue: RoomQueue[]) {
 
   const handleDragOver = (event: DragOverEvent) => {
     const { active, over } = event;
-    if (!over || active.id === over.id || !localOrder) return;
+    if (!over || active.id === over.id) return;
     overIdRef.current = String(over.id);
     setOverId(String(over.id));
-    const oldIdx = localOrder.findIndex((q) => q.id === active.id);
-    const newIdx = localOrder.findIndex((q) => q.id === over.id);
-    if (oldIdx !== -1 && newIdx !== -1) setLocalOrder(arrayMove(localOrder, oldIdx, newIdx));
+    setLocalOrder((prev) => {
+      if (!prev) return prev;
+      const oldIdx = prev.findIndex((q) => q.id === active.id);
+      const newIdx = prev.findIndex((q) => q.id === over.id);
+      if (oldIdx === -1 || newIdx === -1) return prev;
+      return arrayMove(prev, oldIdx, newIdx);
+    });
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -72,10 +76,10 @@ export function useQueueDnd(roomId: string, queue: RoomQueue[]) {
         newPosition: toItem.position,
         version: fromItem.version,
       });
-      await queryClient.refetchQueries({ queryKey: getQueueControllerGetQueueQueryKey(roomId) });
     } catch {
-      /* reorder failed */
+      /* reorder failed — refetch로 복구 */
     }
+    await queryClient.refetchQueries({ queryKey: getQueueControllerGetQueueQueryKey(roomId) });
     setReorderingId(null);
     setLocalOrder(null);
   };

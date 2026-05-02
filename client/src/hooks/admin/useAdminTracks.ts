@@ -1,8 +1,8 @@
-import { useAdminControllerGetTopTracks } from '@/api/admin/admin';
-import type { AdminControllerGetTopTracksParams } from '@/api/model';
+import { useAdminTracksControllerGetTopTracks } from '@/api/admin/admin';
+import type { AdminTracksControllerGetTopTracksParams } from '@/api/model';
 
-export function useAdminTopTracks(params: AdminControllerGetTopTracksParams) {
-  const query = useAdminControllerGetTopTracks(params);
+export function useAdminTopTracks(params: AdminTracksControllerGetTopTracksParams) {
+  const query = useAdminTracksControllerGetTopTracks(params);
   return {
     ...query,
     items: query.data?.items ?? [],

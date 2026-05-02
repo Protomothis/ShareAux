@@ -20,6 +20,7 @@ import type {
 
 import type {
   PlaylistTracksResponse,
+  RadioResponse,
   RecommendedResponse,
   SearchControllerGetPlaylistTracksParams,
   SearchControllerSearchParams,
@@ -410,7 +411,7 @@ export function useSearchControllerGetShowcase<
 }
 
 /**
- * @summary 추천곡 (YouTube 관련 영상 기반)
+ * @summary 관련곡 (YouTube 관련 영상 기반)
  */
 export const getSearchControllerGetRecommendedUrl = (roomId: string) => {
   return `/api/search/recommended/${roomId}`;
@@ -509,7 +510,7 @@ export function useSearchControllerGetRecommended<
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
- * @summary 추천곡 (YouTube 관련 영상 기반)
+ * @summary 관련곡 (YouTube 관련 영상 기반)
  */
 
 export function useSearchControllerGetRecommended<
@@ -524,6 +525,126 @@ export function useSearchControllerGetRecommended<
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
   const queryOptions = getSearchControllerGetRecommendedQueryOptions(roomId, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 라디오 (YT Music 비슷한 아티스트 기반)
+ */
+export const getSearchControllerGetRadioUrl = (roomId: string) => {
+  return `/api/search/radio/${roomId}`;
+};
+
+export const searchControllerGetRadio = async (roomId: string, options?: RequestInit): Promise<RadioResponse> => {
+  return customFetch<RadioResponse>(getSearchControllerGetRadioUrl(roomId), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getSearchControllerGetRadioQueryKey = (roomId?: string) => {
+  return [`/api/search/radio/${roomId}`] as const;
+};
+
+export const getSearchControllerGetRadioQueryOptions = <
+  TData = Awaited<ReturnType<typeof searchControllerGetRadio>>,
+  TError = unknown,
+>(
+  roomId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchControllerGetRadio>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getSearchControllerGetRadioQueryKey(roomId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof searchControllerGetRadio>>> = ({ signal }) =>
+    searchControllerGetRadio(roomId, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, enabled: !!roomId, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof searchControllerGetRadio>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type SearchControllerGetRadioQueryResult = NonNullable<Awaited<ReturnType<typeof searchControllerGetRadio>>>;
+export type SearchControllerGetRadioQueryError = unknown;
+
+export function useSearchControllerGetRadio<
+  TData = Awaited<ReturnType<typeof searchControllerGetRadio>>,
+  TError = unknown,
+>(
+  roomId: string,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchControllerGetRadio>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchControllerGetRadio>>,
+          TError,
+          Awaited<ReturnType<typeof searchControllerGetRadio>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useSearchControllerGetRadio<
+  TData = Awaited<ReturnType<typeof searchControllerGetRadio>>,
+  TError = unknown,
+>(
+  roomId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchControllerGetRadio>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchControllerGetRadio>>,
+          TError,
+          Awaited<ReturnType<typeof searchControllerGetRadio>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useSearchControllerGetRadio<
+  TData = Awaited<ReturnType<typeof searchControllerGetRadio>>,
+  TError = unknown,
+>(
+  roomId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchControllerGetRadio>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 라디오 (YT Music 비슷한 아티스트 기반)
+ */
+
+export function useSearchControllerGetRadio<
+  TData = Awaited<ReturnType<typeof searchControllerGetRadio>>,
+  TError = unknown,
+>(
+  roomId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchControllerGetRadio>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getSearchControllerGetRadioQueryOptions(roomId, options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>;

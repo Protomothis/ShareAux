@@ -192,3 +192,87 @@ export interface InnertubeYtMusicPlayerData {
     musicVideoType?: string;
   };
 }
+
+// ─── YouTube Music next/browse (WEB_REMIX) ──────────────
+
+export interface InnertubeYtMusicNextData {
+  contents?: {
+    singleColumnMusicWatchNextResultsRenderer?: {
+      tabbedRenderer?: {
+        watchNextTabbedResultsRenderer?: {
+          tabs?: InnertubeYtMusicTab[];
+        };
+      };
+    };
+  };
+}
+
+export interface InnertubeYtMusicTab {
+  tabRenderer?: {
+    title?: string;
+    endpoint?: {
+      browseEndpoint?: { browseId?: string };
+    };
+    content?: {
+      musicQueueRenderer?: {
+        content?: {
+          playlistPanelRenderer?: {
+            contents?: InnertubeYtMusicPlaylistItem[];
+          };
+        };
+      };
+    };
+  };
+}
+
+export interface InnertubeYtMusicPlaylistItem {
+  playlistPanelVideoRenderer?: {
+    videoId?: string;
+    title?: InnertubeRuns;
+    longBylineText?: InnertubeRuns;
+    lengthText?: InnertubeRuns;
+    thumbnail?: { thumbnails?: { url?: string }[] };
+  };
+}
+
+export interface InnertubeYtMusicBrowseData {
+  contents?: {
+    sectionListRenderer?: {
+      contents?: InnertubeYtMusicBrowseSection[];
+    };
+  };
+}
+
+export interface InnertubeYtMusicBrowseSection {
+  musicCarouselShelfRenderer?: {
+    header?: {
+      musicCarouselShelfBasicHeaderRenderer?: {
+        title?: InnertubeRuns;
+      };
+    };
+    contents?: InnertubeYtMusicCarouselItem[];
+  };
+}
+
+export interface InnertubeYtMusicCarouselItem {
+  musicTwoRowItemRenderer?: {
+    title?: InnertubeRuns;
+    subtitle?: InnertubeRuns;
+    navigationEndpoint?: {
+      browseEndpoint?: { browseId?: string };
+      watchEndpoint?: { videoId?: string; playlistId?: string };
+    };
+    thumbnailRenderer?: {
+      musicThumbnailRenderer?: {
+        thumbnail?: { thumbnails?: { url?: string }[] };
+      };
+    };
+  };
+  musicResponsiveListItemRenderer?: {
+    flexColumns?: {
+      musicResponsiveListItemFlexColumnRenderer?: {
+        text?: InnertubeRuns;
+      };
+    }[];
+  };
+}

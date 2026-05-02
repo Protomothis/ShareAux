@@ -4,10 +4,10 @@ import { useQuery } from '@tanstack/react-query';
 
 import type { MetricsPointDto } from '@/api/model';
 import {
-  adminControllerGetRealtimeMetrics,
-  useAdminControllerGetDailyPlays,
-  useAdminControllerGetStreamingMetrics,
-  useAdminControllerGetUsersBreakdown,
+  adminMetricsControllerGetRealtimeMetrics,
+  useAdminMetricsControllerGetDailyPlays,
+  useAdminMetricsControllerGetStreamingMetrics,
+  useAdminMetricsControllerGetUsersBreakdown,
 } from '@/api/admin/admin';
 
 export type TimeRange = '1h' | '6h' | '24h';
@@ -34,7 +34,7 @@ export function useRealtimeMetrics(timeRange: TimeRange) {
 
   const fetchAndMerge = useCallback(async () => {
     const since = lastTsRef.current || Date.now() - TIME_RANGE_MS[timeRange];
-    const res = await adminControllerGetRealtimeMetrics({ since: String(since) });
+    const res = await adminMetricsControllerGetRealtimeMetrics({ since: String(since) });
     const newPoints = res.points ?? [];
 
     if (newPoints.length > 0) {
@@ -61,13 +61,13 @@ export function useRealtimeMetrics(timeRange: TimeRange) {
 }
 
 export function usePlaysMetrics(days: number) {
-  return useAdminControllerGetDailyPlays({ days });
+  return useAdminMetricsControllerGetDailyPlays({ days });
 }
 
 export function useUsersBreakdown() {
-  return useAdminControllerGetUsersBreakdown();
+  return useAdminMetricsControllerGetUsersBreakdown();
 }
 
 export function useStreamingMetrics() {
-  return useAdminControllerGetStreamingMetrics({ query: { refetchInterval: 10_000, staleTime: 9_000 } });
+  return useAdminMetricsControllerGetStreamingMetrics({ query: { refetchInterval: 10_000, staleTime: 9_000 } });
 }

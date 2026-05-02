@@ -50,6 +50,7 @@ export const YTDLP_FORMAT = 'bestaudio/best';
 
 // ─── Search / Cache ─────────────────────────────────────
 export const SHOWCASE_CACHE_TTL_MS = 10 * 60 * 1000; // 10분
+export const RADIO_CACHE_TTL_MS = 5 * 60 * 1000; // 5분
 
 // ─── Admin ──────────────────────────────────────────────
 export const ADMIN_INACTIVE_CUTOFF_MS = 12 * 60 * 60 * 1000; // 12시간
