@@ -65,7 +65,7 @@ export class UpdateRoomDto {
   @IsBoolean()
   autoDjEnabled?: boolean;
 
-  @ApiProperty({ required: false, enum: AutoDjMode, description: 'AutoDJ 모드' })
+  @ApiProperty({ required: false, enum: AutoDjMode, enumName: 'AutoDjMode', description: 'AutoDJ 모드' })
   @IsOptional()
   @IsEnum(AutoDjMode)
   autoDjMode?: AutoDjMode;

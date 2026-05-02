@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   getAdminControllerGetRoomsQueryKey,
   useAdminControllerDeleteRoom,
-  useAdminControllerGetLiveRooms,
+  useAdminMetricsControllerGetLiveRooms,
   useAdminControllerGetRooms,
 } from '@/api/admin/admin';
 import type { AdminControllerGetRoomsParams } from '@/api/model';
@@ -13,7 +13,7 @@ export function useAdminRooms(params: AdminControllerGetRoomsParams) {
 }
 
 export function useAdminLiveRooms() {
-  return useAdminControllerGetLiveRooms({ query: { refetchInterval: 10_000 } });
+  return useAdminMetricsControllerGetLiveRooms({ query: { refetchInterval: 10_000 } });
 }
 
 export function useDeleteRoom() {

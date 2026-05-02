@@ -1,5 +1,5 @@
 // ─── ShareAux Service Worker ─── Push 알림 수신 + 액션 핸들링 ───
-const SW_VERSION = '0.1.12';
+const SW_VERSION = '0.1.14';
 
 // ─── i18n 헬퍼 ───
 
@@ -69,7 +69,7 @@ async function showTestNotification(locale) {
 
 async function showLocalizedNotification(evt, locale, data, roomId, tag, icon, image) {
   const msgs = await loadMessages(locale);
-  const title = resolve(msgs, `notification.${evt}.title`) ?? 'ShareAux';
+  const title = interpolate(resolve(msgs, `notification.${evt}.title`) ?? 'ShareAux', data);
   const body = interpolate(resolve(msgs, `notification.${evt}.body`), data);
 
   const options = {

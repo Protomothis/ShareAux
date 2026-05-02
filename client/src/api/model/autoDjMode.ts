@@ -6,10 +6,13 @@
  * OpenAPI spec version: 1.0
  */
 
-export type RoomListItemAutoDjMode = (typeof RoomListItemAutoDjMode)[keyof typeof RoomListItemAutoDjMode];
+/**
+ * AutoDJ 모드
+ */
+export type AutoDjMode = (typeof AutoDjMode)[keyof typeof AutoDjMode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const RoomListItemAutoDjMode = {
+export const AutoDjMode = {
   related: 'related',
   radio: 'radio',
   history: 'history',

@@ -11,6 +11,7 @@ export type RoomAutoDjMode = (typeof RoomAutoDjMode)[keyof typeof RoomAutoDjMode
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const RoomAutoDjMode = {
   related: 'related',
+  radio: 'radio',
   history: 'history',
   popular: 'popular',
   mixed: 'mixed',

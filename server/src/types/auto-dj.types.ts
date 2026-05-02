@@ -1,5 +1,6 @@
 export enum AutoDjMode {
   Related = 'related',
+  Radio = 'radio',
   History = 'history',
   Popular = 'popular',
   Mixed = 'mixed',
