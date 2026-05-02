@@ -5,7 +5,7 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
-import type { UpdateRoomDtoAutoDjMode } from './updateRoomDtoAutoDjMode';
+import type { AutoDjMode } from './autoDjMode';
 
 export interface UpdateRoomDto {
   /**
@@ -52,7 +52,7 @@ export interface UpdateRoomDto {
   /** AutoDJ 활성화 */
   autoDjEnabled?: boolean;
   /** AutoDJ 모드 */
-  autoDjMode?: UpdateRoomDtoAutoDjMode;
+  autoDjMode?: AutoDjMode;
   /**
    * AutoDJ 트리거 기준 (남은 큐)
    * @minimum 1

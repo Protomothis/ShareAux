@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 
+import { fetchYtMusicRelated } from './innertube-parser.js';
 import { Provider } from '../types/provider.enum.js';
 import { Repository } from 'typeorm';
 
@@ -213,6 +214,8 @@ export class AutoDjService {
 
   private async getCandidates(roomId: string, mode: AutoDjMode, room: Room): Promise<WeightedCandidate[]> {
     switch (mode) {
+      case AutoDjMode.Radio:
+        return this.getRadioCandidates(roomId);
       case AutoDjMode.Related:
         return this.getRelatedCandidates(roomId);
       case AutoDjMode.History:
@@ -223,6 +226,28 @@ export class AutoDjService {
         return this.getMixedCandidates(roomId);
       case AutoDjMode.Favorites:
         return this.getFavoritesCandidates(room);
+    }
+  }
+
+  private async getRadioCandidates(roomId: string): Promise<WeightedCandidate[]> {
+    const videoId = await this.getCurrentVideoId(roomId);
+    if (!videoId) return this.getPopularCandidates();
+    try {
+      const related = await fetchYtMusicRelated(videoId);
+      if (!related.similarArtists.length) return this.getRelatedCandidates(roomId);
+      // 랜덤 3명 선택 → 각 아티스트로 검색
+      const picks = related.similarArtists.sort(() => Math.random() - 0.5).slice(0, 3);
+      const tracks: Track[] = [];
+      for (const artist of picks) {
+        const results = await this.ytdlp.search(artist.name, AUTODJ_CANDIDATE_FETCH_LIMIT);
+        const upserted = await Promise.all(results.map((r) => this.upsertTrack(r)));
+        tracks.push(...upserted);
+      }
+      // 중복 제거
+      const unique = [...new Map(tracks.map((t) => [t.id, t])).values()];
+      return unique.map((track) => ({ track, weight: 1.0 }));
+    } catch {
+      return this.getRelatedCandidates(roomId);
     }
   }
 

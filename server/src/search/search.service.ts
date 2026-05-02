@@ -4,13 +4,13 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { SHOWCASE_CACHE_TTL_MS } from '../constants.js';
+import { RADIO_CACHE_TTL_MS, SHOWCASE_CACHE_TTL_MS } from '../constants.js';
 import { RoomPlayback } from '../entities/room-playback.entity.js';
 import { Track } from '../entities/track.entity.js';
 import { TrackStats } from '../entities/track-stats.entity.js';
 import { UserTrackHistory } from '../entities/user-track-history.entity.js';
 import { type YtdlpSearchResult, YtdlpService } from '../services/ytdlp.service.js';
-import { fetchMusicCredits, fetchYtMusicMeta } from '../services/innertube-parser.js';
+import { fetchMusicCredits, fetchYtMusicMeta, fetchYtMusicRelated } from '../services/innertube-parser.js';
 import { MusicBrainzService } from '../services/musicbrainz.service.js';
 import { cleanArtist, extractTitle } from '../services/title-cleaner.js';
 import type { SearchResultItem } from './dto/search-result-item.dto.js';
@@ -19,6 +19,7 @@ import type { SearchResultItem } from './dto/search-result-item.dto.js';
 export class SearchService {
   private readonly logger = new Logger(SearchService.name);
   private readonly playlistCache = new Map<string, { tracks: SearchResultItem[]; fetchedAt: number }>();
+  private readonly radioCache = new Map<string, { items: SearchResultItem[]; fetchedAt: number }>();
 
   constructor(
     private readonly ytdlp: YtdlpService,
@@ -98,6 +99,11 @@ export class SearchService {
     return { recommended };
   }
 
+  async getRadioTracks(roomId: string) {
+    const radio = await this.getRadio(roomId);
+    return { radio };
+  }
+
   private async getPopularTracks(limit = 10): Promise<Track[]> {
     const stats = await this.statsRepo.find({
       order: { score: 'DESC' },
@@ -128,33 +134,63 @@ export class SearchService {
 
   private async getRecommended(roomId: string, limit = 10): Promise<SearchResultItem[]> {
     try {
-      // 1. 현재 재생 중인 곡
-      const playback = await this.playbackRepo.findOne({ where: { roomId }, relations: ['track'] });
-      let videoId = playback?.track?.sourceId;
-      // 2. 이 방의 최근 큐 기록
-      if (!videoId) {
-        const recent = await this.trackRepo
-          .createQueryBuilder('t')
-          .innerJoin('room_queues', 'q', 'q.track_id = t.id')
-          .where('q.room_id = :roomId', { roomId })
-          .orderBy('q.added_at', 'DESC')
-          .getOne();
-        videoId = recent?.sourceId;
-      }
-      // 3. 글로벌 최근 재생
-      if (!videoId) {
-        const [top] = await this.statsRepo.find({ order: { lastPlayedAt: 'DESC' }, take: 1, relations: ['track'] });
-        videoId = top?.track?.sourceId;
-      }
+      const videoId = await this.resolveVideoId(roomId);
       if (!videoId) return [];
-      // 넉넉히 가져와서 셔플 → 매번 다른 추천
       const related = await this.ytdlp.getRelated(videoId, limit * 3);
-      const shuffled = related.sort(() => Math.random() - 0.5).slice(0, limit);
-      return shuffled.map((r) => this.toSearchResult(r));
+      return related
+        .sort(() => Math.random() - 0.5)
+        .slice(0, limit)
+        .map((r) => this.toSearchResult(r));
     } catch (e) {
       this.logger.warn('getRecommended failed', e instanceof Error ? e.message : e);
       return [];
     }
+  }
+
+  private async getRadio(roomId: string, limit = 20): Promise<SearchResultItem[]> {
+    try {
+      const videoId = await this.resolveVideoId(roomId);
+      if (!videoId) return [];
+
+      // 시드곡 동일 시 5분 캐시
+      const cached = this.radioCache.get(videoId);
+      if (cached && Date.now() - cached.fetchedAt < RADIO_CACHE_TTL_MS) return cached.items;
+
+      const related = await fetchYtMusicRelated(videoId);
+      if (!related.similarArtists.length) return [];
+
+      const picks = related.similarArtists.sort(() => Math.random() - 0.5).slice(0, 4);
+      const results: SearchResultItem[] = [];
+      for (const artist of picks) {
+        const tracks = await this.ytdlp.search(artist.name, Math.ceil(limit / picks.length));
+        results.push(...tracks.map((r) => this.toSearchResult(r)));
+      }
+      const unique = [...new Map(results.map((r) => [r.sourceId, r])).values()];
+      const items = unique.sort(() => Math.random() - 0.5).slice(0, limit);
+      this.radioCache.set(videoId, { items, fetchedAt: Date.now() });
+      return items;
+    } catch (e) {
+      this.logger.warn('getRadio failed', e instanceof Error ? e.message : e);
+      return [];
+    }
+  }
+
+  /** 방의 현재/최근 재생 곡 videoId 해석 */
+  private async resolveVideoId(roomId: string): Promise<string | null> {
+    // 1. 현재 재생 중인 곡
+    const playback = await this.playbackRepo.findOne({ where: { roomId }, relations: ['track'] });
+    if (playback?.track?.sourceId) return playback.track.sourceId;
+    // 2. 이 방의 최근 큐 기록
+    const recent = await this.trackRepo
+      .createQueryBuilder('t')
+      .innerJoin('room_queues', 'q', 'q.track_id = t.id')
+      .where('q.room_id = :roomId', { roomId })
+      .orderBy('q.added_at', 'DESC')
+      .getOne();
+    if (recent?.sourceId) return recent.sourceId;
+    // 3. 글로벌 최근 재생
+    const [top] = await this.statsRepo.find({ order: { lastPlayedAt: 'DESC' }, take: 1, relations: ['track'] });
+    return top?.track?.sourceId ?? null;
   }
 
   private toSearchResult(r: YtdlpSearchResult): SearchResultItem {

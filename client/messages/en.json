@@ -175,7 +175,8 @@
       "popular": "Popular",
       "myHistory": "My Requests",
       "recentPlays": "Recent Plays",
-      "recommended": "Recommended"
+      "recommended": "Recommended",
+      "radio": "📻 Radio"
     },
     "searchTab": "Search",
     "favorites": "Favorites",
@@ -310,7 +311,14 @@
     "autoDjFolder": "Folder filter",
     "autoDjFolderAll": "All",
     "autoDjFolderItem": "{name} ({count} tracks)",
-    "autoDjFavFallback": "Switch to mixed mode when favorites run out"
+    "autoDjFavFallback": "Switch to mixed mode when favorites run out",
+    "autoDjRadio": "📻 Radio",
+    "autoDjRelatedDesc": "Adds similar videos based on the current track",
+    "autoDjRadioDesc": "Finds and adds songs from similar artists",
+    "autoDjHistoryDesc": "Re-adds previously played tracks from this room",
+    "autoDjPopularDesc": "Adds popular tracks across all rooms",
+    "autoDjMixedDesc": "Mixes related, history, and popular tracks",
+    "autoDjFavoritesDesc": "Adds tracks from the host's favorites"
   },
   "profile": {
     "title": "Profile Settings",

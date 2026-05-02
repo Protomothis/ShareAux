@@ -17,7 +17,7 @@ export type StreamState = PlaybackStatusStreamState;
 export type AutoDjStatus = AutoDjStatusType;
 
 /** swagger 기반 AutoDjMode (server CreateRoomDto.autoDjMode) */
-export type { CreateRoomDtoAutoDjMode as AutoDjMode } from '@/api/model';
+export type { AutoDjMode } from '@/api/model';
 
 /** 트랙별 좋아요/싫어요 집계 */
 export type TrackVoteMap = Map<string, { likes: number; dislikes: number }>;

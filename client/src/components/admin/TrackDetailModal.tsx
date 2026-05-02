@@ -7,10 +7,10 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 
 import {
-  adminControllerDeleteTrack,
-  adminControllerGetTrackLyrics,
-  adminControllerResetTrackLyrics,
-  adminControllerResetTrackMeta,
+  adminTracksControllerDeleteTrack,
+  adminTracksControllerGetTrackLyrics,
+  adminTracksControllerResetTrackLyrics,
+  adminTracksControllerResetTrackMeta,
 } from '@/api/admin/admin';
 import type { TrackRankingItem } from '@/api/model';
 import { TrackRankingTrackInfoLyricsStatus, TrackRankingTrackInfoLyricsType, MetaStatus } from '@/api/model';
@@ -44,7 +44,7 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
     setLyricsTab('original');
     if (!track || track.track.lyricsStatus !== TrackRankingTrackInfoLyricsStatus.found) return;
     setLyricsLoading(true);
-    adminControllerGetTrackLyrics(track.trackId)
+    adminTracksControllerGetTrackLyrics(track.trackId)
       .then((r) => {
         setLyrics(r.synced ?? null);
         setTranslated(r.translated ?? null);
@@ -131,7 +131,7 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
                   size="icon-xs"
                   onClick={async () => {
                     if (!confirm(t('lyricsDeleteConfirm'))) return;
-                    await adminControllerResetTrackLyrics(track.trackId);
+                    await adminTracksControllerResetTrackLyrics(track.trackId);
                     toast.success(t('lyricsDeleted'));
                     setLyrics(null);
                     setTranslated(null);
@@ -173,7 +173,7 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
                   size="icon-xs"
                   onClick={async () => {
                     if (!confirm(t('contentIdDeleteConfirm'))) return;
-                    await adminControllerResetTrackMeta(track.trackId);
+                    await adminTracksControllerResetTrackMeta(track.trackId);
                     toast.success(t('contentIdDeleted'));
                     setLocalTrack((prev) =>
                       prev ? { ...prev, track: { ...prev.track, metaStatus: MetaStatus.pending } } : prev,
@@ -228,7 +228,7 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
           size="sm"
           onClick={async () => {
             if (!confirm(t('trackDeleteConfirm'))) return;
-            await adminControllerDeleteTrack(track.trackId);
+            await adminTracksControllerDeleteTrack(track.trackId);
             toast.success(t('trackDeleted'));
             onOpenChange(false);
             onDeleted?.();
