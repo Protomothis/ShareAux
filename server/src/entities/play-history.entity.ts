@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Provider } from '../types/provider.enum.js';
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
+import { Provider } from '../types/provider.enum.js';
 import { Room } from './room.entity.js';
 import { User } from './user.entity.js';
 

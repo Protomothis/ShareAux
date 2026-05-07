@@ -4,8 +4,6 @@ import { useCallback, useRef, useState } from 'react';
 
 import { captchaControllerGetChallenge } from '@/api/captcha/captcha';
 
-import type { CaptchaChallengeResponse } from '@/api/model';
-
 interface CaptchaState {
   enabled: boolean;
   id: string | null;

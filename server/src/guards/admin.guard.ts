@@ -3,8 +3,8 @@ import { Injectable } from '@nestjs/common';
 import type { Request } from 'express';
 
 import { AppException } from '../exceptions/app.exception.js';
-import type { AuthenticatedUser } from '../types/index.js';
 import { ErrorCode } from '../types/error-code.enum.js';
+import type { AuthenticatedUser } from '../types/index.js';
 import { UserRole } from '../types/index.js';
 import { JwtAuthGuard } from './jwt-auth.guard.js';
 

@@ -1,4 +1,4 @@
-import { LyricsType } from './lyrics-type.enum.js';
+import type { LyricsType } from './lyrics-type.enum.js';
 
 export enum LyricsStatus {
   Searching = 'searching',

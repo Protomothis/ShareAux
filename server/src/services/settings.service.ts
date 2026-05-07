@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 
 import { decrypt, encrypt, mask } from '../common/crypto.util.js';
 import { SystemSetting } from '../entities/system-setting.entity.js';
-import { OptionKey, OPTION_METAS } from '../types/settings.types.js';
+import { OPTION_METAS, OptionKey } from '../types/settings.types.js';
 
 @Injectable()
 export class SettingsService implements OnModuleInit {

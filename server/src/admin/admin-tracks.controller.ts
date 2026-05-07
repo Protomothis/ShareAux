@@ -1,9 +1,9 @@
-import { Controller, Delete, Get, Param, ParseIntPipe, Query, UseGuards, DefaultValuePipe } from '@nestjs/common';
+import { Controller, DefaultValuePipe, Delete, Get, Param, ParseIntPipe, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 
-import { AdminGuard } from '../guards/admin.guard.js';
 import { THROTTLE_TTL_MS } from '../constants.js';
+import { AdminGuard } from '../guards/admin.guard.js';
 import { AdminTracksService } from './admin-tracks.service.js';
 import { PaginatedTrackRankingResponse } from './dto/paginated-track-ranking-response.dto.js';
 import { TrackLyricsResponse } from './dto/track-lyrics-response.dto.js';

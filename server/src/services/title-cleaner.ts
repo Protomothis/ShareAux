@@ -66,8 +66,8 @@ export function extractTitle(name: string): string {
   if (quoted) return quoted;
   const noBracket = name.replace(BRACKET_RE, '');
   // 첫 번째 구분자만 기준으로 분리 — 제목 내부 하이픈 보존
-  const sep = noBracket.match(/\s+[-–—|~]\s+/);
-  const raw = sep ? noBracket.slice(sep.index! + sep[0].length) : noBracket;
+  const sep = /\s+[-–—|~]\s+/.exec(noBracket);
+  const raw = sep ? noBracket.slice(sep.index + sep[0].length) : noBracket;
   return raw
     .replace(/\s*\/\s*THE FIRST TAKE.*/i, '')
     .replace(/\s*\/\s*/g, ' ')

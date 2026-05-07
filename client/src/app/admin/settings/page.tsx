@@ -1,10 +1,10 @@
 'use client';
 
-import { Loader2, Save } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { Loader2, Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 import {
   getAdminControllerGetSecretsQueryKey,
@@ -14,8 +14,8 @@ import {
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { BoolField, NumField, SecretSection, SelectField, SettingSection } from '@/components/admin/settings';
 import { Button } from '@/components/ui/button';
+import { SkeletonCard } from '@/components/ui/skeleton';
 import { useAdminSettings, useUpdateSettings } from '@/hooks/admin/useAdminSettings';
-import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
 
 export default function AdminSettingsPage() {
   const t = useTranslations('admin.settings');

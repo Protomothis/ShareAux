@@ -1,8 +1,8 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 
-import { AppException } from '../exceptions/app.exception.js';
 import { Room } from '../entities/room.entity.js';
+import { AppException } from '../exceptions/app.exception.js';
 import { ErrorCode } from '../types/error-code.enum.js';
 
 @Injectable()

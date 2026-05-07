@@ -1,4 +1,4 @@
-import { smartClean, extractTitle, cleanArtist } from './title-cleaner.js';
+import { cleanArtist, extractTitle, smartClean } from './title-cleaner.js';
 
 describe('title-cleaner', () => {
   describe('smartClean', () => {

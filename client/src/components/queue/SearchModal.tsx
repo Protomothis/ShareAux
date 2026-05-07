@@ -1,10 +1,8 @@
 'use client';
 
-import { TrackProvider } from '@/api/model';
-
 import { Heart, Search, Sparkles, X } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import type { SearchResultItem } from '@/api/model';
@@ -12,6 +10,7 @@ import { queueControllerAddTracks } from '@/api/queue/queue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useSearch } from '@/hooks/useSearch';
+import { MAX_QUEUE_SIZE } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import type { FavoriteActions } from '@/types';
 
@@ -20,8 +19,6 @@ import FavoritesList from './FavoritesList';
 import SearchResults from './SearchResults';
 import { SearchSelectedBar } from './SearchSelectedBar';
 import SearchShowcase from './SearchShowcase';
-
-import { MAX_QUEUE_SIZE } from '@/lib/constants';
 
 type Tab = 'showcase' | 'search' | 'favorites';
 

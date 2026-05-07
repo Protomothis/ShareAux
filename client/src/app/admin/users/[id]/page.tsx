@@ -2,6 +2,7 @@
 
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { use } from 'react';
 
 import { UserBanSection } from '@/components/admin/user-detail/UserBanSection';
@@ -10,7 +11,6 @@ import { UserHistorySection } from '@/components/admin/user-detail/UserHistorySe
 import { UserPermissionSection } from '@/components/admin/user-detail/UserPermissionSection';
 import { UserProfileHeader } from '@/components/admin/user-detail/UserProfileHeader';
 import { useAdminUserDetail } from '@/hooks/admin/useAdminUserDetail';
-import { useTranslations } from 'next-intl';
 
 export default function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const t = useTranslations('admin.userDetail');

@@ -1,7 +1,7 @@
-import { MetaStatus } from '../../types/meta-status.enum.js';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 import { LyricsType } from '../../types/lyrics-type.enum.js';
+import { MetaStatus } from '../../types/meta-status.enum.js';
 
 export class TrackRankingTrackInfo {
   @ApiProperty()

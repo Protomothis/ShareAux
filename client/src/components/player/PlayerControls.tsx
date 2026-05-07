@@ -5,11 +5,10 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { playerControllerPrevious, playerControllerSkip } from '@/api/player/player';
+import { SKIP_COOLDOWN_MS } from '@/lib/constants';
 import type { StreamState, VisualMode } from '@/types';
 
 import { Button } from '../ui/button';
-
-import { SKIP_COOLDOWN_MS } from '@/lib/constants';
 import { VolumeSlider } from '../ui/volume-slider';
 import { VISUAL_MODES } from './Visualizer';
 import VoteSkip from './VoteSkip';

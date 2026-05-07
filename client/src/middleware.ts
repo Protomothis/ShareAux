@@ -1,7 +1,6 @@
+import { decodeJwt } from 'jose';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-
-import { decodeJwt } from 'jose';
 
 import { Language } from '@/api/model';
 

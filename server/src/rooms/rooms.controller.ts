@@ -17,9 +17,9 @@ import { JoinRoomDto } from './dto/join-room.dto.js';
 import { MyPermissionsResponse } from './dto/my-permissions-response.dto.js';
 import { RoomDetail } from './dto/room-detail.dto.js';
 import { RoomListItem } from './dto/room-list-item.dto.js';
+import { ResetBansResponse, SanctionsResponse } from './dto/sanctions-response.dto.js';
 import { UpdatePermissionsBody } from './dto/update-permissions-body.dto.js';
 import { UpdateRoomDto } from './dto/update-room.dto.js';
-import { ResetBansResponse, SanctionsResponse } from './dto/sanctions-response.dto.js';
 import { RoomsGateway } from './rooms.gateway.js';
 import { RoomsService } from './rooms.service.js';
 

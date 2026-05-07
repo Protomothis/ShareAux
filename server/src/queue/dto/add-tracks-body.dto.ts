@@ -1,7 +1,8 @@
-import { Provider } from '../../types/provider.enum.js';
 import { ApiProperty } from '@nestjs/swagger';
-import { ArrayMaxSize, ArrayMinSize, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ArrayMaxSize, ArrayMinSize, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+
+import { Provider } from '../../types/provider.enum.js';
 
 export class TrackSource {
   @ApiProperty({ enum: Provider, default: Provider.YT })

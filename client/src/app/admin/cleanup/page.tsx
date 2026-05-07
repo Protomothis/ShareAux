@@ -1,6 +1,7 @@
 'use client';
 
 import { Clock, Database, DoorOpen, HardDrive, Music, Trash2, Users } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -10,7 +11,6 @@ import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { StatCard } from '@/components/admin/StatCard';
 import { Button } from '@/components/ui/button';
 import { useCleanup, useCleanupSummary } from '@/hooks/admin/useAdminCleanup';
-import { useTranslations } from 'next-intl';
 
 interface CleanupSection {
   type: string;

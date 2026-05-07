@@ -1,9 +1,9 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 import type { DailyPlaysItem } from '@/api/model';
-import { useTranslations } from 'next-intl';
 
 interface DailyPlaysChartProps {
   data: DailyPlaysItem[];

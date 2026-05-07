@@ -65,7 +65,7 @@ export default function Player({
   hasNext,
   hasPrev,
   getAnalyser,
-  getDelay,
+  getDelay: _getDelay,
   streamCodec,
   streamBitrate,
   lyricsStatus,

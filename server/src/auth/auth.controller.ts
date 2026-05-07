@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  forwardRef,
   Get,
   Inject,
   Post,
@@ -10,7 +11,6 @@ import {
   Res,
   UseFilters,
   UseGuards,
-  forwardRef,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
@@ -18,27 +18,27 @@ import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiOperation, ApiResponse, ApiTa
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 
-import { AUTH_COOKIE_REFRESH, AUTH_LOGIN_RATE_LIMIT, THROTTLE_TTL_MS, WS_CLOSE_ACCOUNT_DELETED } from '../constants.js';
-import { SettingsService } from '../services/settings.service.js';
-import { OptionKey } from '../types/settings.types.js';
-import { AppException } from '../exceptions/app.exception.js';
 import { CaptchaService } from '../captcha/captcha.module.js';
+import { AUTH_COOKIE_REFRESH, AUTH_LOGIN_RATE_LIMIT, THROTTLE_TTL_MS, WS_CLOSE_ACCOUNT_DELETED } from '../constants.js';
 import { User } from '../entities/user.entity.js';
+import { AppException } from '../exceptions/app.exception.js';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard.js';
 import { RoomsGateway } from '../rooms/rooms.gateway.js';
+import { SettingsService } from '../services/settings.service.js';
 import { TranslationService } from '../services/translation.service.js';
 import type { AuthenticatedRequest } from '../types/index.js';
 import { ErrorCode } from '../types/index.js';
-import { OAuthExceptionFilter } from './oauth-exception.filter.js';
+import { OptionKey } from '../types/settings.types.js';
 import { AuthService } from './auth.service.js';
 import { clearAuthCookies, setAuthCookies } from './cookie.util.js';
+import { AuthConfigResponse } from './dto/auth-config-response.dto.js';
 import { DeleteAccountDto } from './dto/delete-account.dto.js';
 import { GuestLoginDto } from './dto/guest-login.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
-import { AuthConfigResponse } from './dto/auth-config-response.dto.js';
 import { UpdateNicknameDto } from './dto/update-nickname.dto.js';
 import { UpdatePasswordDto } from './dto/update-password.dto.js';
+import { OAuthExceptionFilter } from './oauth-exception.filter.js';
 
 @ApiTags('Auth')
 @Controller('auth')

@@ -1,6 +1,5 @@
-import { MetaStatus } from '../types/meta-status.enum.js';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Body, Controller, Get, Logger, Param, ParseUUIDPipe, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -12,14 +11,15 @@ import { AppException } from '../exceptions/app.exception.js';
 import { ControllerGuard } from '../guards/controller.guard.js';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard.js';
 import { MemberService } from '../rooms/member.service.js';
-import { AutoDjService } from '../services/auto-dj.service.js';
 import { RoomsGateway } from '../rooms/rooms.gateway.js';
-import { LyricsService } from '../services/lyrics.service.js';
 import { SearchService } from '../search/search.service.js';
+import { AutoDjService } from '../services/auto-dj.service.js';
+import { LyricsService } from '../services/lyrics.service.js';
 import { TranslationService } from '../services/translation.service.js';
-import type { AuthenticatedRequest } from '../types/index.js';
 import { ErrorCode } from '../types/error-code.enum.js';
+import type { AuthenticatedRequest } from '../types/index.js';
 import { LyricsStatus, Permission, PushEvent, WsEvent } from '../types/index.js';
+import { MetaStatus } from '../types/meta-status.enum.js';
 import { PUSH_EVENT, pushPayload } from '../types/push-event-payload.js';
 import { LyricsResponse } from './dto/lyrics-response.dto.js';
 import { PlaybackStatus } from './dto/playback-status.dto.js';
@@ -57,7 +57,7 @@ export class PlayerController {
         if (status.track.metaStatus !== MetaStatus.Matched) {
           this.searchService
             .enrichTrackCredits(status.track.id, status.track.sourceId)
-            .catch((e) => this.logger.warn(`[enrich retry] ${(e as Error).message}`));
+            .catch((e: unknown) => this.logger.warn(`[enrich retry] ${(e as Error).message}`));
         }
         this.searchLyricsWhenReady(roomId, status.track, true);
         // Push 알림 — streaming 전환 시에만 (preparing에서는 스킵)
@@ -120,7 +120,7 @@ export class PlayerController {
           `[AutoDJ] batchComplete: roomId=${roomId}, isPlaying=${status?.isPlaying}, trackCount=${tracks.length}, firstTrackId=${tracks[0]?.id}`,
         );
         if (!status?.isPlaying && tracks.length > 0) {
-          await this.playerService.play(roomId, tracks[0].id).catch((e) => {
+          await this.playerService.play(roomId, tracks[0].id).catch((e: unknown) => {
             this.logger.warn(`[AutoDJ] auto-play failed: ${e instanceof Error ? e.message : e}`);
           });
           const newStatus = await this.playerService.getStatus(roomId);

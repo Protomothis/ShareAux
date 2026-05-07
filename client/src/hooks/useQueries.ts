@@ -1,12 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query';
 
+import type { RoomQueue } from '@/api/model';
 import { getPlayerControllerGetStatusQueryKey } from '@/api/player/player';
 import {
   getQueueControllerGetHistoryQueryKey,
   getQueueControllerGetMyQuotaQueryKey,
   getQueueControllerGetQueueQueryKey,
 } from '@/api/queue/queue';
-import type { RoomQueue } from '@/api/model';
 import {
   getRoomsControllerFindAllQueryKey,
   getRoomsControllerFindOneQueryKey,

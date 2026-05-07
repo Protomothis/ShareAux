@@ -1,3 +1,4 @@
+/* eslint-disable */
 const { config } = require('dotenv');
 const { execSync, spawn } = require('child_process');
 const { resolve } = require('path');

@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 import type { Permission } from '../types/index.js';
-
 import { User } from './user.entity.js';
 
 @Entity('invite_codes')

@@ -1,6 +1,6 @@
 import { readFile } from 'fs/promises';
-import { join } from 'path';
 import { NextResponse } from 'next/server';
+import { join } from 'path';
 
 import { Language } from '@/api/model/language';
 

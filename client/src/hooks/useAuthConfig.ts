@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 
-import type { AuthConfigResponse } from '@/api/model';
 import { authControllerGetAuthConfig } from '@/api/auth/auth';
+import type { AuthConfigResponse } from '@/api/model';
 
 const defaultConfig: AuthConfigResponse = { google: false, captcha: false, translation: false };
 

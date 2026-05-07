@@ -3,15 +3,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { PlayHistory } from '../entities/play-history.entity.js';
+import { Room } from '../entities/room.entity.js';
 import { RoomMember } from '../entities/room-member.entity.js';
 import { RoomPlayback } from '../entities/room-playback.entity.js';
 import { RoomQueue } from '../entities/room-queue.entity.js';
-import { Room } from '../entities/room.entity.js';
 import { User } from '../entities/user.entity.js';
+import { AppException } from '../exceptions/app.exception.js';
 import { AudioService } from '../services/audio.service.js';
 import { MetricsService } from '../services/metrics.service.js';
 import { PreloadService } from '../services/preload.service.js';
-import { AppException } from '../exceptions/app.exception.js';
 import { ErrorCode } from '../types/error-code.enum.js';
 
 @Injectable()
@@ -69,8 +69,7 @@ export class AdminMetricsService {
       .addSelect('COUNT(*)::int', 'count')
       .groupBy('u.role')
       .getRawMany<{ key: string; count: number }>();
-    const toRecord = (rows: Array<{ key: string; count: number }>) =>
-      Object.fromEntries(rows.map((r) => [r.key, r.count]));
+    const toRecord = (rows: { key: string; count: number }[]) => Object.fromEntries(rows.map((r) => [r.key, r.count]));
     return { byProvider: toRecord(byProviderRaw), byRole: toRecord(byRoleRaw) };
   }
 

@@ -1,7 +1,6 @@
 'use client';
 
-import { EmptyState } from '@/components/ui/empty-state';
-
+import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import {
   DndContext,
   PointerSensor,
@@ -12,10 +11,9 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { ChevronDown, ChevronRight, FolderOpen, GripVertical, Heart, Search, Trash2 } from 'lucide-react';
-import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import {
@@ -24,9 +22,10 @@ import {
   useFavoritesControllerList,
   useFavoritesControllerListFolders,
 } from '@/api/favorites/favorites';
-import type { FavoriteItem, FolderItem, SearchResultItem } from '@/api/model';
+import type { FavoriteItem, SearchResultItem } from '@/api/model';
 import { FavoriteButton } from '@/components/common/FavoriteButton';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { folderColorClass } from '@/lib/folder-colors';
 import { formatDuration } from '@/lib/format';
@@ -77,7 +76,7 @@ const DROP_PREFIX = 'drop:';
 
 export default function FavoritesList({
   onSelectTrack,
-  selectedIds,
+  selectedIds: _selectedIds,
   selectedOrder,
   disabledIds,
   maxReached,

@@ -54,9 +54,9 @@ export interface InnertubeThumbnailBadge {
   thumbnailBadgeViewModel?: {
     text?: string;
     icon?: {
-      sources?: Array<{
+      sources?: {
         clientResource?: { imageName?: string };
-      }>;
+      }[];
     };
   };
 }
@@ -81,7 +81,7 @@ export interface InnertubeLockupViewModel {
         thumbnailViewModel?: {
           overlays?: InnertubeThumbnailOverlay[];
           image?: {
-            sources?: Array<{ url?: string }>;
+            sources?: { url?: string }[];
           };
         };
       };
@@ -104,7 +104,7 @@ export interface InnertubeLockupViewModel {
 export interface InnertubePlaylistRenderer {
   playlistId?: string;
   title?: InnertubeSimpleText & InnertubeRuns;
-  thumbnails?: Array<{ thumbnails?: Array<{ url?: string }> }>;
+  thumbnails?: { thumbnails?: { url?: string }[] }[];
   videoCount?: string;
   shortBylineText?: InnertubeRuns;
 }
@@ -138,11 +138,11 @@ export interface InnertubeSearchData {
       };
     };
   };
-  onResponseReceivedCommands?: Array<{
+  onResponseReceivedCommands?: {
     appendContinuationItemsAction?: {
       continuationItems?: InnertubeItemSection[];
     };
-  }>;
+  }[];
 }
 
 // ─── next (관련 동영상) 응답 구조 ────────────────────────
@@ -166,11 +166,11 @@ export interface InnertubeNextData {
       };
     };
   };
-  onResponseReceivedEndpoints?: Array<{
+  onResponseReceivedEndpoints?: {
     appendContinuationItemsAction?: {
       continuationItems?: InnertubeNextItem[];
     };
-  }>;
+  }[];
 }
 
 // ─── Music Credits (MWEB next) ──────────────────────────

@@ -1,48 +1,46 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
+import { AnimatePresence, motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import type { Track } from '@/api/model';
-import { usePushSubscription } from '@/hooks/usePushSubscription';
 import { usePlayerControllerGetStatus } from '@/api/player/player';
 import { useQueueControllerGetHistory, useQueueControllerGetQueue } from '@/api/queue/queue';
 import { roomsControllerJoin, roomsControllerLeave, useRoomsControllerFindOne } from '@/api/rooms/rooms';
 import Chat from '@/components/chat/Chat';
+import { MinLoading } from '@/components/common/MinLoading';
+import { WsDisconnectBanner } from '@/components/common/WsDisconnectBanner';
 import Player from '@/components/player/Player';
-import Queue from '@/components/queue/Queue';
-import { AnimatePresence, motion } from 'motion/react';
-
-import HistoryPanel from '@/components/queue/HistoryPanel';
 import DesktopQueuePanel from '@/components/queue/DesktopQueuePanel';
+import HistoryPanel from '@/components/queue/HistoryPanel';
+import Queue from '@/components/queue/Queue';
 import LeaveConfirmModal from '@/components/room/LeaveConfirmModal';
 import MemberList from '@/components/room/MemberList';
 import MobileTabBar from '@/components/room/MobileTabBar';
 import PasswordModal from '@/components/room/PasswordModal';
 import RoomNav from '@/components/room/RoomNav';
 import RoomSettingsModal from '@/components/room/RoomSettingsModal';
-import { MinLoading } from '@/components/common/MinLoading';
-import { WsDisconnectBanner } from '@/components/common/WsDisconnectBanner';
 import RoomSkeleton from '@/components/room/RoomSkeleton';
 import { Button } from '@/components/ui/button';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useIsTouch } from '@/hooks/useIsTouch';
+import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
 import { useMyPermissions } from '@/hooks/useMyPermissions';
+import { usePushSubscription } from '@/hooks/usePushSubscription';
 import { queryKeys, useInvalidate } from '@/hooks/useQueries';
 import { useReactions } from '@/hooks/useReactions';
-import { useFavorites } from '@/hooks/useFavorites';
 import { useRoomAudio } from '@/hooks/useRoomAudio';
 import { useRoomEvents } from '@/hooks/useRoomEvents';
 import { useWebSocket } from '@/hooks/useWebSocket';
-import { useIsTouch } from '@/hooks/useIsTouch';
-import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
+import { getWsUrl } from '@/lib/urls';
 import { useAuthStore } from '@/stores/auth';
 import type { MobileTab } from '@/types';
-import { LyricsStatus } from '@/types';
 import type { StreamState } from '@/types';
-
-import { getWsUrl } from '@/lib/urls';
-import { useTranslations } from 'next-intl';
+import { LyricsStatus } from '@/types';
 
 export default function RoomClient({ id }: { id: string }) {
   const t = useTranslations('room');

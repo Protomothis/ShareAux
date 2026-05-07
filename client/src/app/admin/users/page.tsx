@@ -1,19 +1,19 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import type { AdminControllerGetUsersParams, User } from '@/api/model';
 import { UpdateRoleDtoRole, UserRole } from '@/api/model';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminPagination } from '@/components/admin/AdminPagination';
-import { AdminTable } from '@/components/admin/AdminTable';
 import type { Column } from '@/components/admin/AdminTable';
+import { AdminTable } from '@/components/admin/AdminTable';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { PROVIDER_VARIANT } from '@/lib/constants';
 import { useAdminUsers, useUpdateUserRole } from '@/hooks/admin/useAdminUsers';
-import { useTranslations } from 'next-intl';
+import { PROVIDER_VARIANT } from '@/lib/constants';
 
 const LIMIT = 20;
 const DEBOUNCE_MS = 300;

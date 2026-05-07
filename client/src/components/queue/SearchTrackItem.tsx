@@ -30,7 +30,7 @@ export const SearchTrackItem = memo(function SearchTrackItem({
   inQueue,
   onClick,
   isFavorite,
-  favLoading,
+  favLoading: _favLoading,
   onToggleFavorite,
   isGuest,
 }: SearchTrackItemProps) {

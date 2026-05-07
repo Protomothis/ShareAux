@@ -35,7 +35,7 @@ interface PlayerInfoProps {
 export default function PlayerInfo({
   track,
   isPlaying,
-  isHost,
+  isHost: _isHost,
   roomId,
   streamCodec,
   streamBitrate,

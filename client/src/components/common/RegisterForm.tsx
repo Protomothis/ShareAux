@@ -2,19 +2,19 @@
 
 import { Loader2, UserPlus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { PCaptcha } from '@/components/common/PCaptcha';
 import { useEffect, useState } from 'react';
 
 import { authControllerRegister } from '@/api/auth/auth';
-import { ApiError } from '@/api/mutator';
 import type { ErrorCode } from '@/api/model';
+import { ApiError } from '@/api/mutator';
+import { PCaptcha } from '@/components/common/PCaptcha';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
+import { Surface } from '@/components/ui/surface';
 import { useCaptcha } from '@/hooks/useCaptcha';
 import { useFormValidation } from '@/hooks/useFormValidation';
-import { useAuthStore } from '@/stores/auth';
 import {
   AUTH_NICKNAME_MAX,
   AUTH_NICKNAME_MIN,
@@ -24,7 +24,7 @@ import {
   AUTH_USERNAME_REGEX,
 } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-import { Surface } from '@/components/ui/surface';
+import { useAuthStore } from '@/stores/auth';
 
 interface RegisterFormProps {
   onSuccess: () => void;

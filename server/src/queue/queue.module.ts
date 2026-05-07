@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { Room } from '../entities/room.entity.js';
 import { PlayHistory } from '../entities/play-history.entity.js';
+import { Room } from '../entities/room.entity.js';
 import { RoomMember } from '../entities/room-member.entity.js';
 import { RoomPermission } from '../entities/room-permission.entity.js';
 import { RoomPlayback } from '../entities/room-playback.entity.js';

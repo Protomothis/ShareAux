@@ -6,21 +6,21 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import { Button } from '@/components/ui/button';
-import Modal from '@/components/common/Modal';
-import { NotificationSettings } from '@/components/common/NotificationSettings';
-import { FormField } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { PasswordInput } from '@/components/ui/password-input';
-import { useFormValidation } from '@/hooks/useFormValidation';
-import { useAuthConfig } from '@/hooks/useAuthConfig';
-import type { ApiError } from '@/api/mutator';
 import {
   authControllerDeleteAccount,
   authControllerMe,
   authControllerUpdateNickname,
   authControllerUpdatePassword,
 } from '@/api/auth/auth';
+import type { ApiError } from '@/api/mutator';
+import Modal from '@/components/common/Modal';
+import { NotificationSettings } from '@/components/common/NotificationSettings';
+import { Button } from '@/components/ui/button';
+import { FormField } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
+import { useAuthConfig } from '@/hooks/useAuthConfig';
+import { useFormValidation } from '@/hooks/useFormValidation';
 import { useAuthStore } from '@/stores/auth';
 
 type Page = 'menu' | 'nickname' | 'password' | 'google' | 'delete' | 'notifications';
@@ -76,7 +76,6 @@ function SubHeader({ title, onBack }: { title: string; onBack: () => void }) {
 // ─── Main Component ─────────────────────────────────────
 
 export default function ProfileSettingsModal({ open, onClose }: ProfileSettingsModalProps) {
-  const t = useTranslations('profile');
   const [page, setPage] = useState<Page>('menu');
   const [me, setMe] = useState<User | null>(null);
   const role = useAuthStore((s) => s.role);
@@ -184,7 +183,7 @@ function NicknamePage({ me, onBack, onDone }: { me: User | null; onBack: () => v
       await authControllerUpdateNickname({ nickname: value.trim() });
       useAuthStore.setState({ nickname: value.trim() });
       onDone(t('nicknameSaved'));
-    } catch (e) {
+    } catch {
     } finally {
       setLoading(false);
     }
@@ -236,7 +235,7 @@ function PasswordPage({ onBack, onDone }: { onBack: () => void; onDone: (msg: st
     try {
       await authControllerUpdatePassword({ currentPassword: cur, newPassword: next });
       onDone(t('passwordSaved'));
-    } catch (e) {
+    } catch {
     } finally {
       setLoading(false);
     }

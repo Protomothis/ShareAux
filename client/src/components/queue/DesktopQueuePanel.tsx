@@ -6,7 +6,6 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import TabBar from '@/components/common/TabBar';
-
 import type { FavoriteActions, TrackVoteMap } from '@/types';
 
 import HistoryPanel from './HistoryPanel';

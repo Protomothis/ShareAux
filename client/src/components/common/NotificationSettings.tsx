@@ -1,10 +1,9 @@
 'use client';
 
 import { Bell, BellOff, BellRing, Loader2, Share } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useState } from 'react';
 
-import type { PushSettings } from '@/api/model';
 import { usePushControllerGetSettings } from '@/api/push/push';
 import { pushControllerUpdateSettings } from '@/api/push/push';
 import { Button } from '@/components/ui/button';
@@ -33,7 +32,7 @@ interface NotificationSettingsProps {
   roomId?: string;
 }
 
-export function NotificationSettings({ roomId }: NotificationSettingsProps) {
+export function NotificationSettings({ roomId: _roomId }: NotificationSettingsProps) {
   const t = useTranslations('notificationSettings');
   const { data: settings, refetch } = usePushControllerGetSettings();
   const [permission, setPermission] = useState<NotificationPermission>('default');

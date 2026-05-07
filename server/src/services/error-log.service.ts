@@ -1,6 +1,7 @@
+import { join } from 'node:path';
+
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { appendFile, mkdir, readdir, readFile, stat, unlink } from 'fs/promises';
-import { join } from 'node:path';
 
 export interface ErrorLogEntry {
   timestamp: number;
@@ -49,9 +50,9 @@ export class ErrorLogService implements OnModuleInit {
     return { items: this.buffer.slice(start, end).reverse(), total };
   }
 
-  async getErrorFiles(): Promise<Array<{ filename: string; sizeBytes: number; errorCount: number }>> {
+  async getErrorFiles(): Promise<{ filename: string; sizeBytes: number; errorCount: number }[]> {
     const files = await readdir(LOG_DIR).catch(() => [] as string[]);
-    const result: Array<{ filename: string; sizeBytes: number; errorCount: number }> = [];
+    const result: { filename: string; sizeBytes: number; errorCount: number }[] = [];
     for (const f of files
       .filter((n) => n.endsWith('.jsonl'))
       .sort()

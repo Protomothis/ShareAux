@@ -2,17 +2,17 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { execFile } from 'child_process';
-import { promisify } from 'util';
 import { Repository } from 'typeorm';
+import { promisify } from 'util';
 
 import { Track } from '../entities/track.entity.js';
-import { LyricsType } from '../types/lyrics-type.enum.js';
 import type { LyricsResult } from '../types/index.js';
+import { LyricsType } from '../types/lyrics-type.enum.js';
 
 const execFileAsync = promisify(execFile);
 
-import { cleanArtist, extractTitle, smartClean } from './title-cleaner.js';
 import { detectLang } from './detect-lang.js';
+import { cleanArtist, extractTitle, smartClean } from './title-cleaner.js';
 
 @Injectable()
 export class LyricsService {

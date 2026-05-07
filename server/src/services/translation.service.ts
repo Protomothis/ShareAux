@@ -3,9 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Track } from '../entities/track.entity.js';
-import { SettingsService } from './settings.service.js';
 import { OptionKey } from '../types/settings.types.js';
 import { detectLang } from './detect-lang.js';
+import { SettingsService } from './settings.service.js';
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -125,7 +125,7 @@ export class TranslationService implements OnApplicationBootstrap {
       const job = this.queue.shift()!;
       this.activeCount++;
       this.processTrack(job)
-        .catch((e) => this.logger.error(`Translation failed for ${job.trackId}: ${(e as Error).message}`))
+        .catch((e: unknown) => this.logger.error(`Translation failed for ${job.trackId}: ${(e as Error).message}`))
         .finally(() => {
           this.activeCount--;
           this.drain();
@@ -334,7 +334,7 @@ ${numbered}`;
     return lrc
       .split('\n')
       .map((line) => {
-        const m = line.match(/^(\[[\d:.]+\])\s*(.*)/);
+        const m = /^(\[[\d:.]+\])\s*(.*)/.exec(line);
         if (!m) return null;
         const text = m[2].replace(/<[\d:.]+>\s*/g, '').trim();
         return text ? { time: m[1], text } : null;

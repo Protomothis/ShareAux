@@ -1,5 +1,6 @@
-import { Provider } from '../../types/provider.enum.js';
 import { ApiProperty } from '@nestjs/swagger';
+
+import { Provider } from '../../types/provider.enum.js';
 
 export class SearchResultItem {
   @ApiProperty({ enum: Provider, default: Provider.YT })

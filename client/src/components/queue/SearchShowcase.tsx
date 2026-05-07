@@ -1,6 +1,7 @@
 'use client';
 
 import { Flame, History, Link2, Loader2, Music, Radio, RefreshCw } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import type { SearchResultItem, Track } from '@/api/model';
 import {
@@ -12,10 +13,9 @@ import { FavoriteButton } from '@/components/common/FavoriteButton';
 import Thumbnail from '@/components/common/Thumbnail';
 import { Button } from '@/components/ui/button';
 import { CollapsibleSection } from '@/components/ui/collapsible-section';
+import { SkeletonLine } from '@/components/ui/skeleton';
 import { formatDuration } from '@/lib/format';
 import { cn } from '@/lib/utils';
-import { useTranslations } from 'next-intl';
-import { SkeletonLine } from '@/components/ui/skeleton';
 
 interface SearchShowcaseProps {
   roomId: string;

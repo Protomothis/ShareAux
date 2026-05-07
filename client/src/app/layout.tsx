@@ -9,7 +9,6 @@ import { getLocale, getMessages, getTranslations } from 'next-intl/server';
 import { Toaster } from 'sonner';
 
 import { ApiErrorToaster } from '@/components/common/ApiErrorToaster';
-
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 
 import Providers from './providers';

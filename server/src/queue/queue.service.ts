@@ -1,18 +1,17 @@
-import type { TrackSource } from './dto/add-tracks-body.dto.js';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 
 import { PlayHistory } from '../entities/play-history.entity.js';
-
-import { AppException } from '../exceptions/app.exception.js';
 import { Room } from '../entities/room.entity.js';
-import { Permission } from '../types/permission.enum.js';
-import { ErrorCode } from '../types/error-code.enum.js';
 import { RoomPermission } from '../entities/room-permission.entity.js';
 import { RoomQueue } from '../entities/room-queue.entity.js';
 import { Track } from '../entities/track.entity.js';
 import type { User } from '../entities/user.entity.js';
+import { AppException } from '../exceptions/app.exception.js';
+import { ErrorCode } from '../types/error-code.enum.js';
+import { Permission } from '../types/permission.enum.js';
+import type { TrackSource } from './dto/add-tracks-body.dto.js';
 
 @Injectable()
 export class QueueService {
@@ -66,8 +65,9 @@ export class QueueService {
       };
     }
     const perm = await this.permRepo.findOneBy({ roomId, userId });
-    if (perm && !perm.permissions.includes(Permission.AddQueue))
+    if (perm && !perm.permissions.includes(Permission.AddQueue)) {
       return { used: 0, limit: 0, windowMin: 0, unlimited: false, banned: true, blockedSourceIds };
+    }
     const since = new Date(Date.now() - room.enqueueWindowMin * 60_000);
     const used = await this.queueRepo
       .createQueryBuilder('q')
