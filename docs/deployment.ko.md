@@ -30,7 +30,7 @@ cp .env.example .env
 |------|------|------|
 | `DATABASE_URL` | PostgreSQL 연결 문자열 | `postgres://spotiparty:password@db:5432/spotiparty` |
 | `JWT_SECRET` | JWT 서명 시크릿 (랜덤 문자열) | `openssl rand -hex 32` 로 생성 |
-| `CLIENT_URL` | 클라이언트 접속 URL | `http://localhost:3001` |
+| `CLIENT_URL` | 클라이언트 접속 URL | `http://localhost:8080` |
 
 #### 선택 항목
 
@@ -49,15 +49,16 @@ cp .env.example .env
 docker compose up -d
 ```
 
-세 개의 컨테이너가 실행됩니다:
+네 개의 컨테이너가 실행됩니다:
 
 | 컨테이너 | 포트 | 설명 |
 |----------|------|------|
-| `shareaux-db` | 5432 | PostgreSQL |
-| `shareaux-server` | 3000 | NestJS API + WebSocket |
-| `shareaux-client` | 3001 | Next.js 프론트엔드 |
+| `shareaux-gateway` | 8080 | Caddy 리버스 프록시 (단일 진입점) |
+| `shareaux-db` | — | PostgreSQL |
+| `shareaux-server` | — | NestJS API + WebSocket |
+| `shareaux-client` | — | Next.js 프론트엔드 |
 
-브라우저에서 `http://localhost:3001`로 접속합니다.
+브라우저에서 `http://localhost:8080`으로 접속합니다.
 
 ### 4. 초기 설정
 
@@ -89,14 +90,22 @@ ghcr.io/protomothis/shareaux-client:0.1.0
 ```yaml
 # docker-compose.yml
 services:
+  gateway:
+    image: caddy:2-alpine
+    ports:
+      - '8080:80'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      - server
+      - client
+
   db:
     image: postgres:16
     environment:
       POSTGRES_DB: spotiparty
       POSTGRES_USER: spotiparty
       POSTGRES_PASSWORD: ${DB_PASSWORD:-spotiparty123}
-    ports:
-      - '5432:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -109,10 +118,8 @@ services:
     image: ghcr.io/protomothis/shareaux-server:latest
     environment:
       DATABASE_URL: postgres://spotiparty:${DB_PASSWORD:-spotiparty123}@db:5432/spotiparty
-      CLIENT_URL: http://localhost:3001
+      CLIENT_URL: http://localhost:8080
     env_file: ./.env
-    ports:
-      - '3000:3000'
     depends_on:
       db:
         condition: service_healthy
@@ -121,8 +128,6 @@ services:
     image: ghcr.io/protomothis/shareaux-client:latest
     environment:
       INTERNAL_API_URL: http://server:3000/api
-    ports:
-      - '3001:3001'
     depends_on:
       - server
 
@@ -138,29 +143,22 @@ docker compose up -d
 
 ## 리버스 프록시
 
-ShareAux는 클라이언트(Next.js)와 서버(NestJS)가 별도 포트로 동작합니다. 리버스 프록시로 하나의 도메인에서 서비스하려면 아래 경로 규칙을 따르세요.
+v0.1.17부터 ShareAux에 내장 Caddy 게이트웨이가 포함되어 내부 라우팅을 자동 처리합니다. 외부 리버스 프록시에서는 **단일 포트 하나만** 넘기면 됩니다 — path 라우팅 설정 불필요.
 
-### 경로 구조
+### 동작 방식
 
-| 경로 | 대상 | 설명 |
-|------|------|------|
-| `/` | 클라이언트 (:3001) | Next.js 페이지 |
-| `/api/*` | 서버 (:3000) | REST API |
-| `/ws` | 서버 (:3000) | WebSocket (오디오 스트리밍 + 실시간 이벤트) |
-
-> ⚠️ 클라이언트는 `window.location.origin`을 기준으로 API/WS URL을 자동 생성합니다.
-> 따라서 `/api`와 `/ws`가 같은 도메인에서 접근 가능해야 합니다.
-
-### 환경 변수 설정
-
-리버스 프록시 사용 시 `.env`에서 아래 값을 실제 도메인으로 변경하세요:
-
-```env
-CLIENT_URL=https://aux.example.com
-GOOGLE_CALLBACK_URL=https://aux.example.com/api/auth/google/callback
+```
+외부 프록시 → shareaux-gateway:8080 → 내부 자동 분기:
+  /api/*  → server:3000
+  /ws     → server:3000 (WebSocket 자동 감지)
+  /*      → client:3001
 ```
 
-### nginx 예시
+### 외부 리버스 프록시 설정
+
+외부 프록시(nginx, Traefik, Caddy, Pangolin 등)에서는 모든 트래픽을 게이트웨이 포트로 넘기기만 하면 됩니다.
+
+#### nginx 예시
 
 ```nginx
 server {
@@ -170,54 +168,52 @@ server {
     ssl_certificate /path/to/cert.pem;
     ssl_certificate_key /path/to/key.pem;
 
-    # WebSocket (오디오 스트리밍) — 반드시 /ws를 별도로 처리
-    location /ws {
-        proxy_pass http://localhost:3000;
+    location / {
+        proxy_pass http://localhost:8080;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
         proxy_read_timeout 86400s;
-    }
-
-    # API
-    location /api/ {
-        proxy_pass http://localhost:3000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    # 클라이언트 (Next.js) — 나머지 모든 경로
-    location / {
-        proxy_pass http://localhost:3001;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
 ```
 
-### Traefik 예시 (라벨 기반)
+#### Traefik 예시
 
 ```yaml
 services:
-  server:
+  gateway:
     labels:
-      - "traefik.http.routers.shareaux-api.rule=Host(`aux.example.com`) && (PathPrefix(`/api`) || PathPrefix(`/ws`))"
-      - "traefik.http.services.shareaux-api.loadbalancer.server.port=3000"
-  client:
-    labels:
-      - "traefik.http.routers.shareaux-client.rule=Host(`aux.example.com`)"
-      - "traefik.http.services.shareaux-client.loadbalancer.server.port=3001"
+      - "traefik.http.routers.shareaux.rule=Host(`aux.example.com`)"
+      - "traefik.http.services.shareaux.loadbalancer.server.port=80"
+```
+
+### 환경 변수 설정
+
+커스텀 도메인 사용 시 `.env`에서 변경:
+
+```env
+CLIENT_URL=https://aux.example.com
+GOOGLE_CALLBACK_URL=https://aux.example.com/api/auth/google/callback
+```
+
+### 게이트웨이 포트 변경
+
+기본값은 8080입니다. 변경하려면 `docker-compose.ghcr.yml`에서:
+
+```yaml
+gateway:
+  ports:
+    - '3200:80'  # 3200을 원하는 포트로 변경
 ```
 
 ### 주의사항
 
-- `/ws` 경로에 `proxy_read_timeout`을 충분히 길게 설정하세요 (오디오 스트리밍은 장시간 연결 유지)
+- WebSocket upgrade는 내장 Caddy 게이트웨이가 자동 처리합니다
 - HTTPS 사용 시 WebSocket은 자동으로 `wss://`로 연결됩니다
 - Cloudflare 등 CDN 사용 시 WebSocket 지원을 활성화해야 합니다
 
@@ -272,4 +268,4 @@ docker compose up -d     # 재생성
 
 ### 포트 충돌
 
-기본 포트(3000, 3001, 5432)가 사용 중이면 `docker-compose.yml`에서 포트 매핑을 변경하세요.
+기본 포트(8080)가 사용 중이면 `docker-compose.ghcr.yml`에서 게이트웨이 포트 매핑을 변경하세요.

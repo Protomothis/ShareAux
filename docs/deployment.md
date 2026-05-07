@@ -30,7 +30,7 @@ Open the `.env` file and configure the following.
 |----------|-------------|---------|
 | `DATABASE_URL` | PostgreSQL connection string | `postgres://spotiparty:password@db:5432/spotiparty` |
 | `JWT_SECRET` | JWT signing secret (random string) | Generate with `openssl rand -hex 32` |
-| `CLIENT_URL` | Client access URL | `http://localhost:3001` |
+| `CLIENT_URL` | Client access URL | `http://localhost:8080` |
 
 #### Optional
 
@@ -49,15 +49,16 @@ Open the `.env` file and configure the following.
 docker compose up -d
 ```
 
-Three containers will start:
+Four containers will start:
 
 | Container | Port | Description |
 |-----------|------|-------------|
-| `shareaux-db` | 5432 | PostgreSQL |
-| `shareaux-server` | 3000 | NestJS API + WebSocket |
-| `shareaux-client` | 3001 | Next.js frontend |
+| `shareaux-gateway` | 8080 | Caddy reverse proxy (single entry point) |
+| `shareaux-db` | — | PostgreSQL |
+| `shareaux-server` | — | NestJS API + WebSocket |
+| `shareaux-client` | — | Next.js frontend |
 
-Access `http://localhost:3001` in your browser.
+Access `http://localhost:8080` in your browser.
 
 ### 4. Initial Setup
 
@@ -138,29 +139,22 @@ docker compose up -d
 
 ## Reverse Proxy
 
-ShareAux runs the client (Next.js) and server (NestJS) on separate ports. To serve from a single domain via reverse proxy, follow these routing rules.
+Since v0.1.17, ShareAux includes a built-in Caddy gateway that handles all internal routing. You only need to expose **a single port** to your reverse proxy — no path-based routing required.
 
-### Route Structure
+### How It Works
 
-| Path | Target | Description |
-|------|--------|-------------|
-| `/` | Client (:3001) | Next.js pages |
-| `/api/*` | Server (:3000) | REST API |
-| `/ws` | Server (:3000) | WebSocket (audio streaming + real-time events) |
-
-> ⚠️ The client auto-generates API/WS URLs based on `window.location.origin`.
-> Therefore `/api` and `/ws` must be accessible from the same domain.
-
-### Environment Variables
-
-When using a reverse proxy, update these values in `.env` to your actual domain:
-
-```env
-CLIENT_URL=https://aux.example.com
-GOOGLE_CALLBACK_URL=https://aux.example.com/api/auth/google/callback
+```
+External Proxy → shareaux-gateway:8080 → routes internally:
+  /api/*  → server:3000
+  /ws     → server:3000 (WebSocket auto-detected)
+  /*      → client:3001
 ```
 
-### nginx Example
+### External Reverse Proxy Setup
+
+Your external reverse proxy (nginx, Traefik, Caddy, Pangolin, etc.) only needs to forward all traffic to the gateway port. No path splitting needed.
+
+#### nginx Example
 
 ```nginx
 server {
@@ -170,54 +164,52 @@ server {
     ssl_certificate /path/to/cert.pem;
     ssl_certificate_key /path/to/key.pem;
 
-    # WebSocket (audio streaming) — must handle /ws separately
-    location /ws {
-        proxy_pass http://localhost:3000;
+    location / {
+        proxy_pass http://localhost:8080;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
         proxy_read_timeout 86400s;
-    }
-
-    # API
-    location /api/ {
-        proxy_pass http://localhost:3000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    # Client (Next.js) — all other paths
-    location / {
-        proxy_pass http://localhost:3001;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
 ```
 
-### Traefik Example (Label-based)
+#### Traefik Example
 
 ```yaml
 services:
-  server:
+  gateway:
     labels:
-      - "traefik.http.routers.shareaux-api.rule=Host(`aux.example.com`) && (PathPrefix(`/api`) || PathPrefix(`/ws`))"
-      - "traefik.http.services.shareaux-api.loadbalancer.server.port=3000"
-  client:
-    labels:
-      - "traefik.http.routers.shareaux-client.rule=Host(`aux.example.com`)"
-      - "traefik.http.services.shareaux-client.loadbalancer.server.port=3001"
+      - "traefik.http.routers.shareaux.rule=Host(`aux.example.com`)"
+      - "traefik.http.services.shareaux.loadbalancer.server.port=80"
+```
+
+### Environment Variables
+
+When using a custom domain, update `.env`:
+
+```env
+CLIENT_URL=https://aux.example.com
+GOOGLE_CALLBACK_URL=https://aux.example.com/api/auth/google/callback
+```
+
+### Changing the Gateway Port
+
+Default is 8080. To change, edit `docker-compose.ghcr.yml`:
+
+```yaml
+gateway:
+  ports:
+    - '3200:80'  # Change 3200 to your preferred port
 ```
 
 ### Notes
 
-- Set `proxy_read_timeout` long enough for `/ws` (audio streaming maintains long-lived connections)
+- WebSocket upgrade is handled automatically by the internal Caddy gateway
 - When using HTTPS, WebSocket automatically connects via `wss://`
 - Enable WebSocket support when using CDNs like Cloudflare
 
