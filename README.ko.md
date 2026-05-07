@@ -67,7 +67,7 @@ cp .env.example .env
 docker compose -f docker-compose.ghcr.yml up -d
 
 # 3. 접속
-# http://localhost:3001 → 첫 접속 시 관리자 계정 생성 화면이 나타납니다.
+# http://localhost:8080 → 첫 접속 시 관리자 계정 생성 화면이 나타납니다.
 ```
 
 > 💡 소스에서 직접 빌드하려면 `docker compose up -d`를 사용하세요.
