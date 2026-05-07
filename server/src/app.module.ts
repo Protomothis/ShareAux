@@ -35,6 +35,8 @@ import { TracksModule } from './tracks/tracks.module.js';
         url: config.get<string>('DATABASE_URL'),
         autoLoadEntities: true,
         synchronize: IS_DEV,
+        migrationsRun: !IS_DEV,
+        migrations: [__dirname + '/migrations/*.js'],
       }),
     }),
     ThrottlerModule.forRoot([{ ttl: THROTTLE_TTL_MS, limit: THROTTLE_LIMIT_DEFAULT }]),
