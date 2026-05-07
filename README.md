@@ -67,7 +67,7 @@ cp .env.example .env
 docker compose -f docker-compose.ghcr.yml up -d
 
 # 3. Access
-# http://localhost:3001 → Admin account setup screen on first visit.
+# http://localhost:8080 → Admin account setup screen on first visit.
 ```
 
 > 💡 To build from source, use `docker compose up -d` instead.
@@ -88,7 +88,7 @@ docker compose up db -d
 
 ## Getting Started
 
-1. **Access** — `http://localhost:3001` (or your configured domain)
+1. **Access** — `http://localhost:8080` (or your configured domain)
 2. **Create Admin** — Setup screen appears automatically on first visit
 3. **Create Invite Code** — Admin page (`/admin`) → Invite Codes → New
 4. **Invite Friends** — Share the code for guest access or registration
