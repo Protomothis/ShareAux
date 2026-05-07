@@ -1,7 +1,7 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { WsCloseCode, WsOpCode, WS_MAX_DELAY, WS_MAX_RETRIES } from '@/lib/constants';
+import { WS_MAX_DELAY, WS_MAX_RETRIES,WsCloseCode, WsOpCode } from '@/lib/constants';
 import { debug } from '@/lib/debug';
 import type { UseWebSocketOptions } from '@/types';
 

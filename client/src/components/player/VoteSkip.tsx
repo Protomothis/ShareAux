@@ -5,7 +5,6 @@ import { useState } from 'react';
 
 import { playerControllerVoteSkip } from '@/api/player/player';
 import { Button } from '@/components/ui/button';
-
 import { SKIP_COOLDOWN_MS } from '@/lib/constants';
 
 interface VoteSkipProps {

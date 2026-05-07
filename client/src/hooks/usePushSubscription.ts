@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef } from 'react';
 
-import { pushControllerGetVapidKey, pushControllerSubscribe } from '@/api/push/push';
 import { Language } from '@/api/model';
+import { pushControllerGetVapidKey, pushControllerSubscribe } from '@/api/push/push';
 
 /** Push subscription 등록 (SW 등록 + 서버 전달) */
 export async function registerPushSubscription(): Promise<boolean> {

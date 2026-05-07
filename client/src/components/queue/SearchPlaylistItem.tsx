@@ -1,17 +1,16 @@
 'use client';
 
-import { EmptyState } from '@/components/ui/empty-state';
-
 import { ChevronDown, ListMusic, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
 import type { PlaylistResult } from '@/api/model';
+import type { SearchResultItem } from '@/api/model';
 import { searchControllerGetPlaylistTracks } from '@/api/search/search';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 
 import { SearchTrackItem } from './SearchTrackItem';
-import type { SearchResultItem } from '@/api/model';
-import { useTranslations } from 'next-intl';
 
 interface SearchPlaylistItemProps {
   playlist: PlaylistResult;

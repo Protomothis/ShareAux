@@ -1,8 +1,8 @@
 'use client';
 
 import { Check, Loader2, ShieldCheck } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface PCaptchaProps {
   challenge: string;

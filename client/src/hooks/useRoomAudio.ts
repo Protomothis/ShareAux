@@ -1,6 +1,6 @@
 'use client';
-import { useCallback, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useCallback, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { debug } from '@/lib/debug';

@@ -1,11 +1,11 @@
 'use client';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { useTranslations } from 'next-intl';
 
-import { SystemChatEvent } from '@/api/model';
 import type { RoomQueue, Track, TrackLyricsType } from '@/api/model';
+import { SystemChatEvent } from '@/api/model';
 import { roomsControllerFindOne } from '@/api/rooms/rooms';
 import { useInvalidate } from '@/hooks/useQueries';
 import { debug } from '@/lib/debug';
@@ -54,7 +54,7 @@ export function useRoomEvents(
 
   // ─── Navigation events (kick, close, duplicate) ───────
   const handleNavigation = useCallback(
-    (event: string, detail: string) => {
+    (event: string, _detail: string) => {
       if (goneRef.current) return true;
       const nav: Partial<Record<WsEvent, { msg: string; level: 'info' | 'error' }>> = {
         [WsEvent.roomClosed]: { msg: t('nav.roomClosed'), level: 'info' },
@@ -117,7 +117,7 @@ export function useRoomEvents(
       const ow = getOneWayRef?.current() ?? 0;
       if (trackChanged || d.streamState === 'streaming') {
         setTimeSync({ base: (d.elapsedMs ?? 0) + ow, at: Date.now() });
-      } else if (d.elapsedMs != null) {
+      } else if (d.elapsedMs !== undefined) {
         // 같은 곡: drift 2초 이상이면 보정
         setTimeSync((prev) => {
           const clientElapsed = prev.base + (Date.now() - prev.at);

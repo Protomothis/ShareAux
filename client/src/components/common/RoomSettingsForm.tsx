@@ -1,8 +1,9 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { FormField, FormSection } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useTranslations } from 'next-intl';
 import NumberStepper from '@/components/ui/number-stepper';
 import { SettingCard } from '@/components/ui/setting-card';
 import type { AutoDjMode } from '@/types';

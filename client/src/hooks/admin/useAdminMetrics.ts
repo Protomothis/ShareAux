@@ -1,14 +1,13 @@
+import { useQuery } from '@tanstack/react-query';
 import { useCallback, useRef, useState } from 'react';
 
-import { useQuery } from '@tanstack/react-query';
-
-import type { MetricsPointDto } from '@/api/model';
 import {
   adminMetricsControllerGetRealtimeMetrics,
   useAdminMetricsControllerGetDailyPlays,
   useAdminMetricsControllerGetStreamingMetrics,
   useAdminMetricsControllerGetUsersBreakdown,
 } from '@/api/admin/admin';
+import type { MetricsPointDto } from '@/api/model';
 
 export type TimeRange = '1h' | '6h' | '24h';
 

@@ -7,9 +7,6 @@ import type { Duplex } from 'stream';
 import { WebSocket, WebSocketServer } from 'ws';
 
 import { AuthService } from '../auth/auth.service.js';
-import { AudioService } from '../services/audio.service.js';
-import { ChatMuteService } from '../services/chat-mute.service.js';
-import { IpBanService } from '../services/ip-ban.service.js';
 import {
   AUTH_COOKIE_ACCESS,
   WS_CLOSE_BANNED,
@@ -20,6 +17,9 @@ import {
   WS_GRACE_MS,
   WS_HEARTBEAT_INTERVAL_MS,
 } from '../constants.js';
+import { AudioService } from '../services/audio.service.js';
+import { ChatMuteService } from '../services/chat-mute.service.js';
+import { IpBanService } from '../services/ip-ban.service.js';
 import type { ChatHistoryEntry, JwtPayload, WsClient } from '../types/index.js';
 import { Permission, WsEvent, WsOpCode } from '../types/index.js';
 import { RoomsService } from './rooms.service.js';
@@ -109,7 +109,7 @@ export class RoomsGateway implements OnModuleDestroy {
       }
 
       this.wss!.handleUpgrade(req, socket, head, (client) => {
-        void this.handleConnection(client as WsClient, req);
+        void this.handleConnection(client, req);
       });
     });
 
@@ -148,6 +148,11 @@ export class RoomsGateway implements OnModuleDestroy {
         await this.finalizeDisconnect(roomId, c.data.userId, c.data.nickname);
       }
       if (!clients.size) this.roomClients.delete(roomId);
+    }
+
+    // 빈 방의 chatHistory 정리 (비정상 종료 시 잔류 방지)
+    for (const roomId of this.chatHistory.keys()) {
+      if (!this.roomClients.has(roomId)) this.chatHistory.delete(roomId);
     }
   }
 

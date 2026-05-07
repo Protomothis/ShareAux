@@ -8,12 +8,12 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AdminModule } from './admin/admin.module.js';
-import { FavoritesModule } from './favorites/favorites.module.js';
-import { THROTTLE_LIMIT_DEFAULT, THROTTLE_TTL_MS, IS_DEV } from './constants.js';
 import { HealthController, SetupController } from './app.controller.js';
 import { AuthModule } from './auth/auth.module.js';
 import { CaptchaModule } from './captcha/captcha.module.js';
+import { IS_DEV, THROTTLE_LIMIT_DEFAULT, THROTTLE_TTL_MS } from './constants.js';
 import { User } from './entities/user.entity.js';
+import { FavoritesModule } from './favorites/favorites.module.js';
 import { GlobalExceptionFilter } from './filters/http-exception.filter.js';
 import { IpBanMiddleware } from './middleware/ip-ban.middleware.js';
 import { PlayerModule } from './player/player.module.js';
@@ -22,8 +22,8 @@ import { QueueModule } from './queue/queue.module.js';
 import { RoomsModule } from './rooms/rooms.module.js';
 import { SearchModule } from './search/search.module.js';
 import { ServicesModule } from './services/services.module.js';
-import { TracksModule } from './tracks/tracks.module.js';
 import { TestModule } from './test/test.module.js';
+import { TracksModule } from './tracks/tracks.module.js';
 
 @Module({
   imports: [

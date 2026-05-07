@@ -1,7 +1,8 @@
-import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
-import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
+import type { ReactNode } from 'react';
+
 import { EmptyState } from '@/components/ui/empty-state';
+import { SkeletonLine } from '@/components/ui/skeleton';
 import { Surface } from '@/components/ui/surface';
 
 export interface Column<T> {

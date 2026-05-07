@@ -1,9 +1,10 @@
+import { useTranslations } from 'next-intl';
+
 import type { PlaylistResult } from '@/api/model';
 import type { SearchResultItem } from '@/api/model';
 import EmptyState from '@/components/common/EmptyState';
-import { useTranslations } from 'next-intl';
-
 import { CollapsibleSection } from '@/components/ui/collapsible-section';
+
 import { SearchPlaylistItem } from './SearchPlaylistItem';
 import SearchSkeleton from './SearchSkeleton';
 import { SearchTrackItem } from './SearchTrackItem';

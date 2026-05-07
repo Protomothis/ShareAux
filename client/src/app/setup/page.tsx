@@ -5,15 +5,15 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import AnimatedBackground from '@/components/common/AnimatedBackground';
-import { InviteCodeForm, InviteCodeResult } from '@/components/admin/invite-codes';
 import type { InviteCodeFormData } from '@/components/admin/invite-codes';
+import { InviteCodeForm, InviteCodeResult } from '@/components/admin/invite-codes';
+import AnimatedBackground from '@/components/common/AnimatedBackground';
 import { RegisterForm } from '@/components/common/RegisterForm';
 import { StepIndicator } from '@/components/common/StepIndicator';
 import { Button } from '@/components/ui/button';
+import { Surface } from '@/components/ui/surface';
 import { useCreateInviteCode } from '@/hooks/admin/useAdminInviteCodes';
 import { getApiUrl } from '@/lib/urls';
-import { Surface } from '@/components/ui/surface';
 
 type Step = 'account' | 'invite' | 'complete';
 

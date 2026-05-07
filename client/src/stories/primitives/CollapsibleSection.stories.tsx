@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { Music, Users } from 'lucide-react';
 
-import { CollapsibleSection } from '@/components/ui/collapsible-section';
 import { Button } from '@/components/ui/button';
+import { CollapsibleSection } from '@/components/ui/collapsible-section';
 
 const meta: Meta<typeof CollapsibleSection> = {
   title: 'Primitives/CollapsibleSection',

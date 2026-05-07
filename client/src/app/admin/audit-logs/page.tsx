@@ -1,16 +1,16 @@
 'use client';
 
 import { ChevronDown, ChevronUp, Filter } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
 import type { AuditLogItem } from '@/api/model';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminPagination } from '@/components/admin/AdminPagination';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAdminAuditLogs } from '@/hooks/admin/useAdminAuditLogs';
-import { useTranslations } from 'next-intl';
-import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SkeletonCard } from '@/components/ui/skeleton';
+import { useAdminAuditLogs } from '@/hooks/admin/useAdminAuditLogs';
 
 const TARGET_OPTIONS = [
   { value: '', label: 'allTargets' },

@@ -1,8 +1,8 @@
 import {
-  parseVideoFromRenderer,
-  parseRelatedFromLockup,
-  parsePlaylistFromRenderer,
   parsePlaylistFromLockup,
+  parsePlaylistFromRenderer,
+  parseRelatedFromLockup,
+  parseVideoFromRenderer,
 } from './innertube-parser.js';
 
 describe('innertube-parser', () => {

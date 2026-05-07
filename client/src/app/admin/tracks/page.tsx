@@ -1,18 +1,18 @@
 'use client';
 
 import { Music, ThumbsDown, ThumbsUp, TrendingUp } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import type { TrackRankingItem } from '@/api/model';
 import { MetaStatus, TrackRankingTrackInfoLyricsStatus, TrackRankingTrackInfoLyricsType } from '@/api/model';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
-import { AdminTable } from '@/components/admin/AdminTable';
 import type { Column } from '@/components/admin/AdminTable';
+import { AdminTable } from '@/components/admin/AdminTable';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { TrackDetailModal } from '@/components/admin/TrackDetailModal';
 import { PaginationBar } from '@/components/common/PaginationBar';
 import { useAdminTopTracks } from '@/hooks/admin/useAdminTracks';
-import { useTranslations } from 'next-intl';
 
 export default function AdminTracksPage() {
   const t = useTranslations('admin.tracks');

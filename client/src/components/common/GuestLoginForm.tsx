@@ -2,19 +2,19 @@
 
 import { Loader2, Ticket } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { PCaptcha } from '@/components/common/PCaptcha';
 import { useEffect, useState } from 'react';
 
 import { authControllerGuestLogin } from '@/api/auth/auth';
-import { ApiError } from '@/api/mutator';
 import type { ErrorCode } from '@/api/model';
+import { ApiError } from '@/api/mutator';
+import { PCaptcha } from '@/components/common/PCaptcha';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useCaptcha } from '@/hooks/useCaptcha';
-import { useAuthStore } from '@/stores/auth';
-import { cn } from '@/lib/utils';
 import { Surface } from '@/components/ui/surface';
+import { useCaptcha } from '@/hooks/useCaptcha';
+import { cn } from '@/lib/utils';
+import { useAuthStore } from '@/stores/auth';
 
 interface GuestLoginFormProps {
   onSuccess: () => void;

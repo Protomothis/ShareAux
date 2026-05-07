@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { PlayHistory } from '../entities/play-history.entity.js';
 import { RoomMember } from '../entities/room-member.entity.js';
 import { RoomPlayback } from '../entities/room-playback.entity.js';
-import { PlayHistory } from '../entities/play-history.entity.js';
 import { RoomQueue } from '../entities/room-queue.entity.js';
 import { Track } from '../entities/track.entity.js';
 import { TrackStats } from '../entities/track-stats.entity.js';

@@ -1,10 +1,10 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 import type { MetricsPointDto } from '@/api/model';
 import type { TimeRange } from '@/hooks/admin/useAdminMetrics';
-import { useTranslations } from 'next-intl';
 
 interface RealtimeChartProps {
   data: MetricsPointDto[];

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 import type { MemberWithPermission } from '@/api/model';
@@ -12,12 +12,12 @@ import {
   roomsControllerUpdatePermissions,
   useRoomsControllerGetMyPermissions,
 } from '@/api/rooms/rooms';
-import { Button } from '@/components/ui/button';
 import Modal from '@/components/common/Modal';
+import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { useInvalidate } from '@/hooks/useQueries';
 import { usePermissionMeta, usePermLookup } from '@/hooks/usePermissionMeta';
+import { useInvalidate } from '@/hooks/useQueries';
 import { getAvatar } from '@/lib/avatar';
 
 /** 방 내 멤버에게 보여줄 권한 (host 제외 — 방 권한이 아닌 계정 권한) */

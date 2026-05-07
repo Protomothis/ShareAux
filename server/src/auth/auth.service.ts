@@ -6,13 +6,12 @@ import { createHash } from 'crypto';
 import { LessThan, Repository } from 'typeorm';
 
 import { AUTH_ACCESS_EXPIRY_SEC, AUTH_GUEST_EXPIRY_SEC, AUTH_REFRESH_EXPIRY_SEC } from '../constants.js';
-import { AppException } from '../exceptions/app.exception.js';
 import { InviteCode } from '../entities/invite-code.entity.js';
 import { RefreshToken } from '../entities/refresh-token.entity.js';
 import { User } from '../entities/user.entity.js';
+import { AppException } from '../exceptions/app.exception.js';
 import type { OAuthProfile } from '../types/index.js';
 import { AuthProvider, ErrorCode, Permission, UserRole } from '../types/index.js';
-
 import type { LoginDto } from './dto/login.dto.js';
 import type { RegisterDto } from './dto/register.dto.js';
 
@@ -153,7 +152,7 @@ export class AuthService {
         nickname: dto.nickname,
         role: isFirstUser ? UserRole.SuperAdmin : UserRole.User,
         inviteCode: invite,
-        accountPermissions: invite ? (invite.permissions as Permission[]) : Object.values(Permission),
+        accountPermissions: invite ? invite.permissions : Object.values(Permission),
       }),
     );
 
@@ -191,7 +190,7 @@ export class AuthService {
       nickname,
       role: UserRole.Guest,
       inviteCode: invite,
-      accountPermissions: invite.permissions as Permission[],
+      accountPermissions: invite.permissions,
     });
     await this.userRepo.save(user);
 

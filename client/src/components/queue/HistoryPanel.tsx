@@ -1,9 +1,11 @@
 'use client';
 
-import { useQueueControllerGetHistory } from '@/api/queue/queue';
-import { FavoriteButton } from '@/components/common/FavoriteButton';
-import EmptyState from '@/components/common/EmptyState';
 import { useTranslations } from 'next-intl';
+
+import type { SearchResultItem } from '@/api/model';
+import { useQueueControllerGetHistory } from '@/api/queue/queue';
+import EmptyState from '@/components/common/EmptyState';
+import { FavoriteButton } from '@/components/common/FavoriteButton';
 import type { FavoriteActions } from '@/types';
 
 import QueueTrackItem from './QueueTrackItem';
@@ -38,7 +40,7 @@ export default function HistoryPanel({ roomId, isGuest, favorites }: HistoryPane
                 loading={favLoadingIds.has(item.track.sourceId)}
                 onClick={() =>
                   toggleFavorite({
-                    provider: item.track.provider as unknown as import('@/api/model').SearchResultItem['provider'],
+                    provider: item.track.provider as unknown as SearchResultItem['provider'],
                     sourceId: item.track.sourceId,
                     name: item.track.name,
                     artist: item.track.artist ?? null,

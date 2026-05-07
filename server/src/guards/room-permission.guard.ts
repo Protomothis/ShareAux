@@ -3,13 +3,13 @@ import { SetMetadata } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { DataSource } from 'typeorm';
 
-import { AppException } from '../exceptions/app.exception.js';
 import { Room } from '../entities/room.entity.js';
 import { RoomPermission } from '../entities/room-permission.entity.js';
 import { User } from '../entities/user.entity.js';
+import { AppException } from '../exceptions/app.exception.js';
+import { ErrorCode } from '../types/error-code.enum.js';
 import type { Permission } from '../types/permission.enum.js';
 import { DEFAULT_ROOM_PERMISSIONS, DEFAULT_USER_PERMISSIONS } from '../types/permission.enum.js';
-import { ErrorCode } from '../types/error-code.enum.js';
 import { UserRole } from '../types/user-role.enum.js';
 
 export const RequirePermission = (perm: Permission) => SetMetadata('permission', perm);
@@ -60,6 +60,6 @@ export class RoomPermissionGuard implements CanActivate {
     if (user.role !== UserRole.Guest) return DEFAULT_USER_PERMISSIONS;
 
     // 게스트: 초대코드의 permissions
-    return (user.inviteCode?.permissions as Permission[] | undefined) ?? [];
+    return user.inviteCode?.permissions ?? [];
   }
 }

@@ -1,20 +1,20 @@
-import type { InnertubeSearchResponse, YtdlpPlaylistResult, YtdlpSearchResult } from './ytdlp.service.js';
 import type {
   InnertubeCreditMessage,
+  InnertubeItemSection,
   InnertubeLockupViewModel,
   InnertubeMetadataPart,
   InnertubeNextData,
   InnertubeNextItem,
   InnertubePlaylistRenderer,
   InnertubeSearchData,
-  InnertubeItemSection,
   InnertubeVideoRenderer,
-  InnertubeYtMusicPlayerData,
-  InnertubeYtMusicNextData,
   InnertubeYtMusicBrowseData,
   InnertubeYtMusicCarouselItem,
+  InnertubeYtMusicNextData,
+  InnertubeYtMusicPlayerData,
 } from '../types/innertube.types.js';
-import type { MusicRelatedResult, SimilarArtist, RecommendedPlaylist } from '../types/recommendation.types.js';
+import type { MusicRelatedResult, RecommendedPlaylist, SimilarArtist } from '../types/recommendation.types.js';
+import type { InnertubeSearchResponse, YtdlpPlaylistResult, YtdlpSearchResult } from './ytdlp.service.js';
 
 // ─── Constants ───────────────────────────────────────────
 

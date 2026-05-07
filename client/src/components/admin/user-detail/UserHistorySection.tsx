@@ -1,9 +1,9 @@
-import { EmptyState } from '@/components/ui/empty-state';
 import { Music, User as UserIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import type { UserDetailResponse } from '@/api/model';
 import { StatCard } from '@/components/admin/StatCard';
-import { useTranslations } from 'next-intl';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface UserHistorySectionProps {
   user: UserDetailResponse;

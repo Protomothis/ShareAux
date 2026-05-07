@@ -3,8 +3,9 @@
 import { useTranslations } from 'next-intl';
 
 import { useAdminControllerGetSecrets } from '@/api/admin/admin';
-import { SettingSection } from './SettingSection';
+
 import { SecretField } from './SecretField';
+import { SettingSection } from './SettingSection';
 
 interface SecretSectionProps {
   onSecretChange: (key: string, value: string) => void;

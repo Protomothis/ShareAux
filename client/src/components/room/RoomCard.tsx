@@ -1,16 +1,16 @@
 'use client';
 
 import { Lock, Music, Users } from 'lucide-react';
-import { memo } from 'react';
 import { useTranslations } from 'next-intl';
+import { memo } from 'react';
 
 import type { RoomListItem } from '@/api/model';
 import MarqueeText from '@/components/common/MarqueeText';
 import Thumbnail from '@/components/common/Thumbnail';
 import { Badge } from '@/components/ui/badge';
+import { surfaceVariants } from '@/components/ui/surface';
 import { getAvatar } from '@/lib/avatar';
 import { cn } from '@/lib/utils';
-import { surfaceVariants } from '@/components/ui/surface';
 
 interface RoomCardProps {
   room: RoomListItem;

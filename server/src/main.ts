@@ -2,18 +2,17 @@ process.env.TZ = 'UTC';
 
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-
-import { SystemChatMessage } from './rooms/dto/system-chat-message.dto.js';
-import { SharedEnums } from './common/dto/shared-enums.schema.js';
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 
 import { AppModule } from './app.module.js';
-import { ErrorLogService } from './services/error-log.service.js';
+import { SharedEnums } from './common/dto/shared-enums.schema.js';
 import { ErrorResponseDto } from './filters/dto/error-response.dto.js';
 import { GlobalExceptionFilter } from './filters/http-exception.filter.js';
+import { SystemChatMessage } from './rooms/dto/system-chat-message.dto.js';
 import { RoomsGateway } from './rooms/rooms.gateway.js';
+import { ErrorLogService } from './services/error-log.service.js';
 
 const required = ['JWT_SECRET'];
 for (const key of required) {

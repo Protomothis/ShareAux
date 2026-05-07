@@ -1,10 +1,9 @@
 'use client';
 
-import { TrackProvider } from '@/api/model';
-
 import { useCallback, useRef, useState } from 'react';
 
 import type { SearchResultItem } from '@/api/model';
+import { TrackProvider } from '@/api/model';
 import { playerControllerPlay } from '@/api/player/player';
 import { queueControllerAddTracks, queueControllerGetQueue } from '@/api/queue/queue';
 import { roomsControllerCreate } from '@/api/rooms/rooms';
