@@ -1,13 +1,13 @@
 :80 {
 	handle /api/* {
-		reverse_proxy server:3000
+		reverse_proxy shareaux-server:3000
 	}
 
 	handle /ws {
-		reverse_proxy server:3000
+		reverse_proxy shareaux-server:3000
 	}
 
 	handle {
-		reverse_proxy client:3001
+		reverse_proxy shareaux-client:3001
 	}
 }
