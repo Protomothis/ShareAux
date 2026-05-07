@@ -1,9 +1,7 @@
 FROM node:22-slim AS builder
 WORKDIR /app
-COPY package*.json ./
-RUN npm ci --legacy-peer-deps && \
-    ARCH=$(uname -m | sed 's/x86_64/x64/' | sed 's/aarch64/arm64/') && \
-    npm i --no-save @parcel/watcher-linux-${ARCH}-glibc
+COPY package.json ./
+RUN npm i
 COPY . .
 RUN npm run build
 
