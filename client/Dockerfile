@@ -1,7 +1,7 @@
 FROM node:22-slim AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --legacy-peer-deps
+RUN npm ci --legacy-peer-deps && npm i --no-save @parcel/watcher-linux-x64-glibc
 COPY . .
 RUN npm run build
 
