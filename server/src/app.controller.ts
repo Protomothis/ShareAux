@@ -3,9 +3,9 @@ import { ApiOkResponse, ApiOperation, ApiProperty, ApiResponse, ApiTags } from '
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import type { ErrorMeta } from './constants.js';
 import { ERROR_META, PERMISSION_META, PermissionMeta } from './constants.js';
 import { User } from './entities/user.entity.js';
-import type { ErrorMeta } from './constants.js';
 
 @ApiTags('Health')
 @Controller()

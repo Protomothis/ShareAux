@@ -13,27 +13,27 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 
+import { GoogleStrategy } from '../auth/strategies/google.strategy.js';
+import { THROTTLE_TTL_MS, WS_CLOSE_BANNED } from '../constants.js';
 import { InviteCode } from '../entities/invite-code.entity.js';
-import { Room } from '../entities/room.entity.js';
 import { User } from '../entities/user.entity.js';
 import { AppException } from '../exceptions/app.exception.js';
 import { AdminGuard } from '../guards/admin.guard.js';
+import { RoomsGateway } from '../rooms/rooms.gateway.js';
 import { AuditService } from '../services/audit.service.js';
 import { IpBanService } from '../services/ip-ban.service.js';
 import { SettingsService } from '../services/settings.service.js';
 import { TranslationService } from '../services/translation.service.js';
-import { OptionKey } from '../types/settings.types.js';
-import { GoogleStrategy } from '../auth/strategies/google.strategy.js';
-import type { AuthenticatedRequest } from '../types/index.js';
 import { ErrorCode } from '../types/error-code.enum.js';
+import type { AuthenticatedRequest } from '../types/index.js';
 import { Permission } from '../types/index.js';
-import { THROTTLE_TTL_MS, WS_CLOSE_BANNED } from '../constants.js';
-import { RoomsGateway } from '../rooms/rooms.gateway.js';
+import { OptionKey } from '../types/settings.types.js';
 import { AdminService } from './admin.service.js';
+import { AdminCleanupService } from './admin-cleanup.service.js';
 import { AuditLogItem, PaginatedAuditLogsResponse } from './dto/audit-log-response.dto.js';
 import { CleanupSummaryResponse } from './dto/cleanup-summary-response.dto.js';
 import { CreateInviteCodeDto } from './dto/create-invite-code.dto.js';
@@ -45,19 +45,18 @@ import { LiveRoomItem } from './dto/live-room-item.dto.js';
 import { MetricsPointDto, RealtimeMetricsResponse } from './dto/metrics-response.dto.js';
 import { PaginatedInviteCodesResponse } from './dto/paginated-invite-codes-response.dto.js';
 import { AdminRoomItem, PaginatedRoomsResponse } from './dto/paginated-rooms-response.dto.js';
+import { PaginatedTrackRankingResponse } from './dto/paginated-track-ranking-response.dto.js';
 import { PaginatedUsersResponse } from './dto/paginated-users-response.dto.js';
 import { DailyPlaysItem, PlaysMetricsResponse } from './dto/plays-metrics-response.dto.js';
 import { PaginatedReportsResponse, ReportItem } from './dto/report-response.dto.js';
 import { StreamingMetricsResponse } from './dto/streaming-metrics-response.dto.js';
 import { SystemSettingItem, UpdateSettingsDto } from './dto/system-setting.dto.js';
 import { SystemStatsResponse } from './dto/system-stats-response.dto.js';
-import { TrackRankingItem } from './dto/track-ranking-item.dto.js';
-import { PaginatedTrackRankingResponse } from './dto/paginated-track-ranking-response.dto.js';
 import { TrackLyricsResponse } from './dto/track-lyrics-response.dto.js';
+import { TrackRankingItem } from './dto/track-ranking-item.dto.js';
 import { UpdateRoleDto } from './dto/update-role.dto.js';
 import { UserDetailResponse } from './dto/user-detail-response.dto.js';
 import { UsersBreakdownResponse } from './dto/users-breakdown-response.dto.js';
-import { AdminCleanupService } from './admin-cleanup.service.js';
 
 @ApiTags('Admin')
 @ApiBearerAuth()

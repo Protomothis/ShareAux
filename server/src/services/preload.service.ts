@@ -22,7 +22,7 @@ export class PreloadService {
 
   // 동시 다운로드 풀
   private activeDownloads = 0;
-  private downloadQueue: Array<() => void> = [];
+  private downloadQueue: (() => void)[] = [];
 
   constructor(
     private readonly ytdlp: YtdlpService,
@@ -34,7 +34,7 @@ export class PreloadService {
   /** 프리로드된 Buffer 반환, 없으면 null */
   getBuffer(trackId: string): Buffer | null {
     const entry = this.entries.get(trackId);
-    if (!entry || entry.state !== PreloadState.Preloaded) return null;
+    if (entry?.state !== PreloadState.Preloaded) return null;
     if (Date.now() - entry.at > PRELOAD_TTL_MS) {
       this.releaseBuffer(trackId);
       return null;
@@ -90,10 +90,10 @@ export class PreloadService {
           // 긴 곡은 프리로드 스킵
           if (item.track.durationMs > PRELOAD_MAX_TRACK_DURATION_SEC * 1000) continue;
 
-          this.startDownload(tid, item.track.sourceId);
+          void this.startDownload(tid, item.track.sourceId);
         }
       })
-      .catch((e) => this.logger.warn(`triggerPreload failed for room ${roomId}:`, e));
+      .catch((e: unknown) => this.logger.warn(`triggerPreload failed for room ${roomId}:`, e));
   }
 
   /** 전체 메모리 사용량 */
@@ -125,8 +125,10 @@ export class PreloadService {
     };
     this.entries.set(trackId, entry);
 
+    let slotAcquired = false;
     try {
       await this.acquireSlot();
+      slotAcquired = true;
       // 다운로드 시작 전 eviction 체크
       this.evictIfNeeded();
 
@@ -138,14 +140,15 @@ export class PreloadService {
       this.logger.log(`Preloaded ${trackId} (${(buffer.length / 1024 / 1024).toFixed(1)}MB)`);
     } catch (e) {
       if (retry < PRELOAD_RETRY_COUNT) {
-        this.releaseSlot();
+        if (slotAcquired) this.releaseSlot();
+        slotAcquired = false;
         this.logger.warn(`Preload retry ${retry + 1}/${PRELOAD_RETRY_COUNT} for ${trackId}`);
-        return this.startDownload(trackId, sourceId, retry + 1);
+        return await this.startDownload(trackId, sourceId, retry + 1);
       }
       entry.state = PreloadState.Failed;
       this.logger.warn(`Preload failed for ${trackId}: ${e instanceof Error ? e.message : e}`);
     } finally {
-      this.releaseSlot();
+      if (slotAcquired) this.releaseSlot();
     }
   }
 

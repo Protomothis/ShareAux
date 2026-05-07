@@ -1,10 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { ExternalLink, Music, ThumbsDown, ThumbsUp, Trash2, Users } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-
-import { Button } from '@/components/ui/button';
 
 import {
   adminTracksControllerDeleteTrack,
@@ -13,10 +12,10 @@ import {
   adminTracksControllerResetTrackMeta,
 } from '@/api/admin/admin';
 import type { TrackRankingItem } from '@/api/model';
-import { TrackRankingTrackInfoLyricsStatus, TrackRankingTrackInfoLyricsType, MetaStatus } from '@/api/model';
+import { MetaStatus,TrackRankingTrackInfoLyricsStatus, TrackRankingTrackInfoLyricsType } from '@/api/model';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import Modal from '@/components/common/Modal';
-import { useTranslations } from 'next-intl';
+import { Button } from '@/components/ui/button';
 
 interface TrackDetailModalProps {
   track: TrackRankingItem | null;

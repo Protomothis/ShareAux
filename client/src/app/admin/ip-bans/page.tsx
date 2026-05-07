@@ -2,14 +2,15 @@
 
 import { format } from 'date-fns';
 import { Shield, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 import type { BannedIpItem } from '@/api/model';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminPagination } from '@/components/admin/AdminPagination';
-import { AdminTable } from '@/components/admin/AdminTable';
 import type { Column } from '@/components/admin/AdminTable';
+import { AdminTable } from '@/components/admin/AdminTable';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
@@ -24,7 +25,6 @@ import {
 import { FormField } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useAdminIpBans, useBanIp, useUnbanIp } from '@/hooks/admin/useAdminIpBans';
-import { useTranslations } from 'next-intl';
 
 const LIMIT = 20;
 

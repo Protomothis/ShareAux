@@ -1,5 +1,6 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { Clock, Loader2, Minus, Plus, X } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -8,7 +9,6 @@ import type { LyricsResponse } from '@/api/model';
 import { playerControllerLyrics } from '@/api/player/player';
 import type { LyricLine, LyricWord } from '@/types';
 import { LyricsStatus } from '@/types';
-import { useQuery } from '@tanstack/react-query';
 
 import { Button } from '../ui/button';
 

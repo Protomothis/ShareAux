@@ -5,11 +5,11 @@ import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { CaptchaModule } from '../captcha/captcha.module.js';
-import { ServicesModule } from '../services/services.module.js';
 import { InviteCode } from '../entities/invite-code.entity.js';
 import { RefreshToken } from '../entities/refresh-token.entity.js';
 import { User } from '../entities/user.entity.js';
 import { RoomsModule } from '../rooms/rooms.module.js';
+import { ServicesModule } from '../services/services.module.js';
 import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
 import { JwtStrategy } from './jwt.strategy.js';

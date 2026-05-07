@@ -4,6 +4,7 @@ import type { ErrorCode } from '@/api/model';
  * ErrorCode enum의 모든 값이 errorTitle/errorDesc 네임스페이스에 존재하는지 빌드 타임 체크.
  * 서버에 에러 코드 추가 시 messages JSON에도 키를 추가하지 않으면 tsc 에러 발생.
  */
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 type Messages = typeof import('../../messages/ko.d.json.ts').default;
 
 type _AssertTitles = {

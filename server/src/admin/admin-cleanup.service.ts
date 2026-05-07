@@ -83,7 +83,7 @@ export class AdminCleanupService {
         .getCount(),
       this.userRepo.count({ where: { role: UserRole.Guest, createdAt: LessThan(guestCutoff) } }),
       this.userRepo.count({ where: { role: UserRole.Guest, createdAt: LessThan(d30) } }),
-      this.playHistoryRepo.manager.query<Array<{ name: string; sizeMB: number }>>(
+      this.playHistoryRepo.manager.query<{ name: string; sizeMB: number }[]>(
         `SELECT relname AS name,
                 ROUND(pg_total_relation_size(c.oid) / 1048576.0, 2)::float AS "sizeMB"
          FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace

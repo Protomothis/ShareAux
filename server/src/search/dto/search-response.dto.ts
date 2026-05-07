@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { SearchResultItem } from './search-result-item.dto.js';
 import { Track } from '../../entities/track.entity.js';
+import { SearchResultItem } from './search-result-item.dto.js';
 
 export class PlaylistResult {
   @ApiProperty() playlistId!: string;

@@ -1,20 +1,20 @@
 'use client';
 
 import { Loader2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import type { ResetBansResponse, SanctionItem, SanctionsResponse } from '@/api/model';
+import type { SanctionItem } from '@/api/model';
 import { roomsControllerResetEnqueueCounts, roomsControllerUnban, roomsControllerUpdate } from '@/api/rooms/rooms';
 import { roomsControllerGetSanctions, roomsControllerMuteUser, roomsControllerResetBans } from '@/api/rooms/rooms';
 import Modal from '@/components/common/Modal';
-import RoomSettingsForm from '@/components/common/RoomSettingsForm';
 import type { RoomFormValues } from '@/components/common/RoomSettingsForm';
-import { FormSection } from '@/components/ui/form';
-import type { AutoDjMode } from '@/types';
+import RoomSettingsForm from '@/components/common/RoomSettingsForm';
 import { Button } from '@/components/ui/button';
+import { FormSection } from '@/components/ui/form';
 import { useFormValidation } from '@/hooks/useFormValidation';
+import type { AutoDjMode } from '@/types';
 
 interface RoomSettingsModalProps {
   open: boolean;

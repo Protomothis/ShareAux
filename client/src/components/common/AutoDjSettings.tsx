@@ -1,9 +1,10 @@
-import { Switch } from '@/components/ui/switch';
+import { useTranslations } from 'next-intl';
+
 import { useFavoritesControllerListFolders } from '@/api/favorites/favorites';
 import { FormField } from '@/components/ui/form';
-import { useTranslations } from 'next-intl';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SettingCard } from '@/components/ui/setting-card';
+import { Switch } from '@/components/ui/switch';
 import type { AutoDjMode } from '@/types';
 
 interface AutoDjSettingsProps {

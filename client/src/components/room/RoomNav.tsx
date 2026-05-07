@@ -1,7 +1,6 @@
 'use client';
 
 import { Bell, Settings, Share2, Users } from 'lucide-react';
-import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { NotificationSettings } from '@/components/common/NotificationSettings';

@@ -1,10 +1,10 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { JwtAuthGuard } from '../guards/jwt-auth.guard.js';
-import type { AuthenticatedRequest } from '../types/index.js';
 import { AppException } from '../exceptions/app.exception.js';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard.js';
 import { ErrorCode } from '../types/error-code.enum.js';
+import type { AuthenticatedRequest } from '../types/index.js';
 import { UserRole } from '../types/user-role.enum.js';
 import { AddFavoriteBody } from './dto/add-favorite-body.dto.js';
 import { BulkRemoveFavoritesBody } from './dto/bulk-remove-favorites-body.dto.js';

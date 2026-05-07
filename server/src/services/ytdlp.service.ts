@@ -5,9 +5,8 @@ import { promisify } from 'util';
 
 import { YTDLP_FORMAT, YTDLP_PLAYLIST_MAX_BUFFER, YTDLP_PLAYLIST_TIMEOUT_MS, YTDLP_TIMEOUT_MS } from '../constants.js';
 import { AppException } from '../exceptions/app.exception.js';
-import type { AudioInfo } from '../types/index.js';
 import { ErrorCode } from '../types/error-code.enum.js';
-
+import type { AudioInfo } from '../types/index.js';
 import * as innertube from './innertube-parser.js';
 
 const execFileAsync = promisify(execFile);
@@ -155,7 +154,7 @@ export class YtdlpService {
     const { stdout } = await execFileAsync(
       this.ytdlpPath,
       ['-f', YTDLP_FORMAT, '-o', '-', `https://youtube.com/watch?v=${videoId}`],
-      { timeout: YTDLP_PLAYLIST_TIMEOUT_MS, maxBuffer: YTDLP_PLAYLIST_MAX_BUFFER, encoding: 'buffer' as never },
+      { timeout: YTDLP_PLAYLIST_TIMEOUT_MS, maxBuffer: YTDLP_PLAYLIST_MAX_BUFFER, encoding: 'buffer' },
     );
     return Buffer.from(stdout);
   }

@@ -1,6 +1,7 @@
 'use client';
 
-import { Pencil, Plus, Trash2, X } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -13,11 +14,10 @@ import {
 import { FolderItemColor } from '@/api/model';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { folderColorClass, FOLDER_COLOR_MAP } from '@/lib/folder-colors';
+import { FOLDER_COLOR_MAP,folderColorClass } from '@/lib/folder-colors';
 import { cn } from '@/lib/utils';
 
 import Modal from '../common/Modal';
-import { useTranslations } from 'next-intl';
 
 interface FolderManagerProps {
   onClose: () => void;

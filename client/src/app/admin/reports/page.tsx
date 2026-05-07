@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
 import type { ReportItem } from '@/api/model';
@@ -10,9 +10,9 @@ import { AdminPagination } from '@/components/admin/AdminPagination';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { Button } from '@/components/ui/button';
-import { useAdminReports, useResolveReport } from '@/hooks/admin/useAdminReports';
-import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
+import { SkeletonCard } from '@/components/ui/skeleton';
+import { useAdminReports, useResolveReport } from '@/hooks/admin/useAdminReports';
 
 const TABS = [
   { value: 'pending', label: 'pending' },

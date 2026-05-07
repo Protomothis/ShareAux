@@ -1,5 +1,5 @@
-import { memo } from 'react';
 import { useTranslations } from 'next-intl';
+import { memo } from 'react';
 
 import type { MemberWithPermission } from '@/api/model';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';

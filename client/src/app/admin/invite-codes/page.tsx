@@ -1,11 +1,11 @@
 'use client';
 
 import { Link2, Plus, Power, Trash2, Users } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
 import type { InviteCode } from '@/api/model';
-import { usePermissionMeta, usePermLookup } from '@/hooks/usePermissionMeta';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminPagination } from '@/components/admin/AdminPagination';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
@@ -13,10 +13,10 @@ import { CreateInviteCodeModal } from '@/components/admin/invite-codes';
 import { InviteCodeUsersModal } from '@/components/admin/InviteCodeUsersModal';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { Button } from '@/components/ui/button';
-import { useAdminInviteCodes, useDeactivateInviteCode, useDeleteInviteCode } from '@/hooks/admin/useAdminInviteCodes';
-import { useTranslations } from 'next-intl';
-import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
+import { SkeletonCard } from '@/components/ui/skeleton';
+import { useAdminInviteCodes, useDeactivateInviteCode, useDeleteInviteCode } from '@/hooks/admin/useAdminInviteCodes';
+import { usePermissionMeta, usePermLookup } from '@/hooks/usePermissionMeta';
 
 const LIMIT = 20;
 
@@ -33,7 +33,7 @@ export default function AdminInviteCodesPage() {
   const [usersTarget, setUsersTarget] = useState<{ id: string; code: string } | null>(null);
 
   const { data, isLoading } = useAdminInviteCodes({ page, limit: LIMIT });
-  const { data: permMeta } = usePermissionMeta();
+  const { data: _permMeta } = usePermissionMeta();
   const perm = usePermLookup();
   const deactivate = useDeactivateInviteCode();
   const deleteCode = useDeleteInviteCode();

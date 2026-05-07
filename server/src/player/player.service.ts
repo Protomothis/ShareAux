@@ -3,19 +3,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
 
 import { SKIP_MIN_PLAY_MS, TRACK_END_DELAY_MS, VOTE_SKIP_DIVISOR, VOTE_SKIP_MIN_REQUIRED } from '../constants.js';
-import { AppException } from '../exceptions/app.exception.js';
-import { ErrorCode } from '../types/error-code.enum.js';
-import { RoomPlayback } from '../entities/room-playback.entity.js';
 import { PlayHistory } from '../entities/play-history.entity.js';
-import { RoomQueue } from '../entities/room-queue.entity.js';
 import { Room } from '../entities/room.entity.js';
+import { RoomPlayback } from '../entities/room-playback.entity.js';
+import { RoomQueue } from '../entities/room-queue.entity.js';
 import { Track } from '../entities/track.entity.js';
 import { TrackStats } from '../entities/track-stats.entity.js';
-import { User } from '../entities/user.entity.js';
 import { UserTrackHistory } from '../entities/user-track-history.entity.js';
+import { AppException } from '../exceptions/app.exception.js';
 import { AudioService } from '../services/audio.service.js';
 import { PreloadService } from '../services/preload.service.js';
 import { YtdlpService } from '../services/ytdlp.service.js';
+import { ErrorCode } from '../types/error-code.enum.js';
 import type { StreamState } from '../types/index.js';
 
 @Injectable()
@@ -70,7 +69,7 @@ export class PlayerService {
     this.onTrackChangeCallback?.(roomId);
 
     // 글로벌 stats/history UPSERT (fire-and-forget)
-    this.recordPlay(roomId, track, addedByUserId).catch((e) =>
+    this.recordPlay(roomId, track, addedByUserId).catch((e: unknown) =>
       this.logger.warn('recordPlay failed', e instanceof Error ? e.message : e),
     );
 
@@ -258,7 +257,7 @@ export class PlayerService {
       const pb = await this.playbackRepo.findOne({ where: { roomId }, relations: ['track'] });
       const userId = this.currentAddedBy.get(roomId);
       if (pb?.track) {
-        this.recordCompleted(pb.track.id, userId).catch((e) =>
+        this.recordCompleted(pb.track.id, userId).catch((e: unknown) =>
           this.logger.warn('recordCompleted failed', e instanceof Error ? e.message : e),
         );
       }
@@ -334,7 +333,7 @@ export class PlayerService {
     await this.playHistoryRepo.save(
       this.playHistoryRepo.create({
         room: { id: roomId } as Room,
-        playedBy: userId ? ({ id: userId } as User) : null,
+        playedBy: userId ? { id: userId } : null,
         provider: track.provider,
         sourceId: track.sourceId,
         title: track.songTitle || track.name,

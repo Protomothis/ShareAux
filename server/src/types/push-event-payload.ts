@@ -1,4 +1,4 @@
-import { PushEvent } from './push-event.enum.js';
+import type { PushEvent } from './push-event.enum.js';
 
 /** 이벤트별 data 타입 매핑 */
 export interface PushDataMap {

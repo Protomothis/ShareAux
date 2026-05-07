@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import { SkeletonLine, SkeletonCard, SkeletonCircle } from '@/components/ui/skeleton';
+import { SkeletonCard, SkeletonCircle,SkeletonLine } from '@/components/ui/skeleton';
 
 export default { title: 'Primitives/Skeleton' } satisfies Meta;
 

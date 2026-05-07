@@ -2,17 +2,17 @@
 
 import { closestCenter, DndContext, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { AnimatePresence, motion } from 'motion/react';
 import { useQueryClient } from '@tanstack/react-query';
-import { GripVertical, Loader2, Search } from 'lucide-react';
-import { useMemo, useRef, useState } from 'react';
+import { GripVertical, Search } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
+import { useMemo, useRef, useState } from 'react';
 
-import type { RoomQueue } from '@/api/model';
+import type { RoomQueue, SearchResultItem } from '@/api/model';
 import { getQueueControllerGetQueueQueryKey, queueControllerRemoveTrack } from '@/api/queue/queue';
 import { useQueueControllerGetMyQuota, useQueueControllerGetQueue } from '@/api/queue/queue';
-import { Button } from '@/components/ui/button';
 import EmptyState from '@/components/common/EmptyState';
+import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useInvalidate } from '@/hooks/useQueries';
 import { useQueueDnd } from '@/hooks/useQueueDnd';
@@ -181,7 +181,7 @@ export default function Queue({
                       onToggleFavorite={() =>
                         toggleFavorite({
                           provider: item.track
-                            .provider as unknown as import('@/api/model').SearchResultItem['provider'],
+                            .provider as unknown as SearchResultItem['provider'],
                           sourceId: item.track.sourceId,
                           name: item.track.name,
                           artist: item.track.artist ?? null,

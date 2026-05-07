@@ -19,16 +19,17 @@ const UserDistributionChart = dynamic(
   () => import('@/components/admin/charts/UserDistributionChart').then((m) => m.UserDistributionChart),
   { ssr: false },
 );
+import { useTranslations } from 'next-intl';
+
 import { TimeRangeToggle } from '@/components/admin/charts/TimeRangeToggle';
-import { MinLoading } from '@/components/common/MinLoading';
 import { StatCard } from '@/components/admin/StatCard';
+import { MinLoading } from '@/components/common/MinLoading';
+import { SkeletonLine } from '@/components/ui/skeleton';
+import { Surface, surfaceVariants } from '@/components/ui/surface';
 import { useAdminDashboard, useAdminSystemStats } from '@/hooks/admin/useAdminDashboard';
 import type { TimeRange } from '@/hooks/admin/useAdminMetrics';
 import { usePlaysMetrics, useRealtimeMetrics, useUsersBreakdown } from '@/hooks/admin/useAdminMetrics';
-import { useTranslations } from 'next-intl';
-import { Surface, surfaceVariants } from '@/components/ui/surface';
 import { cn } from '@/lib/utils';
-import { SkeletonLine } from '@/components/ui/skeleton';
 
 function formatUptime(sec: number, t: (key: string, values: Record<string, number>) => string): string {
   const h = Math.floor(sec / 3600);

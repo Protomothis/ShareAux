@@ -1,22 +1,21 @@
 'use client';
 
-import { Surface } from '@/components/ui/surface';
-
 import { Save } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import type { UpdatePermissionsBodyPermissionsItem, UserDetailResponse } from '@/api/model';
-import { UpdateRoleDtoRole } from '@/api/model';
-import { ROLE_LABELS } from '@/lib/constants';
-import { usePermissionMeta, usePermLookup } from '@/hooks/usePermissionMeta';
+import type { UpdateRoleDtoRole } from '@/api/model';
 import { CheckboxGroup } from '@/components/admin/CheckboxGroup';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Surface } from '@/components/ui/surface';
 import { useUpdateUserDetailRole, useUpdateUserPermissions } from '@/hooks/admin/useAdminUserDetail';
-import { useTranslations } from 'next-intl';
+import { usePermissionMeta, usePermLookup } from '@/hooks/usePermissionMeta';
+import { ROLE_LABELS } from '@/lib/constants';
 
 interface UserPermissionSectionProps {
   user: UserDetailResponse;

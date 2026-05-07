@@ -1,6 +1,6 @@
 import { useTranslations } from 'next-intl';
-import { SystemChatEvent } from '@/api/model';
 
+import { SystemChatEvent } from '@/api/model';
 import { getAvatar } from '@/lib/avatar';
 import { getDisplayRole, ROLE_CONFIG } from '@/lib/roles';
 import type { ChatMessage } from '@/types';

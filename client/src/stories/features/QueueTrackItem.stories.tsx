@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { GripVertical, Trash2 } from 'lucide-react';
 
 import type { RoomQueue } from '@/api/model';
-import QueueTrackItem from '@/components/queue/QueueTrackItem';
 import { FavoriteButton } from '@/components/common/FavoriteButton';
+import QueueTrackItem from '@/components/queue/QueueTrackItem';
 
 const mockItem: RoomQueue = {
   id: 'q1',

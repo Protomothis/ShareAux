@@ -1,16 +1,15 @@
 'use client';
 
-import { Surface } from '@/components/ui/surface';
-
 import { Loader2, ShieldBan } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
 import type { UserDetailResponse } from '@/api/model';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { Button } from '@/components/ui/button';
+import { Surface } from '@/components/ui/surface';
 import { useBanUser, useUnbanUser } from '@/hooks/admin/useAdminUserDetail';
-import { useTranslations } from 'next-intl';
 
 interface UserBanSectionProps {
   user: UserDetailResponse;

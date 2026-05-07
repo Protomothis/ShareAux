@@ -3,8 +3,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   getAdminControllerGetRoomsQueryKey,
   useAdminControllerDeleteRoom,
-  useAdminMetricsControllerGetLiveRooms,
   useAdminControllerGetRooms,
+  useAdminMetricsControllerGetLiveRooms,
 } from '@/api/admin/admin';
 import type { AdminControllerGetRoomsParams } from '@/api/model';
 

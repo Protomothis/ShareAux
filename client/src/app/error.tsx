@@ -1,7 +1,8 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import { useTranslations } from 'next-intl';
+
+import { Button } from '@/components/ui/button';
 
 export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   const t = useTranslations('error');

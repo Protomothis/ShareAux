@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 
-import { Surface } from '@/components/ui/surface';
 import { SkeletonLine } from '@/components/ui/skeleton';
+import { Surface } from '@/components/ui/surface';
 
 interface StatCardProps {
   icon: LucideIcon;

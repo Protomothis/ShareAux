@@ -7,10 +7,10 @@ import webpush from 'web-push';
 import { PushSettings } from '../entities/push-settings.entity.js';
 import { PushSubscription } from '../entities/push-subscription.entity.js';
 import { SettingsService } from '../services/settings.service.js';
-import { OptionKey } from '../types/settings.types.js';
 import { Language } from '../types/language.enum.js';
 import type { PushEvent } from '../types/push-event.enum.js';
 import { PUSH_EVENT, type PushEventPayload } from '../types/push-event-payload.js';
+import { OptionKey } from '../types/settings.types.js';
 import type { UpdatePushSettingsDto } from './dto/update-push-settings.dto.js';
 
 interface PushPayload {

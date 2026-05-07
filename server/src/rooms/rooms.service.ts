@@ -5,11 +5,11 @@ import { nanoid } from 'nanoid';
 import { Repository } from 'typeorm';
 
 import { Room } from '../entities/room.entity.js';
-import { AppException } from '../exceptions/app.exception.js';
 import { RoomBan } from '../entities/room-ban.entity.js';
 import { RoomMember } from '../entities/room-member.entity.js';
 import { RoomPermission } from '../entities/room-permission.entity.js';
 import { RoomPlayback } from '../entities/room-playback.entity.js';
+import { AppException } from '../exceptions/app.exception.js';
 import type { LeaveResult } from '../types/index.js';
 import { AutoDjMode, ErrorCode, Permission } from '../types/index.js';
 import type { CreateRoomDto } from './dto/create-room.dto.js';

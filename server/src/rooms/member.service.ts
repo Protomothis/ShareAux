@@ -3,11 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Room } from '../entities/room.entity.js';
-import { AppException } from '../exceptions/app.exception.js';
 import { RoomBan } from '../entities/room-ban.entity.js';
 import { RoomMember } from '../entities/room-member.entity.js';
 import { RoomPermission } from '../entities/room-permission.entity.js';
 import { User } from '../entities/user.entity.js';
+import { AppException } from '../exceptions/app.exception.js';
 import type { TransferHostResult } from '../types/index.js';
 import { DEFAULT_ROOM_PERMISSIONS, ErrorCode, Permission, UserRole } from '../types/index.js';
 
@@ -109,7 +109,7 @@ export class MemberService {
       await this.permRepo.save(newHostPerm);
     }
     const oldHostPerm = await this.permRepo.findOneBy({ roomId, userId: hostId });
-    if (oldHostPerm && oldHostPerm.permissions.includes(Permission.Host)) {
+    if (oldHostPerm?.permissions.includes(Permission.Host)) {
       oldHostPerm.permissions = oldHostPerm.permissions.filter((p) => p !== Permission.Host);
       await this.permRepo.save(oldHostPerm);
     }
@@ -149,8 +149,9 @@ export class MemberService {
   ): Promise<{ permissions: Permission[]; accountPermissions: Permission[]; roomPermissions: Permission[] }> {
     const room = await this.roomRepo.findOneBy({ id: roomId });
     const allPerms = Object.values(Permission);
-    if (room?.hostId === userId)
+    if (room?.hostId === userId) {
       return { permissions: allPerms, accountPermissions: allPerms, roomPermissions: allPerms };
+    }
     const user = await this.userRepo.findOneBy({ id: userId });
     const isPrivileged = user?.role === UserRole.Admin || user?.role === UserRole.SuperAdmin;
     const accountPerms: Permission[] = isPrivileged ? allPerms : (user?.accountPermissions ?? []);

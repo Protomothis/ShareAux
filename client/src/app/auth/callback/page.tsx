@@ -1,12 +1,11 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
 import AnimatedBackground from '@/components/common/AnimatedBackground';
 import { Button } from '@/components/ui/button';
-
 import { useAuthStore } from '@/stores/auth';
 
 export default function AuthCallbackPage() {

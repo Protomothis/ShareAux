@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { PlaylistResult } from '@/api/model';
-import { searchControllerSearch, searchControllerSuggest } from '@/api/search/search';
 import type { SearchResultItem } from '@/api/model';
+import { searchControllerSearch, searchControllerSuggest } from '@/api/search/search';
 
 export function useSearch(isOpen: boolean) {
   const [query, setQuery] = useState('');

@@ -1,9 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
-
-import { fetchYtMusicRelated } from './innertube-parser.js';
-import { Provider } from '../types/provider.enum.js';
 import { Repository } from 'typeorm';
 
 import {
@@ -16,15 +13,17 @@ import {
   AUTODJ_SAME_ARTIST_SOFT_LIMIT,
   AUTODJ_SCAN_INTERVAL_MS,
 } from '../constants.js';
+import { PlayHistory } from '../entities/play-history.entity.js';
 import { Room } from '../entities/room.entity.js';
 import { RoomPlayback } from '../entities/room-playback.entity.js';
-import { PlayHistory } from '../entities/play-history.entity.js';
 import { RoomQueue } from '../entities/room-queue.entity.js';
 import { Track } from '../entities/track.entity.js';
 import { TrackStats } from '../entities/track-stats.entity.js';
 import { UserFavorite } from '../entities/user-favorite.entity.js';
 import type { AutoDjStatus } from '../types/index.js';
 import { AutoDjMode } from '../types/index.js';
+import { Provider } from '../types/provider.enum.js';
+import { fetchYtMusicRelated } from './innertube-parser.js';
 import { type YtdlpSearchResult, YtdlpService } from './ytdlp.service.js';
 
 interface WeightedCandidate {
@@ -234,7 +233,7 @@ export class AutoDjService {
     if (!videoId) return this.getPopularCandidates();
     try {
       const related = await fetchYtMusicRelated(videoId);
-      if (!related.similarArtists.length) return this.getRelatedCandidates(roomId);
+      if (!related.similarArtists.length) return await this.getRelatedCandidates(roomId);
       // 랜덤 3명 선택 → 각 아티스트로 검색
       const picks = related.similarArtists.sort(() => Math.random() - 0.5).slice(0, 3);
       const tracks: Track[] = [];

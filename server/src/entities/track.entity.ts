@@ -1,10 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
-import { Provider } from '../types/provider.enum.js';
 import { LyricsType } from '../types/lyrics-type.enum.js';
 import { MetaStatus } from '../types/meta-status.enum.js';
-
+import { Provider } from '../types/provider.enum.js';
 import type { TrackStats } from './track-stats.entity.js';
 
 @Entity('tracks')

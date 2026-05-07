@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import type { CreateInviteCodeDtoPermissionsItem } from '@/api/model';
@@ -11,7 +12,6 @@ import { Input } from '@/components/ui/input';
 import NumberStepper from '@/components/ui/number-stepper';
 import { Switch } from '@/components/ui/switch';
 import { usePermissionMeta, usePermLookup } from '@/hooks/usePermissionMeta';
-import { useTranslations } from 'next-intl';
 
 export interface InviteCodeFormData {
   code?: string;

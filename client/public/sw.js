@@ -1,5 +1,6 @@
+/* eslint-disable */
 // ─── ShareAux Service Worker ─── Push 알림 수신 + 액션 핸들링 ───
-const SW_VERSION = '0.1.14';
+const SW_VERSION = '0.1.15';
 
 // ─── i18n 헬퍼 ───
 

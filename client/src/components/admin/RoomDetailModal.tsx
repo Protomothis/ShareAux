@@ -1,9 +1,10 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import type { AdminRoomItem, LiveRoomItem } from '@/api/model';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import Modal from '@/components/common/Modal';
-import { useTranslations } from 'next-intl';
 
 interface RoomDetailModalProps {
   room: AdminRoomItem | null;

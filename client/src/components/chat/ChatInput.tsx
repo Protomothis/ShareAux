@@ -1,13 +1,12 @@
 'use client';
 
 import { Send } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-
-import { MAX_CHAT_LENGTH } from '@/lib/constants';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { MAX_CHAT_LENGTH } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
 interface ChatInputProps {

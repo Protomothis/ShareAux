@@ -1,8 +1,8 @@
 import { User as UserIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import type { UserDetailResponse } from '@/api/model';
 import { StatusBadge } from '@/components/admin/StatusBadge';
-import { useTranslations } from 'next-intl';
 
 interface UserProfileHeaderProps {
   user: UserDetailResponse;

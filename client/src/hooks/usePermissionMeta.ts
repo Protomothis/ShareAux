@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 
-import type { PermissionMeta } from '@/api/model';
 import { healthControllerPermissionsMeta } from '@/api/health/health';
+import type { PermissionMeta } from '@/api/model';
 
 export function usePermissionMeta() {
   return useQuery<PermissionMeta[]>({
@@ -25,7 +25,7 @@ export function usePermLookup() {
 
 /** @deprecated usePermLookup() 사용 */
 export function buildPermLookup(meta: PermissionMeta[] | undefined) {
-  if (!meta) return { label: (k: string) => k, emoji: (k: string) => '🔑', full: (k: string) => k };
+  if (!meta) return { label: (k: string) => k, emoji: (_k: string) => '🔑', full: (k: string) => k };
   const keys = meta.map((m) => m.key);
   return {
     label: (k: string) => k,

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { fn } from 'storybook/test';
 import { KeyRound, LogIn, UserPlus } from 'lucide-react';
+import { fn } from 'storybook/test';
 
 import { LoginCard } from '@/components/common/LoginCard';
 

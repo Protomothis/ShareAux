@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { AppException } from '../exceptions/app.exception.js';
 import { TrackStats } from '../entities/track-stats.entity.js';
 import { TrackVote } from '../entities/track-vote.entity.js';
+import { AppException } from '../exceptions/app.exception.js';
 import { ErrorCode } from '../types/error-code.enum.js';
 
 @Injectable()

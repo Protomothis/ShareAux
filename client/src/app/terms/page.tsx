@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from 'next-intl/server';
 
 import LegalPageLayout from '@/components/common/LegalPageLayout';
+
 import { TermsContent } from './content';
 
 export async function generateMetadata() {

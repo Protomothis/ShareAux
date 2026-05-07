@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { Check, Music, Wifi, X } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
 import { InfoTag } from '@/components/common/InfoTag';
+import { Badge } from '@/components/ui/badge';
 
 export default { title: 'Primitives/Badge & InfoTag' } satisfies Meta;
 

@@ -1,6 +1,6 @@
-import type { NextConfig } from 'next';
-import { readFileSync, writeFileSync } from 'fs';
 import createMDX from '@next/mdx';
+import { readFileSync, writeFileSync } from 'fs';
+import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
 // SW 버전을 package.json에서 주입

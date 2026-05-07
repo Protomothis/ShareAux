@@ -37,7 +37,7 @@ export function CollapsibleSection({
           <ChevronDown size={14} className={cn('transition-transform duration-200', !open && '-rotate-90')} />
           {icon}
           <span className="font-bold uppercase tracking-wider">{title}</span>
-          {count != null && <span className="text-sa-text-muted">({count})</span>}
+          {count !== undefined && <span className="text-sa-text-muted">({count})</span>}
         </button>
         {action && <span className="ml-auto">{action}</span>}
       </div>
