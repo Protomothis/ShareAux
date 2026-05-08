@@ -254,6 +254,7 @@ export default function ChatInput({
         visible={paletteMode !== 'none'}
         highlightIdx={highlightIdx}
         onSelect={handlePaletteSelect}
+        emptyLabel={t('paletteEmpty')}
         onClose={() => {
           setPaletteMode('none');
           setActiveCommand(null);

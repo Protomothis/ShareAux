@@ -17,9 +17,10 @@ interface ChatCommandPaletteProps {
   highlightIdx: number;
   onSelect: (item: PaletteItem) => void;
   onClose: () => void;
+  emptyLabel?: string;
 }
 
-export function ChatCommandPalette({ items, visible, highlightIdx, onSelect, onClose }: ChatCommandPaletteProps) {
+export function ChatCommandPalette({ items, visible, highlightIdx, onSelect, onClose, emptyLabel }: ChatCommandPaletteProps) {
   const listRef = useRef<HTMLDivElement>(null);
 
   // 하이라이트된 아이템 스크롤
@@ -28,7 +29,15 @@ export function ChatCommandPalette({ items, visible, highlightIdx, onSelect, onC
     el?.scrollIntoView({ block: 'nearest' });
   }, [highlightIdx]);
 
-  if (!visible || items.length === 0) return null;
+  if (!visible) return null;
+
+  if (items.length === 0) {
+    return (
+      <div className="absolute bottom-full left-0 right-0 z-30 mb-2 rounded-xl border border-white/10 bg-sa-bg-elevated/95 px-3 py-3 text-center text-xs text-sa-text-muted shadow-xl backdrop-blur-xl">
+        {emptyLabel ?? '표시할 항목이 없습니다'}
+      </div>
+    );
+  }
 
   return (
     <div

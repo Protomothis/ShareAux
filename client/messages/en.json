@@ -278,7 +278,8 @@
       "userTrackAdded": "{nickname} added \"{trackName}\" and {count} more",
       "userTrackAddedSingle": "{nickname} added \"{trackName}\"",
       "chatCleared": "Chat has been cleared"
-    }
+    },
+    "paletteEmpty": "No items to display"
   },
   "members": {
     "title": "👥 Members ({count})",

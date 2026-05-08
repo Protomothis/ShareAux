@@ -278,7 +278,8 @@
       "userTrackAdded": "{nickname}님이 \"{trackName}\" 외 {count}곡을 추가했습니다",
       "userTrackAddedSingle": "{nickname}님이 \"{trackName}\"을(를) 추가했습니다",
       "chatCleared": "채팅이 초기화되었습니다"
-    }
+    },
+    "paletteEmpty": "표시할 항목이 없습니다"
   },
   "members": {
     "title": "👥 멤버 ({count})",
