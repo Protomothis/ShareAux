@@ -2,7 +2,9 @@ import { useTranslations } from 'next-intl';
 
 import { SystemChatEvent } from '@/api/model';
 import { getAvatar } from '@/lib/avatar';
+import { renderWithMentions } from '@/lib/render-mentions';
 import { getDisplayRole, ROLE_CONFIG } from '@/lib/roles';
+import { useAuthStore } from '@/stores/auth';
 import type { ChatMessage } from '@/types';
 
 /** userId 끝 4자리로 태그 생성 */
@@ -18,6 +20,7 @@ interface ChatMessageListProps {
 
 export default function ChatMessageList({ messages, bottomRef, hostId }: ChatMessageListProps) {
   const t = useTranslations('chat');
+  const myNickname = useAuthStore((s) => s.nickname);
   const sysLabel = (msg: ChatMessage): string => {
     const nick = msg.data?.nickname ?? msg.nickname ?? '';
     const track = msg.data?.trackName ?? '';
@@ -59,6 +62,8 @@ export default function ChatMessageList({ messages, bottomRef, hostId }: ChatMes
         return t('system.autoDjDisabled');
       case SystemChatEvent.enqueueCountsReset:
         return t('system.enqueueCountsReset');
+      case 'chatCleared':
+        return t('system.chatCleared');
 
       default:
         return msg.message;
@@ -109,7 +114,7 @@ export default function ChatMessageList({ messages, bottomRef, hostId }: ChatMes
                     {new Date(m.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
-                <p className="break-words text-white/90">{m.message}</p>
+                <p className="break-words text-white/90">{renderWithMentions(m.message, undefined, myNickname)}</p>
               </div>
             </div>
           ),

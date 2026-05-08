@@ -65,7 +65,7 @@ function LoginInner() {
     const redirect = localStorage.getItem('redirectAfterLogin') || '/rooms';
     localStorage.removeItem('redirectAfterLogin');
     localStorage.removeItem('inviteRoomId');
-    router.push(redirect);
+    window.location.href = redirect;
   };
 
   if (connState !== 'connected') return <ServerStatusScreen connState={connState} onRetry={retry} />;

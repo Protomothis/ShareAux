@@ -165,7 +165,8 @@
     "addedToast": "🎵 신청 완료",
     "addedExtra": " 외 {count}곡",
     "tabQueue": "신청곡",
-    "tabHistory": "재생 기록"
+    "tabHistory": "재생 기록",
+    "reorderFailed": "순서 변경에 실패했습니다"
   },
   "search": {
     "title": "곡 추가",
@@ -189,11 +190,41 @@
       "loadError": "플레이리스트를 불러올 수 없습니다",
       "retry": "다시 시도",
       "noTracks": "재생 가능한 곡이 없습니다",
-      "loadMore": "더 보기 ({loaded}/{total})"
+      "loadMore": "더 보기 ({loaded}/{total})",
+      "urlPlaceholder": "YouTube 재생목록 URL 붙여넣기",
+      "fetch": "불러오기",
+      "selectAll": "전체 선택",
+      "deselectAll": "전체 해제",
+      "selected": "{count}곡 선택 / {total}곡",
+      "addToQueue": "{count}곡 큐에 추가",
+      "addToFavorites": "즐겨찾기",
+      "emptyHint": "YouTube 재생목록 URL을 붙여넣으세요",
+      "unavailable": "사용 불가",
+      "unknownArtist": "알 수 없는 아티스트",
+      "resultToast": "{success}곡 추가, {fail}곡 실패",
+      "trackCountDesc": "{count}곡"
     },
     "showcaseTab": "추천",
     "playlists": "재생목록",
-    "tracks": "검색 결과"
+    "tracks": "검색 결과",
+    "playlistTab": "플레이리스트",
+    "inQueue": "재신청 불가",
+    "importUrlTab": "URL 가져오기",
+    "importUrl": {
+      "placeholder": "영상 또는 재생목록 URL 붙여넣기",
+      "fetch": "불러오기",
+      "retry": "다시 시도",
+      "selectAll": "전체 선택",
+      "deselectAll": "전체 해제",
+      "selected": "{count}곡 선택 / {total}곡",
+      "addToQueue": "{count}곡 큐에 추가",
+      "addToFavorites": "즐겨찾기",
+      "emptyHint": "영상 또는 재생목록 URL을 붙여넣으세요",
+      "unavailable": "사용 불가",
+      "invalidUrl": "올바른 URL을 입력해주세요",
+      "unsupportedPlatform": "현재 지원하지 않는 URL입니다",
+      "loadError": "불러올 수 없습니다. URL을 확인해주세요."
+    }
   },
   "favorites": {
     "loading": "불러오는 중...",
@@ -245,8 +276,10 @@
       "trackUnavailable": "\"{trackName}\" 재생 불가 — 건너뜁니다",
       "voteSkipPassed": "스킵 투표가 통과되어 곡이 넘어갑니다",
       "userTrackAdded": "{nickname}님이 \"{trackName}\" 외 {count}곡을 추가했습니다",
-      "userTrackAddedSingle": "{nickname}님이 \"{trackName}\"을(를) 추가했습니다"
-    }
+      "userTrackAddedSingle": "{nickname}님이 \"{trackName}\"을(를) 추가했습니다",
+      "chatCleared": "채팅이 초기화되었습니다"
+    },
+    "paletteEmpty": "표시할 항목이 없습니다"
   },
   "members": {
     "title": "👥 멤버 ({count})",
@@ -998,7 +1031,8 @@
     "FAV_001": "즐겨찾기 초과",
     "FAV_002": "게스트 사용 불가",
     "FAV_003": "폴더 초과",
-    "FAV_004": "폴더 없음"
+    "FAV_004": "폴더 없음",
+    "PLAYLIST_001": "플레이리스트 로드 실패"
   },
   "errorDesc": {
     "AUTH_001": "아이디 또는 비밀번호가 올바르지 않습니다",
@@ -1070,7 +1104,8 @@
     "FAV_001": "즐겨찾기는 최대 200곡까지 가능합니다",
     "FAV_002": "즐겨찾기는 로그인 회원만 사용할 수 있습니다",
     "FAV_003": "폴더는 최대 20개까지 생성할 수 있습니다",
-    "FAV_004": "해당 폴더를 찾을 수 없습니다"
+    "FAV_004": "해당 폴더를 찾을 수 없습니다",
+    "PLAYLIST_001": "재생목록을 불러올 수 없습니다. URL을 확인해주세요."
   },
   "notification": {
     "trackChanged": {
