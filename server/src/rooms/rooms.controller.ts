@@ -6,10 +6,11 @@ import { Room } from '../entities/room.entity.js';
 import { RoomMember } from '../entities/room-member.entity.js';
 import { ControllerGuard } from '../guards/controller.guard.js';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard.js';
+import { RequirePermission, RoomPermissionGuard } from '../guards/room-permission.guard.js';
 import { AutoDjService } from '../services/auto-dj.service.js';
 import { ChatMuteService } from '../services/chat-mute.service.js';
 import type { AuthenticatedRequest } from '../types/index.js';
-import { PushEvent, WsEvent } from '../types/index.js';
+import { Permission, PushEvent, WsEvent } from '../types/index.js';
 import { PUSH_EVENT, pushPayload } from '../types/push-event-payload.js';
 import { BanInfo } from './dto/ban-info.dto.js';
 import { CreateRoomDto } from './dto/create-room.dto.js';
@@ -269,6 +270,17 @@ export class RoomsController {
   @ApiBearerAuth()
   async unmuteUser(@Param('id', ParseUUIDPipe) id: string, @Param('userId', ParseUUIDPipe) userId: string) {
     this.chatMute.unmute(id, userId);
+    return { success: true };
+  }
+
+  @Post(':id/clear-chat')
+  @RequirePermission(Permission.Host)
+  @UseGuards(JwtAuthGuard, RoomPermissionGuard)
+  @ApiOperation({ summary: '채팅 초기화' })
+  @ApiBearerAuth()
+  async clearChat(@Param('id', ParseUUIDPipe) id: string) {
+    this.gateway.clearChatHistory(id);
+    this.gateway.broadcastSystem(id, WsEvent.ChatCleared, '');
     return { success: true };
   }
 }

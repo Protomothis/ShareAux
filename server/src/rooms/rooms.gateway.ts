@@ -481,6 +481,11 @@ export class RoomsGateway implements OnModuleDestroy {
     this.broadcastToRoom(roomId, buf);
   }
 
+  /** 채팅 히스토리 초기화 */
+  clearChatHistory(roomId: string): void {
+    this.chatHistory.delete(roomId);
+  }
+
   private broadcastToRoom(roomId: string, data: Buffer, exclude?: WsClient): void {
     this.roomClients.get(roomId)?.forEach((c) => {
       if (c !== exclude && c.readyState === WebSocket.OPEN) c.send(data);

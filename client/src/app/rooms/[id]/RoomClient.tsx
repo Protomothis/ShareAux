@@ -10,7 +10,16 @@ import { toast } from 'sonner';
 import type { Track } from '@/api/model';
 import { usePlayerControllerGetStatus } from '@/api/player/player';
 import { useQueueControllerGetHistory, useQueueControllerGetQueue } from '@/api/queue/queue';
-import { roomsControllerJoin, roomsControllerLeave, useRoomsControllerFindOne } from '@/api/rooms/rooms';
+import {
+  roomsControllerClearChat,
+  roomsControllerJoin,
+  roomsControllerKick,
+  roomsControllerLeave,
+  roomsControllerMuteUser,
+  roomsControllerUnban,
+  roomsControllerUnmuteUser,
+  useRoomsControllerFindOne,
+} from '@/api/rooms/rooms';
 import Chat from '@/components/chat/Chat';
 import { MinLoading } from '@/components/common/MinLoading';
 import { WsDisconnectBanner } from '@/components/common/WsDisconnectBanner';
@@ -252,6 +261,33 @@ export default function RoomClient({ id }: { id: string }) {
     [sendChat, userId, nickname],
   );
 
+  const handleCommand = useCallback(
+    async (command: string, targetUserId?: string) => {
+      try {
+        switch (command) {
+          case 'ban':
+            if (targetUserId) await roomsControllerKick(id, targetUserId);
+            break;
+          case 'unban':
+            if (targetUserId) await roomsControllerUnban(id, targetUserId);
+            break;
+          case 'mute':
+            if (targetUserId) await roomsControllerMuteUser(id, targetUserId);
+            break;
+          case 'unmute':
+            if (targetUserId) await roomsControllerUnmuteUser(id, targetUserId);
+            break;
+          case 'clear':
+            await roomsControllerClearChat(id);
+            break;
+        }
+      } catch {
+        /* 에러는 global handler에서 처리 */
+      }
+    },
+    [id],
+  );
+
   const handleLeave = async () => {
     goneRef.current = true;
     try {
@@ -320,6 +356,7 @@ export default function RoomClient({ id }: { id: string }) {
   const chatProps = {
     messages,
     onSend: handleSend,
+    onCommand: handleCommand,
     onReaction: sendReaction,
     floatingReactions,
     canChat: can('chat'),

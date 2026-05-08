@@ -1541,3 +1541,62 @@ export const useRoomsControllerUnmuteUser = <TError = unknown, TContext = unknow
 
   return useMutation(mutationOptions, queryClient);
 };
+/**
+ * @summary 채팅 초기화
+ */
+export const getRoomsControllerClearChatUrl = (id: string) => {
+  return `/api/rooms/${id}/clear-chat`;
+};
+
+export const roomsControllerClearChat = async (id: string, options?: RequestInit): Promise<void> => {
+  return customFetch<void>(getRoomsControllerClearChatUrl(id), {
+    ...options,
+    method: 'POST',
+  });
+};
+
+export const getRoomsControllerClearChatMutationOptions = <TError = unknown, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<Awaited<ReturnType<typeof roomsControllerClearChat>>, TError, { id: string }, TContext>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<Awaited<ReturnType<typeof roomsControllerClearChat>>, TError, { id: string }, TContext> => {
+  const mutationKey = ['roomsControllerClearChat'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof roomsControllerClearChat>>, { id: string }> = (
+    props,
+  ) => {
+    const { id } = props ?? {};
+
+    return roomsControllerClearChat(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RoomsControllerClearChatMutationResult = NonNullable<Awaited<ReturnType<typeof roomsControllerClearChat>>>;
+
+export type RoomsControllerClearChatMutationError = unknown;
+
+/**
+ * @summary 채팅 초기화
+ */
+export const useRoomsControllerClearChat = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof roomsControllerClearChat>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<Awaited<ReturnType<typeof roomsControllerClearChat>>, TError, { id: string }, TContext> => {
+  const mutationOptions = getRoomsControllerClearChatMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};

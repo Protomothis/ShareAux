@@ -38,6 +38,7 @@ export const WsEvent = {
   enqueueCountsReset: 'enqueueCountsReset',
   chatHistory: 'chatHistory',
   chatMuted: 'chatMuted',
+  chatCleared: 'chatCleared',
   duplicateSession: 'duplicateSession',
   joinedOtherRoom: 'joinedOtherRoom',
 } as const;
