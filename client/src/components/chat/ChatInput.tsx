@@ -169,12 +169,14 @@ export default function ChatInput({
           setPaletteFilter('');
           // banned 목록 fetch
           if (cmd?.target === 'banned' && roomId) {
+            setBannedItems([{ id: '_loading', label: '...' }]);
             roomsControllerGetBans(roomId).then((bans) => {
-              setBannedItems(bans.map((b) => ({ id: b.userId, label: b.nickname })));
+              setBannedItems(bans.length > 0 ? bans.map((b) => ({ id: b.userId, label: b.nickname })) : []);
             }).catch(() => setBannedItems([]));
           }
         }
       } else if (paletteMode === 'users') {
+        if (item.id === '_loading') return;
         // 명령어 실행
         if (activeCommand) {
           onCommand?.(activeCommand.name, item.id);
