@@ -4,7 +4,7 @@ import { Send } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import type { RoomMember } from '@/api/model';
+import type { MemberWithPermission } from '@/api/model';
 import { roomsControllerGetBans } from '@/api/rooms/rooms';
 import { ChatCommandPalette, type PaletteItem } from '@/components/chat/ChatCommandPalette';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,7 @@ interface ChatInputProps {
   canChat: boolean;
   mutedUntil?: number;
   isHost?: boolean;
-  members?: RoomMember[];
+  members?: MemberWithPermission[];
   currentUserId?: string;
   roomId?: string;
 }

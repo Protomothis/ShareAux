@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
-import type { RoomMember } from '@/api/model';
+import type { MemberWithPermission } from '@/api/model';
 import type { ChatMessage, FloatingReaction } from '@/types';
 
 import ChatInput from './ChatInput';
@@ -20,7 +20,7 @@ interface ChatProps {
   hostId?: string;
   mutedUntil?: number;
   isHost?: boolean;
-  members?: RoomMember[];
+  members?: MemberWithPermission[];
   currentUserId?: string;
   roomId?: string;
 }
