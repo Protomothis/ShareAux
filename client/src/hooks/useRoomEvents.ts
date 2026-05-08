@@ -196,13 +196,15 @@ export function useRoomEvents(
       }
 
       if (data.event === WsEvent.chatCleared) {
-        setMessages([{
-          type: 'system',
-          userId: '',
-          nickname: '',
-          message: 'chatCleared',
-          timestamp: new Date().toISOString(),
-        }]);
+        setMessages([
+          {
+            type: 'system',
+            userId: '',
+            nickname: '',
+            message: 'chatCleared',
+            timestamp: new Date().toISOString(),
+          },
+        ]);
         return;
       }
 

@@ -276,7 +276,8 @@
       "trackUnavailable": "\"{trackName}\" unavailable — skipping",
       "voteSkipPassed": "Skip vote passed",
       "userTrackAdded": "{nickname} added \"{trackName}\" and {count} more",
-      "userTrackAddedSingle": "{nickname} added \"{trackName}\""
+      "userTrackAddedSingle": "{nickname} added \"{trackName}\"",
+      "chatCleared": "Chat has been cleared"
     }
   },
   "members": {
