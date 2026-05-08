@@ -195,6 +195,19 @@ export function useRoomEvents(
         return;
       }
 
+      if (data.event === WsEvent.chatCleared) {
+        setMessages([
+          {
+            type: 'system',
+            userId: '',
+            nickname: '',
+            message: 'chatCleared',
+            timestamp: new Date().toISOString(),
+          },
+        ]);
+        return;
+      }
+
       // 네비게이션 (kick, close, duplicate 등)
       if (handleNavigation(data.event, data.detail)) return;
 

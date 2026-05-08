@@ -29,6 +29,15 @@ export interface YtdlpPlaylistResult {
   channelName: string;
 }
 
+export interface YtdlpPlaylistTrack {
+  id: string;
+  title: string;
+  artist: string;
+  thumbnail: string;
+  duration: number;
+  available: boolean;
+}
+
 export interface InnertubeSearchResponse {
   results: YtdlpSearchResult[];
   playlists: YtdlpPlaylistResult[];
@@ -114,6 +123,65 @@ export class YtdlpService {
     } catch (e) {
       this.logger.warn(`Failed to get playlist ${playlistId}`, e instanceof Error ? e.message : e);
       return [];
+    }
+  }
+
+  /** 단일 영상 메타데이터 조회 */
+  async getVideoMeta(videoId: string): Promise<YtdlpPlaylistTrack> {
+    try {
+      const { stdout } = await execFileAsync(
+        this.ytdlpPath,
+        ['--dump-json', '--skip-download', `https://youtube.com/watch?v=${videoId}`],
+        { timeout: YTDLP_TIMEOUT_MS },
+      );
+      const entry = JSON.parse(stdout) as Record<string, unknown>;
+      const duration = (entry.duration as number) ?? 0;
+      const available = duration >= 30 && duration <= 900;
+      return {
+        id: videoId,
+        title: (entry.title as string) ?? '',
+        artist: (entry.uploader as string) ?? (entry.channel as string) ?? '',
+        thumbnail: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
+        duration,
+        available,
+      };
+    } catch (e) {
+      this.logger.warn(`Failed to get video meta for ${videoId}`, e instanceof Error ? e.message : e);
+      throw new AppException(ErrorCode.PLAYLIST_LOAD_FAILED);
+    }
+  }
+
+  /** 플레이리스트 트랙 목록 (사용 불가 트랙 포함) */
+  async getPlaylistTracksAll(playlistId: string): Promise<YtdlpPlaylistTrack[]> {
+    try {
+      const { stdout } = await execFileAsync(
+        this.ytdlpPath,
+        ['--flat-playlist', '--dump-json', `https://www.youtube.com/playlist?list=${playlistId}`],
+        { timeout: YTDLP_PLAYLIST_TIMEOUT_MS, maxBuffer: YTDLP_PLAYLIST_MAX_BUFFER },
+      );
+      return stdout
+        .trim()
+        .split('\n')
+        .map((line) => {
+          const entry = JSON.parse(line) as Record<string, unknown>;
+          const title = (entry.title as string) ?? '';
+          const id = entry.id as string | undefined;
+          const isUnavailable = !id || title === '[Deleted video]' || title === '[Private video]';
+          const duration = (entry.duration as number) ?? 0;
+          const available = !isUnavailable && duration >= 30 && duration <= 900;
+          return {
+            id: id ?? '',
+            title: isUnavailable ? title || '[비공개 동영상]' : title,
+            artist: (entry.uploader as string) ?? (entry.channel as string) ?? '',
+            thumbnail: id ? `https://i.ytimg.com/vi/${id}/mqdefault.jpg` : '',
+            duration,
+            available,
+          };
+        })
+        .filter((r) => r.id !== '');
+    } catch (e) {
+      this.logger.warn(`Failed to get playlist ${playlistId}`, e instanceof Error ? e.message : e);
+      throw new AppException(ErrorCode.PLAYLIST_LOAD_FAILED);
     }
   }
 

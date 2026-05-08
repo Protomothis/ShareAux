@@ -67,7 +67,7 @@ export default function SortableItem({
     <motion.div
       ref={setNodeRef}
       role="listitem"
-      style={{ transform: CSS.Transform.toString(transform), transition }}
+      style={{ transform: CSS.Translate.toString(transform), transition }}
       initial={isNew ? { opacity: 0, x: 40, height: 0, scale: 0.9 } : false}
       animate={revealed ? { opacity: 1, x: 0, height: 'auto', scale: 1 } : { opacity: 0, x: 40, height: 0, scale: 0.9 }}
       exit={{ opacity: 0, x: -40, height: 0, scale: 0.9 }}

@@ -43,6 +43,7 @@ export enum WsEvent {
   EnqueueCountsReset = 'enqueueCountsReset',
   ChatHistory = 'chatHistory',
   ChatMuted = 'chatMuted',
+  ChatCleared = 'chatCleared',
   DuplicateSession = 'duplicateSession',
   JoinedOtherRoom = 'joinedOtherRoom',
 }

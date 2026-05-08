@@ -1,26 +1,28 @@
 'use client';
 
-import { Heart, Search, Sparkles, X } from 'lucide-react';
+import { Heart, ListMusic, Search, Sparkles, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import type { SearchResultItem } from '@/api/model';
 import { queueControllerAddTracks } from '@/api/queue/queue';
+import { favoritesControllerAdd } from '@/api/favorites/favorites';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useSearch } from '@/hooks/useSearch';
 import { MAX_QUEUE_SIZE } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-import type { FavoriteActions } from '@/types';
+import type { FavoriteActions, PlaylistTrack } from '@/types';
 
 import Modal from '../common/Modal';
 import FavoritesList from './FavoritesList';
+import { ImportUrlTab } from './ImportUrlTab';
 import SearchResults from './SearchResults';
 import { SearchSelectedBar } from './SearchSelectedBar';
 import SearchShowcase from './SearchShowcase';
 
-type Tab = 'showcase' | 'search' | 'favorites';
+type Tab = 'showcase' | 'search' | 'playlist' | 'favorites';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -120,6 +122,49 @@ export default function SearchModal({
   const selectedIds = new Set(selected.map((t) => t.sourceId));
   const disabledIds = new Set([...addedIds, ...queueTrackIds]);
 
+  const handleImportAddToQueue = async (importTracks: PlaylistTrack[]) => {
+    if (queueTrackIds.length + importTracks.length > MAX_QUEUE_SIZE) {
+      toast.error(tq('queueFull', { max: MAX_QUEUE_SIZE }));
+      return;
+    }
+    try {
+      await queueControllerAddTracks(roomId, {
+        items: importTracks.map((t) => ({
+          provider: 'yt' as const,
+          sourceId: t.sourceId,
+          name: t.name,
+          artist: t.artist ?? undefined,
+          thumbnail: t.thumbnail ?? undefined,
+          durationMs: t.durationMs,
+        })),
+      });
+      toast.success(tq('addedToast'));
+      onTrackAdded?.();
+    } catch {
+      /* handled by global error */
+    }
+  };
+
+  const handleImportAddToFavorites = async (importTracks: PlaylistTrack[]) => {
+    let success = 0;
+    for (const t of importTracks) {
+      try {
+        await favoritesControllerAdd({
+          provider: 'yt' as never,
+          sourceId: t.sourceId,
+          name: t.name,
+          artist: t.artist ?? undefined,
+          thumbnail: t.thumbnail ?? undefined,
+          durationMs: t.durationMs,
+        });
+        success++;
+      } catch {
+        /* 중복 등 무시 */
+      }
+    }
+    toast.success(`${success}/${importTracks.length}`);
+  };
+
   return (
     <Modal
       open={isOpen}
@@ -158,6 +203,17 @@ export default function SearchModal({
           >
             <Search size={14} />
             {ts('searchTab')}
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => setTab('playlist')}
+            className={cn(
+              'flex-1 gap-1.5 rounded-lg px-3 py-2 text-sm font-medium',
+              tab === 'playlist' ? 'bg-white/10 text-white' : 'text-sa-text-muted hover:text-white',
+            )}
+          >
+            <ListMusic size={14} />
+            {ts('importUrlTab')}
           </Button>
           {!isGuest && (
             <Button
@@ -275,6 +331,15 @@ export default function SearchModal({
               favLoadingIds={favLoadingIds}
               onToggleFavorite={toggleFavorite}
               isGuest={isGuest}
+            />
+          )}
+
+          {tab === 'playlist' && (
+            <ImportUrlTab
+              onAddToQueue={handleImportAddToQueue}
+              onAddToFavorites={handleImportAddToFavorites}
+              onClose={onClose}
+              maxSelect={maxSelect}
             />
           )}
 

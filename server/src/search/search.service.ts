@@ -4,14 +4,17 @@ import { Repository } from 'typeorm';
 
 import { RADIO_CACHE_TTL_MS, SHOWCASE_CACHE_TTL_MS } from '../constants.js';
 import { RoomPlayback } from '../entities/room-playback.entity.js';
+import { AppException } from '../exceptions/app.exception.js';
 import { Track } from '../entities/track.entity.js';
 import { TrackStats } from '../entities/track-stats.entity.js';
 import { UserTrackHistory } from '../entities/user-track-history.entity.js';
 import { fetchMusicCredits, fetchYtMusicMeta, fetchYtMusicRelated } from '../services/innertube-parser.js';
 import { MusicBrainzService } from '../services/musicbrainz.service.js';
+import { parseMediaUrl } from '../services/parse-media-url.js';
 import { cleanArtist, extractTitle } from '../services/title-cleaner.js';
 import { type YtdlpSearchResult, YtdlpService } from '../services/ytdlp.service.js';
 import { MetaStatus } from '../types/meta-status.enum.js';
+import { ErrorCode } from '../types/error-code.enum.js';
 import { Provider } from '../types/provider.enum.js';
 import type { SearchResultItem } from './dto/search-result-item.dto.js';
 
@@ -78,6 +81,64 @@ export class SearchService {
       page,
       limit,
     };
+  }
+
+  async getPlaylistImport(playlistId: string) {
+    const tracks = await this.ytdlp.getPlaylistTracksAll(playlistId);
+    return {
+      tracks: tracks.map((t) => ({
+        sourceId: t.id,
+        name: t.title,
+        artist: t.artist || null,
+        thumbnail: t.thumbnail || null,
+        durationMs: t.duration * 1000,
+        available: t.available,
+      })),
+      total: tracks.length,
+    };
+  }
+
+  async getVideoImport(videoId: string) {
+    const t = await this.ytdlp.getVideoMeta(videoId);
+    return {
+      tracks: [
+        {
+          sourceId: t.id,
+          name: t.title,
+          artist: t.artist || null,
+          thumbnail: t.thumbnail || null,
+          durationMs: t.duration * 1000,
+          available: t.available,
+        },
+      ],
+      total: 1,
+    };
+  }
+
+  async importByUrl(url: string) {
+    const parsed = parseMediaUrl(url);
+
+    if (parsed.type === 'unsupported') {
+      throw new AppException(
+        parsed.reason === 'invalid' ? ErrorCode.COMMON_001 : ErrorCode.PLAYLIST_LOAD_FAILED,
+      );
+    }
+
+    if (parsed.type === 'video') {
+      return this.getVideoImport(parsed.id);
+    }
+
+    // playlist — 실패 시 videoId 폴백 시도
+    try {
+      return await this.getPlaylistImport(parsed.id);
+    } catch {
+      // URL에서 videoId 추출 시도
+      const videoFallback = parseMediaUrl(url.replace(/[?&]list=[^&]+/, ''));
+      if (videoFallback.type === 'video') {
+        return this.getVideoImport(videoFallback.id);
+      }
+      throw new AppException(ErrorCode.PLAYLIST_LOAD_FAILED);
+    }
   }
 
   async search(query: string, limit = 10): Promise<SearchResultItem[]> {

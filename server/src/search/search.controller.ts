@@ -25,6 +25,7 @@ import {
   ShowcaseResponse,
   SuggestResponse,
 } from './dto/search-response.dto.js';
+import { PlaylistResponse } from './dto/playlist-response.dto.js';
 import { SearchService } from './search.service.js';
 
 @ApiTags('Search')
@@ -78,6 +79,16 @@ export class SearchController {
   @ApiResponse({ status: 200, type: RadioResponse })
   getRadio(@Param('roomId', ParseUUIDPipe) roomId: string) {
     return this.searchService.getRadioTracks(roomId);
+  }
+
+  @Get('import')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'URL로 곡 가져오기 (영상/재생목록 자동 판별)' })
+  @ApiQuery({ name: 'url', required: true })
+  @ApiResponse({ status: 200, type: PlaylistResponse })
+  async importByUrl(@Query('url') url: string): Promise<PlaylistResponse> {
+    return this.searchService.importByUrl(url);
   }
 
   @Get('playlist/:id')

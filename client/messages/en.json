@@ -165,7 +165,8 @@
     "addedToast": "🎵 Added to queue",
     "addedExtra": " and {count} more",
     "tabQueue": "Queue",
-    "tabHistory": "History"
+    "tabHistory": "History",
+    "reorderFailed": "Failed to reorder"
   },
   "search": {
     "title": "Add tracks",
@@ -189,11 +190,41 @@
       "loadError": "Failed to load playlist",
       "retry": "Retry",
       "noTracks": "No playable tracks",
-      "loadMore": "Load more ({loaded}/{total})"
+      "loadMore": "Load more ({loaded}/{total})",
+      "urlPlaceholder": "Paste YouTube playlist URL",
+      "fetch": "Load",
+      "selectAll": "Select all",
+      "deselectAll": "Deselect all",
+      "selected": "{count} selected / {total} tracks",
+      "addToQueue": "Add {count} to queue",
+      "addToFavorites": "Favorites",
+      "emptyHint": "Paste a YouTube playlist URL",
+      "unavailable": "Unavailable",
+      "unknownArtist": "Unknown artist",
+      "resultToast": "{success} added, {fail} failed",
+      "trackCountDesc": "{count} tracks"
     },
     "showcaseTab": "Showcase",
     "playlists": "Playlists",
-    "tracks": "Tracks"
+    "tracks": "Tracks",
+    "playlistTab": "Playlist",
+    "inQueue": "Already in queue",
+    "importUrlTab": "Import URL",
+    "importUrl": {
+      "placeholder": "Paste a video or playlist URL",
+      "fetch": "Load",
+      "retry": "Retry",
+      "selectAll": "Select all",
+      "deselectAll": "Deselect all",
+      "selected": "{count} selected / {total} tracks",
+      "addToQueue": "Add {count} to queue",
+      "addToFavorites": "Favorites",
+      "emptyHint": "Paste a video or playlist URL",
+      "unavailable": "Unavailable",
+      "invalidUrl": "Please enter a valid URL",
+      "unsupportedPlatform": "This URL is not currently supported",
+      "loadError": "Failed to load. Please check the URL."
+    }
   },
   "favorites": {
     "loading": "Loading...",
@@ -245,8 +276,10 @@
       "trackUnavailable": "\"{trackName}\" unavailable — skipping",
       "voteSkipPassed": "Skip vote passed",
       "userTrackAdded": "{nickname} added \"{trackName}\" and {count} more",
-      "userTrackAddedSingle": "{nickname} added \"{trackName}\""
-    }
+      "userTrackAddedSingle": "{nickname} added \"{trackName}\"",
+      "chatCleared": "Chat has been cleared"
+    },
+    "paletteEmpty": "No items to display"
   },
   "members": {
     "title": "👥 Members ({count})",
@@ -998,7 +1031,8 @@
     "FAV_001": "Favorites limit",
     "FAV_002": "Guests not allowed",
     "FAV_003": "Folder limit",
-    "FAV_004": "Folder not found"
+    "FAV_004": "Folder not found",
+    "PLAYLIST_001": "Playlist load failed"
   },
   "errorDesc": {
     "AUTH_001": "Invalid username or password",
@@ -1070,7 +1104,8 @@
     "FAV_001": "Maximum 200 favorites",
     "FAV_002": "Favorites are only available for registered users",
     "FAV_003": "Maximum 20 folders",
-    "FAV_004": "Folder not found"
+    "FAV_004": "Folder not found",
+    "PLAYLIST_001": "Failed to load playlist. Please check the URL."
   },
   "notification": {
     "trackChanged": {

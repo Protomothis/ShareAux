@@ -100,6 +100,7 @@ export default function SearchResults({
                 disabled={isDisabled}
                 full={selected.length >= maxSelect && !order}
                 inQueue={queueTrackIds.includes(track.sourceId)}
+                inQueueLabel={t('inQueue')}
                 onClick={() => !isDisabled && onToggleTrack(track)}
                 isFavorite={favoriteIds?.has(track.sourceId)}
                 favLoading={favLoadingIds?.has(track.sourceId)}
