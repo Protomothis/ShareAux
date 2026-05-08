@@ -326,6 +326,9 @@ export default function RoomClient({ id }: { id: string }) {
     canReaction: can('reaction'),
     hostId: room?.hostId ?? '',
     mutedUntil,
+    isHost,
+    members,
+    currentUserId: userId ?? undefined,
   };
 
   const memberListProps = {

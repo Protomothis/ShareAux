@@ -8,14 +8,16 @@ interface InputProps extends React.ComponentProps<'input'> {
   /** 값이 있을 때 X 버튼 표시 */
   clearable?: boolean;
   onClear?: () => void;
+  ref?: React.Ref<HTMLInputElement>;
 }
 
-function Input({ className, type, clearable, onClear, value, ...props }: InputProps) {
+function Input({ className, type, clearable, onClear, value, ref, ...props }: InputProps) {
   const showClear = clearable && value;
 
   return (
     <div className="relative w-full">
       <InputPrimitive
+        ref={ref}
         type={type}
         data-slot="input"
         value={value}

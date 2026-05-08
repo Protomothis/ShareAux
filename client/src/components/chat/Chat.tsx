@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
+import type { RoomMember } from '@/api/model';
 import type { ChatMessage, FloatingReaction } from '@/types';
 
 import ChatInput from './ChatInput';
@@ -11,23 +12,31 @@ import ChatReactions from './ChatReactions';
 interface ChatProps {
   messages: ChatMessage[];
   onSend: (message: string) => void;
+  onCommand?: (command: string, targetUserId?: string) => void;
   onReaction?: (index: number) => void;
   floatingReactions?: FloatingReaction[];
   canChat?: boolean;
   canReaction?: boolean;
   hostId?: string;
   mutedUntil?: number;
+  isHost?: boolean;
+  members?: RoomMember[];
+  currentUserId?: string;
 }
 
 export default function Chat({
   messages,
   onSend,
+  onCommand,
   onReaction,
   floatingReactions = [],
   canChat = true,
   canReaction = true,
   hostId,
   mutedUntil,
+  isHost = false,
+  members = [],
+  currentUserId,
 }: ChatProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -50,7 +59,15 @@ export default function Chat({
       <ChatMessageList messages={messages} bottomRef={bottomRef} hostId={hostId} />
 
       <div className="flex shrink-0 items-center gap-2 border-t border-white/10 px-4 py-3">
-        <ChatInput onSend={onSend} canChat={canChat} mutedUntil={mutedUntil} />
+        <ChatInput
+          onSend={onSend}
+          onCommand={onCommand}
+          canChat={canChat}
+          mutedUntil={mutedUntil}
+          isHost={isHost}
+          members={members}
+          currentUserId={currentUserId}
+        />
         {canReaction && onReaction && <ChatReactions onReaction={onReaction} />}
       </div>
     </div>
