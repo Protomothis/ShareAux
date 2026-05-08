@@ -1,5 +1,5 @@
 'use client';
-import { Check } from 'lucide-react';
+import { Ban, Check } from 'lucide-react';
 import { memo } from 'react';
 
 import type { SearchResultItem } from '@/api/model';
@@ -20,6 +20,10 @@ interface SearchTrackItemProps {
   favLoading?: boolean;
   onToggleFavorite?: () => void;
   isGuest?: boolean;
+  /** 비공개/지역제한 등으로 사용 불가 */
+  unavailable?: boolean;
+  unavailableLabel?: string;
+  inQueueLabel?: string;
 }
 
 export const SearchTrackItem = memo(function SearchTrackItem({
@@ -33,16 +37,19 @@ export const SearchTrackItem = memo(function SearchTrackItem({
   favLoading: _favLoading,
   onToggleFavorite,
   isGuest,
+  unavailable,
+  unavailableLabel,
+  inQueueLabel,
 }: SearchTrackItemProps) {
   return (
     <Button
       variant="ghost"
       onClick={onClick}
-      disabled={disabled}
+      disabled={disabled || unavailable}
       className={cn(
         'flex h-auto w-full items-center gap-3 rounded-xl p-2 text-left',
         order ? 'bg-sa-accent/10 border border-sa-accent/30' : full ? 'opacity-30' : '',
-        disabled && 'opacity-40',
+        (disabled || unavailable) && 'opacity-40',
       )}
     >
       <div
@@ -69,8 +76,14 @@ export const SearchTrackItem = memo(function SearchTrackItem({
           {track.artist} · {formatDuration(track.durationMs)}
         </p>
       </div>
-      {disabled && !inQueue && <Check size={14} className="shrink-0 text-green-400" />}
-      {inQueue && <span className="shrink-0 text-xs text-sa-text-muted">재신청 불가</span>}
+      {disabled && !inQueue && !unavailable && <Check size={14} className="shrink-0 text-green-400" />}
+      {inQueue && <span className="shrink-0 text-xs text-sa-text-muted">{inQueueLabel ?? '재신청 불가'}</span>}
+      {unavailable && (
+        <span className="flex shrink-0 items-center gap-1 text-xs text-red-400/70">
+          <Ban size={12} />
+          {unavailableLabel ?? '사용 불가'}
+        </span>
+      )}
     </Button>
   );
 });

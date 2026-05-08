@@ -31,3 +31,7 @@ export const MaxReached: Story = { args: { full: true, disabled: true } };
 export const WithFavorite: Story = {
   args: { isFavorite: true, onToggleFavorite: fn() },
 };
+
+export const Unavailable: Story = {
+  args: { unavailable: true, unavailableLabel: '사용 불가' },
+};
