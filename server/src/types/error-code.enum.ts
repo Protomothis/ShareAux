@@ -86,4 +86,7 @@ export enum ErrorCode {
   FAV_002 = 'FAV_002',
   FAV_003 = 'FAV_003',
   FAV_004 = 'FAV_004',
+
+  // Playlist
+  PLAYLIST_LOAD_FAILED = 'PLAYLIST_001',
 }

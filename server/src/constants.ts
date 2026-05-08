@@ -571,4 +571,10 @@ export const ERROR_META: Record<ErrorCode, ErrorMeta> = {
     title: '폴더 없음',
     description: '해당 폴더를 찾을 수 없습니다',
   },
+  [ErrorCode.PLAYLIST_LOAD_FAILED]: {
+    code: ErrorCode.PLAYLIST_LOAD_FAILED,
+    httpStatus: HttpStatus.BAD_REQUEST,
+    title: '플레이리스트 로드 실패',
+    description: '재생목록을 불러올 수 없습니다. URL을 확인해주세요.',
+  },
 };
