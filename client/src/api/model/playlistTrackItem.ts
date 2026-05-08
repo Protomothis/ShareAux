@@ -5,13 +5,14 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
-import type { TrackSourceProvider } from './trackSourceProvider';
 
-export interface TrackSource {
-  provider: TrackSourceProvider;
+export interface PlaylistTrackItem {
   sourceId: string;
   name: string;
-  artist?: string;
-  thumbnail?: string;
+  /** @nullable */
+  artist: string | null;
+  /** @nullable */
+  thumbnail: string | null;
   durationMs: number;
+  available: boolean;
 }

@@ -6,6 +6,6 @@
  * OpenAPI spec version: 1.0
  */
 
-export type AuthControllerExchangeBody = {
-  code?: string;
+export type SearchControllerImportByUrlParams = {
+  url: string;
 };
