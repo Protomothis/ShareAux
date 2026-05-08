@@ -366,6 +366,7 @@ export default function RoomClient({ id }: { id: string }) {
     isHost,
     members,
     currentUserId: userId ?? undefined,
+    roomId: id,
   };
 
   const memberListProps = {

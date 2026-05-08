@@ -16,6 +16,7 @@ export enum SystemChatEvent {
   AutoDjEnabled = 'autoDjEnabled',
   AutoDjDisabled = 'autoDjDisabled',
   EnqueueCountsReset = 'enqueueCountsReset',
+  ChatCleared = 'chatCleared',
 }
 
 /** 시스템 채팅 메시지 페이로드 */

@@ -22,6 +22,7 @@ interface ChatProps {
   isHost?: boolean;
   members?: RoomMember[];
   currentUserId?: string;
+  roomId?: string;
 }
 
 export default function Chat({
@@ -37,6 +38,7 @@ export default function Chat({
   isHost = false,
   members = [],
   currentUserId,
+  roomId,
 }: ChatProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -67,6 +69,7 @@ export default function Chat({
           isHost={isHost}
           members={members}
           currentUserId={currentUserId}
+          roomId={roomId}
         />
         {canReaction && onReaction && <ChatReactions onReaction={onReaction} />}
       </div>

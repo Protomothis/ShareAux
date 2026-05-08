@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { RoomMember } from '@/api/model';
+import { roomsControllerGetBans } from '@/api/rooms/rooms';
 import { ChatCommandPalette, type PaletteItem } from '@/components/chat/ChatCommandPalette';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +21,7 @@ interface ChatInputProps {
   isHost?: boolean;
   members?: RoomMember[];
   currentUserId?: string;
+  roomId?: string;
 }
 
 type PaletteMode = 'none' | 'commands' | 'users' | 'mention';
@@ -32,6 +34,7 @@ export default function ChatInput({
   isHost = false,
   members = [],
   currentUserId,
+  roomId,
 }: ChatInputProps) {
   const t = useTranslations('chat');
   const [input, setInput] = useState('');
@@ -40,6 +43,7 @@ export default function ChatInput({
   const [paletteFilter, setPaletteFilter] = useState('');
   const [highlightIdx, setHighlightIdx] = useState(0);
   const [activeCommand, setActiveCommand] = useState<SlashCommand | null>(null);
+  const [bannedItems, setBannedItems] = useState<PaletteItem[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // 뮤트 타이머
@@ -83,9 +87,13 @@ export default function ChatInput({
 
   const paletteItems = useMemo(() => {
     if (paletteMode === 'commands') return commandItems;
-    if (paletteMode === 'users' || paletteMode === 'mention') return memberItems;
+    if (paletteMode === 'users') {
+      if (activeCommand?.target === 'banned') return bannedItems;
+      return memberItems;
+    }
+    if (paletteMode === 'mention') return memberItems;
     return [];
-  }, [paletteMode, commandItems, memberItems]);
+  }, [paletteMode, commandItems, memberItems, bannedItems, activeCommand]);
 
   const filteredItems = useMemo(() => {
     if (!paletteFilter) return paletteItems;
@@ -159,6 +167,12 @@ export default function ChatInput({
           setActiveCommand(cmd ?? null);
           setPaletteMode('users');
           setPaletteFilter('');
+          // banned 목록 fetch
+          if (cmd?.target === 'banned' && roomId) {
+            roomsControllerGetBans(roomId).then((bans) => {
+              setBannedItems(bans.map((b) => ({ id: b.userId, label: b.nickname })));
+            }).catch(() => setBannedItems([]));
+          }
         }
       } else if (paletteMode === 'users') {
         // 명령어 실행
