@@ -9,20 +9,24 @@ import {
 } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import type { RoomQueue } from '@/api/model';
 import { getQueueControllerGetQueueQueryKey, queueControllerReorder } from '@/api/queue/queue';
 
 export function useQueueDnd(roomId: string, queue: RoomQueue[]) {
   const queryClient = useQueryClient();
+  const t = useTranslations('queue');
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [localOrder, setLocalOrder] = useState<RoomQueue[] | null>(null);
   const [reorderingId, setReorderingId] = useState<string | null>(null);
-  const [overId, setOverId] = useState<string | null>(null);
+  const [optimistic, setOptimistic] = useState<RoomQueue[] | null>(null);
+  /** 드래그 시작 시점의 queue 스냅샷 — 서버에 보낼 position 기준 */
+  const snapshotRef = useRef<RoomQueue[]>([]);
   const overIdRef = useRef<string | null>(null);
 
-  const items = localOrder ?? queue;
+  const items = optimistic ?? queue;
   const activeItem = useMemo(() => items.find((q) => q.id === activeId), [items, activeId]);
 
   const sensors = useSensors(
@@ -32,9 +36,9 @@ export function useQueueDnd(roomId: string, queue: RoomQueue[]) {
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(String(event.active.id));
-    setLocalOrder([...queue]);
+    snapshotRef.current = [...queue];
     overIdRef.current = null;
-    // 햅틱 피드백
+    setOptimistic([...queue]);
     if (navigator.vibrate) navigator.vibrate(30);
   };
 
@@ -42,8 +46,7 @@ export function useQueueDnd(roomId: string, queue: RoomQueue[]) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
     overIdRef.current = String(over.id);
-    setOverId(String(over.id));
-    setLocalOrder((prev) => {
+    setOptimistic((prev) => {
       if (!prev) return prev;
       const oldIdx = prev.findIndex((q) => q.id === active.id);
       const newIdx = prev.findIndex((q) => q.id === over.id);
@@ -53,22 +56,25 @@ export function useQueueDnd(roomId: string, queue: RoomQueue[]) {
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
-    const draggedId = String(event.active.id);
-    const droppedOnId = overIdRef.current;
+    const { active } = event;
+    const overId = overIdRef.current;
     setActiveId(null);
     overIdRef.current = null;
-    setOverId(null);
     if (navigator.vibrate) navigator.vibrate(15);
-    if (!droppedOnId || draggedId === droppedOnId) {
-      setLocalOrder(null);
+
+    if (!overId || String(active.id) === overId) {
+      setOptimistic(null);
       return;
     }
-    const fromItem = queue.find((q) => q.id === draggedId);
-    const toItem = queue.find((q) => q.id === droppedOnId);
+
+    const snapshot = snapshotRef.current;
+    const fromItem = snapshot.find((q) => q.id === active.id);
+    const toItem = snapshot.find((q) => q.id === overId);
     if (!fromItem || !toItem) {
-      setLocalOrder(null);
+      setOptimistic(null);
       return;
     }
+
     try {
       setReorderingId(fromItem.id);
       await queueControllerReorder(roomId, {
@@ -76,18 +82,19 @@ export function useQueueDnd(roomId: string, queue: RoomQueue[]) {
         newPosition: toItem.position,
         version: fromItem.version,
       });
-    } catch {
-      /* reorder failed — refetch로 복구 */
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn('[DND] reorder failed', e);
+      toast.error(t('reorderFailed'));
     }
     await queryClient.refetchQueries({ queryKey: getQueueControllerGetQueueQueryKey(roomId) });
     setReorderingId(null);
-    setLocalOrder(null);
+    setOptimistic(null);
   };
 
   const handleDragCancel = () => {
     setActiveId(null);
-    setLocalOrder(null);
-    setOverId(null);
+    setOptimistic(null);
   };
 
   return {
@@ -95,7 +102,6 @@ export function useQueueDnd(roomId: string, queue: RoomQueue[]) {
     activeItem,
     sensors,
     reorderingId,
-    overId,
     handleDragStart,
     handleDragOver,
     handleDragEnd,
