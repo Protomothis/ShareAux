@@ -1,6 +1,7 @@
 import type { OnModuleDestroy } from '@nestjs/common';
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
 import type { IncomingMessage, Server as HttpServer } from 'http';
 import type { Duplex } from 'stream';
@@ -23,6 +24,8 @@ import { ChatMuteService } from '../services/chat-mute.service.js';
 import { IpBanService } from '../services/ip-ban.service.js';
 import type { ChatHistoryEntry, JwtPayload, WsClient } from '../types/index.js';
 import { Permission, WsEvent, WsOpCode } from '../types/index.js';
+import { PushEvent } from '../types/push-event.enum.js';
+import { PUSH_EVENT, pushPayload } from '../types/push-event-payload.js';
 import { RoomsService } from './rooms.service.js';
 
 @Injectable()
@@ -43,6 +46,7 @@ export class RoomsGateway implements OnModuleDestroy {
     private rooms: RoomsService,
     private config: ConfigService,
     private ipBan: IpBanService,
+    private eventEmitter: EventEmitter2,
     @Inject(forwardRef(() => AuthService)) private auth: AuthService,
   ) {}
 
@@ -316,6 +320,34 @@ export class RoomsGateway implements OnModuleDestroy {
             });
             if (hist.length > 50) hist.shift();
             this.chatHistory.set(client.data.roomId, hist);
+
+            // 멘션 감지 → 푸시 알림
+            const mentions = trimmed.match(/@(\S+)/g);
+            if (mentions) {
+              const roomClients = this.roomClients.get(client.data.roomId);
+              if (roomClients) {
+                const mentionedIds: string[] = [];
+                for (const m of mentions) {
+                  const nick = m.slice(1); // @ 제거
+                  for (const c of roomClients) {
+                    if (c.data && c.data.nickname === nick && c.data.userId !== client.data.userId) {
+                      mentionedIds.push(c.data.userId);
+                    }
+                  }
+                }
+                if (mentionedIds.length > 0) {
+                  this.eventEmitter.emit(
+                    PUSH_EVENT,
+                    pushPayload(PushEvent.Mention, {
+                      roomId: client.data.roomId,
+                      userIds: mentionedIds,
+                      tag: `mention:${client.data.roomId}`,
+                      data: { nickname: client.data.nickname, message: trimmed },
+                    }),
+                  );
+                }
+              }
+            }
           } catch (e) {
             this.logger.warn('Chat message parse failed', e instanceof Error ? e.message : e);
           }
