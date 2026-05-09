@@ -437,11 +437,16 @@ export default function RoomClient({ id }: { id: string }) {
             <Chat
               messages={messages}
               onSend={handleSend}
+              onCommand={handleCommand}
               onReaction={sendReaction}
               floatingReactions={floatingReactions}
               canChat={can('chat')}
               canReaction={can('reaction')}
               mutedUntil={mutedUntil}
+              isHost={isHost}
+              members={members}
+              currentUserId={userId ?? undefined}
+              roomId={id}
             />
           </div>
         </div>
