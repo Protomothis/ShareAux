@@ -84,11 +84,32 @@ export default function CastButton({ roomId, forceShow, onCastStateChange, disab
     prefetchToken();
   }, [prefetchToken]);
 
+  // Cast 연결 중 토큰 자동 갱신 (30분 interval, 서버 만료 1시간)
+  useEffect(() => {
+    if (castState !== 'connected') return;
+    const interval = setInterval(prefetchToken, 30 * 60_000);
+    return () => clearInterval(interval);
+  }, [castState, prefetchToken]);
+
   // --- Cast 상태 변경 헬퍼 ---
   const updateState = useCallback((state: CastState) => {
     setCastState(state);
     onCastStateChangeRef.current?.(state);
   }, []);
+
+  // iOS 백그라운드 복귀 시 Cast 상태 체크
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState !== 'visible') return;
+      const audio = audioRef.current;
+      if (!audio || castState !== 'connected') return;
+      if (audio.paused && audio.src) {
+        audio.play().catch(() => updateState('disconnected'));
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, [castState, updateState]);
 
   // --- AirPlay / Remote Playback 이벤트 바인딩 ---
   useEffect(() => {
