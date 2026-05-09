@@ -2,7 +2,7 @@
 
 import { CheckCheck, Heart, Link2, ListPlus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import type { SearchResultItem } from '@/api/model';
 import { searchControllerImportByUrl } from '@/api/search/search';
@@ -35,22 +35,19 @@ function toSearchItem(track: PlaylistTrack): SearchResultItem {
   };
 }
 
-export function ImportUrlTab({ onAddToQueue, onAddToFavorites, onClose, adding = false, maxSelect = 50 }: ImportUrlTabProps) {
+export function ImportUrlTab({
+  onAddToQueue,
+  onAddToFavorites,
+  onClose,
+  adding = false,
+  maxSelect = 50,
+}: ImportUrlTabProps) {
   const t = useTranslations('search.importUrl');
   const [url, setUrl] = useState('');
   const [tracks, setTracks] = useState<PlaylistTrack[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
   const [selected, setSelected] = useState<Set<string>>(new Set());
-
-  // 탭 진입 시 클립보드에 URL이 있으면 자동 채움
-  useEffect(() => {
-    navigator.clipboard.readText().then((text) => {
-      if (isSupportedMediaUrl(text)) {
-        setUrl(text.trim());
-      }
-    }).catch(() => { /* 권한 거부 무시 */ });
-  }, []);
 
   const availableTracks = tracks.filter((tr) => tr.available);
   const allSelected = availableTracks.length > 0 && availableTracks.every((tr) => selected.has(tr.sourceId));
@@ -109,6 +106,10 @@ export function ImportUrlTab({ onAddToQueue, onAddToFavorites, onClose, adding =
             disabled={loading}
             clearable
             onClear={() => setUrl('')}
+            pasteable
+            onPasteText={(text) => {
+              if (isSupportedMediaUrl(text)) setUrl(text);
+            }}
             className="w-full rounded-xl border-white/10 bg-white/5 py-2.5 pl-9 pr-8 text-sm text-white placeholder:text-sa-text-muted"
           />
         </div>

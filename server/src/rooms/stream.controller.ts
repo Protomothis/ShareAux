@@ -78,11 +78,12 @@ export class StreamController {
     }
 
     // HTTP chunked stream 시작
-    res.setHeader('Content-Type', 'audio/aac');
+    res.setHeader('Content-Type', 'audio/mp4');
     res.setHeader('Transfer-Encoding', 'chunked');
     res.setHeader('Cache-Control', 'no-cache, no-store');
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Access-Control-Allow-Origin', '*');
 
     const added = this.audio.addHttpListener(id, res);
     if (!added) {
