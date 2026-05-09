@@ -1,0 +1,149 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout lang="en">
+  <article class="max-w-3xl mx-auto px-6 py-24 prose-custom">
+    <h1>Self-hosting Guide</h1>
+    <p class="lead">Get ShareAux running on your own server in under 10 minutes.</p>
+
+    <nav class="toc">
+      <h4>Contents</h4>
+      <ol>
+        <li><a href="#requirements">Requirements</a></li>
+        <li><a href="#install">Install</a></li>
+        <li><a href="#env">Environment Variables</a></li>
+        <li><a href="#caddy">Caddy (HTTPS + Reverse Proxy)</a></li>
+        <li><a href="#start">Start</a></li>
+        <li><a href="#google-oauth">Google OAuth (Optional)</a></li>
+        <li><a href="#first-login">First Login</a></li>
+        <li><a href="#update">Updating</a></li>
+      </ol>
+    </nav>
+
+    <h2 id="requirements">1. Requirements</h2>
+    <ul>
+      <li>Linux server (Ubuntu 22.04+ recommended) or any Docker-capable host</li>
+      <li>Docker + Docker Compose v2</li>
+      <li>A domain name (for HTTPS)</li>
+      <li>Ports 80/443 open</li>
+    </ul>
+
+    <h2 id="install">2. Install</h2>
+    <pre><code>git clone https://github.com/Protomothis/ShareAux.git
+cd ShareAux
+cp .env.example .env</code></pre>
+
+    <h2 id="env">3. Environment Variables</h2>
+    <p>Edit <code>.env</code> — at minimum, change these:</p>
+    <div class="env-table">
+      <table>
+        <thead><tr><th>Variable</th><th>Description</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><code>DB_PASSWORD</code></td><td>PostgreSQL password</td><td><code>my-secure-password</code></td></tr>
+          <tr><td><code>JWT_SECRET</code></td><td>Random string for token signing</td><td><code>openssl rand -hex 32</code></td></tr>
+          <tr><td><code>CLIENT_URL</code></td><td>Your public URL</td><td><code>https://music.example.com</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Optional variables:</p>
+    <div class="env-table">
+      <table>
+        <thead><tr><th>Variable</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>GOOGLE_CLIENT_ID</code></td><td>Google OAuth (login with Google)</td></tr>
+          <tr><td><code>GOOGLE_CLIENT_SECRET</code></td><td>Google OAuth secret</td></tr>
+          <tr><td><code>GOOGLE_CALLBACK_URL</code></td><td><code>https://your-domain/api/auth/google/callback</code></td></tr>
+          <tr><td><code>GEMINI_API_KEY</code></td><td>Lyrics AI translation (Gemini)</td></tr>
+          <tr><td><code>CAPTCHA_ENABLED</code></td><td>PoW CAPTCHA (default: true)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="caddy">4. HTTPS (Reverse Proxy)</h2>
+    <p>ShareAux exposes port <code>8080</code> via its internal Caddy gateway. You need an external reverse proxy on the host for HTTPS.</p>
+
+    <h3>With Caddy (recommended)</h3>
+    <p>Install Caddy on the host and create <code>/etc/caddy/Caddyfile</code>:</p>
+    <pre><code>music.example.com &#123;
+    reverse_proxy localhost:8080
+&#125;</code></pre>
+    <p>Caddy auto-provisions Let's Encrypt certificates. That's it.</p>
+
+    <h3>With Nginx</h3>
+    <pre><code>server &#123;
+    server_name music.example.com;
+    listen 443 ssl;
+    ssl_certificate /path/to/cert.pem;
+    ssl_certificate_key /path/to/key.pem;
+
+    location / &#123;
+        proxy_pass http://localhost:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+    &#125;
+&#125;</code></pre>
+
+    <p><strong>Important:</strong> WebSocket (<code>/ws</code>) requires <code>Upgrade</code> headers. The examples above handle this.</p>
+    <p>Set <code>CLIENT_URL</code> in <code>.env</code> to your public URL (e.g. <code>https://music.example.com</code>).</p>
+
+    <h2 id="start">5. Start</h2>
+    <pre><code>docker compose up -d</code></pre>
+    <p>Check status:</p>
+    <pre><code>docker compose ps
+docker compose logs -f</code></pre>
+    <p>Access your site at <code>https://music.example.com</code></p>
+
+    <h2 id="google-oauth">6. Google OAuth (Optional)</h2>
+    <ol>
+      <li>Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console</a></li>
+      <li>Create OAuth 2.0 Client ID (Web application)</li>
+      <li>Authorized redirect URI: <code>https://your-domain/api/auth/google/callback</code></li>
+      <li>Copy Client ID and Secret to <code>.env</code></li>
+      <li>Restart: <code>docker compose restart server</code></li>
+    </ol>
+    <p>Without Google OAuth, users can still log in with username/password or guest invite codes.</p>
+
+    <h2 id="first-login">7. First Login</h2>
+    <ol>
+      <li>Visit your site and create an account</li>
+      <li>The first registered user automatically becomes <strong>Super Admin</strong></li>
+      <li>Access the admin panel at <code>/admin</code></li>
+      <li>Configure settings, create rooms, and invite others</li>
+    </ol>
+
+    <h2 id="update">8. Updating</h2>
+    <pre><code>cd ShareAux
+docker compose pull
+docker compose up -d</code></pre>
+    <p>Database migrations run automatically on startup.</p>
+
+    <hr />
+    <p><a href="/ShareAux/">← Back to Home</a></p>
+  </article>
+</Layout>
+
+<style>
+  .prose-custom h1 { font-size: 2.25rem; font-weight: 800; margin-bottom: 0.5rem; }
+  .prose-custom .lead { font-size: 1.125rem; color: var(--color-sa-text2); margin-bottom: 2rem; }
+  .prose-custom h2 { font-size: 1.5rem; font-weight: 700; margin-top: 3rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .prose-custom p { color: var(--color-sa-text2); line-height: 1.75; margin-bottom: 1rem; }
+  .prose-custom ul, .prose-custom ol { color: var(--color-sa-text2); margin-bottom: 1rem; padding-left: 1.5rem; }
+  .prose-custom li { margin-bottom: 0.5rem; }
+  .prose-custom pre { background: var(--color-sa-bg2); border: 1px solid rgba(255,255,255,0.05); border-radius: 0.75rem; padding: 1rem 1.25rem; overflow-x: auto; margin-bottom: 1.5rem; }
+  .prose-custom code { font-size: 0.875rem; color: var(--color-sa-cyan); }
+  .prose-custom pre code { color: var(--color-sa-text); }
+  .prose-custom a { color: var(--color-sa-accent); text-decoration: none; }
+  .prose-custom a:hover { text-decoration: underline; }
+  .prose-custom hr { border-color: rgba(255,255,255,0.05); margin: 3rem 0; }
+  .toc { background: var(--color-sa-bg2); border: 1px solid rgba(255,255,255,0.05); border-radius: 0.75rem; padding: 1.25rem 1.5rem; margin-bottom: 2rem; }
+  .toc h4 { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--color-sa-text); }
+  .toc ol { padding-left: 1.25rem; margin: 0; }
+  .toc li { margin-bottom: 0.25rem; font-size: 0.875rem; }
+  .env-table { overflow-x: auto; margin-bottom: 1.5rem; }
+  .env-table table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+  .env-table th { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--color-sa-text); font-weight: 600; }
+  .env-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--color-sa-text2); }
+</style>

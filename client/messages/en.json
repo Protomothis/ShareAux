@@ -147,7 +147,10 @@
     "preparing": "Preparing next track...",
     "idle": "Waiting for tracks...",
     "idleHint": "Add a track to start playing",
-    "djControl": "🎧 DJ Controls"
+    "djControl": "🎧 DJ Controls",
+    "cast": "Cast to device",
+    "castNoDevice": "No available devices found",
+    "castNotSupported": "Cannot cast current stream"
   },
   "queue": {
     "title": "📋 Queue",

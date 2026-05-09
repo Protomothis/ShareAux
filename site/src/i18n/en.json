@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "title": "ShareAux — Self-hosted Real-time Music Sharing",
+    "description": "Create rooms, search for music together, and stream to all participants in real-time. Self-hosted, open-source."
+  },
+  "nav": {
+    "github": "GitHub",
+    "switchLang": "한국어"
+  },
+  "hero": {
+    "title": "Listen Together,",
+    "titleAccent": "In Real-Time",
+    "subtitle": "A self-hosted platform where everyone in the room hears the same song at the same time.\nCreate a room, queue up tracks, and vibe together.",
+    "cta1": "View on GitHub",
+    "cta2": "Self-hosting Guide"
+  },
+  "features": {
+    "title": "Features",
+    "items": [
+      { "title": "Real-time Streaming", "desc": "WebSocket audio streamed to all participants simultaneously. Cast to Chromecast, HomePod, or Apple TV." },
+      { "title": "Permission System", "desc": "Granular per-room controls. Host manages who can queue, skip, or chat." },
+      { "title": "Synced Lyrics", "desc": "Line-by-line karaoke display with AI translation and pronunciation guides." },
+      { "title": "Live Chat", "desc": "Slash commands, @mentions, and floating emoji reactions." },
+      { "title": "Queue Management", "desc": "Drag & drop reorder, vote skip, and Auto DJ when the queue runs dry." },
+      { "title": "Guest Access", "desc": "Invite code — join without an account." },
+      { "title": "Mobile Ready", "desc": "Responsive, iOS Safari compatible." },
+      { "title": "Self-hosted", "desc": "Docker one-liner. Your data, your server." }
+    ]
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "steps": [
+      { "num": "1", "title": "Create a Room", "desc": "One click to create. Share the invite code with friends." },
+      { "num": "2", "title": "Search & Queue", "desc": "Search for music, add to the shared queue. Everyone can contribute." },
+      { "num": "3", "title": "Listen Together", "desc": "Audio streams in real-time to all participants. Same song, same moment." }
+    ]
+  },
+  "techStack": {
+    "title": "Tech Stack",
+    "items": [
+      { "layer": "Server", "tech": "NestJS 11, TypeORM, PostgreSQL 16, raw WebSocket" },
+      { "layer": "Client", "tech": "Next.js 16, React 19, Tailwind 4, zustand" },
+      { "layer": "Audio", "tech": "yt-dlp → ffmpeg (fMP4 AAC) → WebSocket → MSE" },
+      { "layer": "Infra", "tech": "Docker, GitHub Actions, GHCR" }
+    ]
+  },
+  "quickStart": {
+    "title": "Quick Start",
+    "desc": "Get running in under a minute with Docker:",
+    "code": "git clone https://github.com/Protomothis/ShareAux.git\ncd ShareAux\ncp .env.example .env\ndocker compose up -d"
+  },
+  "footer": {
+    "license": "AGPL-3.0 License",
+    "madeWith": "Made with"
+  }
+}

@@ -1,0 +1,20 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro';
+import Features from '../components/Features.astro';
+import HowItWorks from '../components/HowItWorks.astro';
+import TechStack from '../components/TechStack.astro';
+import QuickStart from '../components/QuickStart.astro';
+import Footer from '../components/Footer.astro';
+import { t } from '../i18n';
+
+const i = t('en');
+---
+
+<Layout lang="en">
+  <Hero {...i.hero} lang="en" />
+  <Features {...i.features} />
+  <HowItWorks {...i.howItWorks} />
+  <QuickStart {...i.quickStart} />
+  <Footer {...i.footer} />
+</Layout>

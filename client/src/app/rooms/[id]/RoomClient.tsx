@@ -51,6 +51,8 @@ import type { MobileTab } from '@/types';
 import type { StreamState } from '@/types';
 import { LyricsStatus } from '@/types';
 
+import type { CastState } from '@/components/player/CastButton';
+
 export default function RoomClient({ id }: { id: string }) {
   const t = useTranslations('room');
   const router = useRouter();
@@ -351,6 +353,9 @@ export default function RoomClient({ id }: { id: string }) {
     isFavorite: track ? favorites.favoriteIds.has(track.sourceId) : false,
     favoriteLoading: track ? favorites.favLoadingIds.has(track.sourceId) : false,
     onToggleFavorite: track && role !== 'guest' ? () => favorites.toggleFavorite(track) : undefined,
+    onCastStateChange: (state: CastState) => {
+      audio.setMuted(state === 'connected');
+    },
   };
 
   const chatProps = {

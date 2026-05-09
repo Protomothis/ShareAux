@@ -1,0 +1,27 @@
+---
+interface Props {
+  title: string;
+  steps: { num: string; title: string; desc: string }[];
+}
+const { title, steps } = Astro.props;
+---
+
+<section class="py-24 px-6 bg-sa-bg2">
+  <div class="max-w-4xl mx-auto">
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">{title}</h2>
+    <div class="w-16 h-1 mx-auto mb-16 rounded-full bg-gradient-to-r from-sa-accent to-sa-cyan"></div>
+    <div class="relative grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Connecting line (desktop) -->
+      <div class="hidden md:block absolute top-6 left-[16%] right-[16%] h-px bg-gradient-to-r from-sa-accent/30 via-sa-cyan/30 to-sa-accent/30"></div>
+      {steps.map((step) => (
+        <div class="relative text-center animate-fade-up">
+          <div class="relative w-12 h-12 mx-auto mb-4 rounded-full bg-sa-bg border-2 border-sa-accent/50 flex items-center justify-center text-sa-accent font-bold text-lg shadow-[0_0_16px_rgba(255,64,129,0.3)]">
+            {step.num}
+          </div>
+          <h3 class="text-lg font-semibold mb-2">{step.title}</h3>
+          <p class="text-sm text-sa-text2">{step.desc}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

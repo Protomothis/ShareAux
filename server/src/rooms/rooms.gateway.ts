@@ -11,6 +11,7 @@ import {
   AUTH_COOKIE_ACCESS,
   WS_CLOSE_BANNED,
   WS_CLOSE_DUPLICATE_SESSION,
+  IS_DEV,
   WS_CLOSE_JOINED_OTHER_ROOM,
   WS_CLOSE_KICKED,
   WS_CLOSE_ROOM_GONE,
@@ -75,7 +76,8 @@ export class RoomsGateway implements OnModuleDestroy {
 
       // CSWSH 방지: Origin 헤더 검증
       const origin = req.headers.origin;
-      if (allowedOrigin && origin && !origin.startsWith(allowedOrigin)) {
+      const skipOriginCheck = IS_DEV && this.config.get<string>('DEV_WS_ORIGIN_CHECK') !== 'true';
+      if (!skipOriginCheck && allowedOrigin && origin && !origin.startsWith(allowedOrigin)) {
         this.logger.warn(`WS upgrade rejected: origin=${origin} (allowed=${allowedOrigin})`);
         socket.destroy();
         return;
@@ -499,5 +501,26 @@ export class RoomsGateway implements OnModuleDestroy {
       if (c.data?.userId) ids.add(c.data.userId);
     });
     return [...ids];
+  }
+
+  /** 외부에서 채팅 메시지 주입 (테스트/시스템용) */
+  broadcastChatMessage(roomId: string, nickname: string, message: string): void {
+    const enriched = {
+      userId: 'system',
+      nickname,
+      role: 'user',
+      message,
+      timestamp: new Date().toISOString(),
+    };
+    const hist = this.chatHistory.get(roomId) ?? [];
+    hist.push(enriched);
+    if (hist.length > 50) hist.shift();
+    this.chatHistory.set(roomId, hist);
+
+    const json = JSON.stringify(enriched);
+    const buf = Buffer.alloc(1 + Buffer.byteLength(json));
+    buf[0] = WsOpCode.Chat;
+    buf.write(json, 1);
+    this.broadcastToRoom(roomId, buf);
   }
 }

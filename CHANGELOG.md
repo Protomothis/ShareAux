@@ -1,5 +1,30 @@
 # Changelog
 
+## v0.2.1
+
+### 🔊 외부 기기 재생 (Cast / AirPlay)
+
+- HTTP 스트림 엔드포인트 추가 — 외부 기기에서 방 오디오 재생 가능 (#38)
+- Chrome: Cast 버튼으로 Chromecast 연결 (Remote Playback API)
+- Safari: AirPlay 버튼으로 HomePod/Apple TV 등 연결
+- Cast 연결 시 로컬 오디오 자동 음소거, 버튼 재클릭으로 해제
+- 기기에 곡 제목/아티스트/썸네일 표시 (Media Session API)
+- 스트림 전용 토큰 인증 — 쿠키 의존 없이 모든 환경에서 동작
+- 기존 ffmpeg에 ADTS output 통합 (fd3) — 라이브 시각 완벽 동기화
+
+### 🐛 버그 수정
+
+- 재생 불가 곡 스킵 시 시스템 메시지가 채팅에 표시되지 않던 문제 해결
+
+### 🛠 개선
+
+- dev.sh 전면 재작성 — 크로스 플랫폼 (macOS/Linux/Windows WSL)
+- dev.sh `--https` 모드 추가 (Cast/AirPlay 로컬 테스트용)
+- 개발 환경에서 LAN IP 접속 허용 (WS origin 체크 스킵)
+- 미사용 AudioControl 컴포넌트 정리
+
+---
+
 ## v0.2.0
 
 ### 🔗 URL 가져오기

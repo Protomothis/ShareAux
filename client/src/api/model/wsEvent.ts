@@ -21,6 +21,7 @@ export const WsEvent = {
   playbackUpdated: 'playbackUpdated',
   metadataUpdated: 'metadataUpdated',
   trackSkipped: 'trackSkipped',
+  trackUnavailable: 'trackUnavailable',
   trackPrevious: 'trackPrevious',
   trackAdded: 'trackAdded',
   userTrackAdded: 'userTrackAdded',

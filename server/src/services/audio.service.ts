@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { type ChildProcess, spawn } from 'child_process';
 
 import { FFMPEG_BITRATE, FFMPEG_FRAG_DURATION, FFMPEG_MAX_RETRIES, FFMPEG_RECENT_CHUNKS } from '../constants.js';
-import type { ListenerState, ParsedInitSegment, RoomAudio, StreamInfo } from '../types/index.js';
+import type { HttpStreamListener, ListenerState, ParsedInitSegment, RoomAudio, StreamInfo } from '../types/index.js';
 
 @Injectable()
 export class AudioService {
@@ -46,7 +46,7 @@ export class AudioService {
     room.playing = false;
     room.initSegment = null;
     room.recentChunks = [];
-    // 모든 리스너 synced 해제 → 새 곡 시작 시 init segment 재전송 보장
+    // 모든 WS 리스너 synced 해제
     for (const state of room.listeners.values()) state.synced = false;
   }
 
@@ -62,6 +62,7 @@ export class AudioService {
 
   destroyRoom(roomId: string): void {
     this.stopStream(roomId);
+    this.closeHttpListeners(roomId);
     this.rooms.delete(roomId);
   }
 
@@ -90,7 +91,7 @@ export class AudioService {
     } else {
       const listeners = new Map<(chunk: Buffer) => void, ListenerState>();
       listeners.set(cb, { cb, synced: false });
-      this.rooms.set(roomId, { ffmpeg: null, listeners, playing: false, initSegment: null, recentChunks: [] });
+      this.rooms.set(roomId, { ffmpeg: null, listeners, httpListeners: new Set(), playing: false, initSegment: null, recentChunks: [] });
     }
   }
 
@@ -182,8 +183,22 @@ export class AudioService {
         '-f',
         'mp4',
         'pipe:1',
+        // ADTS output (fd 3) — HTTP stream용
+        '-map',
+        '0:a:0',
+        '-c:a',
+        'aac',
+        '-b:a',
+        bitrate,
+        '-ar',
+        '48000',
+        '-ac',
+        '2',
+        '-f',
+        'adts',
+        'pipe:3',
       ],
-      { stdio: [fromBuffer ? 'pipe' : 'ignore', 'pipe', 'pipe'] },
+      { stdio: [fromBuffer ? 'pipe' : 'ignore', 'pipe', 'pipe', 'pipe'] },
     );
 
     if (fromBuffer && ffmpeg.stdin) {
@@ -192,14 +207,18 @@ export class AudioService {
       ffmpeg.stdin.end();
     }
 
+    const existingRoom = this.rooms.get(roomId);
     const room: RoomAudio = {
       ffmpeg,
       listeners: existingListeners,
+      httpListeners: existingRoom?.httpListeners ?? new Set(),
       playing: true,
       initSegment: null,
       recentChunks: [],
       codec: 'aac',
       bitrate: bitrateKbps ?? parseInt(FFMPEG_BITRATE, 10),
+      sourceUrl: fromBuffer ? undefined : audioUrl,
+      startedAt: Date.now(),
     };
     this.rooms.set(roomId, room);
     for (const state of room.listeners.values()) state.synced = false;
@@ -207,6 +226,18 @@ export class AudioService {
     this.attachStderrHandler(roomId, ffmpeg, room);
     this.attachStdoutHandler(roomId, ffmpeg, room, onStart);
     this.attachCloseHandler(roomId, ffmpeg, room, onEnd, getNewUrl, onStart);
+
+    // fd 3 (ADTS) → HTTP 리스너에 전달
+    const adtsFd = ffmpeg.stdio[3] as import('stream').Readable | null;
+    if (adtsFd) {
+      adtsFd.on('data', (chunk: Buffer) => {
+        for (const hl of room.httpListeners) {
+          if (!hl.res.writableEnded) {
+            hl.res.write(chunk);
+          }
+        }
+      });
+    }
   }
 
   private attachStderrHandler(roomId: string, ffmpeg: ChildProcess, room: RoomAudio): void {
@@ -307,8 +338,39 @@ export class AudioService {
     room.recentChunks.push(chunk);
     if (room.recentChunks.length > FFMPEG_RECENT_CHUNKS) room.recentChunks.shift();
 
+    // WS listeners
     for (const state of room.listeners.values()) {
       if (state.synced) state.cb(chunk);
     }
   }
+
+  // --- HTTP Stream (ADTS AAC) ---
+
+  /** 방 완전 종료 시 HTTP 리스너 정리 */
+  closeHttpListeners(roomId: string): void {
+    const room = this.rooms.get(roomId);
+    if (!room) return;
+    for (const hl of room.httpListeners) {
+      if (!hl.res.writableEnded) hl.res.end();
+    }
+    room.httpListeners.clear();
+  }
+
+  addHttpListener(roomId: string, res: HttpStreamListener['res']): boolean {
+    const room = this.rooms.get(roomId);
+    if (!room || !room.playing || !room.sourceUrl) return false;
+
+    const hl: HttpStreamListener = { res };
+    room.httpListeners.add(hl);
+
+    // 연결 종료 시 제거
+    res.on('close', () => {
+      room.httpListeners.delete(hl);
+      this.logger.log(`[${roomId}] HTTP listener disconnected (remaining: ${room.httpListeners.size})`);
+    });
+
+    this.logger.log(`[${roomId}] HTTP listener added (total: ${room.httpListeners.size})`);
+    return true;
+  }
+
 }

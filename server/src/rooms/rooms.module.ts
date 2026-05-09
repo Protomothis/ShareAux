@@ -12,13 +12,14 @@ import { MemberService } from './member.service.js';
 import { RoomsController } from './rooms.controller.js';
 import { RoomsGateway } from './rooms.gateway.js';
 import { RoomsService } from './rooms.service.js';
+import { StreamController } from './stream.controller.js';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Room, RoomMember, RoomPermission, RoomPlayback, RoomBan, User]),
     forwardRef(() => AuthModule),
   ],
-  controllers: [RoomsController],
+  controllers: [RoomsController, StreamController],
   providers: [MemberService, RoomsService, RoomsGateway],
   exports: [MemberService, RoomsService, RoomsGateway],
 })

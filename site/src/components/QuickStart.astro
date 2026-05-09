@@ -1,0 +1,35 @@
+---
+interface Props {
+  title: string;
+  desc: string;
+  code: string;
+}
+const { title, desc, code } = Astro.props;
+const lines = code.split('\n');
+---
+
+<section id="quick-start" class="py-24 px-6 bg-sa-bg2">
+  <div class="max-w-3xl mx-auto">
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">{title}</h2>
+    <div class="w-16 h-1 mx-auto mb-4 rounded-full bg-gradient-to-r from-sa-accent to-sa-cyan"></div>
+    <p class="text-center text-sa-text2 mb-8">{desc}</p>
+    <div class="rounded-xl bg-sa-bg border border-white/10 overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+      <!-- Terminal header -->
+      <div class="flex items-center gap-2 px-4 py-3 border-b border-white/5">
+        <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+        <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+        <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+        <span class="ml-2 text-xs text-sa-text2">terminal</span>
+      </div>
+      <!-- Code -->
+      <div class="p-6 overflow-x-auto">
+        {lines.map((line) => (
+          <div class="flex">
+            <span class="select-none text-sa-accent/60 mr-3">$</span>
+            <code class="text-sm font-mono text-sa-cyan">{line}</code>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>

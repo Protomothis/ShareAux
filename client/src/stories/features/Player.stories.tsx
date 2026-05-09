@@ -8,9 +8,9 @@ const mockTrack = {
   id: 'mock-track',
   sourceId: 'mock-source',
   provider: 'yt' as const,
-  name: 'Blinding Lights — The Weeknd (Official Music Video)',
-  artist: 'The Weeknd',
-  thumbnail: 'https://picsum.photos/200',
+  name: 'Elektronomia — Sky High [NCS Release]',
+  artist: 'Elektronomia',
+  thumbnail: 'https://i.ytimg.com/vi/TW9d8vYrVFQ/hqdefault.jpg',
   durationMs: 200000,
 };
 
@@ -72,4 +72,18 @@ export const Loading: Story = {
 
 export const Empty: Story = {
   args: { isHost: true, track: null, listening: false },
+};
+
+export const WithCast: Story = {
+  args: {
+    isHost: true,
+    track: mockTrack,
+    listening: true,
+    isPlaying: true,
+    elapsedBase: 60000,
+    syncTime: Date.now(),
+    streamCodec: 'opus',
+    streamBitrate: 128,
+    forceCast: true,
+  },
 };

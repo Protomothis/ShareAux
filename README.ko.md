@@ -1,20 +1,31 @@
-> 🌐 [English](./README.md) | **한국어**
+<div align="center">
+  <img src="client/src/app/icon.svg" width="80" alt="ShareAux" />
+  <h1>ShareAux</h1>
+  <p><strong>셀프호스팅 실시간 음악 공유 플랫폼</strong></p>
+  <p>방을 만들고, 함께 음악을 검색하고, WebSocket 기반 실시간 스트리밍으로 모든 참여자가 같은 순간을 공유합니다.</p>
 
-# ShareAux
+  [![Version](https://img.shields.io/github/v/tag/Protomothis/ShareAux?label=version&color=ff4081)](https://github.com/Protomothis/ShareAux/releases)
+  [![License](https://img.shields.io/github/license/Protomothis/ShareAux?color=00e5ff)](./LICENSE)
+  [![Docker](https://img.shields.io/badge/docker-ready-blue)](https://ghcr.io/protomothis)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6)](./server/tsconfig.json)
+  [![GHCR](https://img.shields.io/badge/GHCR-packages-purple)](https://github.com/orgs/Protomothis/packages)
+  [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-ff4081)](https://github.com/Protomothis/ShareAux/pulls)
 
-셀프호스팅 실시간 음악 공유 플랫폼. 방을 만들고, 함께 음악을 검색하고, WebSocket 기반 실시간 스트리밍으로 모든 참여자가 같은 순간을 공유합니다. 싱크 가사, 채팅, 리액션까지.
+  <a href="https://protomothis.github.io/ShareAux/ko/">🌐 홈페이지</a> · <a href="#빠른-시작">빠른 시작</a>
+
+  🇺🇸 [English](./README.md) | 🇰🇷 **한국어**
+</div>
+
+<br />
 
 <p align="center">
   <img src="docs/images/login-desktop.png" alt="ShareAux 로그인" width="720" />
 </p>
 
-<p align="center">
-  <img src="docs/images/room-desktop.png" alt="ShareAux 방" width="720" />
-</p>
-
 ## 주요 기능
 
 - **실시간 오디오 스트리밍** — WebSocket 바이너리(fMP4 AAC)를 MSE로 재생, 파일 다운로드 없음
+- **Cast / AirPlay** — 외부 스피커로 방 오디오 전송 (Chromecast, HomePod, Apple TV)
 - **방 기반 청취** — 방 생성/참여, 동기화된 음악 큐 공유
 - **큐 관리** — 드래그 앤 드롭 순서 변경, 투표 스킵, Auto DJ
 - **싱크 가사** — 줄/워드 단위 카라오케, AI 번역(Gemini) 및 발음 가이드

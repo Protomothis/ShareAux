@@ -147,7 +147,10 @@
     "preparing": "다음 곡 준비 중...",
     "idle": "재생 대기 중...",
     "idleHint": "곡을 신청하면 자동으로 재생됩니다",
-    "djControl": "🎧 DJ 컨트롤"
+    "djControl": "🎧 DJ 컨트롤",
+    "cast": "외부 기기로 재생",
+    "castNoDevice": "연결 가능한 기기를 찾을 수 없습니다",
+    "castNotSupported": "현재 스트림을 전송할 수 없습니다"
   },
   "queue": {
     "title": "📋 신청곡",

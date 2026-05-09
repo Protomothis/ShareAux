@@ -10,6 +10,8 @@ import type { StreamState, VisualMode } from '@/types';
 
 import { Button } from '../ui/button';
 import { VolumeSlider } from '../ui/volume-slider';
+import CastButton from './CastButton';
+import type { CastState } from './CastButton';
 import { VISUAL_MODES } from './Visualizer';
 import VoteSkip from './VoteSkip';
 
@@ -28,6 +30,7 @@ interface PlayerControlsProps {
   skipVotes: number;
   skipRequired: number;
   trackName?: string;
+  trackInfo?: { name?: string | null; artist?: string | null; thumbnail?: string | null };
   hasNext: boolean;
   hasPrev: boolean;
   elapsedMs: number;
@@ -38,6 +41,9 @@ interface PlayerControlsProps {
   onCycleVisual: () => void;
   streamState?: StreamState;
   onSkipError?: () => void;
+  /** 스토리북용 — Cast 버튼 강제 표시 */
+  forceCast?: boolean;
+  onCastStateChange?: (state: CastState) => void;
 }
 
 export default function PlayerControls({
@@ -55,6 +61,7 @@ export default function PlayerControls({
   skipVotes,
   skipRequired,
   trackName,
+  trackInfo,
   hasNext,
   hasPrev,
   elapsedMs,
@@ -65,6 +72,8 @@ export default function PlayerControls({
   onCycleVisual,
   streamState,
   onSkipError,
+  forceCast,
+  onCastStateChange,
 }: PlayerControlsProps) {
   const t = useTranslations('player');
   const [skipping, setSkipping] = useState<'prev' | 'next' | false>(false);
@@ -191,16 +200,19 @@ export default function PlayerControls({
         </Button>
       )}
 
-      {/* 가사 토글 */}
-      <Button
-        variant="ghost-muted"
-        size="circle-sm"
-        onClick={onToggleLyrics}
-        className={showLyrics ? 'text-sa-accent' : 'text-white/30'}
-        aria-label={t('lyricsToggle')}
-      >
-        <Type size={14} />
-      </Button>
+      {/* 가사 토글 + Cast/AirPlay */}
+      <div className="flex items-center gap-1">
+        <Button
+          variant="ghost-muted"
+          size="circle-sm"
+          onClick={onToggleLyrics}
+          className={showLyrics ? 'text-sa-accent' : 'text-white/30'}
+          aria-label={t('lyricsToggle')}
+        >
+          <Type size={14} />
+        </Button>
+        <CastButton roomId={roomId} forceShow={forceCast} onCastStateChange={onCastStateChange} disabled={!trackName} track={trackInfo} />
+      </div>
     </div>
   );
 }

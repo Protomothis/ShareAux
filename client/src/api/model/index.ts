@@ -136,6 +136,7 @@ export * from './searchResultItemProvider';
 export * from './setupStatusResponse';
 export * from './sharedEnums';
 export * from './showcaseResponse';
+export * from './streamControllerGetStreamToken200';
 export * from './streamingMetricsResponse';
 export * from './subscribePushDto';
 export * from './suggestResponse';

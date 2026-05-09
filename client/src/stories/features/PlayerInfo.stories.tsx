@@ -8,9 +8,9 @@ const mockTrack = {
   id: 'mock-track',
   sourceId: 'mock-source',
   provider: 'yt' as const,
-  name: 'Blinding Lights — The Weeknd',
-  artist: 'The Weeknd',
-  thumbnail: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
+  name: 'Elektronomia — Sky High [NCS Release]',
+  artist: 'Elektronomia',
+  thumbnail: 'https://i.ytimg.com/vi/TW9d8vYrVFQ/hqdefault.jpg',
   durationMs: 200000,
 };
 

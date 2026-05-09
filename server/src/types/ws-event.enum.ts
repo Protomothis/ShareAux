@@ -16,6 +16,7 @@ export enum WsEvent {
   PlaybackUpdated = 'playbackUpdated',
   MetadataUpdated = 'metadataUpdated',
   TrackSkipped = 'trackSkipped',
+  TrackUnavailable = 'trackUnavailable',
   TrackPrevious = 'trackPrevious',
   TrackAdded = 'trackAdded',
   UserTrackAdded = 'userTrackAdded',

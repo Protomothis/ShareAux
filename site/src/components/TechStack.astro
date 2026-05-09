@@ -1,0 +1,25 @@
+---
+interface Props {
+  title: string;
+  items: { layer: string; tech: string }[];
+}
+const { title, items } = Astro.props;
+const colors = ['sa-accent', 'sa-cyan', 'sa-accent', 'sa-cyan'];
+---
+
+<section class="py-24 px-6">
+  <div class="max-w-4xl mx-auto">
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">{title}</h2>
+    <div class="w-16 h-1 mx-auto mb-16 rounded-full bg-gradient-to-r from-sa-accent to-sa-cyan"></div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {items.map((item, i) => (
+        <div class="flex items-start gap-4 p-5 rounded-xl bg-sa-bg2 border border-white/5 animate-fade-up" style={`animation-delay: ${i * 0.05}s`}>
+          <span class={`shrink-0 px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${i % 2 === 0 ? 'bg-sa-accent/10 text-sa-accent' : 'bg-sa-cyan/10 text-sa-cyan'}`}>
+            {item.layer}
+          </span>
+          <span class="text-sm text-sa-text2 leading-relaxed">{item.tech}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

@@ -1,0 +1,25 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Pretendard Variable', 'Inter', system-ui, sans-serif;
+  --color-sa-accent: #ff4081;
+  --color-sa-accent-hover: #ff6ba0;
+  --color-sa-cyan: #00e5ff;
+  --color-sa-bg: #000000;
+  --color-sa-bg2: #121212;
+  --color-sa-bg3: #1e1e1e;
+  --color-sa-text: #f5f5f5;
+  --color-sa-text2: #a0a0a0;
+  --animate-fade-up: fade-up 0.6s ease-out both;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

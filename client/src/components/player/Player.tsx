@@ -8,6 +8,7 @@ import type { AutoDjStatus, StreamState, TrackInfo, TrackVoteMap, VisualMode } f
 import { LyricsStatus } from '@/types';
 
 import Lyrics from './Lyrics';
+import type { CastState } from './CastButton';
 import PlayerControls from './PlayerControls';
 import PlayerInfo from './PlayerInfo';
 import PlayerProgress from './PlayerProgress';
@@ -45,6 +46,8 @@ interface PlayerProps {
   isFavorite?: boolean;
   favoriteLoading?: boolean;
   onToggleFavorite?: () => void;
+  forceCast?: boolean;
+  onCastStateChange?: (state: CastState) => void;
 }
 
 export default function Player({
@@ -79,6 +82,8 @@ export default function Player({
   isFavorite,
   favoriteLoading,
   onToggleFavorite,
+  forceCast,
+  onCastStateChange,
 }: PlayerProps) {
   const { elapsed, muted, effectiveVolume, toggleMute, handleVolumeChange } = useAudioControl({
     elapsedBase,
@@ -161,6 +166,7 @@ export default function Player({
         skipVotes={skipVotes}
         skipRequired={skipRequired}
         trackName={track?.name}
+        trackInfo={track ?? undefined}
         hasNext={hasNext}
         hasPrev={hasPrev}
         elapsedMs={elapsed}
@@ -176,6 +182,9 @@ export default function Player({
         }
         streamState={streamState}
         onSkipError={onSkipError}
+
+        forceCast={forceCast}
+        onCastStateChange={onCastStateChange}
       />
     </div>
   );

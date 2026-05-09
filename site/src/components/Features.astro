@@ -1,0 +1,96 @@
+---
+import { Radio, Mic, ListMusic, MessageCircle, Users, UserPlus, Smartphone, Server } from 'lucide-astro';
+
+interface Props {
+  title: string;
+  items: { title: string; desc: string }[];
+}
+const { title, items } = Astro.props;
+---
+
+<section class="py-24 px-6">
+  <div class="max-w-5xl mx-auto">
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">{title}</h2>
+    <div class="w-16 h-1 mx-auto mb-12 rounded-full bg-gradient-to-r from-sa-accent to-sa-cyan"></div>
+
+    <!-- 주요 4개 — 2x2 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <!-- 스트리밍 -->
+      <div class="group rounded-2xl bg-sa-bg2 border border-white/5 overflow-hidden hover:border-sa-accent/20 transition-colors">
+        <div class="p-6">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-8 h-8 rounded-lg bg-sa-accent/10 flex items-center justify-center text-sa-accent"><Radio size={16} /></div>
+            <h3 class="font-bold">{items[0].title}</h3>
+          </div>
+          <p class="text-sm text-sa-text2">{items[0].desc}</p>
+        </div>
+        <div class="px-6 pb-4">
+          <img src="/ShareAux/images/features/streaming.png" alt={items[0].title} class="w-full h-44 object-cover object-top rounded-lg border border-white/5 bg-sa-bg" loading="lazy" />
+        </div>
+      </div>
+      <!-- 큐 관리 -->
+      <div class="group rounded-2xl bg-sa-bg2 border border-white/5 overflow-hidden hover:border-sa-cyan/20 transition-colors">
+        <div class="p-6">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-8 h-8 rounded-lg bg-sa-cyan/10 flex items-center justify-center text-sa-cyan"><ListMusic size={16} /></div>
+            <h3 class="font-bold">{items[4].title}</h3>
+          </div>
+          <p class="text-sm text-sa-text2">{items[4].desc}</p>
+        </div>
+        <div class="px-6 pb-4">
+          <img src="/ShareAux/images/features/queue.png" alt={items[4].title} class="w-full h-44 object-cover object-top rounded-lg border border-white/5 bg-sa-bg" loading="lazy" />
+        </div>
+      </div>
+      <!-- 가사 -->
+      <div class="group rounded-2xl bg-sa-bg2 border border-white/5 overflow-hidden hover:border-sa-cyan/20 transition-colors">
+        <div class="p-6">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-8 h-8 rounded-lg bg-sa-cyan/10 flex items-center justify-center text-sa-cyan"><Mic size={16} /></div>
+            <h3 class="font-bold">{items[2].title}</h3>
+          </div>
+          <p class="text-sm text-sa-text2">{items[2].desc}</p>
+        </div>
+        <div class="px-6 pb-4">
+          <img src="/ShareAux/images/features/lyrics.png" alt={items[2].title} class="w-full h-44 object-cover object-center rounded-lg border border-white/5 bg-sa-bg" loading="lazy" />
+        </div>
+      </div>
+      <!-- 채팅 -->
+      <div class="group rounded-2xl bg-sa-bg2 border border-white/5 overflow-hidden hover:border-sa-accent/20 transition-colors">
+        <div class="p-6">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-8 h-8 rounded-lg bg-sa-accent/10 flex items-center justify-center text-sa-accent"><MessageCircle size={16} /></div>
+            <h3 class="font-bold">{items[3].title}</h3>
+          </div>
+          <p class="text-sm text-sa-text2">{items[3].desc}</p>
+        </div>
+        <div class="px-6 pb-4">
+          <img src="/ShareAux/images/features/chat.png" alt={items[3].title} class="w-full h-44 object-cover object-top rounded-lg border border-white/5 bg-sa-bg" loading="lazy" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 하단 4개 -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="rounded-2xl bg-sa-bg2 border border-white/5 p-5 hover:border-sa-accent/20 transition-colors">
+        <div class="w-8 h-8 mb-3 rounded-lg bg-sa-accent/5 flex items-center justify-center text-sa-accent"><Users size={16} /></div>
+        <h4 class="text-sm font-semibold mb-1">{items[1].title}</h4>
+        <p class="text-xs text-sa-text2 leading-relaxed">{items[1].desc}</p>
+      </div>
+      <div class="rounded-2xl bg-sa-bg2 border border-white/5 p-5 hover:border-sa-cyan/20 transition-colors">
+        <div class="w-8 h-8 mb-3 rounded-lg bg-sa-cyan/5 flex items-center justify-center text-sa-cyan"><UserPlus size={16} /></div>
+        <h4 class="text-sm font-semibold mb-1">{items[5].title}</h4>
+        <p class="text-xs text-sa-text2 leading-relaxed">{items[5].desc}</p>
+      </div>
+      <div class="rounded-2xl bg-sa-bg2 border border-white/5 p-5 hover:border-sa-accent/20 transition-colors">
+        <div class="w-8 h-8 mb-3 rounded-lg bg-sa-accent/5 flex items-center justify-center text-sa-accent"><Smartphone size={16} /></div>
+        <h4 class="text-sm font-semibold mb-1">{items[6].title}</h4>
+        <p class="text-xs text-sa-text2 leading-relaxed">{items[6].desc}</p>
+      </div>
+      <div class="rounded-2xl bg-sa-bg2 border border-white/5 p-5 hover:border-sa-cyan/20 transition-colors">
+        <div class="w-8 h-8 mb-3 rounded-lg bg-sa-cyan/5 flex items-center justify-center text-sa-cyan"><Server size={16} /></div>
+        <h4 class="text-sm font-semibold mb-1">{items[7].title}</h4>
+        <p class="text-xs text-sa-text2 leading-relaxed">{items[7].desc}</p>
+      </div>
+    </div>
+  </div>
+</section>

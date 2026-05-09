@@ -18,7 +18,9 @@ function killPort() {
 
 killPort();
 
-const child = spawn('npx', ['next', 'dev', '--port', String(port)], {
+const args = ['next', 'dev', '--port', String(port)];
+
+const child = spawn('npx', args, {
   stdio: 'inherit',
   cwd: __dirname,
   shell: true,

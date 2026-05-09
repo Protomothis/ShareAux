@@ -1,0 +1,149 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout lang="ko">
+  <article class="max-w-3xl mx-auto px-6 py-24 prose-custom">
+    <h1>셀프호스팅 가이드</h1>
+    <p class="lead">10분 안에 내 서버에서 ShareAux를 실행하세요.</p>
+
+    <nav class="toc">
+      <h4>목차</h4>
+      <ol>
+        <li><a href="#requirements">요구사항</a></li>
+        <li><a href="#install">설치</a></li>
+        <li><a href="#env">환경 변수</a></li>
+        <li><a href="#caddy">Caddy (HTTPS + 리버스 프록시)</a></li>
+        <li><a href="#start">실행</a></li>
+        <li><a href="#google-oauth">Google OAuth (선택)</a></li>
+        <li><a href="#first-login">첫 로그인</a></li>
+        <li><a href="#update">업데이트</a></li>
+      </ol>
+    </nav>
+
+    <h2 id="requirements">1. 요구사항</h2>
+    <ul>
+      <li>Linux 서버 (Ubuntu 22.04+ 권장) 또는 Docker 지원 호스트</li>
+      <li>Docker + Docker Compose v2</li>
+      <li>도메인 (HTTPS용)</li>
+      <li>80/443 포트 개방</li>
+    </ul>
+
+    <h2 id="install">2. 설치</h2>
+    <pre><code>git clone https://github.com/Protomothis/ShareAux.git
+cd ShareAux
+cp .env.example .env</code></pre>
+
+    <h2 id="env">3. 환경 변수</h2>
+    <p><code>.env</code> 파일을 열고 최소한 아래 값을 변경하세요:</p>
+    <div class="env-table">
+      <table>
+        <thead><tr><th>변수</th><th>설명</th><th>예시</th></tr></thead>
+        <tbody>
+          <tr><td><code>DB_PASSWORD</code></td><td>PostgreSQL 비밀번호</td><td><code>my-secure-password</code></td></tr>
+          <tr><td><code>JWT_SECRET</code></td><td>토큰 서명용 랜덤 문자열</td><td><code>openssl rand -hex 32</code></td></tr>
+          <tr><td><code>CLIENT_URL</code></td><td>공개 URL</td><td><code>https://music.example.com</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>선택 변수:</p>
+    <div class="env-table">
+      <table>
+        <thead><tr><th>변수</th><th>설명</th></tr></thead>
+        <tbody>
+          <tr><td><code>GOOGLE_CLIENT_ID</code></td><td>Google OAuth (Google 로그인)</td></tr>
+          <tr><td><code>GOOGLE_CLIENT_SECRET</code></td><td>Google OAuth 시크릿</td></tr>
+          <tr><td><code>GOOGLE_CALLBACK_URL</code></td><td><code>https://도메인/api/auth/google/callback</code></td></tr>
+          <tr><td><code>GEMINI_API_KEY</code></td><td>가사 AI 번역 (Gemini)</td></tr>
+          <tr><td><code>CAPTCHA_ENABLED</code></td><td>PoW CAPTCHA (기본: true)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="caddy">4. HTTPS (리버스 프록시)</h2>
+    <p>ShareAux는 내부 Caddy 게이트웨이를 통해 <code>8080</code> 포트를 노출합니다. HTTPS는 호스트에 외부 리버스 프록시를 설정하세요.</p>
+
+    <h3>Caddy (권장)</h3>
+    <p>호스트에 Caddy 설치 후 <code>/etc/caddy/Caddyfile</code> 작성:</p>
+    <pre><code>music.example.com &#123;
+    reverse_proxy localhost:8080
+&#125;</code></pre>
+    <p>Caddy가 Let's Encrypt 인증서를 자동 발급합니다. 끝.</p>
+
+    <h3>Nginx</h3>
+    <pre><code>server &#123;
+    server_name music.example.com;
+    listen 443 ssl;
+    ssl_certificate /path/to/cert.pem;
+    ssl_certificate_key /path/to/key.pem;
+
+    location / &#123;
+        proxy_pass http://localhost:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+    &#125;
+&#125;</code></pre>
+
+    <p><strong>중요:</strong> WebSocket(<code>/ws</code>)은 <code>Upgrade</code> 헤더가 필요합니다. 위 예시에 포함되어 있습니다.</p>
+    <p><code>.env</code>의 <code>CLIENT_URL</code>을 공개 URL로 설정하세요 (예: <code>https://music.example.com</code>).</p>
+
+    <h2 id="start">5. 실행</h2>
+    <pre><code>docker compose up -d</code></pre>
+    <p>상태 확인:</p>
+    <pre><code>docker compose ps
+docker compose logs -f</code></pre>
+    <p><code>https://music.example.com</code>으로 접속하세요.</p>
+
+    <h2 id="google-oauth">6. Google OAuth (선택)</h2>
+    <ol>
+      <li><a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console</a> 접속</li>
+      <li>OAuth 2.0 클라이언트 ID 생성 (웹 애플리케이션)</li>
+      <li>승인된 리디렉션 URI: <code>https://도메인/api/auth/google/callback</code></li>
+      <li>Client ID와 Secret을 <code>.env</code>에 입력</li>
+      <li>재시작: <code>docker compose restart server</code></li>
+    </ol>
+    <p>Google OAuth 없이도 아이디/비밀번호 또는 게스트 초대 코드로 로그인 가능합니다.</p>
+
+    <h2 id="first-login">7. 첫 로그인</h2>
+    <ol>
+      <li>사이트에 접속해서 계정 생성</li>
+      <li>첫 번째 가입자가 자동으로 <strong>Super Admin</strong>이 됩니다</li>
+      <li><code>/admin</code>에서 어드민 패널 접근</li>
+      <li>설정 변경, 방 생성, 다른 사람 초대</li>
+    </ol>
+
+    <h2 id="update">8. 업데이트</h2>
+    <pre><code>cd ShareAux
+docker compose pull
+docker compose up -d</code></pre>
+    <p>DB 마이그레이션은 시작 시 자동 실행됩니다.</p>
+
+    <hr />
+    <p><a href="/ShareAux/ko/">← 홈으로</a></p>
+  </article>
+</Layout>
+
+<style>
+  .prose-custom h1 { font-size: 2.25rem; font-weight: 800; margin-bottom: 0.5rem; }
+  .prose-custom .lead { font-size: 1.125rem; color: var(--color-sa-text2); margin-bottom: 2rem; }
+  .prose-custom h2 { font-size: 1.5rem; font-weight: 700; margin-top: 3rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .prose-custom p { color: var(--color-sa-text2); line-height: 1.75; margin-bottom: 1rem; }
+  .prose-custom ul, .prose-custom ol { color: var(--color-sa-text2); margin-bottom: 1rem; padding-left: 1.5rem; }
+  .prose-custom li { margin-bottom: 0.5rem; }
+  .prose-custom pre { background: var(--color-sa-bg2); border: 1px solid rgba(255,255,255,0.05); border-radius: 0.75rem; padding: 1rem 1.25rem; overflow-x: auto; margin-bottom: 1.5rem; }
+  .prose-custom code { font-size: 0.875rem; color: var(--color-sa-cyan); }
+  .prose-custom pre code { color: var(--color-sa-text); }
+  .prose-custom a { color: var(--color-sa-accent); text-decoration: none; }
+  .prose-custom a:hover { text-decoration: underline; }
+  .prose-custom hr { border-color: rgba(255,255,255,0.05); margin: 3rem 0; }
+  .toc { background: var(--color-sa-bg2); border: 1px solid rgba(255,255,255,0.05); border-radius: 0.75rem; padding: 1.25rem 1.5rem; margin-bottom: 2rem; }
+  .toc h4 { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--color-sa-text); }
+  .toc ol { padding-left: 1.25rem; margin: 0; }
+  .toc li { margin-bottom: 0.25rem; font-size: 0.875rem; }
+  .env-table { overflow-x: auto; margin-bottom: 1.5rem; }
+  .env-table table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+  .env-table th { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--color-sa-text); font-weight: 600; }
+  .env-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--color-sa-text2); }
+</style>

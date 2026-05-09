@@ -1,4 +1,4 @@
-export type { ListenerState, ParsedInitSegment, RoomAudio, StreamInfo } from './audio.types.js';
+export type { HttpStreamListener, ListenerState, ParsedInitSegment, RoomAudio, StreamInfo } from './audio.types.js';
 export type { StreamState } from './audio.types.js';
 export type { AuthenticatedRequest, AuthenticatedUser, JwtPayload, OAuthProfile } from './auth.types.js';
 export { AuthProvider } from './auth-provider.enum.js';

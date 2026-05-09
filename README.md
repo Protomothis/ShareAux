@@ -1,20 +1,31 @@
-> 🌐 **English** | [한국어](./README.ko.md)
+<div align="center">
+  <img src="client/src/app/icon.svg" width="80" alt="ShareAux" />
+  <h1>ShareAux</h1>
+  <p><strong>Self-hosted real-time music sharing platform</strong></p>
+  <p>Create rooms, search for music together, and stream to all participants via WebSocket — everyone hears the same moment.</p>
 
-# ShareAux
+  [![Version](https://img.shields.io/github/v/tag/Protomothis/ShareAux?label=version&color=ff4081)](https://github.com/Protomothis/ShareAux/releases)
+  [![License](https://img.shields.io/github/license/Protomothis/ShareAux?color=00e5ff)](./LICENSE)
+  [![Docker](https://img.shields.io/badge/docker-ready-blue)](https://ghcr.io/protomothis)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6)](./server/tsconfig.json)
+  [![GHCR](https://img.shields.io/badge/GHCR-packages-purple)](https://github.com/orgs/Protomothis/packages)
+  [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-ff4081)](https://github.com/Protomothis/ShareAux/pulls)
 
-Self-hosted real-time music sharing platform. Create rooms, search for music together, and stream to all participants via WebSocket — everyone hears the same moment. Synced lyrics, chat, and reactions included.
+  <a href="https://protomothis.github.io/ShareAux/">🌐 Homepage</a> · <a href="#quick-start">Quick Start</a>
+
+  🇺🇸 **English** | 🇰🇷 [한국어](./README.ko.md)
+</div>
+
+<br />
 
 <p align="center">
   <img src="docs/images/login-desktop.png" alt="ShareAux Login" width="720" />
 </p>
 
-<p align="center">
-  <img src="docs/images/room-desktop.png" alt="ShareAux Room" width="720" />
-</p>
-
 ## Key Features
 
 - **Real-time Audio Streaming** — WebSocket binary (fMP4 AAC) played via MSE, no file downloads
+- **Cast / AirPlay** — Stream room audio to external speakers (Chromecast, HomePod, Apple TV)
 - **Room-based Listening** — Create/join rooms, synchronized music queue sharing
 - **Queue Management** — Drag & drop reordering, vote skip, Auto DJ
 - **Synced Lyrics** — Line/word-level karaoke, AI translation (Gemini) & pronunciation guide

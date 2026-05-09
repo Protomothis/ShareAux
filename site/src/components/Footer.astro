@@ -1,0 +1,19 @@
+---
+interface Props {
+  license: string;
+  madeWith: string;
+}
+const { license, madeWith } = Astro.props;
+---
+
+<footer class="py-12 px-6 border-t border-white/5">
+  <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-sa-text2">
+    <div class="flex items-center gap-2">
+      <span class="font-bold text-sa-text">Share<span class="text-sa-accent">Aux</span></span>
+      <span>· {license}</span>
+    </div>
+    <div>
+      {madeWith} <span class="text-sa-accent">♥</span> by <a href="https://github.com/Protomothis" target="_blank" rel="noopener" class="hover:text-sa-text transition-colors">Protomothis</a>
+    </div>
+  </div>
+</footer>

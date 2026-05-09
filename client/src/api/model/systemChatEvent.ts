@@ -24,4 +24,5 @@ export const SystemChatEvent = {
   autoDjEnabled: 'autoDjEnabled',
   autoDjDisabled: 'autoDjDisabled',
   enqueueCountsReset: 'enqueueCountsReset',
+  chatCleared: 'chatCleared',
 } as const;

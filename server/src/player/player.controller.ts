@@ -85,7 +85,7 @@ export class PlayerController {
     });
 
     this.playerService.onPlayFail((roomId, trackTitle) => {
-      this.gateway.broadcastSystem(roomId, WsEvent.SystemMessage, '', { trackName: trackTitle });
+      this.gateway.broadcastSystem(roomId, WsEvent.TrackUnavailable, '', { trackName: trackTitle });
     });
 
     // AutoDJ 상태 → WS 브로드캐스트

@@ -1,0 +1,44 @@
+---
+import '../styles/global.css';
+import type { Lang } from '../i18n';
+import { t, getLocalePath } from '../i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const i = t(lang);
+const switchLang = lang === 'en' ? 'ko' : 'en';
+---
+
+<!doctype html>
+<html lang={lang} class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={i.meta.description} />
+    <title>{i.meta.title}</title>
+    <link rel="icon" type="image/svg+xml" href="/ShareAux/favicon.svg" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" />
+  </head>
+  <body class="bg-sa-bg text-sa-text font-sans antialiased break-keep">
+    <nav class="fixed top-0 w-full z-50 bg-sa-bg/80 backdrop-blur-md border-b border-white/5">
+      <div class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+        <a href={getLocalePath(lang)} class="flex items-center gap-2">
+          <img src="/ShareAux/favicon.svg" alt="" class="w-6 h-6" />
+          <span class="text-lg font-bold">Share<span class="text-sa-accent">Aux</span></span>
+        </a>
+        <div class="flex items-center gap-4">
+          <a href={getLocalePath(switchLang)} class="text-sm text-sa-text2 hover:text-sa-text transition-colors">{i.nav.switchLang}</a>
+          <a href="https://github.com/Protomothis/ShareAux" target="_blank" rel="noopener" class="text-sm text-sa-text2 hover:text-sa-text transition-colors">{i.nav.github}</a>
+        </div>
+      </div>
+    </nav>
+    <main class="pt-14">
+      <slot />
+    </main>
+  </body>
+</html>

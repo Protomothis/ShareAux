@@ -10,6 +10,8 @@
 
 const DEV_SERVER_PORT = '3000';
 const DEV_CLIENT_PORT = '3001';
+const DEV_SSL_CLIENT_PORT = process.env.NEXT_PUBLIC_SSL_CLIENT_PORT || '8443';
+const DEV_SSL_SERVER_PORT = process.env.NEXT_PUBLIC_SSL_SERVER_PORT || '8444';
 
 /** 브라우저에서 API 호출용 base URL (orval customFetch에서 사용) */
 export function getApiUrl(): string {
@@ -26,10 +28,10 @@ export function getServerApiUrl(): string {
 export function getWsUrl(): string {
   if (typeof window === 'undefined') return `ws://localhost:${DEV_SERVER_PORT}/ws`;
   const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  // dev: 클라이언트(:3001)와 서버(:3000) 포트가 다름 → 서버 포트로 직접 연결
-  // prod: nginx가 /ws를 서버로 프록시 → 같은 host 사용
-  const isDev = window.location.port === DEV_CLIENT_PORT;
-  const host = isDev ? `${window.location.hostname}:${DEV_SERVER_PORT}` : window.location.host;
+  const port = window.location.port;
+  const isDev = port === DEV_CLIENT_PORT || port === DEV_SSL_CLIENT_PORT;
+  const serverPort = port === DEV_SSL_CLIENT_PORT ? DEV_SSL_SERVER_PORT : DEV_SERVER_PORT;
+  const host = isDev ? `${window.location.hostname}:${serverPort}` : window.location.host;
   return `${proto}//${host}/ws`;
 }
 
@@ -37,4 +39,10 @@ export function getWsUrl(): string {
 export function getBeaconUrl(path: string): string {
   if (typeof window === 'undefined') return path;
   return `${window.location.origin}${path}`;
+}
+
+/** HTTP 오디오 스트림 URL (Cast/AirPlay용) */
+export function getStreamUrl(roomId: string, token: string): string {
+  if (typeof window === 'undefined') return '';
+  return `${window.location.origin}/api/rooms/${roomId}/stream?token=${encodeURIComponent(token)}`;
 }
