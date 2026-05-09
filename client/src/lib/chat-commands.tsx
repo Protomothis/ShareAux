@@ -1,4 +1,4 @@
-import { Ban, MessageSquareOff, MessageSquare, ShieldOff, Trash2 } from 'lucide-react';
+import { Ban, MessageSquare, MessageSquareOff, ShieldOff, Trash2 } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 export type CommandTargetType = 'members' | 'banned' | 'muted' | 'none';

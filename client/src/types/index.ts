@@ -17,5 +17,5 @@ export { LyricsStatus } from './player.types';
 export type { MobileTab } from './room.types';
 export type { UseWebSocketOptions } from './ws.types';
 /** swagger 기반 WsEvent (server WsEvent enum) */
+export type { PlaylistResult,PlaylistTrack } from './playlist.types';
 export { WsEvent } from '@/api/model';
-export type { PlaylistTrack, PlaylistResult } from './playlist.types';

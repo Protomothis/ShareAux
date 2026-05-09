@@ -4,17 +4,17 @@ import { Repository } from 'typeorm';
 
 import { RADIO_CACHE_TTL_MS, SHOWCASE_CACHE_TTL_MS } from '../constants.js';
 import { RoomPlayback } from '../entities/room-playback.entity.js';
-import { AppException } from '../exceptions/app.exception.js';
 import { Track } from '../entities/track.entity.js';
 import { TrackStats } from '../entities/track-stats.entity.js';
 import { UserTrackHistory } from '../entities/user-track-history.entity.js';
+import { AppException } from '../exceptions/app.exception.js';
 import { fetchMusicCredits, fetchYtMusicMeta, fetchYtMusicRelated } from '../services/innertube-parser.js';
 import { MusicBrainzService } from '../services/musicbrainz.service.js';
 import { parseMediaUrl } from '../services/parse-media-url.js';
 import { cleanArtist, extractTitle } from '../services/title-cleaner.js';
 import { type YtdlpSearchResult, YtdlpService } from '../services/ytdlp.service.js';
-import { MetaStatus } from '../types/meta-status.enum.js';
 import { ErrorCode } from '../types/error-code.enum.js';
+import { MetaStatus } from '../types/meta-status.enum.js';
 import { Provider } from '../types/provider.enum.js';
 import type { SearchResultItem } from './dto/search-result-item.dto.js';
 
@@ -119,9 +119,7 @@ export class SearchService {
     const parsed = parseMediaUrl(url);
 
     if (parsed.type === 'unsupported') {
-      throw new AppException(
-        parsed.reason === 'invalid' ? ErrorCode.COMMON_001 : ErrorCode.PLAYLIST_LOAD_FAILED,
-      );
+      throw new AppException(parsed.reason === 'invalid' ? ErrorCode.COMMON_001 : ErrorCode.PLAYLIST_LOAD_FAILED);
     }
 
     if (parsed.type === 'video') {

@@ -23,6 +23,7 @@ import {
 import Chat from '@/components/chat/Chat';
 import { MinLoading } from '@/components/common/MinLoading';
 import { WsDisconnectBanner } from '@/components/common/WsDisconnectBanner';
+import type { CastState } from '@/components/player/CastButton';
 import Player from '@/components/player/Player';
 import DesktopQueuePanel from '@/components/queue/DesktopQueuePanel';
 import HistoryPanel from '@/components/queue/HistoryPanel';
@@ -50,8 +51,6 @@ import { useAuthStore } from '@/stores/auth';
 import type { MobileTab } from '@/types';
 import type { StreamState } from '@/types';
 import { LyricsStatus } from '@/types';
-
-import type { CastState } from '@/components/player/CastButton';
 
 export default function RoomClient({ id }: { id: string }) {
   const t = useTranslations('room');

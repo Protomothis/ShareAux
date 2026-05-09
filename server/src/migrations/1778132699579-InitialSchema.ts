@@ -1,138 +1,251 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class InitialSchema1778132699579 implements MigrationInterface {
-    name = 'InitialSchema1778132699579'
+  name = 'InitialSchema1778132699579';
 
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`CREATE TABLE "invite_codes" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "code" character varying NOT NULL, "max_uses" integer NOT NULL, "used_count" integer NOT NULL DEFAULT '0', "permissions" jsonb NOT NULL DEFAULT '["listen"]', "expires_at" TIMESTAMP WITH TIME ZONE, "is_active" boolean NOT NULL DEFAULT true, "allow_registration" boolean NOT NULL DEFAULT true, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "created_by" uuid, CONSTRAINT "UQ_e8034125cb28e0814cd5a526c20" UNIQUE ("code"), CONSTRAINT "PK_6c0ede25edb23ae63c935138e33" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "users" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "provider" character varying NOT NULL DEFAULT 'google', "username" character varying, "password_hash" character varying, "google_id" character varying, "email" character varying, "nickname" character varying NOT NULL, "avatar_url" character varying, "role" character varying NOT NULL DEFAULT 'user', "account_permissions" jsonb NOT NULL DEFAULT '[]', "banned_at" TIMESTAMP WITH TIME ZONE, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "invite_code_id" uuid, CONSTRAINT "UQ_fe0bb3f6520ee0469504521e710" UNIQUE ("username"), CONSTRAINT "UQ_0bd5012aeb82628e07f6a1be53b" UNIQUE ("google_id"), CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "tracks" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "provider" character varying NOT NULL DEFAULT 'yt', "source_id" character varying NOT NULL, "name" character varying NOT NULL, "artist" character varying, "album" character varying, "thumbnail" character varying, "song_title" character varying, "song_artist" character varying, "song_album" character varying, "duration_ms" integer NOT NULL, "codec" character varying, "bitrate_kbps" integer, "meta_status" character varying NOT NULL DEFAULT 'pending', "lyrics_status" character varying NOT NULL DEFAULT 'searching', "lyrics_data" text, "lyrics_lang" character varying, "lyrics_type" character varying, "lyrics_ruby" text, "lyrics_translated" text, "lyrics_trans_status" character varying, "fetched_at" TIMESTAMP NOT NULL, CONSTRAINT "UQ_382efb22c9571728ceae999c626" UNIQUE ("provider", "source_id"), CONSTRAINT "PK_242a37ffc7870380f0e611986e8" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "user_track_history" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "user_id" uuid NOT NULL, "track_id" uuid NOT NULL, "play_count" integer NOT NULL DEFAULT '1', "completed_count" integer NOT NULL DEFAULT '0', "last_source" character varying, "last_played_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_0b8c583ba1323c92120040ec384" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_9e5023367b873611218a8365ba" ON "user_track_history" ("user_id", "track_id") `);
-        await queryRunner.query(`CREATE TABLE "track_votes" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "user_id" uuid NOT NULL, "track_id" uuid NOT NULL, "vote" smallint NOT NULL, "voted_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_74db5c9ca2b198ba9edc248ed67" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_c8566f115ed7581b99ab0406c0" ON "track_votes" ("user_id", "track_id") `);
-        await queryRunner.query(`CREATE TABLE "track_stats" ("track_id" uuid NOT NULL, "total_plays" integer NOT NULL DEFAULT '0', "unique_users" integer NOT NULL DEFAULT '0', "likes" integer NOT NULL DEFAULT '0', "dislikes" integer NOT NULL DEFAULT '0', "completed_count" integer NOT NULL DEFAULT '0', "score" double precision NOT NULL DEFAULT '0', "first_played_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "last_played_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_cf73ceeca78c4af8977e55e15f0" PRIMARY KEY ("track_id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_65c851d9246de5c7f7cce47f8e" ON "track_stats" ("last_played_at") `);
-        await queryRunner.query(`CREATE INDEX "IDX_faaf86d519334c3ea92161fc2e" ON "track_stats" ("score") `);
-        await queryRunner.query(`CREATE TABLE "user_favorite_folders" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "user_id" uuid NOT NULL, "name" character varying(20) NOT NULL, "color" character varying NOT NULL DEFAULT 'blue', "position" integer NOT NULL DEFAULT '0', "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_ec233eff0b7e9c97c87bf676e25" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "user_favorites" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "user_id" uuid NOT NULL, "track_id" uuid NOT NULL, "folder_id" uuid, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "UQ_295df472781b66818645b3fd76b" UNIQUE ("user_id", "track_id"), CONSTRAINT "PK_6c472a19a7423cfbbf6b7c75939" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "system_settings" ("key" character varying NOT NULL, "value" text NOT NULL, "description" text, "updated_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_b1b5bc664526d375c94ce9ad43d" PRIMARY KEY ("key"))`);
-        await queryRunner.query(`CREATE TABLE "rooms" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "host_id" uuid, "name" character varying NOT NULL, "max_members" integer NOT NULL DEFAULT '10', "is_private" boolean NOT NULL DEFAULT false, "password" character varying, "invite_code" character varying NOT NULL, "is_active" boolean NOT NULL DEFAULT true, "enqueue_window_min" integer NOT NULL DEFAULT '30', "enqueue_limit_per_window" integer NOT NULL DEFAULT '15', "crossfade" boolean NOT NULL DEFAULT true, "max_select_per_add" integer NOT NULL DEFAULT '3', "replay_cooldown_min" integer NOT NULL DEFAULT '0', "default_enqueue_enabled" boolean NOT NULL DEFAULT true, "default_vote_skip_enabled" boolean NOT NULL DEFAULT true, "auto_dj_enabled" boolean NOT NULL DEFAULT false, "auto_dj_mode" character varying NOT NULL DEFAULT 'related', "auto_dj_threshold" integer NOT NULL DEFAULT '2', "auto_dj_folder_id" character varying, "auto_dj_fav_fallback_mixed" boolean NOT NULL DEFAULT false, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "UQ_d92dfd1fbc0de7ad349a18bc066" UNIQUE ("invite_code"), CONSTRAINT "PK_0368a2d7c215f2d0458a54933f2" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_e26d9d884d0fc5ad61e4c04212" ON "rooms" ("is_active", "is_private") `);
-        await queryRunner.query(`CREATE TABLE "room_queues" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "position" integer NOT NULL, "played" boolean NOT NULL DEFAULT false, "is_auto_dj" boolean NOT NULL DEFAULT false, "added_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "version" integer NOT NULL DEFAULT '1', "room_id" uuid, "track_id" uuid, "added_by" uuid, CONSTRAINT "PK_c3ae353db9f87988679d02920e9" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_6e02acc2dafcf3835c5c0843e2" ON "room_queues" ("room_id", "played", "position") `);
-        await queryRunner.query(`CREATE TABLE "room_playbacks" ("room_id" uuid NOT NULL, "is_playing" boolean NOT NULL DEFAULT false, "started_at" TIMESTAMP WITH TIME ZONE, "position_ms" integer NOT NULL DEFAULT '0', "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "track_id" uuid, CONSTRAINT "PK_4b23dcb9a3db6e1eb9245476768" PRIMARY KEY ("room_id"))`);
-        await queryRunner.query(`CREATE TABLE "room_permissions" ("room_id" uuid NOT NULL, "user_id" uuid NOT NULL, "permissions" jsonb NOT NULL DEFAULT '["listen","chat","reaction","search","addQueue","voteSkip"]', CONSTRAINT "PK_6c9c90ef6c3c2d0ecf9d03a2912" PRIMARY KEY ("room_id", "user_id"))`);
-        await queryRunner.query(`CREATE TABLE "room_members" ("room_id" uuid NOT NULL, "user_id" uuid NOT NULL, "role" character varying NOT NULL, "joined_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_d4ea360161fd5ff21a94ae9d8a6" PRIMARY KEY ("room_id", "user_id"))`);
-        await queryRunner.query(`CREATE TABLE "room_bans" ("room_id" uuid NOT NULL, "user_id" uuid NOT NULL, "banned_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_1b402aa3e1524c79f9ad3b0c359" PRIMARY KEY ("room_id", "user_id"))`);
-        await queryRunner.query(`CREATE TABLE "reports" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "reporter_id" uuid NOT NULL, "target_type" character varying NOT NULL, "target_id" character varying NOT NULL, "reason" character varying NOT NULL, "details" text, "status" character varying NOT NULL DEFAULT 'pending', "resolved_by" uuid, "resolved_at" TIMESTAMP, "created_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_d9013193989303580053c0b5ef6" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "refresh_tokens" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "user_id" character varying NOT NULL, "token_hash" character varying NOT NULL, "expires_at" TIMESTAMP NOT NULL, "revoked" boolean NOT NULL DEFAULT false, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "userId" uuid, CONSTRAINT "PK_7d8bee0204106019488c4c50ffa" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_a7838d2ba25be1342091b6695f" ON "refresh_tokens" ("token_hash") `);
-        await queryRunner.query(`CREATE TABLE "push_subscriptions" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "user_id" uuid NOT NULL, "endpoint" character varying NOT NULL, "p256dh" character varying NOT NULL, "auth" character varying NOT NULL, "locale" character varying NOT NULL DEFAULT 'en', "created_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "UQ_0008bdfd174e533a3f98bf9af16" UNIQUE ("endpoint"), CONSTRAINT "PK_757fc8f00c34f66832668dc2e53" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "push_settings" ("user_id" uuid NOT NULL, "track_changed" boolean NOT NULL DEFAULT true, "vote_skip" boolean NOT NULL DEFAULT true, "host_changed" boolean NOT NULL DEFAULT true, "mention" boolean NOT NULL DEFAULT true, CONSTRAINT "PK_00b9281ead6050207252a2e0f92" PRIMARY KEY ("user_id"))`);
-        await queryRunner.query(`CREATE TABLE "play_histories" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "provider" character varying NOT NULL DEFAULT 'yt', "source_id" character varying NOT NULL, "title" character varying NOT NULL, "artist" character varying, "thumbnail" character varying, "duration_ms" integer NOT NULL, "played_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "room_id" uuid, "played_by" uuid, CONSTRAINT "PK_0e14da8aa134a3253f1a7b655d0" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_2798d4dd1859ff47ca2a5a67a2" ON "play_histories" ("played_at") `);
-        await queryRunner.query(`CREATE TABLE "banned_ips" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "ip" character varying NOT NULL, "reason" character varying, "banned_by" uuid NOT NULL, "expires_at" TIMESTAMP, "created_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_bc3ad70d78bc4ca066310b663e4" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "audit_logs" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "actor_id" uuid NOT NULL, "action" character varying NOT NULL, "target_type" character varying NOT NULL, "target_id" character varying, "details" jsonb, "ip" character varying, "created_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_1bb179d048bbc581caa3b013439" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_2cd10fda8276bb995288acfbfb" ON "audit_logs" ("created_at") `);
-        await queryRunner.query(`ALTER TABLE "invite_codes" ADD CONSTRAINT "FK_3cf6735325d5c98ddd4b0fe0b8a" FOREIGN KEY ("created_by") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "users" ADD CONSTRAINT "FK_e6dfce6d759dcd3e43a39c6374b" FOREIGN KEY ("invite_code_id") REFERENCES "invite_codes"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "user_track_history" ADD CONSTRAINT "FK_3aa57d90f3fc2ddaf7af05bb23b" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "user_track_history" ADD CONSTRAINT "FK_2ceae4f3a049989d22a39d685bf" FOREIGN KEY ("track_id") REFERENCES "tracks"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "track_votes" ADD CONSTRAINT "FK_ccc59b9d67b22b6555d109a93dd" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "track_votes" ADD CONSTRAINT "FK_79a4ef48fdb2f5801d7105d5e9d" FOREIGN KEY ("track_id") REFERENCES "tracks"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "track_stats" ADD CONSTRAINT "FK_cf73ceeca78c4af8977e55e15f0" FOREIGN KEY ("track_id") REFERENCES "tracks"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "user_favorite_folders" ADD CONSTRAINT "FK_30e90c9f691dfd59fe772da3eef" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "user_favorites" ADD CONSTRAINT "FK_5238ce0a21cc77dc16c8efe3d36" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "user_favorites" ADD CONSTRAINT "FK_3f6d43fe9b229cc87ae7845e2bb" FOREIGN KEY ("track_id") REFERENCES "tracks"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "user_favorites" ADD CONSTRAINT "FK_b9c25240123ef2dde3ede70be86" FOREIGN KEY ("folder_id") REFERENCES "user_favorite_folders"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "rooms" ADD CONSTRAINT "FK_4ff9a8b902b374939c6e73fc48e" FOREIGN KEY ("host_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "room_queues" ADD CONSTRAINT "FK_d3bb5a9a112ed77fb98cec4b84c" FOREIGN KEY ("room_id") REFERENCES "rooms"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "room_queues" ADD CONSTRAINT "FK_b41dbbb80bc6ba1a2602dd040fc" FOREIGN KEY ("track_id") REFERENCES "tracks"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "room_queues" ADD CONSTRAINT "FK_03ab00bc8bb3e49019d1ecf5755" FOREIGN KEY ("added_by") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "room_playbacks" ADD CONSTRAINT "FK_4b23dcb9a3db6e1eb9245476768" FOREIGN KEY ("room_id") REFERENCES "rooms"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "room_playbacks" ADD CONSTRAINT "FK_be4f6ab671974a4f6916d8fd989" FOREIGN KEY ("track_id") REFERENCES "tracks"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "room_permissions" ADD CONSTRAINT "FK_39458c1209e958cccfaac3ded0b" FOREIGN KEY ("room_id") REFERENCES "rooms"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "room_permissions" ADD CONSTRAINT "FK_d173ce8af0002e4cb888215f6fc" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "room_members" ADD CONSTRAINT "FK_e6cf45f179a524427ddf8bacd8e" FOREIGN KEY ("room_id") REFERENCES "rooms"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "room_members" ADD CONSTRAINT "FK_b2d15baf5b46ed9659bd71fbb43" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "room_bans" ADD CONSTRAINT "FK_d275799aa383d52e09272df2ef6" FOREIGN KEY ("room_id") REFERENCES "rooms"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "room_bans" ADD CONSTRAINT "FK_713c888b0b83f5800513c977a67" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "reports" ADD CONSTRAINT "FK_9459b9bf907a3807ef7143d2ead" FOREIGN KEY ("reporter_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "reports" ADD CONSTRAINT "FK_f7790853594bca5892d390e1daf" FOREIGN KEY ("resolved_by") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "refresh_tokens" ADD CONSTRAINT "FK_610102b60fea1455310ccd299de" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "push_subscriptions" ADD CONSTRAINT "FK_6771f119f1c06d2ccf38f238664" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "push_settings" ADD CONSTRAINT "FK_00b9281ead6050207252a2e0f92" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "play_histories" ADD CONSTRAINT "FK_3b80d2477411f252491975e95dd" FOREIGN KEY ("room_id") REFERENCES "rooms"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "play_histories" ADD CONSTRAINT "FK_cfe713133a33d0efb0e462bd7fa" FOREIGN KEY ("played_by") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "banned_ips" ADD CONSTRAINT "FK_a3c95ac6137c3e4f7c49d3f90f6" FOREIGN KEY ("banned_by") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "audit_logs" ADD CONSTRAINT "FK_177183f29f438c488b5e8510cdb" FOREIGN KEY ("actor_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-    }
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      `CREATE TABLE "invite_codes" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "code" character varying NOT NULL, "max_uses" integer NOT NULL, "used_count" integer NOT NULL DEFAULT '0', "permissions" jsonb NOT NULL DEFAULT '["listen"]', "expires_at" TIMESTAMP WITH TIME ZONE, "is_active" boolean NOT NULL DEFAULT true, "allow_registration" boolean NOT NULL DEFAULT true, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "created_by" uuid, CONSTRAINT "UQ_e8034125cb28e0814cd5a526c20" UNIQUE ("code"), CONSTRAINT "PK_6c0ede25edb23ae63c935138e33" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "users" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "provider" character varying NOT NULL DEFAULT 'google', "username" character varying, "password_hash" character varying, "google_id" character varying, "email" character varying, "nickname" character varying NOT NULL, "avatar_url" character varying, "role" character varying NOT NULL DEFAULT 'user', "account_permissions" jsonb NOT NULL DEFAULT '[]', "banned_at" TIMESTAMP WITH TIME ZONE, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "invite_code_id" uuid, CONSTRAINT "UQ_fe0bb3f6520ee0469504521e710" UNIQUE ("username"), CONSTRAINT "UQ_0bd5012aeb82628e07f6a1be53b" UNIQUE ("google_id"), CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "tracks" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "provider" character varying NOT NULL DEFAULT 'yt', "source_id" character varying NOT NULL, "name" character varying NOT NULL, "artist" character varying, "album" character varying, "thumbnail" character varying, "song_title" character varying, "song_artist" character varying, "song_album" character varying, "duration_ms" integer NOT NULL, "codec" character varying, "bitrate_kbps" integer, "meta_status" character varying NOT NULL DEFAULT 'pending', "lyrics_status" character varying NOT NULL DEFAULT 'searching', "lyrics_data" text, "lyrics_lang" character varying, "lyrics_type" character varying, "lyrics_ruby" text, "lyrics_translated" text, "lyrics_trans_status" character varying, "fetched_at" TIMESTAMP NOT NULL, CONSTRAINT "UQ_382efb22c9571728ceae999c626" UNIQUE ("provider", "source_id"), CONSTRAINT "PK_242a37ffc7870380f0e611986e8" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "user_track_history" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "user_id" uuid NOT NULL, "track_id" uuid NOT NULL, "play_count" integer NOT NULL DEFAULT '1', "completed_count" integer NOT NULL DEFAULT '0', "last_source" character varying, "last_played_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_0b8c583ba1323c92120040ec384" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE UNIQUE INDEX "IDX_9e5023367b873611218a8365ba" ON "user_track_history" ("user_id", "track_id") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "track_votes" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "user_id" uuid NOT NULL, "track_id" uuid NOT NULL, "vote" smallint NOT NULL, "voted_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_74db5c9ca2b198ba9edc248ed67" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE UNIQUE INDEX "IDX_c8566f115ed7581b99ab0406c0" ON "track_votes" ("user_id", "track_id") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "track_stats" ("track_id" uuid NOT NULL, "total_plays" integer NOT NULL DEFAULT '0', "unique_users" integer NOT NULL DEFAULT '0', "likes" integer NOT NULL DEFAULT '0', "dislikes" integer NOT NULL DEFAULT '0', "completed_count" integer NOT NULL DEFAULT '0', "score" double precision NOT NULL DEFAULT '0', "first_played_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "last_played_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_cf73ceeca78c4af8977e55e15f0" PRIMARY KEY ("track_id"))`,
+    );
+    await queryRunner.query(`CREATE INDEX "IDX_65c851d9246de5c7f7cce47f8e" ON "track_stats" ("last_played_at") `);
+    await queryRunner.query(`CREATE INDEX "IDX_faaf86d519334c3ea92161fc2e" ON "track_stats" ("score") `);
+    await queryRunner.query(
+      `CREATE TABLE "user_favorite_folders" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "user_id" uuid NOT NULL, "name" character varying(20) NOT NULL, "color" character varying NOT NULL DEFAULT 'blue', "position" integer NOT NULL DEFAULT '0', "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_ec233eff0b7e9c97c87bf676e25" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "user_favorites" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "user_id" uuid NOT NULL, "track_id" uuid NOT NULL, "folder_id" uuid, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "UQ_295df472781b66818645b3fd76b" UNIQUE ("user_id", "track_id"), CONSTRAINT "PK_6c472a19a7423cfbbf6b7c75939" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "system_settings" ("key" character varying NOT NULL, "value" text NOT NULL, "description" text, "updated_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_b1b5bc664526d375c94ce9ad43d" PRIMARY KEY ("key"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "rooms" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "host_id" uuid, "name" character varying NOT NULL, "max_members" integer NOT NULL DEFAULT '10', "is_private" boolean NOT NULL DEFAULT false, "password" character varying, "invite_code" character varying NOT NULL, "is_active" boolean NOT NULL DEFAULT true, "enqueue_window_min" integer NOT NULL DEFAULT '30', "enqueue_limit_per_window" integer NOT NULL DEFAULT '15', "crossfade" boolean NOT NULL DEFAULT true, "max_select_per_add" integer NOT NULL DEFAULT '3', "replay_cooldown_min" integer NOT NULL DEFAULT '0', "default_enqueue_enabled" boolean NOT NULL DEFAULT true, "default_vote_skip_enabled" boolean NOT NULL DEFAULT true, "auto_dj_enabled" boolean NOT NULL DEFAULT false, "auto_dj_mode" character varying NOT NULL DEFAULT 'related', "auto_dj_threshold" integer NOT NULL DEFAULT '2', "auto_dj_folder_id" character varying, "auto_dj_fav_fallback_mixed" boolean NOT NULL DEFAULT false, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "UQ_d92dfd1fbc0de7ad349a18bc066" UNIQUE ("invite_code"), CONSTRAINT "PK_0368a2d7c215f2d0458a54933f2" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(`CREATE INDEX "IDX_e26d9d884d0fc5ad61e4c04212" ON "rooms" ("is_active", "is_private") `);
+    await queryRunner.query(
+      `CREATE TABLE "room_queues" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "position" integer NOT NULL, "played" boolean NOT NULL DEFAULT false, "is_auto_dj" boolean NOT NULL DEFAULT false, "added_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "version" integer NOT NULL DEFAULT '1', "room_id" uuid, "track_id" uuid, "added_by" uuid, CONSTRAINT "PK_c3ae353db9f87988679d02920e9" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_6e02acc2dafcf3835c5c0843e2" ON "room_queues" ("room_id", "played", "position") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "room_playbacks" ("room_id" uuid NOT NULL, "is_playing" boolean NOT NULL DEFAULT false, "started_at" TIMESTAMP WITH TIME ZONE, "position_ms" integer NOT NULL DEFAULT '0', "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "track_id" uuid, CONSTRAINT "PK_4b23dcb9a3db6e1eb9245476768" PRIMARY KEY ("room_id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "room_permissions" ("room_id" uuid NOT NULL, "user_id" uuid NOT NULL, "permissions" jsonb NOT NULL DEFAULT '["listen","chat","reaction","search","addQueue","voteSkip"]', CONSTRAINT "PK_6c9c90ef6c3c2d0ecf9d03a2912" PRIMARY KEY ("room_id", "user_id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "room_members" ("room_id" uuid NOT NULL, "user_id" uuid NOT NULL, "role" character varying NOT NULL, "joined_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_d4ea360161fd5ff21a94ae9d8a6" PRIMARY KEY ("room_id", "user_id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "room_bans" ("room_id" uuid NOT NULL, "user_id" uuid NOT NULL, "banned_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_1b402aa3e1524c79f9ad3b0c359" PRIMARY KEY ("room_id", "user_id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "reports" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "reporter_id" uuid NOT NULL, "target_type" character varying NOT NULL, "target_id" character varying NOT NULL, "reason" character varying NOT NULL, "details" text, "status" character varying NOT NULL DEFAULT 'pending', "resolved_by" uuid, "resolved_at" TIMESTAMP, "created_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_d9013193989303580053c0b5ef6" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "refresh_tokens" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "user_id" character varying NOT NULL, "token_hash" character varying NOT NULL, "expires_at" TIMESTAMP NOT NULL, "revoked" boolean NOT NULL DEFAULT false, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "userId" uuid, CONSTRAINT "PK_7d8bee0204106019488c4c50ffa" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(`CREATE INDEX "IDX_a7838d2ba25be1342091b6695f" ON "refresh_tokens" ("token_hash") `);
+    await queryRunner.query(
+      `CREATE TABLE "push_subscriptions" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "user_id" uuid NOT NULL, "endpoint" character varying NOT NULL, "p256dh" character varying NOT NULL, "auth" character varying NOT NULL, "locale" character varying NOT NULL DEFAULT 'en', "created_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "UQ_0008bdfd174e533a3f98bf9af16" UNIQUE ("endpoint"), CONSTRAINT "PK_757fc8f00c34f66832668dc2e53" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "push_settings" ("user_id" uuid NOT NULL, "track_changed" boolean NOT NULL DEFAULT true, "vote_skip" boolean NOT NULL DEFAULT true, "host_changed" boolean NOT NULL DEFAULT true, "mention" boolean NOT NULL DEFAULT true, CONSTRAINT "PK_00b9281ead6050207252a2e0f92" PRIMARY KEY ("user_id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "play_histories" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "provider" character varying NOT NULL DEFAULT 'yt', "source_id" character varying NOT NULL, "title" character varying NOT NULL, "artist" character varying, "thumbnail" character varying, "duration_ms" integer NOT NULL, "played_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "room_id" uuid, "played_by" uuid, CONSTRAINT "PK_0e14da8aa134a3253f1a7b655d0" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(`CREATE INDEX "IDX_2798d4dd1859ff47ca2a5a67a2" ON "play_histories" ("played_at") `);
+    await queryRunner.query(
+      `CREATE TABLE "banned_ips" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "ip" character varying NOT NULL, "reason" character varying, "banned_by" uuid NOT NULL, "expires_at" TIMESTAMP, "created_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_bc3ad70d78bc4ca066310b663e4" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "audit_logs" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "actor_id" uuid NOT NULL, "action" character varying NOT NULL, "target_type" character varying NOT NULL, "target_id" character varying, "details" jsonb, "ip" character varying, "created_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_1bb179d048bbc581caa3b013439" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(`CREATE INDEX "IDX_2cd10fda8276bb995288acfbfb" ON "audit_logs" ("created_at") `);
+    await queryRunner.query(
+      `ALTER TABLE "invite_codes" ADD CONSTRAINT "FK_3cf6735325d5c98ddd4b0fe0b8a" FOREIGN KEY ("created_by") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "users" ADD CONSTRAINT "FK_e6dfce6d759dcd3e43a39c6374b" FOREIGN KEY ("invite_code_id") REFERENCES "invite_codes"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "user_track_history" ADD CONSTRAINT "FK_3aa57d90f3fc2ddaf7af05bb23b" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "user_track_history" ADD CONSTRAINT "FK_2ceae4f3a049989d22a39d685bf" FOREIGN KEY ("track_id") REFERENCES "tracks"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "track_votes" ADD CONSTRAINT "FK_ccc59b9d67b22b6555d109a93dd" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "track_votes" ADD CONSTRAINT "FK_79a4ef48fdb2f5801d7105d5e9d" FOREIGN KEY ("track_id") REFERENCES "tracks"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "track_stats" ADD CONSTRAINT "FK_cf73ceeca78c4af8977e55e15f0" FOREIGN KEY ("track_id") REFERENCES "tracks"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "user_favorite_folders" ADD CONSTRAINT "FK_30e90c9f691dfd59fe772da3eef" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "user_favorites" ADD CONSTRAINT "FK_5238ce0a21cc77dc16c8efe3d36" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "user_favorites" ADD CONSTRAINT "FK_3f6d43fe9b229cc87ae7845e2bb" FOREIGN KEY ("track_id") REFERENCES "tracks"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "user_favorites" ADD CONSTRAINT "FK_b9c25240123ef2dde3ede70be86" FOREIGN KEY ("folder_id") REFERENCES "user_favorite_folders"("id") ON DELETE SET NULL ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "rooms" ADD CONSTRAINT "FK_4ff9a8b902b374939c6e73fc48e" FOREIGN KEY ("host_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "room_queues" ADD CONSTRAINT "FK_d3bb5a9a112ed77fb98cec4b84c" FOREIGN KEY ("room_id") REFERENCES "rooms"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "room_queues" ADD CONSTRAINT "FK_b41dbbb80bc6ba1a2602dd040fc" FOREIGN KEY ("track_id") REFERENCES "tracks"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "room_queues" ADD CONSTRAINT "FK_03ab00bc8bb3e49019d1ecf5755" FOREIGN KEY ("added_by") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "room_playbacks" ADD CONSTRAINT "FK_4b23dcb9a3db6e1eb9245476768" FOREIGN KEY ("room_id") REFERENCES "rooms"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "room_playbacks" ADD CONSTRAINT "FK_be4f6ab671974a4f6916d8fd989" FOREIGN KEY ("track_id") REFERENCES "tracks"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "room_permissions" ADD CONSTRAINT "FK_39458c1209e958cccfaac3ded0b" FOREIGN KEY ("room_id") REFERENCES "rooms"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "room_permissions" ADD CONSTRAINT "FK_d173ce8af0002e4cb888215f6fc" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "room_members" ADD CONSTRAINT "FK_e6cf45f179a524427ddf8bacd8e" FOREIGN KEY ("room_id") REFERENCES "rooms"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "room_members" ADD CONSTRAINT "FK_b2d15baf5b46ed9659bd71fbb43" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "room_bans" ADD CONSTRAINT "FK_d275799aa383d52e09272df2ef6" FOREIGN KEY ("room_id") REFERENCES "rooms"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "room_bans" ADD CONSTRAINT "FK_713c888b0b83f5800513c977a67" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "reports" ADD CONSTRAINT "FK_9459b9bf907a3807ef7143d2ead" FOREIGN KEY ("reporter_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "reports" ADD CONSTRAINT "FK_f7790853594bca5892d390e1daf" FOREIGN KEY ("resolved_by") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "refresh_tokens" ADD CONSTRAINT "FK_610102b60fea1455310ccd299de" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "push_subscriptions" ADD CONSTRAINT "FK_6771f119f1c06d2ccf38f238664" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "push_settings" ADD CONSTRAINT "FK_00b9281ead6050207252a2e0f92" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "play_histories" ADD CONSTRAINT "FK_3b80d2477411f252491975e95dd" FOREIGN KEY ("room_id") REFERENCES "rooms"("id") ON DELETE SET NULL ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "play_histories" ADD CONSTRAINT "FK_cfe713133a33d0efb0e462bd7fa" FOREIGN KEY ("played_by") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "banned_ips" ADD CONSTRAINT "FK_a3c95ac6137c3e4f7c49d3f90f6" FOREIGN KEY ("banned_by") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "audit_logs" ADD CONSTRAINT "FK_177183f29f438c488b5e8510cdb" FOREIGN KEY ("actor_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "audit_logs" DROP CONSTRAINT "FK_177183f29f438c488b5e8510cdb"`);
-        await queryRunner.query(`ALTER TABLE "banned_ips" DROP CONSTRAINT "FK_a3c95ac6137c3e4f7c49d3f90f6"`);
-        await queryRunner.query(`ALTER TABLE "play_histories" DROP CONSTRAINT "FK_cfe713133a33d0efb0e462bd7fa"`);
-        await queryRunner.query(`ALTER TABLE "play_histories" DROP CONSTRAINT "FK_3b80d2477411f252491975e95dd"`);
-        await queryRunner.query(`ALTER TABLE "push_settings" DROP CONSTRAINT "FK_00b9281ead6050207252a2e0f92"`);
-        await queryRunner.query(`ALTER TABLE "push_subscriptions" DROP CONSTRAINT "FK_6771f119f1c06d2ccf38f238664"`);
-        await queryRunner.query(`ALTER TABLE "refresh_tokens" DROP CONSTRAINT "FK_610102b60fea1455310ccd299de"`);
-        await queryRunner.query(`ALTER TABLE "reports" DROP CONSTRAINT "FK_f7790853594bca5892d390e1daf"`);
-        await queryRunner.query(`ALTER TABLE "reports" DROP CONSTRAINT "FK_9459b9bf907a3807ef7143d2ead"`);
-        await queryRunner.query(`ALTER TABLE "room_bans" DROP CONSTRAINT "FK_713c888b0b83f5800513c977a67"`);
-        await queryRunner.query(`ALTER TABLE "room_bans" DROP CONSTRAINT "FK_d275799aa383d52e09272df2ef6"`);
-        await queryRunner.query(`ALTER TABLE "room_members" DROP CONSTRAINT "FK_b2d15baf5b46ed9659bd71fbb43"`);
-        await queryRunner.query(`ALTER TABLE "room_members" DROP CONSTRAINT "FK_e6cf45f179a524427ddf8bacd8e"`);
-        await queryRunner.query(`ALTER TABLE "room_permissions" DROP CONSTRAINT "FK_d173ce8af0002e4cb888215f6fc"`);
-        await queryRunner.query(`ALTER TABLE "room_permissions" DROP CONSTRAINT "FK_39458c1209e958cccfaac3ded0b"`);
-        await queryRunner.query(`ALTER TABLE "room_playbacks" DROP CONSTRAINT "FK_be4f6ab671974a4f6916d8fd989"`);
-        await queryRunner.query(`ALTER TABLE "room_playbacks" DROP CONSTRAINT "FK_4b23dcb9a3db6e1eb9245476768"`);
-        await queryRunner.query(`ALTER TABLE "room_queues" DROP CONSTRAINT "FK_03ab00bc8bb3e49019d1ecf5755"`);
-        await queryRunner.query(`ALTER TABLE "room_queues" DROP CONSTRAINT "FK_b41dbbb80bc6ba1a2602dd040fc"`);
-        await queryRunner.query(`ALTER TABLE "room_queues" DROP CONSTRAINT "FK_d3bb5a9a112ed77fb98cec4b84c"`);
-        await queryRunner.query(`ALTER TABLE "rooms" DROP CONSTRAINT "FK_4ff9a8b902b374939c6e73fc48e"`);
-        await queryRunner.query(`ALTER TABLE "user_favorites" DROP CONSTRAINT "FK_b9c25240123ef2dde3ede70be86"`);
-        await queryRunner.query(`ALTER TABLE "user_favorites" DROP CONSTRAINT "FK_3f6d43fe9b229cc87ae7845e2bb"`);
-        await queryRunner.query(`ALTER TABLE "user_favorites" DROP CONSTRAINT "FK_5238ce0a21cc77dc16c8efe3d36"`);
-        await queryRunner.query(`ALTER TABLE "user_favorite_folders" DROP CONSTRAINT "FK_30e90c9f691dfd59fe772da3eef"`);
-        await queryRunner.query(`ALTER TABLE "track_stats" DROP CONSTRAINT "FK_cf73ceeca78c4af8977e55e15f0"`);
-        await queryRunner.query(`ALTER TABLE "track_votes" DROP CONSTRAINT "FK_79a4ef48fdb2f5801d7105d5e9d"`);
-        await queryRunner.query(`ALTER TABLE "track_votes" DROP CONSTRAINT "FK_ccc59b9d67b22b6555d109a93dd"`);
-        await queryRunner.query(`ALTER TABLE "user_track_history" DROP CONSTRAINT "FK_2ceae4f3a049989d22a39d685bf"`);
-        await queryRunner.query(`ALTER TABLE "user_track_history" DROP CONSTRAINT "FK_3aa57d90f3fc2ddaf7af05bb23b"`);
-        await queryRunner.query(`ALTER TABLE "users" DROP CONSTRAINT "FK_e6dfce6d759dcd3e43a39c6374b"`);
-        await queryRunner.query(`ALTER TABLE "invite_codes" DROP CONSTRAINT "FK_3cf6735325d5c98ddd4b0fe0b8a"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_2cd10fda8276bb995288acfbfb"`);
-        await queryRunner.query(`DROP TABLE "audit_logs"`);
-        await queryRunner.query(`DROP TABLE "banned_ips"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_2798d4dd1859ff47ca2a5a67a2"`);
-        await queryRunner.query(`DROP TABLE "play_histories"`);
-        await queryRunner.query(`DROP TABLE "push_settings"`);
-        await queryRunner.query(`DROP TABLE "push_subscriptions"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_a7838d2ba25be1342091b6695f"`);
-        await queryRunner.query(`DROP TABLE "refresh_tokens"`);
-        await queryRunner.query(`DROP TABLE "reports"`);
-        await queryRunner.query(`DROP TABLE "room_bans"`);
-        await queryRunner.query(`DROP TABLE "room_members"`);
-        await queryRunner.query(`DROP TABLE "room_permissions"`);
-        await queryRunner.query(`DROP TABLE "room_playbacks"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_6e02acc2dafcf3835c5c0843e2"`);
-        await queryRunner.query(`DROP TABLE "room_queues"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_e26d9d884d0fc5ad61e4c04212"`);
-        await queryRunner.query(`DROP TABLE "rooms"`);
-        await queryRunner.query(`DROP TABLE "system_settings"`);
-        await queryRunner.query(`DROP TABLE "user_favorites"`);
-        await queryRunner.query(`DROP TABLE "user_favorite_folders"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_faaf86d519334c3ea92161fc2e"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_65c851d9246de5c7f7cce47f8e"`);
-        await queryRunner.query(`DROP TABLE "track_stats"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_c8566f115ed7581b99ab0406c0"`);
-        await queryRunner.query(`DROP TABLE "track_votes"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_9e5023367b873611218a8365ba"`);
-        await queryRunner.query(`DROP TABLE "user_track_history"`);
-        await queryRunner.query(`DROP TABLE "tracks"`);
-        await queryRunner.query(`DROP TABLE "users"`);
-        await queryRunner.query(`DROP TABLE "invite_codes"`);
-    }
-
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`ALTER TABLE "audit_logs" DROP CONSTRAINT "FK_177183f29f438c488b5e8510cdb"`);
+    await queryRunner.query(`ALTER TABLE "banned_ips" DROP CONSTRAINT "FK_a3c95ac6137c3e4f7c49d3f90f6"`);
+    await queryRunner.query(`ALTER TABLE "play_histories" DROP CONSTRAINT "FK_cfe713133a33d0efb0e462bd7fa"`);
+    await queryRunner.query(`ALTER TABLE "play_histories" DROP CONSTRAINT "FK_3b80d2477411f252491975e95dd"`);
+    await queryRunner.query(`ALTER TABLE "push_settings" DROP CONSTRAINT "FK_00b9281ead6050207252a2e0f92"`);
+    await queryRunner.query(`ALTER TABLE "push_subscriptions" DROP CONSTRAINT "FK_6771f119f1c06d2ccf38f238664"`);
+    await queryRunner.query(`ALTER TABLE "refresh_tokens" DROP CONSTRAINT "FK_610102b60fea1455310ccd299de"`);
+    await queryRunner.query(`ALTER TABLE "reports" DROP CONSTRAINT "FK_f7790853594bca5892d390e1daf"`);
+    await queryRunner.query(`ALTER TABLE "reports" DROP CONSTRAINT "FK_9459b9bf907a3807ef7143d2ead"`);
+    await queryRunner.query(`ALTER TABLE "room_bans" DROP CONSTRAINT "FK_713c888b0b83f5800513c977a67"`);
+    await queryRunner.query(`ALTER TABLE "room_bans" DROP CONSTRAINT "FK_d275799aa383d52e09272df2ef6"`);
+    await queryRunner.query(`ALTER TABLE "room_members" DROP CONSTRAINT "FK_b2d15baf5b46ed9659bd71fbb43"`);
+    await queryRunner.query(`ALTER TABLE "room_members" DROP CONSTRAINT "FK_e6cf45f179a524427ddf8bacd8e"`);
+    await queryRunner.query(`ALTER TABLE "room_permissions" DROP CONSTRAINT "FK_d173ce8af0002e4cb888215f6fc"`);
+    await queryRunner.query(`ALTER TABLE "room_permissions" DROP CONSTRAINT "FK_39458c1209e958cccfaac3ded0b"`);
+    await queryRunner.query(`ALTER TABLE "room_playbacks" DROP CONSTRAINT "FK_be4f6ab671974a4f6916d8fd989"`);
+    await queryRunner.query(`ALTER TABLE "room_playbacks" DROP CONSTRAINT "FK_4b23dcb9a3db6e1eb9245476768"`);
+    await queryRunner.query(`ALTER TABLE "room_queues" DROP CONSTRAINT "FK_03ab00bc8bb3e49019d1ecf5755"`);
+    await queryRunner.query(`ALTER TABLE "room_queues" DROP CONSTRAINT "FK_b41dbbb80bc6ba1a2602dd040fc"`);
+    await queryRunner.query(`ALTER TABLE "room_queues" DROP CONSTRAINT "FK_d3bb5a9a112ed77fb98cec4b84c"`);
+    await queryRunner.query(`ALTER TABLE "rooms" DROP CONSTRAINT "FK_4ff9a8b902b374939c6e73fc48e"`);
+    await queryRunner.query(`ALTER TABLE "user_favorites" DROP CONSTRAINT "FK_b9c25240123ef2dde3ede70be86"`);
+    await queryRunner.query(`ALTER TABLE "user_favorites" DROP CONSTRAINT "FK_3f6d43fe9b229cc87ae7845e2bb"`);
+    await queryRunner.query(`ALTER TABLE "user_favorites" DROP CONSTRAINT "FK_5238ce0a21cc77dc16c8efe3d36"`);
+    await queryRunner.query(`ALTER TABLE "user_favorite_folders" DROP CONSTRAINT "FK_30e90c9f691dfd59fe772da3eef"`);
+    await queryRunner.query(`ALTER TABLE "track_stats" DROP CONSTRAINT "FK_cf73ceeca78c4af8977e55e15f0"`);
+    await queryRunner.query(`ALTER TABLE "track_votes" DROP CONSTRAINT "FK_79a4ef48fdb2f5801d7105d5e9d"`);
+    await queryRunner.query(`ALTER TABLE "track_votes" DROP CONSTRAINT "FK_ccc59b9d67b22b6555d109a93dd"`);
+    await queryRunner.query(`ALTER TABLE "user_track_history" DROP CONSTRAINT "FK_2ceae4f3a049989d22a39d685bf"`);
+    await queryRunner.query(`ALTER TABLE "user_track_history" DROP CONSTRAINT "FK_3aa57d90f3fc2ddaf7af05bb23b"`);
+    await queryRunner.query(`ALTER TABLE "users" DROP CONSTRAINT "FK_e6dfce6d759dcd3e43a39c6374b"`);
+    await queryRunner.query(`ALTER TABLE "invite_codes" DROP CONSTRAINT "FK_3cf6735325d5c98ddd4b0fe0b8a"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_2cd10fda8276bb995288acfbfb"`);
+    await queryRunner.query(`DROP TABLE "audit_logs"`);
+    await queryRunner.query(`DROP TABLE "banned_ips"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_2798d4dd1859ff47ca2a5a67a2"`);
+    await queryRunner.query(`DROP TABLE "play_histories"`);
+    await queryRunner.query(`DROP TABLE "push_settings"`);
+    await queryRunner.query(`DROP TABLE "push_subscriptions"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_a7838d2ba25be1342091b6695f"`);
+    await queryRunner.query(`DROP TABLE "refresh_tokens"`);
+    await queryRunner.query(`DROP TABLE "reports"`);
+    await queryRunner.query(`DROP TABLE "room_bans"`);
+    await queryRunner.query(`DROP TABLE "room_members"`);
+    await queryRunner.query(`DROP TABLE "room_permissions"`);
+    await queryRunner.query(`DROP TABLE "room_playbacks"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_6e02acc2dafcf3835c5c0843e2"`);
+    await queryRunner.query(`DROP TABLE "room_queues"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_e26d9d884d0fc5ad61e4c04212"`);
+    await queryRunner.query(`DROP TABLE "rooms"`);
+    await queryRunner.query(`DROP TABLE "system_settings"`);
+    await queryRunner.query(`DROP TABLE "user_favorites"`);
+    await queryRunner.query(`DROP TABLE "user_favorite_folders"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_faaf86d519334c3ea92161fc2e"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_65c851d9246de5c7f7cce47f8e"`);
+    await queryRunner.query(`DROP TABLE "track_stats"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_c8566f115ed7581b99ab0406c0"`);
+    await queryRunner.query(`DROP TABLE "track_votes"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_9e5023367b873611218a8365ba"`);
+    await queryRunner.query(`DROP TABLE "user_track_history"`);
+    await queryRunner.query(`DROP TABLE "tracks"`);
+    await queryRunner.query(`DROP TABLE "users"`);
+    await queryRunner.query(`DROP TABLE "invite_codes"`);
+  }
 }
