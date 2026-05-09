@@ -8,66 +8,50 @@ import type { RoomQueue, Track, TrackLyricsType } from '@/api/model';
 import { SystemChatEvent } from '@/api/model';
 import { roomsControllerFindOne } from '@/api/rooms/rooms';
 import { useInvalidate } from '@/hooks/useQueries';
-import { debug } from '@/lib/debug';
-import type { AutoDjStatus, ChatMessage, StreamState, TrackVoteMap } from '@/types';
-import { LyricsStatus, WsEvent } from '@/types';
+import type { AutoDjStatus, ChatMessage, LyricsStatus } from '@/types';
+import { WsEvent } from '@/types';
 
-interface TrackState {
-  track: Track;
-  elapsedMs: number;
+import type { usePlaybackState } from './usePlaybackState';
+import type { useRoomState } from './useRoomState';
+
+type PlaybackActions = ReturnType<typeof usePlaybackState>;
+type RoomStateActions = ReturnType<typeof useRoomState>;
+
+interface UseRoomEventsOptions {
+  roomId: string;
+  playback: PlaybackActions;
+  roomState: RoomStateActions;
 }
 
-export function useRoomEvents(
-  roomId: string,
-  listeningRef: React.MutableRefObject<boolean>,
-  _trackRef: React.MutableRefObject<Track | null>,
-  getOneWayRef?: React.MutableRefObject<() => number>,
-  onResyncNeeded?: (action: 'prepare' | 'send') => void,
-) {
+/**
+ * useRoomEvents — 이벤트 디스패처
+ * onChat/onSystem 콜백을 제공하고, 이벤트를 적절한 상태 훅에 위임.
+ */
+export function useRoomEvents({ roomId, playback, roomState }: UseRoomEventsOptions) {
   const router = useRouter();
   const invalidate = useInvalidate();
   const t = useTranslations('room');
   const goneRef = useRef(false);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [isPlaying, setPlaying] = useState(false);
-  const [lyricsStatus, setLyricsStatus] = useState(LyricsStatus.Searching);
-  const [lyricsType, setLyricsType] = useState<TrackLyricsType>(null);
-  const [lyricsVersion, setLyricsVersion] = useState(0);
-  const [skipVotes, setSkipVotes] = useState(0);
-  const [autoDjStatus, setAutoDjStatus] = useState<AutoDjStatus>('idle');
-  const [skipRequired, setSkipRequired] = useState(1);
-  const [listenerCount, setListenerCount] = useState(0);
-  const [trackVotes, setTrackVotes] = useState<TrackVoteMap>(new Map());
-  const [currentTrackState, setTrack] = useState<Track | null>(null);
-  const [timeSync, setTimeSync] = useState({ base: 0, at: 0 });
-
-  const audioLoadingRef = useRef(false);
-  const pendingTrackRef = useRef<TrackState | null>(null);
-  const [audioLoading, setAudioLoading] = useState(false);
-  const [streamState, setStreamState] = useState<StreamState>('idle');
-  const [mutedUntil, setMutedUntil] = useState(0);
 
   const onChat = useCallback((data: ChatMessage) => {
     setMessages((prev) => prev.slice(-200).concat({ ...data, type: 'chat' }));
   }, []);
 
-  // ─── Navigation events (kick, close, duplicate) ───────
+  // --- Navigation ---
   const handleNavigation = useCallback(
-    (event: string, _detail: string) => {
+    (event: string) => {
       if (goneRef.current) return true;
-      const nav: Partial<Record<WsEvent, { msg: string; level: 'info' | 'error' }>> = {
+      const nav: Partial<Record<string, { msg: string; level: 'info' | 'error' }>> = {
         [WsEvent.roomClosed]: { msg: t('nav.roomClosed'), level: 'info' },
         [WsEvent.userKicked]: { msg: t('nav.kicked'), level: 'error' },
         [WsEvent.duplicateSession]: { msg: t('nav.duplicateSession'), level: 'info' },
         [WsEvent.joinedOtherRoom]: { msg: '', level: 'info' },
       };
-      const entry = nav[event as WsEvent];
+      const entry = nav[event];
       if (!entry) return false;
       goneRef.current = true;
-      if (event === WsEvent.userKicked) {
-        // Push 알림은 서버에서 발송
-      }
       if (entry.msg) toast[entry.level](entry.msg);
       router.push('/rooms');
       return true;
@@ -75,133 +59,26 @@ export function useRoomEvents(
     [router],
   );
 
-  // ─── Playback: streamState-only update ────────────────
-  const handleStreamStateOnly = useCallback(
-    (ss: string) => {
-      if ((ss === 'preparing' || ss === 'skipping') && listeningRef.current) {
-        audioLoadingRef.current = true;
-        setAudioLoading(true);
-      }
-      if (ss === 'skipping' || ss === 'preparing') {
-        setStreamState(ss as StreamState);
-        setTimeSync({ base: 0, at: 0 });
-        if (listeningRef.current) onResyncNeeded?.('prepare');
-      }
-      if (ss === 'streaming') {
-        setStreamState('streaming');
-        // streaming: 서버에 init segment 확보됨 → resync 요청
-        if (listeningRef.current) onResyncNeeded?.('send');
-      }
-    },
-    [listeningRef, onResyncNeeded],
-  );
-
-  // ─── Playback: track change (lyrics/skip reset) ──────
-  const handleTrackChange = useCallback(
-    (track: Track | undefined) => {
-      const ls = track?.lyricsStatus;
-      setLyricsStatus(
-        ls === 'found' ? LyricsStatus.Found : ls === 'not_found' ? LyricsStatus.NotFound : LyricsStatus.Searching,
-      );
-      setLyricsType(null);
-      setSkipVotes(0);
-      setStreamState('preparing');
-      if (listeningRef.current) onResyncNeeded?.('prepare');
-    },
-    [listeningRef, onResyncNeeded],
-  );
-
-  // ─── Playback: time sync ──────────────────────────────
-  const handleTimeSync = useCallback(
-    (d: { elapsedMs?: number; streamState?: string }, trackChanged: boolean) => {
-      const ow = getOneWayRef?.current() ?? 0;
-      if (trackChanged || d.streamState === 'streaming') {
-        setTimeSync({ base: (d.elapsedMs ?? 0) + ow, at: Date.now() });
-      } else if (d.elapsedMs !== undefined) {
-        // 같은 곡: drift 2초 이상이면 보정
-        setTimeSync((prev) => {
-          const clientElapsed = prev.base + (Date.now() - prev.at);
-          const corrected = d.elapsedMs! + ow;
-          return Math.abs(clientElapsed - corrected) > 2000 ? { base: corrected, at: Date.now() } : prev;
-        });
-      }
-    },
-    [getOneWayRef],
-  );
-
-  // ─── Playback: stopped ────────────────────────────────
-  const handleStopped = useCallback(() => {
-    setTrack(null);
-    setTimeSync({ base: 0, at: 0 });
-    setStreamState('idle');
-  }, []);
-
-  // ─── Playback: main handler ───────────────────────────
-  const handlePlayback = useCallback(
-    (d: { track?: Track; elapsedMs?: number; isPlaying?: boolean; streamState?: string }) => {
-      debug('[page] playback_updated', d.track?.name, 'state:', d.streamState);
-
-      // streamState만 온 경우
-      if (d.streamState && d.isPlaying === undefined) {
-        handleStreamStateOnly(d.streamState);
-        return;
-      }
-
-      const trackChanged = d.track?.id !== _trackRef.current?.id;
-
-      if (trackChanged) {
-        _trackRef.current = d.track ?? null;
-        handleTrackChange(d.track);
-      } else if (d.track?.lyricsStatus === 'found') {
-        setLyricsStatus(LyricsStatus.Found);
-      }
-
-      if (d.isPlaying) {
-        setTrack(d.track ?? null);
-        handleTimeSync(d, trackChanged);
-        if (listeningRef.current && d.streamState === 'preparing') {
-          audioLoadingRef.current = true;
-          setAudioLoading(true);
-        }
-        if (d.streamState) setStreamState(d.streamState as StreamState);
-        // streaming 전환: init segment 확보됨 → resync 요청
-        if (d.streamState === 'streaming' && listeningRef.current) {
-          onResyncNeeded?.('send');
-        }
-      } else {
-        handleStopped();
-      }
-      setPlaying(!!d.isPlaying);
-    },
-    [_trackRef, listeningRef, onResyncNeeded, handleStreamStateOnly, handleTrackChange, handleTimeSync, handleStopped],
-  );
-
-  // ─── System event dispatcher ──────────────────────────
+  // --- System event dispatcher ---
   const onSystem = useCallback(
     (data: { event: string; detail: string; data?: Record<string, unknown> }) => {
       // 채팅 제한
       if (data.event === WsEvent.chatMuted) {
         const seconds = parseInt(data.detail, 10) || 30;
-        setMutedUntil(Date.now() + seconds * 1000);
+        roomState.setMutedUntil(Date.now() + seconds * 1000);
         toast.error(t('chatMuted', { seconds }));
         return;
       }
 
       if (data.event === WsEvent.chatCleared) {
         setMessages([
-          {
-            type: 'system',
-            userId: '',
-            nickname: '',
-            message: 'chatCleared',
-            timestamp: new Date().toISOString(),
-          },
+          { type: 'system', userId: '', nickname: '', message: 'chatCleared', timestamp: new Date().toISOString() },
         ]);
         return;
       }
 
-      // 네비게이션 (kick, close, duplicate 등)
-      if (handleNavigation(data.event, data.detail)) return;
+      // 네비게이션
+      if (handleNavigation(data.event)) return;
 
       // 권한 변경
       if (data.event === WsEvent.permissionChanged) {
@@ -213,27 +90,28 @@ export function useRoomEvents(
 
       // 재생 상태
       if (data.event === WsEvent.playbackUpdated && data.data) {
-        handlePlayback(data.data as { track?: Track; elapsedMs?: number; isPlaying?: boolean; streamState?: string });
+        playback.handlePlayback(
+          data.data as { track?: Track; elapsedMs?: number; isPlaying?: boolean; streamState?: string },
+        );
         return;
       }
 
       // 가사
       if (data.event === WsEvent.lyricsResult && data.data) {
         const { status, lyricsType } = data.data as { status: LyricsStatus; lyricsType?: TrackLyricsType };
-        setLyricsStatus(status);
-        setLyricsType(lyricsType ?? null);
+        playback.setLyricsStatus(status);
+        playback.setLyricsType(lyricsType ?? null);
         return;
       }
       if (data.event === WsEvent.lyricsUpdated && data.data) {
-        const { trackId } = data.data as { trackId: string };
-        if (trackId === _trackRef.current?.id) setLyricsVersion((v) => v + 1);
+        playback.setLyricsVersion((v) => v + 1);
         return;
       }
 
       // 메타데이터 갱신
       if (data.event === WsEvent.metadataUpdated && data.data) {
         const d = data.data as { artist?: string; title?: string };
-        setTrack((prev: Track | null) =>
+        playback.setTrack((prev: Track | null) =>
           prev ? { ...prev, artist: d.artist ?? prev.artist, name: d.title ?? prev.name } : prev,
         );
         return;
@@ -242,16 +120,13 @@ export function useRoomEvents(
       // 큐/AutoDJ
       if (data.event === WsEvent.queueUpdated) {
         const d = data.data as { queue?: RoomQueue[] } | undefined;
-        if (d?.queue) {
-          invalidate.setQueue(roomId, d.queue);
-        } else {
-          invalidate.queue(roomId);
-        }
+        if (d?.queue) invalidate.setQueue(roomId, d.queue);
+        else invalidate.queue(roomId);
         invalidate.history(roomId);
         return;
       }
       if (data.event === WsEvent.autoDjStatus && data.data) {
-        setAutoDjStatus((data.data as { status: AutoDjStatus }).status);
+        roomState.setAutoDjStatus((data.data as { status: AutoDjStatus }).status);
         return;
       }
 
@@ -272,33 +147,26 @@ export function useRoomEvents(
         if (!goneRef.current) {
           invalidate.room(roomId);
           invalidate.quota(roomId);
-          if (data.event === WsEvent.hostChanged) {
-            invalidate.permissions(roomId);
-          }
+          if (data.event === WsEvent.hostChanged) invalidate.permissions(roomId);
         }
-      }
-
-      // 투표 스킵 통과
-      if (data.event === WsEvent.voteSkipPassed) {
-        // Push 알림은 서버에서 발송
       }
 
       // 투표
       if (data.event === WsEvent.voteUpdated && data.data) {
         const d = data.data as { currentVotes: number; required: number };
-        setSkipVotes(d.currentVotes);
-        setSkipRequired(d.required);
+        roomState.setSkipVotes(d.currentVotes);
+        roomState.setSkipRequired(d.required);
         return;
       }
       if (data.event === WsEvent.trackVote && data.data) {
         const { trackId, likes, dislikes } = data.data as { trackId: string; likes: number; dislikes: number };
-        setTrackVotes((prev) => new Map(prev).set(trackId, { likes, dislikes }));
+        roomState.setTrackVotes((prev) => new Map(prev).set(trackId, { likes, dislikes }));
         return;
       }
 
       // 리스너 수
       if (data.event === WsEvent.listenerCount && data.data) {
-        setListenerCount((data.data as { count: number }).count);
+        roomState.setListenerCount((data.data as { count: number }).count);
         return;
       }
 
@@ -316,12 +184,8 @@ export function useRoomEvents(
         }),
       );
     },
-    [router, roomId, invalidate, listeningRef, _trackRef, handleNavigation, handlePlayback],
+    [roomId, invalidate, handleNavigation, playback, roomState],
   );
-
-  const applyPendingTrack = useCallback((): boolean => {
-    return false;
-  }, []);
 
   const markGone = useCallback(() => {
     goneRef.current = true;
@@ -343,38 +207,5 @@ export function useRoomEvents(
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, [roomId, router]);
 
-  // listening 중 audio.currentTime → timeSync 갱신은 useAudio의 onTimeUpdate 콜백으로 처리
-
-  return {
-    messages,
-    setMessages,
-    isPlaying,
-    setPlaying,
-    lyricsStatus,
-    setLyricsStatus,
-    lyricsType,
-    lyricsVersion,
-    skipVotes,
-    skipRequired,
-    listenerCount,
-    trackVotes,
-    currentTrack: currentTrackState,
-    setTrack,
-    elapsedBase: timeSync.base,
-    syncTime: timeSync.at,
-    setTimeSync,
-    audioLoading,
-    setAudioLoading,
-    audioLoadingRef,
-    pendingTrackRef,
-    applyPendingTrack,
-    onChat,
-    onSystem,
-    goneRef,
-    autoDjStatus,
-    streamState,
-    setStreamState,
-    markGone,
-    mutedUntil,
-  };
+  return { messages, setMessages, onChat, onSystem, goneRef, markGone };
 }

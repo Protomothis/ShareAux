@@ -40,16 +40,18 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { useIsTouch } from '@/hooks/useIsTouch';
 import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
 import { useMyPermissions } from '@/hooks/useMyPermissions';
+import { usePlaybackState } from '@/hooks/usePlaybackState';
 import { usePushSubscription } from '@/hooks/usePushSubscription';
 import { queryKeys, useInvalidate } from '@/hooks/useQueries';
 import { useReactions } from '@/hooks/useReactions';
 import { useRoomAudio } from '@/hooks/useRoomAudio';
 import { useRoomEvents } from '@/hooks/useRoomEvents';
+import { useRoomState } from '@/hooks/useRoomState';
 import { useRoomSync } from '@/hooks/useRoomSync';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useWsMessages } from '@/hooks/useWsMessages';
-import { getWsUrl } from '@/lib/urls';
 import { WsCloseCode, WsOpCode } from '@/lib/constants';
+import { getWsUrl } from '@/lib/urls';
 import { useAuthStore } from '@/stores/auth';
 import type { MobileTab } from '@/types';
 import type { StreamState } from '@/types';
@@ -97,36 +99,34 @@ export default function RoomClient({ id }: { id: string }) {
   const getOneWayRef = useRef<() => number>(() => 0);
   const onResyncNeededRef = useRef<(action: 'prepare' | 'send') => void>(() => {});
   const stableOnResyncNeeded = useCallback((action: 'prepare' | 'send') => onResyncNeededRef.current(action), []);
-  const events = useRoomEvents(id, listeningRef, trackRef, getOneWayRef, stableOnResyncNeeded);
-  const {
-    messages,
-    isPlaying,
-    setPlaying,
-    lyricsStatus,
-    lyricsType,
-    lyricsVersion,
-    skipVotes,
-    setLyricsStatus,
 
-    skipRequired,
-    listenerCount,
-    trackVotes,
+  // 재생 상태
+  const playback = usePlaybackState(listeningRef, trackRef, getOneWayRef, stableOnResyncNeeded);
+  const {
     currentTrack,
     setTrack,
-    elapsedBase,
+    isPlaying,
+    setPlaying,
+    streamState,
+    setStreamState,
+    timeSync,
     setTimeSync,
-    syncTime,
+    lyricsStatus,
+    setLyricsStatus,
+    lyricsType,
+    lyricsVersion,
     audioLoading,
     setAudioLoading,
     audioLoadingRef,
-    onChat,
-    onSystem,
-    goneRef,
-    autoDjStatus,
-    streamState,
-    setStreamState,
-    mutedUntil,
-  } = events;
+  } = playback;
+
+  // 방 부가 상태
+  const roomState = useRoomState();
+  const { skipVotes, skipRequired, listenerCount, trackVotes, autoDjStatus, mutedUntil } = roomState;
+
+  // 이벤트 디스패처
+  const events = useRoomEvents({ roomId: id, playback, roomState });
+  const { messages, onChat, onSystem, goneRef } = events;
 
   // --- Audio ---
   const onAudioErrorRef = useRef<() => void>(() => {});
@@ -416,8 +416,8 @@ export default function RoomClient({ id }: { id: string }) {
     volume,
     skipVotes,
     skipRequired,
-    elapsedBase,
-    syncTime,
+    elapsedBase: timeSync.base,
+    syncTime: timeSync.at,
     isPlaying,
     hasNext: queue.length > 0,
     hasPrev: history.length > 0,

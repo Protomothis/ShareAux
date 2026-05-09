@@ -3,7 +3,6 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { Language } from '@/api/model';
-
 import { UserRole } from '@/api/model';
 
 const SAT_COOKIE = 'sat';
