@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { Language } from '@/api/model';
+import { UserRole } from '@/api/model';
 
 const SAT_COOKIE = 'sat';
 const AUTH_INFO_COOKIE = '_sa_auth';
@@ -50,6 +51,23 @@ export function middleware(req: NextRequest) {
     const res = NextResponse.redirect(new URL('/login', req.url));
     if (!hasLocale) res.cookies.set(LOCALE_COOKIE, detectLocale(req), { path: '/', maxAge: 365 * 86400 });
     return res;
+  }
+
+  // /admin — admin 이상만 접근 가능
+  if (pathname.startsWith('/admin')) {
+    try {
+      const payload = decodeJwt(sat);
+      const adminRoles: string[] = [UserRole.superAdmin, UserRole.admin];
+      if (!adminRoles.includes(payload.role as string)) {
+        const res = NextResponse.redirect(new URL('/rooms', req.url));
+        if (!hasLocale) res.cookies.set(LOCALE_COOKIE, detectLocale(req), { path: '/', maxAge: 365 * 86400 });
+        return res;
+      }
+    } catch {
+      const res = NextResponse.redirect(new URL('/login', req.url));
+      if (!hasLocale) res.cookies.set(LOCALE_COOKIE, detectLocale(req), { path: '/', maxAge: 365 * 86400 });
+      return res;
+    }
   }
 
   // sat JWT에서 유저 정보 추출 → 클라이언트 읽기용 쿠키로 전달

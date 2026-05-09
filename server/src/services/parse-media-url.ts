@@ -4,13 +4,7 @@ export type ParsedMediaUrl =
   | { type: 'playlist'; provider: 'yt'; id: string }
   | { type: 'unsupported'; reason: 'invalid' | 'unsupported_platform' };
 
-const YT_HOSTS = new Set([
-  'youtube.com',
-  'www.youtube.com',
-  'music.youtube.com',
-  'm.youtube.com',
-  'youtu.be',
-]);
+const YT_HOSTS = new Set(['youtube.com', 'www.youtube.com', 'music.youtube.com', 'm.youtube.com', 'youtu.be']);
 
 /**
  * 미디어 URL을 파싱하여 provider/type/id를 반환합니다.
@@ -38,7 +32,7 @@ export function parseMediaUrl(input: string): ParsedMediaUrl {
   const videoId = url.searchParams.get('v') ?? (host === 'youtu.be' ? url.pathname.slice(1).split('/')[0] : null);
 
   // shorts
-  const shortsMatch = url.pathname.match(/^\/shorts\/([a-zA-Z0-9_-]+)/);
+  const shortsMatch = /^\/shorts\/([a-zA-Z0-9_-]+)/.exec(url.pathname);
   if (shortsMatch) return { type: 'video', provider: 'yt', id: shortsMatch[1] };
 
   // Mix/Radio (RD prefix) → videoId가 있으면 단일 영상으로 폴백

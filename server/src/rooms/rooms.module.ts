@@ -13,6 +13,8 @@ import { RoomsController } from './rooms.controller.js';
 import { RoomsGateway } from './rooms.gateway.js';
 import { RoomsService } from './rooms.service.js';
 import { StreamController } from './stream.controller.js';
+import { WsBroadcaster } from './ws-broadcaster.service.js';
+import { WsMessageRouter } from './ws-message-router.service.js';
 
 @Module({
   imports: [
@@ -20,7 +22,7 @@ import { StreamController } from './stream.controller.js';
     forwardRef(() => AuthModule),
   ],
   controllers: [RoomsController, StreamController],
-  providers: [MemberService, RoomsService, RoomsGateway],
-  exports: [MemberService, RoomsService, RoomsGateway],
+  providers: [MemberService, RoomsService, RoomsGateway, WsBroadcaster, WsMessageRouter],
+  exports: [MemberService, RoomsService, RoomsGateway, WsBroadcaster],
 })
 export class RoomsModule {}

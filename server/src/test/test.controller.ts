@@ -16,11 +16,46 @@ import { AuthProvider } from '../types/auth-provider.enum.js';
 import { UserRole } from '../types/user-role.enum.js';
 
 const NCS_TRACKS = [
-  { provider: 'yt', sourceId: 'TW9d8vYrVFQ', name: 'Elektronomia — Sky High', artist: 'Elektronomia', thumbnail: 'https://i.ytimg.com/vi/TW9d8vYrVFQ/hqdefault.jpg', durationMs: 283000 },
-  { provider: 'yt', sourceId: 'J2X5mJ3HDYE', name: 'DEAF KEV — Invincible', artist: 'DEAF KEV', thumbnail: 'https://i.ytimg.com/vi/J2X5mJ3HDYE/hqdefault.jpg', durationMs: 253000 },
-  { provider: 'yt', sourceId: 'K4DyBUG242c', name: 'Cartoon — On & On', artist: 'Cartoon ft. Daniel Levi', thumbnail: 'https://i.ytimg.com/vi/K4DyBUG242c/hqdefault.jpg', durationMs: 208000 },
-  { provider: 'yt', sourceId: '__CRWE-L45k', name: 'Tobu — Candyland', artist: 'Tobu', thumbnail: 'https://i.ytimg.com/vi/__CRWE-L45k/hqdefault.jpg', durationMs: 219000 },
-  { provider: 'yt', sourceId: 'n1WpP7iowLc', name: 'Elektronomia — Energy', artist: 'Elektronomia', thumbnail: 'https://i.ytimg.com/vi/n1WpP7iowLc/hqdefault.jpg', durationMs: 221000 },
+  {
+    provider: 'yt',
+    sourceId: 'TW9d8vYrVFQ',
+    name: 'Elektronomia — Sky High',
+    artist: 'Elektronomia',
+    thumbnail: 'https://i.ytimg.com/vi/TW9d8vYrVFQ/hqdefault.jpg',
+    durationMs: 283000,
+  },
+  {
+    provider: 'yt',
+    sourceId: 'J2X5mJ3HDYE',
+    name: 'DEAF KEV — Invincible',
+    artist: 'DEAF KEV',
+    thumbnail: 'https://i.ytimg.com/vi/J2X5mJ3HDYE/hqdefault.jpg',
+    durationMs: 253000,
+  },
+  {
+    provider: 'yt',
+    sourceId: 'K4DyBUG242c',
+    name: 'Cartoon — On & On',
+    artist: 'Cartoon ft. Daniel Levi',
+    thumbnail: 'https://i.ytimg.com/vi/K4DyBUG242c/hqdefault.jpg',
+    durationMs: 208000,
+  },
+  {
+    provider: 'yt',
+    sourceId: '__CRWE-L45k',
+    name: 'Tobu — Candyland',
+    artist: 'Tobu',
+    thumbnail: 'https://i.ytimg.com/vi/__CRWE-L45k/hqdefault.jpg',
+    durationMs: 219000,
+  },
+  {
+    provider: 'yt',
+    sourceId: 'n1WpP7iowLc',
+    name: 'Elektronomia — Energy',
+    artist: 'Elektronomia',
+    thumbnail: 'https://i.ytimg.com/vi/n1WpP7iowLc/hqdefault.jpg',
+    durationMs: 221000,
+  },
 ];
 
 const DEMO_USERS = ['Alex', 'Mina', 'Jay', 'Sora', 'Haru'];
@@ -74,7 +109,14 @@ export class TestController {
     for (const name of DEMO_USERS) {
       let user = await this.userRepo.findOneBy({ nickname: name });
       if (!user) {
-        user = this.userRepo.create({ nickname: name, provider: AuthProvider.Invite, username: null, passwordHash: null, googleId: null, email: null });
+        user = this.userRepo.create({
+          nickname: name,
+          provider: AuthProvider.Invite,
+          username: null,
+          passwordHash: null,
+          googleId: null,
+          email: null,
+        });
         user = await this.userRepo.save(user);
       }
       await this.rooms.addMember(roomId, user.id).catch(() => {});
@@ -90,7 +132,11 @@ export class TestController {
     const admin = await this.userRepo.findOneBy({ role: UserRole.SuperAdmin });
     if (!admin) return { error: 'No superAdmin user found' };
     const n = Math.min(parseInt(count || '3', 10), NCS_TRACKS.length);
-    try { await this.queue.addTracks(roomId, NCS_TRACKS.slice(0, n), admin.id); } catch {}
+    try {
+      await this.queue.addTracks(roomId, NCS_TRACKS.slice(0, n), admin.id);
+    } catch {
+      /* 데모용 — 실패 무시 */
+    }
     return { ok: true, added: n };
   }
 
@@ -100,7 +146,11 @@ export class TestController {
     if (!roomId) return { error: 'roomId required' };
     const status = await this.player.getStatus(roomId);
     if (status?.streamState === 'streaming') return { ok: true, action: 'already playing' };
-    try { await this.player.skip(roomId); } catch {}
+    try {
+      await this.player.skip(roomId);
+    } catch {
+      /* 데모용 — 실패 무시 */
+    }
     return { ok: true };
   }
 

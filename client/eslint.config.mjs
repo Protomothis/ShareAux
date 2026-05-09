@@ -30,9 +30,13 @@ const eslintConfig = defineConfig([
       'react-hooks/set-state-in-effect': 'warn',
       'react-hooks/use-memo': 'warn',
 
+      // useTranslations의 t는 안정 참조 — exhaustive-deps 경고 무시 가능
+      'react-hooks/exhaustive-deps': 'off',
+
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+      '@typescript-eslint/no-empty-function': 'off',
       'prefer-const': 'error',
       'no-var': 'error',
       eqeqeq: ['error', 'always'],

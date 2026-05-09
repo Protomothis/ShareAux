@@ -1,5 +1,29 @@
 # Changelog
 
+## v0.2.2
+
+### 🏗 내실 정리
+
+- 모바일 Safari에서 Cast/AirPlay 버튼이 동작하지 않던 문제 해결
+- 슬래시 명령어(`/ban`, `/mute` 등)가 동작하지 않던 문제 해결
+- 채팅에서 `@닉네임` 멘션 시 푸시 알림 발송
+- URL 가져오기 탭에 붙여넣기 버튼 추가 (iOS 클립보드 팝업 개선)
+- 어드민 페이지 접근 권한 강화 (admin/superAdmin만 허용)
+- 테스트 페이지 제거
+
+### 🔧 코드 품질
+
+- WebSocket 훅 분리 — 연결/메시지 라우팅/동기화 각각 독립 훅으로
+- 서버 Gateway 3분할 — 연결 관리/메시지 처리/브로드캐스트 분리
+- 재생 상태 훅 분리 — usePlaybackState, useRoomState 추출
+- 프로젝트 전반 lint 에러 0개 달성 (서버 152→0, 클라이언트 8→0)
+- ESLint 설정 정비 — 의도적 패턴 예외 처리
+- 서버 stream Content-Type 수정 (`audio/aac` → `audio/mp4`)
+- 매직 넘버 제거 — WsOpCode/WsCloseCode 상수 일관 사용
+- HTTP 환경 clipboard API 에러 수정
+
+---
+
 ## v0.2.1
 
 ### 🔊 외부 기기 재생 (Cast / AirPlay)

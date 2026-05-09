@@ -23,7 +23,7 @@ interface ChatCommandPaletteProps {
 const PALETTE_CLASS =
   'absolute bottom-full left-0 z-30 mb-2 w-56 rounded-xl border border-white/10 bg-sa-bg-elevated/95 shadow-xl backdrop-blur-xl';
 
-export function ChatCommandPalette({ items, visible, highlightIdx, onSelect, onClose, emptyLabel }: ChatCommandPaletteProps) {
+export function ChatCommandPalette({ items, visible, highlightIdx, onSelect, onClose: _onClose, emptyLabel }: ChatCommandPaletteProps) {
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

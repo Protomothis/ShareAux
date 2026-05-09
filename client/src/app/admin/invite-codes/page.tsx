@@ -68,7 +68,7 @@ export default function AdminInviteCodesPage() {
 
   const copyLink = useCallback((code: string) => {
     const url = `${window.location.origin}/login?code=${code}`;
-    navigator.clipboard.writeText(url).then(() => toast.success(t('linkCopied')));
+    navigator.clipboard?.writeText(url).then(() => toast.success(t('linkCopied')));
   }, []);
 
   const items = data?.items ?? [];
