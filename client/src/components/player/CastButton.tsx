@@ -150,9 +150,8 @@ export default function CastButton({ roomId, forceShow, onCastStateChange, disab
       return;
     }
 
-    // src 설정 (동기)
+    // src 설정 (동기) — load() 호출 금지: iOS에서 제스처 토큰 소비
     audio.src = getStreamUrl(roomId, tokenRef.current);
-    audio.load();
     tokenRef.current = null;
     prefetchToken();
     setLoading(true);
