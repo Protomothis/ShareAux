@@ -111,6 +111,20 @@ export default function CastButton({ roomId, forceShow, onCastStateChange, disab
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, [castState, updateState]);
 
+  // Cast 연결 중 스트림 끊김 감지 (방 종료 등)
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || castState !== 'connected') return;
+    const onError = () => updateState('disconnected');
+    const onEnded = () => updateState('disconnected');
+    audio.addEventListener('error', onError);
+    audio.addEventListener('ended', onEnded);
+    return () => {
+      audio.removeEventListener('error', onError);
+      audio.removeEventListener('ended', onEnded);
+    };
+  }, [castState, updateState]);
+
   // --- AirPlay / Remote Playback 이벤트 바인딩 ---
   useEffect(() => {
     const audio = audioRef.current;
