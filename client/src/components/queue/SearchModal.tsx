@@ -5,9 +5,9 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { favoritesControllerAdd } from '@/api/favorites/favorites';
 import type { SearchResultItem } from '@/api/model';
 import { queueControllerAddTracks } from '@/api/queue/queue';
-import { favoritesControllerAdd } from '@/api/favorites/favorites';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useSearch } from '@/hooks/useSearch';

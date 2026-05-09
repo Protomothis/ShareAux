@@ -17,6 +17,7 @@ import { AppException } from '../exceptions/app.exception.js';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard.js';
 import type { AuthenticatedRequest } from '../types/auth.types.js';
 import { ErrorCode } from '../types/error-code.enum.js';
+import { PlaylistResponse } from './dto/playlist-response.dto.js';
 import {
   PlaylistTracksResponse,
   RadioResponse,
@@ -25,7 +26,6 @@ import {
   ShowcaseResponse,
   SuggestResponse,
 } from './dto/search-response.dto.js';
-import { PlaylistResponse } from './dto/playlist-response.dto.js';
 import { SearchService } from './search.service.js';
 
 @ApiTags('Search')

@@ -16,11 +16,20 @@ interface CastTrackInfo {
   thumbnail?: string | null;
 }
 
+interface CastButtonProps {
+  roomId: string;
+  forceShow?: boolean;
+  onCastStateChange?: (state: CastState) => void;
+  disabled?: boolean;
+  track?: CastTrackInfo;
+}
+
+// --- 유틸 ---
+
 function updateMediaSession(track?: CastTrackInfo): void {
   if (!('mediaSession' in navigator) || !track) return;
-  const artwork = track.thumbnail && track.thumbnail !== 'NA'
-    ? [{ src: track.thumbnail, sizes: '512x512', type: 'image/jpeg' }]
-    : [];
+  const artwork =
+    track.thumbnail && track.thumbnail !== 'NA' ? [{ src: track.thumbnail, sizes: '512x512', type: 'image/jpeg' }] : [];
   navigator.mediaSession.metadata = new MediaMetadata({
     title: track.name || 'Unknown',
     artist: track.artist || '',
@@ -29,13 +38,19 @@ function updateMediaSession(track?: CastTrackInfo): void {
   });
 }
 
-interface CastButtonProps {
-  roomId: string;
-  forceShow?: boolean;
-  onCastStateChange?: (state: CastState) => void;
-  disabled?: boolean;
-  track?: CastTrackInfo;
+function getRemote(audio: HTMLAudioElement): RemotePlayback | null {
+  return (audio as unknown as { remote?: RemotePlayback }).remote ?? null;
 }
+
+function hasAirPlay(audio: HTMLAudioElement): boolean {
+  return 'webkitShowPlaybackTargetPicker' in audio;
+}
+
+function showAirPlayPicker(audio: HTMLAudioElement): void {
+  (audio as unknown as { webkitShowPlaybackTargetPicker: () => void }).webkitShowPlaybackTargetPicker();
+}
+
+// --- 컴포넌트 ---
 
 export default function CastButton({ roomId, forceShow, onCastStateChange, disabled, track }: CastButtonProps) {
   const t = useTranslations('player');
@@ -47,30 +62,59 @@ export default function CastButton({ roomId, forceShow, onCastStateChange, disab
   const [castState, setCastState] = useState<CastState>('disconnected');
   const [loading, setLoading] = useState(false);
 
-  // AirPlay/Remote Playback 상태 감지
+  // --- 토큰 prefetch ---
+  const tokenRef = useRef<string | null>(null);
+  const fetchingRef = useRef(false);
+
+  const prefetchToken = useCallback(async () => {
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
+    try {
+      const res = await fetch(`/api/rooms/${roomId}/stream-token`, { credentials: 'include' });
+      if (res.ok) tokenRef.current = ((await res.json()) as { token: string }).token;
+    } catch {
+      /* 클릭 시 재시도 */
+    } finally {
+      fetchingRef.current = false;
+    }
+  }, [roomId]);
+
+  useEffect(() => {
+    tokenRef.current = null;
+    prefetchToken();
+  }, [prefetchToken]);
+
+  // --- Cast 상태 변경 헬퍼 ---
+  const updateState = useCallback((state: CastState) => {
+    setCastState(state);
+    onCastStateChangeRef.current?.(state);
+  }, []);
+
+  // --- AirPlay / Remote Playback 이벤트 바인딩 ---
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    if ('webkitShowPlaybackTargetPicker' in audio) {
+    // Safari AirPlay
+    if (hasAirPlay(audio)) {
       setSupported(true);
-      const onWirelessChanged = () => {
-        const isWireless = (audio as unknown as { webkitCurrentPlaybackTargetIsWireless?: boolean }).webkitCurrentPlaybackTargetIsWireless;
-        const state: CastState = isWireless ? 'connected' : 'disconnected';
-        if (!isWireless) audio.pause();
-        setCastState(state);
-        onCastStateChangeRef.current?.(state);
+      const handler = () => {
+        const wireless = !!(audio as unknown as { webkitCurrentPlaybackTargetIsWireless?: boolean })
+          .webkitCurrentPlaybackTargetIsWireless;
+        if (!wireless) audio.pause();
+        updateState(wireless ? 'connected' : 'disconnected');
       };
-      audio.addEventListener('webkitcurrentplaybacktargetiswirelesschanged', onWirelessChanged);
-      return () => { audio.removeEventListener('webkitcurrentplaybacktargetiswirelesschanged', onWirelessChanged); };
+      audio.addEventListener('webkitcurrentplaybacktargetiswirelesschanged', handler);
+      return () => audio.removeEventListener('webkitcurrentplaybacktargetiswirelesschanged', handler);
     }
 
-    if ('remote' in audio) {
+    // Chrome Remote Playback
+    const remote = getRemote(audio);
+    if (remote) {
       setSupported(true);
-      const remote = (audio as HTMLAudioElement & { remote: RemotePlayback }).remote;
-      const onConnect = () => { setCastState('connected'); onCastStateChangeRef.current?.('connected'); };
-      const onDisconnect = () => { setCastState('disconnected'); onCastStateChangeRef.current?.('disconnected'); };
-      const onConnecting = () => { setCastState('connecting'); onCastStateChangeRef.current?.('connecting'); };
+      const onConnecting = () => updateState('connecting');
+      const onConnect = () => updateState('connected');
+      const onDisconnect = () => updateState('disconnected');
       remote.addEventListener('connecting', onConnecting);
       remote.addEventListener('connect', onConnect);
       remote.addEventListener('disconnect', onDisconnect);
@@ -81,91 +125,89 @@ export default function CastButton({ roomId, forceShow, onCastStateChange, disab
       };
     }
 
+    // 기타 브라우저 — 비활성화 속성 없으면 지원 가정
     if (!('disableRemotePlayback' in audio)) setSupported(true);
-  }, []);
+  }, [updateState]);
 
-  const handleCast = useCallback(async () => {
+  // --- 클릭 핸들러 (동기 — 제스처 컨텍스트 유지) ---
+  const handleCast = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    // 이미 연결 중이면 해제
+    // 연결 해제
     if (castState === 'connected') {
       audio.pause();
       audio.removeAttribute('src');
       audio.load();
-      setCastState('disconnected');
-      onCastStateChangeRef.current?.('disconnected');
+      updateState('disconnected');
       return;
     }
 
+    // 토큰 미준비 — await 불가 (제스처 만료)
+    if (!tokenRef.current) {
+      prefetchToken();
+      toast.error(t('castRetry'));
+      return;
+    }
+
+    // src 설정 (동기)
+    audio.src = getStreamUrl(roomId, tokenRef.current);
+    audio.load();
+    tokenRef.current = null;
+    prefetchToken();
     setLoading(true);
 
-    // stream token 발급
-    let streamToken: string;
-    try {
-      const res = await fetch(`/api/rooms/${roomId}/stream-token`, { credentials: 'include' });
-      if (!res.ok) { toast.error(t('castNotSupported')); setLoading(false); return; }
-      const data = (await res.json()) as { token: string };
-      streamToken = data.token;
-    } catch {
-      toast.error(t('castNotSupported'));
-      setLoading(false);
+    // Chrome: Remote Playback API
+    const remote = getRemote(audio);
+    if (remote) {
+      remote
+        .prompt()
+        .then(() => updateMediaSession(track))
+        .catch((e: DOMException) => {
+          if (e.name === 'NotFoundError' || e.name === 'NotAllowedError') toast.error(t('castNoDevice'));
+          else if (e.name === 'NotSupportedError') toast.error(t('castNotSupported'));
+        })
+        .finally(() => setLoading(false));
       return;
     }
 
-    const url = getStreamUrl(roomId, streamToken);
-    audio.src = url;
-    audio.load();
-
-    // Chrome: Remote Playback API — play 없이 바로 prompt
-    if ('remote' in audio) {
+    // Safari: play → playing → picker
+    const done = () => {
+      audio.removeEventListener('playing', onPlaying);
+      audio.removeEventListener('error', onError);
       setLoading(false);
-      (audio as HTMLAudioElement & { remote: RemotePlayback }).remote.prompt().catch((e: DOMException) => {
-        if (e.name === 'NotFoundError' || e.name === 'NotAllowedError') toast.error(t('castNoDevice'));
-        else if (e.name === 'NotSupportedError') toast.error(t('castNotSupported'));
-      });
-      updateMediaSession(track);
-      return;
-    }
-
-    // Safari: play 필요 → playing 이벤트 후 picker
-    const el = audioRef.current!;
+    };
     const onPlaying = () => {
-      el.removeEventListener('playing', onPlaying);
-      el.removeEventListener('error', onError);
-      setLoading(false);
-
-      if ('webkitShowPlaybackTargetPicker' in el) {
-        (el as HTMLAudioElement & { webkitShowPlaybackTargetPicker: () => void }).webkitShowPlaybackTargetPicker();
-        setCastState('connected');
-        onCastStateChangeRef.current?.('connected');
+      done();
+      if (hasAirPlay(audio)) {
+        showAirPlayPicker(audio);
+        updateState('connected');
         updateMediaSession(track);
       }
     };
-
     const onError = () => {
-      el.removeEventListener('playing', onPlaying);
-      el.removeEventListener('error', onError);
-      setLoading(false);
+      done();
       toast.error(t('castNotSupported'));
     };
 
-    el.addEventListener('playing', onPlaying);
-    el.addEventListener('error', onError);
-    el.play().catch(() => {
-      el.removeEventListener('playing', onPlaying);
-      el.removeEventListener('error', onError);
-      setLoading(false);
+    audio.addEventListener('playing', onPlaying);
+    audio.addEventListener('error', onError);
+    audio.play().catch(() => {
+      done();
       toast.error(t('castNotSupported'));
     });
-  }, [roomId, t, castState]);
+  }, [roomId, t, castState, prefetchToken, updateState, track]);
 
-  const isSafari = typeof navigator !== 'undefined' && /safari/i.test(navigator.userAgent) && !/chrome/i.test(navigator.userAgent);
+  // --- 렌더 ---
+  const isSafari =
+    typeof navigator !== 'undefined' && /safari/i.test(navigator.userAgent) && !/chrome/i.test(navigator.userAgent);
 
   const stateClass =
-    castState === 'connected' ? 'text-sa-accent' :
-    castState === 'connecting' ? 'animate-pulse text-sa-accent/60' :
-    'text-white/30';
+    castState === 'connected'
+      ? 'text-sa-accent'
+      : castState === 'connecting'
+        ? 'animate-pulse text-sa-accent/60'
+        : 'text-white/30';
 
   return (
     <>
@@ -179,8 +221,13 @@ export default function CastButton({ roomId, forceShow, onCastStateChange, disab
           className={stateClass}
           aria-label={t('cast')}
         >
-          {loading ? <Loader2 size={14} className="animate-spin" /> :
-           isSafari ? <Airplay size={14} /> : <Cast size={14} />}
+          {loading ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : isSafari ? (
+            <Airplay size={14} />
+          ) : (
+            <Cast size={14} />
+          )}
         </Button>
       )}
     </>

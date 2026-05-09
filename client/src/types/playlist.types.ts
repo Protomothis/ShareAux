@@ -1,1 +1,1 @@
-export type { PlaylistTrackItem as PlaylistTrack, PlaylistResponse as PlaylistResult } from '@/api/model';
+export type { PlaylistResponse as PlaylistResult,PlaylistTrackItem as PlaylistTrack } from '@/api/model';

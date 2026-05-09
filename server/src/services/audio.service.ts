@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { type ChildProcess, spawn } from 'child_process';
+import type { Readable } from 'stream';
 
 import { FFMPEG_BITRATE, FFMPEG_FRAG_DURATION, FFMPEG_MAX_RETRIES, FFMPEG_RECENT_CHUNKS } from '../constants.js';
 import type { HttpStreamListener, ListenerState, ParsedInitSegment, RoomAudio, StreamInfo } from '../types/index.js';
@@ -91,7 +92,14 @@ export class AudioService {
     } else {
       const listeners = new Map<(chunk: Buffer) => void, ListenerState>();
       listeners.set(cb, { cb, synced: false });
-      this.rooms.set(roomId, { ffmpeg: null, listeners, httpListeners: new Set(), playing: false, initSegment: null, recentChunks: [] });
+      this.rooms.set(roomId, {
+        ffmpeg: null,
+        listeners,
+        httpListeners: new Set(),
+        playing: false,
+        initSegment: null,
+        recentChunks: [],
+      });
     }
   }
 
@@ -228,7 +236,7 @@ export class AudioService {
     this.attachCloseHandler(roomId, ffmpeg, room, onEnd, getNewUrl, onStart);
 
     // fd 3 (ADTS) → HTTP 리스너에 전달
-    const adtsFd = ffmpeg.stdio[3] as import('stream').Readable | null;
+    const adtsFd = ffmpeg.stdio[3] as Readable | null;
     if (adtsFd) {
       adtsFd.on('data', (chunk: Buffer) => {
         for (const hl of room.httpListeners) {
@@ -372,5 +380,4 @@ export class AudioService {
     this.logger.log(`[${roomId}] HTTP listener added (total: ${room.httpListeners.size})`);
     return true;
   }
-
 }

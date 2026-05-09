@@ -150,7 +150,8 @@
     "djControl": "🎧 DJ Controls",
     "cast": "Cast to device",
     "castNoDevice": "No available devices found",
-    "castNotSupported": "Cannot cast current stream"
+    "castNotSupported": "Cannot cast current stream",
+    "castRetry": "Preparing, please try again"
   },
   "queue": {
     "title": "📋 Queue",

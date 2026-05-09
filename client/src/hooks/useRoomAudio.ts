@@ -1,18 +1,20 @@
 'use client';
-import { useTranslations } from 'next-intl';
 import { useCallback, useRef, useState } from 'react';
-import { toast } from 'sonner';
 
 import { debug } from '@/lib/debug';
 
 import { useAudio } from './useAudio';
 
+/**
+ * useRoomAudio — 순수 오디오 재생 관리
+ * listening 상태는 useRoomSync가 관리. 여기서는 init/pause/pushFrame/volume만.
+ */
 export function useRoomAudio(
   audioLoadingRef: React.MutableRefObject<boolean>,
   setAudioLoading: (v: boolean) => void,
   onTimeUpdate?: (ms: number) => void,
+  onError?: () => void,
 ) {
-  const tRoom = useTranslations('room');
   const audio = useAudio(
     () => {
       if (audioLoadingRef.current) {
@@ -22,24 +24,19 @@ export function useRoomAudio(
       }
     },
     () => {
-      debug('[roomAudio] MSE error — stopping listening');
-      listeningRef.current = false;
-      setListening(false);
+      debug('[roomAudio] MSE error');
+      onError?.();
     },
     onTimeUpdate,
   );
 
-  const [listening, setListening] = useState(false);
-  const listeningRef = useRef(false);
-  const [audioReady, setAudioReady] = useState(false);
   const [volume, setVolumeState] = useState(1);
-
   const frameCountRef = useRef(0);
   const lastLogRef = useRef(0);
 
+  /** 오디오 프레임 수신 — listeningRef 체크는 호출자가 담당 */
   const onAudio = useCallback(
     (frame: Uint8Array) => {
-      if (!listeningRef.current) return;
       frameCountRef.current++;
       const now = Date.now();
       if (now - lastLogRef.current >= 15_000) {
@@ -52,31 +49,6 @@ export function useRoomAudio(
     [audio],
   );
 
-  const handleListenToggle = useCallback(
-    async (sendListening: (v: boolean) => void) => {
-      debug('[roomAudio] toggle listening:', listening, '→', !listening);
-      if (!listening) {
-        if (!audio.supported) {
-          toast.error(tRoom('mseNotSupported'));
-          return;
-        }
-        setAudioLoading(true);
-        audioLoadingRef.current = true;
-        listeningRef.current = true;
-        await audio.init();
-        setAudioReady(true);
-        setListening(true);
-        sendListening(true);
-      } else {
-        audio.pause();
-        setListening(false);
-        listeningRef.current = false;
-        sendListening(false);
-      }
-    },
-    [audio, listening, audioLoadingRef, setAudioLoading],
-  );
-
   const handleVolumeChange = useCallback(
     (v: number) => {
       audio.setVolume(v);
@@ -87,13 +59,9 @@ export function useRoomAudio(
 
   return {
     audio,
-    listening,
-    audioReady,
     volume,
     onAudio,
-    handleListenToggle,
     handleVolumeChange,
-    /** MSE 버퍼 확보 대기 중 여부 */
     buffering: audio.buffering,
   };
 }

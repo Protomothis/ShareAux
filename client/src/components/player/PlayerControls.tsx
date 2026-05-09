@@ -10,8 +10,8 @@ import type { StreamState, VisualMode } from '@/types';
 
 import { Button } from '../ui/button';
 import { VolumeSlider } from '../ui/volume-slider';
-import CastButton from './CastButton';
 import type { CastState } from './CastButton';
+import CastButton from './CastButton';
 import { VISUAL_MODES } from './Visualizer';
 import VoteSkip from './VoteSkip';
 

@@ -150,7 +150,8 @@
     "djControl": "🎧 DJ 컨트롤",
     "cast": "외부 기기로 재생",
     "castNoDevice": "연결 가능한 기기를 찾을 수 없습니다",
-    "castNotSupported": "현재 스트림을 전송할 수 없습니다"
+    "castNotSupported": "현재 스트림을 전송할 수 없습니다",
+    "castRetry": "준비 중입니다. 다시 시도해주세요"
   },
   "queue": {
     "title": "📋 신청곡",

@@ -20,7 +20,7 @@ export function InviteCodeResult({ code, title, description, actionLabel, onActi
   const inviteUrl = `${window.location.origin}/login?code=${code}`;
 
   const copy = async (text: string, type: 'code' | 'link') => {
-    await navigator.clipboard.writeText(text);
+    await navigator.clipboard?.writeText(text);
     if (type === 'code') {
       setCopiedCode(true);
       setTimeout(() => setCopiedCode(false), 2000);

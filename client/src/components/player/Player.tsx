@@ -7,8 +7,8 @@ import { useAudioControl } from '@/hooks/useAudioControl';
 import type { AutoDjStatus, StreamState, TrackInfo, TrackVoteMap, VisualMode } from '@/types';
 import { LyricsStatus } from '@/types';
 
-import Lyrics from './Lyrics';
 import type { CastState } from './CastButton';
+import Lyrics from './Lyrics';
 import PlayerControls from './PlayerControls';
 import PlayerInfo from './PlayerInfo';
 import PlayerProgress from './PlayerProgress';
