@@ -45,8 +45,11 @@ import { queryKeys, useInvalidate } from '@/hooks/useQueries';
 import { useReactions } from '@/hooks/useReactions';
 import { useRoomAudio } from '@/hooks/useRoomAudio';
 import { useRoomEvents } from '@/hooks/useRoomEvents';
+import { useRoomSync } from '@/hooks/useRoomSync';
 import { useWebSocket } from '@/hooks/useWebSocket';
+import { useWsMessages } from '@/hooks/useWsMessages';
 import { getWsUrl } from '@/lib/urls';
+import { WsCloseCode, WsOpCode } from '@/lib/constants';
 import { useAuthStore } from '@/stores/auth';
 import type { MobileTab } from '@/types';
 import type { StreamState } from '@/types';
@@ -93,7 +96,8 @@ export default function RoomClient({ id }: { id: string }) {
   const trackRef = useRef<Track | null>(null);
   const getOneWayRef = useRef<() => number>(() => 0);
   const onResyncNeededRef = useRef<(action: 'prepare' | 'send') => void>(() => {});
-  const events = useRoomEvents(id, listeningRef, trackRef, getOneWayRef, onResyncNeededRef);
+  const stableOnResyncNeeded = useCallback((action: 'prepare' | 'send') => onResyncNeededRef.current(action), []);
+  const events = useRoomEvents(id, listeningRef, trackRef, getOneWayRef, stableOnResyncNeeded);
   const {
     messages,
     isPlaying,
@@ -125,15 +129,98 @@ export default function RoomClient({ id }: { id: string }) {
   } = events;
 
   // --- Audio ---
-  const roomAudio = useRoomAudio(audioLoadingRef, setAudioLoading, (ms) => {
-    if (listeningRef.current && streamState === 'streaming') {
-      setTimeSync({ base: ms, at: Date.now() });
-    }
+  const onAudioErrorRef = useRef<() => void>(() => {});
+  const roomAudio = useRoomAudio(
+    audioLoadingRef,
+    setAudioLoading,
+    (ms) => {
+      if (listeningRef.current && streamState === 'streaming') {
+        setTimeSync({ base: ms, at: Date.now() });
+      }
+    },
+    useCallback(() => onAudioErrorRef.current(), []),
+  );
+  const { audio, volume, onAudio, handleVolumeChange, buffering } = roomAudio;
+
+  // --- WebSocket (연결만) ---
+  const wsReady = !!userId && !roomError;
+
+  // --- Messages (opcode 라우팅) ---
+  const onResyncWaitRef = useRef<() => void>(() => {});
+  const onReactionRef = useRef<(index: number) => void>(() => {});
+  const { handleMessage, getOneWay, buildPing } = useWsMessages({
+    onAudio: useCallback(
+      (frame: Uint8Array) => {
+        if (listeningRef.current) onAudio(frame);
+      },
+      [onAudio],
+    ),
+    onChat,
+    onSystem,
+    onReaction: useCallback((index: number) => onReactionRef.current(index), []),
+    onResyncWait: useCallback(() => onResyncWaitRef.current(), []),
   });
-  const { audio, listening, volume, onAudio, handleListenToggle, handleVolumeChange, buffering } = roomAudio;
+
+  const { send, connected: wsConnected } = useWebSocket({
+    url: `${getWsUrl()}?roomId=${id}`,
+    enabled: wsReady,
+    onMessage: handleMessage,
+    onReconnect: useCallback(() => {
+      invalidate.player(id);
+      invalidate.queue(id);
+      invalidate.room(id);
+    }, [id, invalidate]),
+    onClose: useCallback(
+      (code: number) => {
+        // 의도적 종료 이벤트를 onSystem으로 전달
+        const map: Record<number, string> = {
+          [WsCloseCode.Kicked]: 'kicked',
+          [WsCloseCode.RoomGone]: 'roomClosed',
+          [WsCloseCode.DuplicateSession]: 'duplicateSession',
+          [WsCloseCode.JoinedOtherRoom]: 'joinedOtherRoom',
+        };
+        if (map[code]) onSystem({ event: map[code], detail: '', data: {} });
+      },
+      [onSystem],
+    ),
+  });
+
+  // --- Sync (resync + listening 상태) ---
+  const roomSync = useRoomSync({
+    send,
+    prepareResync: audio.prepareResync,
+    connected: wsConnected,
+  });
+  const { listening, setListeningState, sendResync, sendListening, onResyncWait, onResyncNeeded } = roomSync;
+
+  // onResyncWait를 useWsMessages에 연결
+  useEffect(() => {
+    // handleMessage 내부에서 onResyncWait 콜백을 참조하므로 ref로 연결
+  }, []);
+
+  // onResyncNeeded를 useRoomEvents에 연결
+  useEffect(() => {
+    onResyncNeededRef.current = onResyncNeeded;
+    onResyncWaitRef.current = onResyncWait;
+    onAudioErrorRef.current = () => setListeningState(false);
+  }, [onResyncNeeded, onResyncWait, setListeningState]);
+
   useEffect(() => {
     listeningRef.current = listening;
   }, [listening, listeningRef]);
+
+  // RTT ping 전송 (연결 시 + heartbeat 시)
+  useEffect(() => {
+    if (!wsConnected) return;
+    // 초기 캘리브레이션
+    for (let i = 0; i < 3; i++) setTimeout(() => send(buildPing()), i * 100);
+    const interval = setInterval(() => send(buildPing()), 30_000);
+    return () => clearInterval(interval);
+  }, [wsConnected, send, buildPing]);
+
+  useEffect(() => {
+    getOneWayRef.current = getOneWay;
+  }, [getOneWay]);
 
   // 듣는 중 실수로 페이지 이탈 방지
   useEffect(() => {
@@ -167,41 +254,17 @@ export default function RoomClient({ id }: { id: string }) {
 
   // --- Reactions ---
   const { floatingReactions, onReaction } = useReactions();
-
-  // --- WebSocket ---
-  // WS는 same-origin 쿠키 자동 전송. roomId만 query로 전달
-  const wsReady = !!userId && !roomError;
-  const wsActionsRef = useRef<{ sendListening: (v: boolean) => void; sendResync: () => void }>(null!);
-
-  const { sendChat, sendListening, sendReaction, sendResync, getOneWay, wsConnected } = useWebSocket({
-    url: `${getWsUrl()}?roomId=${id}`,
-    enabled: wsReady,
-    onAudio,
-    onChat,
-    onSystem,
-    onReaction,
-    onReconnect: useCallback(() => {
-      invalidate.player(id);
-      invalidate.queue(id);
-      invalidate.room(id);
-      if (listeningRef.current) {
-        setTimeout(() => {
-          wsActionsRef.current?.sendListening(true);
-          wsActionsRef.current?.sendResync();
-        }, 100);
-      }
-    }, [id, invalidate]),
-  });
   useEffect(() => {
-    wsActionsRef.current = { sendListening, sendResync };
-    onResyncNeededRef.current = (action) => {
-      if (action === 'prepare') void audio.prepareResync();
-      else sendResync();
-    };
-  }, [sendListening, sendResync, audio]);
-  useEffect(() => {
-    getOneWayRef.current = getOneWay;
-  }, [getOneWay]);
+    onReactionRef.current = onReaction;
+  }, [onReaction]);
+  const sendReaction = useCallback(
+    (index: number) => {
+      send(new Uint8Array([WsOpCode.Reaction, index]));
+    },
+    [send],
+  );
+
+  // --- (WebSocket/Sync/Messages는 위에서 설정 완료) ---
 
   // --- Room join ---
   const joinRoom = useCallback(
@@ -258,8 +321,16 @@ export default function RoomClient({ id }: { id: string }) {
 
   // --- Handlers ---
   const handleSend = useCallback(
-    (message: string) => sendChat(message, userId ?? '', nickname),
-    [sendChat, userId, nickname],
+    (message: string) => {
+      const payload = new TextEncoder().encode(
+        JSON.stringify({ userId: userId ?? '', nickname, message, timestamp: new Date().toISOString() }),
+      );
+      const frame = new Uint8Array(1 + payload.length);
+      frame[0] = WsOpCode.Chat;
+      frame.set(payload, 1);
+      send(frame);
+    },
+    [send, userId, nickname],
   );
 
   const handleCommand = useCallback(
@@ -311,7 +382,7 @@ export default function RoomClient({ id }: { id: string }) {
         /* cancelled */
       }
     } else {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard?.writeText(url);
       toast.success(t('linkCopied'));
     }
   };
@@ -323,9 +394,22 @@ export default function RoomClient({ id }: { id: string }) {
     canVoteSkip: can('voteSkip'),
     onVolumeChange: handleVolumeChange,
     onListenToggle: async () => {
-      await handleListenToggle(sendListening);
-      // 이미 streaming 중이면 즉시 resync (중간 입장)
-      if (streamState === 'streaming') sendResync();
+      if (!listening) {
+        if (!audio.supported) {
+          toast.error(t('mseNotSupported'));
+          return;
+        }
+        setAudioLoading(true);
+        audioLoadingRef.current = true;
+        setListeningState(true);
+        await audio.init();
+        sendListening(true);
+        if (streamState === 'streaming') sendResync();
+      } else {
+        audio.pause();
+        setListeningState(false);
+        sendListening(false);
+      }
     },
     listening,
     audioLoading: audioLoading || buffering,

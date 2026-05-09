@@ -22,7 +22,7 @@ export function useRoomEvents(
   listeningRef: React.MutableRefObject<boolean>,
   _trackRef: React.MutableRefObject<Track | null>,
   getOneWayRef?: React.MutableRefObject<() => number>,
-  onResyncNeededRef?: React.MutableRefObject<(action: 'prepare' | 'send') => void>,
+  onResyncNeeded?: (action: 'prepare' | 'send') => void,
 ) {
   const router = useRouter();
   const invalidate = useInvalidate();
@@ -85,15 +85,15 @@ export function useRoomEvents(
       if (ss === 'skipping' || ss === 'preparing') {
         setStreamState(ss as StreamState);
         setTimeSync({ base: 0, at: 0 });
-        if (listeningRef.current) onResyncNeededRef?.current('prepare');
+        if (listeningRef.current) onResyncNeeded?.('prepare');
       }
       if (ss === 'streaming') {
         setStreamState('streaming');
         // streaming: 서버에 init segment 확보됨 → resync 요청
-        if (listeningRef.current) onResyncNeededRef?.current('send');
+        if (listeningRef.current) onResyncNeeded?.('send');
       }
     },
-    [listeningRef, onResyncNeededRef],
+    [listeningRef, onResyncNeeded],
   );
 
   // ─── Playback: track change (lyrics/skip reset) ──────
@@ -106,9 +106,9 @@ export function useRoomEvents(
       setLyricsType(null);
       setSkipVotes(0);
       setStreamState('preparing');
-      if (listeningRef.current) onResyncNeededRef?.current('prepare');
+      if (listeningRef.current) onResyncNeeded?.('prepare');
     },
-    [listeningRef, onResyncNeededRef],
+    [listeningRef, onResyncNeeded],
   );
 
   // ─── Playback: time sync ──────────────────────────────
@@ -166,22 +166,14 @@ export function useRoomEvents(
         if (d.streamState) setStreamState(d.streamState as StreamState);
         // streaming 전환: init segment 확보됨 → resync 요청
         if (d.streamState === 'streaming' && listeningRef.current) {
-          onResyncNeededRef?.current('send');
+          onResyncNeeded?.('send');
         }
       } else {
         handleStopped();
       }
       setPlaying(!!d.isPlaying);
     },
-    [
-      _trackRef,
-      listeningRef,
-      onResyncNeededRef,
-      handleStreamStateOnly,
-      handleTrackChange,
-      handleTimeSync,
-      handleStopped,
-    ],
+    [_trackRef, listeningRef, onResyncNeeded, handleStreamStateOnly, handleTrackChange, handleTimeSync, handleStopped],
   );
 
   // ─── System event dispatcher ──────────────────────────
