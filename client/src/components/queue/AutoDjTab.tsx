@@ -75,15 +75,22 @@ export function AutoDjTab({
           <p className="text-sm font-medium text-white">🤖 AutoDJ</p>
           <HelpTip>{t('helpAutoDj')}</HelpTip>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onTogglePause}
-          className={cn('gap-1.5 text-xs', paused && 'bg-sa-accent/20 text-sa-accent')}
-        >
-          {paused ? <Play size={12} /> : <Pause size={12} />}
-          {paused ? t('resume') : t('pause')}
-        </Button>
+        <div className="flex items-center gap-1.5">
+          <Button
+            variant="accent"
+            size="sm"
+            onClick={handleApply}
+            disabled={!isDirty}
+            loading={applying}
+            className="gap-1 text-xs"
+          >
+            <Check size={12} />
+            {t('apply')}
+          </Button>
+          <Button variant="ghost" size="icon-xs" onClick={onTogglePause} className={cn(paused && 'text-sa-accent')}>
+            {paused ? <Play size={14} /> : <Pause size={14} />}
+          </Button>
+        </div>
       </div>
 
       <AutoDjModeSelect value={localMode} onChange={setLocalMode} aiDisabled={aiDisabled} />
@@ -104,13 +111,6 @@ export function AutoDjTab({
           <p className="text-[11px] leading-relaxed text-white/40">{t('aiGuide')}</p>
           <AutoDjTagFilter value={tags} onChange={setTags} />
         </>
-      )}
-
-      {isDirty && (
-        <Button variant="accent" size="sm" onClick={handleApply} loading={applying} className="w-full gap-1.5">
-          <Check size={14} />
-          {t('apply')}
-        </Button>
       )}
 
       {(candidates.length > 0 || candidatesLoading) && (
