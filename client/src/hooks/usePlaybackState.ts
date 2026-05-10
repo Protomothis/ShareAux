@@ -24,6 +24,10 @@ export function usePlaybackState(
   const [lyricsType, setLyricsType] = useState<TrackLyricsType>(null);
   const [lyricsVersion, setLyricsVersion] = useState(0);
 
+  const [streamCodec, setStreamCodec] = useState<string | null>(null);
+  const [streamBitrate, setStreamBitrate] = useState<number | null>(null);
+  const [transStatus, setTransStatus] = useState<string | null>(null);
+
   const audioLoadingRef = useRef(false);
   const [audioLoading, setAudioLoading] = useState(false);
 
@@ -83,12 +87,27 @@ export function usePlaybackState(
     setTrack(null);
     setTimeSync({ base: 0, at: 0 });
     setStreamState('idle');
+    setStreamCodec(null);
+    setStreamBitrate(null);
+    setTransStatus(null);
   }, []);
 
   // --- 메인 핸들러 (onSystem에서 호출) ---
   const handlePlayback = useCallback(
-    (d: { track?: Track; elapsedMs?: number; isPlaying?: boolean; streamState?: string }) => {
+    (d: {
+      track?: Track;
+      elapsedMs?: number;
+      isPlaying?: boolean;
+      streamState?: string;
+      streamCodec?: string;
+      streamBitrate?: number;
+      transStatus?: string | null;
+    }) => {
       debug('[playback] updated', d.track?.name, 'state:', d.streamState);
+
+      if (d.streamCodec) setStreamCodec(d.streamCodec);
+      if (d.streamBitrate) setStreamBitrate(d.streamBitrate);
+      if (d.transStatus !== undefined) setTransStatus(d.transStatus);
 
       if (d.streamState && d.isPlaying === undefined) {
         handleStreamStateOnly(d.streamState);
@@ -140,5 +159,11 @@ export function usePlaybackState(
     setAudioLoading,
     audioLoadingRef,
     handlePlayback,
+    streamCodec,
+    setStreamCodec,
+    streamBitrate,
+    setStreamBitrate,
+    transStatus,
+    setTransStatus,
   };
 }

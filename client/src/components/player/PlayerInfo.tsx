@@ -4,7 +4,6 @@ import { Loader2 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
 
-import { TrackLyricsType } from '@/api/model';
 import type { AutoDjStatus, StreamState, TrackInfo, TrackVoteMap } from '@/types';
 import { LyricsStatus } from '@/types';
 
@@ -21,8 +20,8 @@ interface PlayerInfoProps {
   roomId: string;
   streamCodec?: string;
   streamBitrate?: number;
+  transStatus?: string | null;
   lyricsStatus?: LyricsStatus;
-  lyricsType?: TrackLyricsType;
   trackVotes?: TrackVoteMap;
   autoDjEnabled?: boolean;
   autoDjStatus?: AutoDjStatus;
@@ -39,8 +38,8 @@ export default function PlayerInfo({
   roomId,
   streamCodec,
   streamBitrate,
+  transStatus,
   lyricsStatus,
-  lyricsType,
   trackVotes,
   autoDjEnabled,
   autoDjStatus,
@@ -127,8 +126,19 @@ export default function PlayerInfo({
             <div className="mt-1 flex h-4 items-center gap-1">
               {streamCodec ? <InfoTag>{streamCodec}</InfoTag> : null}
               {streamBitrate ? <InfoTag>{streamBitrate}kbps</InfoTag> : null}
-              {lyricsStatus === LyricsStatus.Found ? (
-                <InfoTag>{lyricsType === TrackLyricsType.karaoke ? 'KLRC' : 'LRC'}</InfoTag>
+              {lyricsStatus === LyricsStatus.Searching ? (
+                <InfoTag>
+                  <Loader2 size={8} className="shrink-0 animate-spin" /> LRC
+                </InfoTag>
+              ) : lyricsStatus === LyricsStatus.Found ? (
+                <InfoTag>LRC</InfoTag>
+              ) : null}
+              {lyricsStatus === LyricsStatus.Found && transStatus === 'pending' ? (
+                <InfoTag>
+                  <Loader2 size={8} className="shrink-0 animate-spin" /> 번역
+                </InfoTag>
+              ) : lyricsStatus === LyricsStatus.Found && transStatus === 'done' ? (
+                <InfoTag>번역</InfoTag>
               ) : null}
             </div>
           )}
