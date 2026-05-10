@@ -48,7 +48,7 @@ export class PlayerController {
       const queue = await this.queueRepo.find({
         where: { room: { id: roomId }, played: false },
         order: { position: 'ASC' },
-        relations: ['track'],
+        relations: ['track', 'addedBy'],
       });
       this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue });
 
