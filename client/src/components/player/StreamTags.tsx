@@ -1,6 +1,7 @@
 'use client';
 
 import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { LyricsStatus } from '@/types';
 
@@ -14,23 +15,29 @@ interface StreamTagsProps {
 }
 
 export function StreamTags({ codec, bitrate, lyricsStatus, transStatus }: StreamTagsProps) {
+  const t = useTranslations('player.tags');
+
   return (
     <div className="mt-1 flex h-4 items-center gap-1">
-      {codec ? <InfoTag>{codec}</InfoTag> : null}
-      {bitrate ? <InfoTag>{bitrate}kbps</InfoTag> : null}
+      {codec ? <InfoTag title={t('codec')}>{codec}</InfoTag> : null}
+      {bitrate ? <InfoTag title={t('bitrate')}>{bitrate}kbps</InfoTag> : null}
       {lyricsStatus === LyricsStatus.Searching ? (
-        <InfoTag>
+        <InfoTag className="text-white/50" title={t('lyricsSearching')}>
           <Loader2 size={8} className="shrink-0 animate-spin" /> LRC
         </InfoTag>
       ) : lyricsStatus === LyricsStatus.Found ? (
-        <InfoTag>LRC</InfoTag>
+        <InfoTag className="text-white/50" title={t('lyricsFound')}>
+          LRC
+        </InfoTag>
       ) : null}
       {lyricsStatus === LyricsStatus.Found && transStatus === 'pending' ? (
-        <InfoTag>
-          <Loader2 size={8} className="shrink-0 animate-spin" /> 번역
+        <InfoTag className="text-white/50" title={t('transSearching')}>
+          <Loader2 size={8} className="shrink-0 animate-spin" /> TL
         </InfoTag>
       ) : lyricsStatus === LyricsStatus.Found && transStatus === 'done' ? (
-        <InfoTag>번역</InfoTag>
+        <InfoTag className="text-white/50" title={t('transDone')}>
+          TL
+        </InfoTag>
       ) : null}
     </div>
   );
