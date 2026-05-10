@@ -566,6 +566,12 @@ export default function RoomClient({ id }: { id: string }) {
             isGuest={role === 'guest'}
             maxSelectPerAdd={room.maxSelectPerAdd}
             trackVotes={trackVotes}
+            autoDjStatus={autoDjStatus}
+            autoDjEnabled={room?.autoDjEnabled}
+            autoDjMode={room?.autoDjMode}
+            autoDjPaused={room?.autoDjPaused}
+            autoDjTags={room?.autoDjTags}
+            autoDjPrompt={room?.autoDjPrompt}
             favorites={favorites}
           />
         </div>
