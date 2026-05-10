@@ -117,8 +117,7 @@ export class AutoDjService {
     if (this.processing.has(roomId)) return;
 
     const room = await this.roomRepo.findOneBy({ id: roomId });
-    if (!room?.autoDjEnabled || !room.isActive) {
-      this.logger.debug(`[AutoDJ] skipped: enabled=${room?.autoDjEnabled} active=${room?.isActive}`);
+    if (!room?.autoDjEnabled || !room.isActive || room.autoDjPaused) {
       return;
     }
 
@@ -553,6 +552,14 @@ export class AutoDjService {
   /** 후보 목록 조회 (API용) */
   getAiPoolCandidates(roomId: string): AiPoolEntry[] {
     return this.aiPools.get(roomId)?.candidates ?? [];
+  }
+
+  /** 방 삭제/비활성화 시 풀 정리 */
+  cleanupRoom(roomId: string): void {
+    this.aiPools.delete(roomId);
+    this.processing.delete(roomId);
+    this.failCounts.delete(roomId);
+    this.debounceTimers.delete(roomId);
   }
 
   /** 후보 핀 토글 */

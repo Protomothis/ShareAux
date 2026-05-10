@@ -1,7 +1,28 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsInt,
+  IsObject,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+  MinLength,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
 import { AutoDjMode } from '../../types/index.js';
+
+class AutoDjTagsDto {
+  @IsArray() @IsString({ each: true }) mood!: string[];
+  @IsArray() @IsString({ each: true }) genre!: string[];
+  @IsArray() @IsString({ each: true }) era!: string[];
+  @IsArray() @IsString({ each: true }) country!: string[];
+}
 
 export class UpdateRoomDto {
   @ApiProperty({ required: false, description: '방 이름' })
@@ -89,11 +110,14 @@ export class UpdateRoomDto {
 
   @ApiProperty({ required: false, nullable: true, description: 'AI DJ 태그' })
   @IsOptional()
-  autoDjTags?: Record<string, string[]> | null;
+  @ValidateNested()
+  @Type(() => AutoDjTagsDto)
+  autoDjTags?: AutoDjTagsDto | null;
 
   @ApiProperty({ required: false, nullable: true, description: 'AI DJ 프롬프트 (최대 200자)' })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   autoDjPrompt?: string | null;
 
   @ApiProperty({ required: false, description: 'AutoDJ 일시중지' })

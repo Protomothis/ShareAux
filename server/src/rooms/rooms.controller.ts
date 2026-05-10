@@ -7,10 +7,13 @@ import { RoomMember } from '../entities/room-member.entity.js';
 import { ControllerGuard } from '../guards/controller.guard.js';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard.js';
 import { RequirePermission, RoomPermissionGuard } from '../guards/room-permission.guard.js';
+import { AppException } from '../exceptions/app.exception.js';
 import { AutoDjService } from '../services/auto-dj.service.js';
 import { ChatMuteService } from '../services/chat-mute.service.js';
+import { SettingsService } from '../services/settings.service.js';
 import type { AuthenticatedRequest } from '../types/index.js';
-import { Permission, PushEvent, WsEvent } from '../types/index.js';
+import { AutoDjMode, ErrorCode, Permission, PushEvent, WsEvent } from '../types/index.js';
+import { OptionKey } from '../types/settings.types.js';
 import { PUSH_EVENT, pushPayload } from '../types/push-event-payload.js';
 import { BanInfo } from './dto/ban-info.dto.js';
 import { CreateRoomDto } from './dto/create-room.dto.js';
@@ -33,6 +36,7 @@ export class RoomsController {
     private autoDj: AutoDjService,
     private chatMute: ChatMuteService,
     private eventEmitter: EventEmitter2,
+    private settings: SettingsService,
   ) {}
 
   @Post()
@@ -66,6 +70,10 @@ export class RoomsController {
   @ApiOperation({ summary: '방 설정 수정' })
   @ApiBearerAuth()
   async update(@Param('id', ParseUUIDPipe) id: string, @Req() req: AuthenticatedRequest, @Body() dto: UpdateRoomDto) {
+    // AI 모드 선택 시 서버 설정 체크
+    if (dto.autoDjMode === AutoDjMode.AI && !this.settings.getBoolean(OptionKey.AutoDjAiEnabled)) {
+      throw new AppException(ErrorCode.ROOM_004);
+    }
     const prevAutoDj = dto.autoDjEnabled !== undefined ? await this.rooms.getAutoDjEnabled(id) : undefined;
     const result = await this.rooms.update(id, req.user.userId, dto);
     this.gateway.broadcastSystem(id, WsEvent.RoomUpdated, '');
@@ -90,8 +98,10 @@ export class RoomsController {
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: '방 삭제' })
   @ApiBearerAuth()
-  remove(@Param('id', ParseUUIDPipe) id: string, @Req() req: AuthenticatedRequest) {
-    return this.rooms.remove(id, req.user.userId);
+  async remove(@Param('id', ParseUUIDPipe) id: string, @Req() req: AuthenticatedRequest) {
+    const result = await this.rooms.remove(id, req.user.userId);
+    this.autoDj.cleanupRoom(id);
+    return result;
   }
 
   @Post(':id/join')
