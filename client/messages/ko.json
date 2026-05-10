@@ -373,7 +373,9 @@
     "autoDjHistoryDesc": "이 방에서 이전에 재생된 곡을 다시 추가합니다",
     "autoDjPopularDesc": "전체 방에서 인기 있는 곡을 추가합니다",
     "autoDjMixedDesc": "관련곡 + 재생 이력 + 인기곡을 섞어서 추가합니다",
-    "autoDjFavoritesDesc": "호스트의 즐겨찾기에서 곡을 추가합니다"
+    "autoDjFavoritesDesc": "호스트의 즐겨찾기에서 곡을 추가합니다",
+    "autoDjAi": "🧠 AI",
+    "autoDjAiDesc": "AI가 태그와 분위기에 맞는 곡을 추천합니다"
   },
   "profile": {
     "title": "프로필 설정",

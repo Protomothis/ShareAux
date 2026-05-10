@@ -43,6 +43,7 @@ export default function AutoDjSettings({
     popular: t('autoDjPopular'),
     mixed: t('autoDjMixed'),
     favorites: t('autoDjFavorites'),
+    ai: t('autoDjAi'),
   };
 
   const modeDescs: Record<string, string> = {
@@ -52,6 +53,7 @@ export default function AutoDjSettings({
     popular: t('autoDjPopularDesc'),
     mixed: t('autoDjMixedDesc'),
     favorites: t('autoDjFavoritesDesc'),
+    ai: t('autoDjAiDesc'),
   };
 
   return (
@@ -80,6 +82,7 @@ export default function AutoDjSettings({
                   {t('autoDjFavorites')}
                   {!hasFavorites ? t('autoDjFavEmpty') : ''}
                 </SelectItem>
+                <SelectItem value="ai">{t('autoDjAi')}</SelectItem>
               </SelectContent>
             </Select>
           </FormField>

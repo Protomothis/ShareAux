@@ -373,7 +373,9 @@
     "autoDjHistoryDesc": "Re-adds previously played tracks from this room",
     "autoDjPopularDesc": "Adds popular tracks across all rooms",
     "autoDjMixedDesc": "Mixes related, history, and popular tracks",
-    "autoDjFavoritesDesc": "Adds tracks from the host's favorites"
+    "autoDjFavoritesDesc": "Adds tracks from the host's favorites",
+    "autoDjAi": "🧠 AI",
+    "autoDjAiDesc": "AI recommends tracks based on tags and mood"
   },
   "profile": {
     "title": "Profile Settings",
