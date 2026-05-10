@@ -440,6 +440,12 @@ export class AutoDjService {
   private async getAiCandidates(roomId: string, room: Room): Promise<WeightedCandidate[]> {
     const pool = this.aiPools.get(roomId);
     if (pool && pool.candidates.length > 0) {
+      // 풀이 5곡 이하면 백그라운드 리필
+      if (pool.candidates.length <= 5 && !pool.refreshing) {
+        this.refreshAiPool(roomId, room).catch((e: unknown) =>
+          this.logger.warn(`[AI pool refill] ${(e as Error).message}`),
+        );
+      }
       return pool.candidates.map((e) => ({ track: e.track, weight: e.pinned ? 10 : 1 }));
     }
     // 풀 비어있으면 리필 시도, 그 동안 Related 폴백

@@ -352,6 +352,7 @@ export class RoomsController {
     const room = await this.rooms.findOne(id);
     const paused = !room.autoDjPaused;
     await this.rooms.update(id, req.user.userId, { autoDjPaused: paused });
+    if (!paused) this.autoDj.trigger(id);
     return { paused };
   }
 }

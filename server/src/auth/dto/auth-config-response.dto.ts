@@ -4,4 +4,5 @@ export class AuthConfigResponse {
   @ApiProperty() google!: boolean;
   @ApiProperty() captcha!: boolean;
   @ApiProperty() translation!: boolean;
+  @ApiProperty() aiDj!: boolean;
 }

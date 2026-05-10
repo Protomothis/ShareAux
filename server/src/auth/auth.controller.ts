@@ -71,6 +71,7 @@ export class AuthController {
       google: this.isGoogleEnabled,
       captcha: this.captcha.isEnabled(),
       translation: this.translationService.isEnabled,
+      aiDj: this.settingsService.getBoolean(OptionKey.AutoDjAiEnabled),
     };
   }
 
