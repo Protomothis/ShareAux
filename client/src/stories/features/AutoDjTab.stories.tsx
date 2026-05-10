@@ -35,7 +35,6 @@ export const RelatedMode: Story = {
           paused={paused}
           onTogglePause={() => setPaused(!paused)}
           savedTags={emptyTags}
-          savedPrompt=""
           onApply={fn()}
           candidates={candidates}
           onPin={(id) => setCandidates((p) => p.map((c) => (c.id === id ? { ...c, pinned: !c.pinned } : c)))}
@@ -61,7 +60,6 @@ export const AiMode: Story = {
           paused={paused}
           onTogglePause={() => setPaused(!paused)}
           savedTags={savedTags}
-          savedPrompt=""
           onApply={fn()}
           candidates={candidates}
           onPin={(id) => setCandidates((p) => p.map((c) => (c.id === id ? { ...c, pinned: !c.pinned } : c)))}
@@ -85,7 +83,6 @@ export const AiDisabled: Story = {
           paused={paused}
           onTogglePause={() => setPaused(!paused)}
           savedTags={emptyTags}
-          savedPrompt=""
           onApply={fn()}
           candidates={[]}
           onPin={fn()}

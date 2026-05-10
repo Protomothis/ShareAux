@@ -11,7 +11,6 @@ import type { CandidateTrack } from './AutoDjCandidates';
 import { AutoDjCandidates } from './AutoDjCandidates';
 import type { AutoDjMode } from './AutoDjModeSelect';
 import { AutoDjModeSelect } from './AutoDjModeSelect';
-import { AutoDjPromptInput } from './AutoDjPromptInput';
 import type { AutoDjTags } from './AutoDjTagFilter';
 import { AutoDjTagFilter } from './AutoDjTagFilter';
 
@@ -23,8 +22,6 @@ interface AutoDjTabProps {
   onTogglePause: () => void;
   /** 서버에 저장된 태그 (초기값) */
   savedTags: AutoDjTags;
-  /** 서버에 저장된 프롬프트 (초기값) */
-  savedPrompt: string;
   /** 태그+프롬프트 적용 */
   onApply: (tags: AutoDjTags, prompt: string) => void;
   applying?: boolean;
@@ -44,7 +41,6 @@ export function AutoDjTab({
   paused,
   onTogglePause,
   savedTags,
-  savedPrompt,
   onApply,
   applying,
   candidates,
@@ -58,15 +54,14 @@ export function AutoDjTab({
 }: AutoDjTabProps) {
   const t = useTranslations('player.autoDj');
   const [tags, setTags] = useState<AutoDjTags>(savedTags);
-  const [prompt, setPrompt] = useState(savedPrompt);
-  const savedRef = useRef({ tags: savedTags, prompt: savedPrompt });
+  const savedRef = useRef({ tags: savedTags });
 
   // dirty 감지
-  const isDirty = JSON.stringify(tags) !== JSON.stringify(savedRef.current.tags) || prompt !== savedRef.current.prompt;
+  const isDirty = JSON.stringify(tags) !== JSON.stringify(savedRef.current.tags);
 
   const handleApply = useCallback(() => {
-    onApply(tags, prompt);
-    savedRef.current = { tags, prompt };
+    onApply(tags, '');
+    savedRef.current = { tags };
   }, [tags, prompt, onApply]);
 
   return (
@@ -89,7 +84,6 @@ export function AutoDjTab({
       {mode === 'ai' && (
         <>
           <AutoDjTagFilter value={tags} onChange={setTags} />
-          <AutoDjPromptInput value={prompt} onChange={setPrompt} />
 
           {isDirty && (
             <Button variant="accent" size="sm" onClick={handleApply} loading={applying} className="w-full gap-1.5">

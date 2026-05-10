@@ -102,7 +102,6 @@ export function useAutoDj({ roomId, enabled, isHost, mode, paused, tags, prompt 
     mode: mode as AutoDjMode,
     paused,
     savedTags,
-    savedPrompt: prompt ?? '',
     candidates,
     candidatesLoading,
     refreshing,
