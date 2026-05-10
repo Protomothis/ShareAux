@@ -94,7 +94,7 @@ export function AutoDjTab({
         </>
       )}
 
-      {candidates.length > 0 && (
+      {(candidates.length > 0 || candidatesLoading) && (
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <p className="text-[11px] font-medium uppercase tracking-wider text-white/40">{t('nextUp')}</p>
