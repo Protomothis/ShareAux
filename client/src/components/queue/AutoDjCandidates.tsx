@@ -2,6 +2,7 @@
 
 import { Pin, X } from 'lucide-react';
 
+import MarqueeText from '@/components/common/MarqueeText';
 import Thumbnail from '@/components/common/Thumbnail';
 import { cn } from '@/lib/utils';
 
@@ -35,7 +36,7 @@ export function AutoDjCandidates({ candidates, onPin, onSkip, className }: AutoD
         >
           <Thumbnail src={track.thumbnail} size="sm" className="size-8 shrink-0 rounded" />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-medium text-white">{track.name}</p>
+            <MarqueeText text={track.name} className="text-xs font-medium text-white" />
             <p className="truncate text-[10px] text-white/40">{track.artist}</p>
           </div>
           <button
