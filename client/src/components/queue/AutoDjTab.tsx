@@ -71,11 +71,26 @@ export function AutoDjTab({
   return (
     <div className={cn('space-y-4', className)}>
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           <p className="text-sm font-medium text-white">🤖 AutoDJ</p>
           <HelpTip>{t('helpAutoDj')}</HelpTip>
+          <Button variant="ghost" size="icon-xs" onClick={onTogglePause} className={cn(paused && 'text-sa-accent')}>
+            {paused ? <Play size={14} /> : <Pause size={14} />}
+          </Button>
         </div>
         <div className="flex items-center gap-1.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setLocalMode(mode);
+              setTags(savedTags);
+            }}
+            disabled={!isDirty}
+            className="text-xs text-white/50"
+          >
+            {t('reset')}
+          </Button>
           <Button
             variant="accent"
             size="sm"
@@ -86,9 +101,6 @@ export function AutoDjTab({
           >
             <Check size={12} />
             {t('apply')}
-          </Button>
-          <Button variant="ghost" size="icon-xs" onClick={onTogglePause} className={cn(paused && 'text-sa-accent')}>
-            {paused ? <Play size={14} /> : <Pause size={14} />}
           </Button>
         </div>
       </div>
