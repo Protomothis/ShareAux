@@ -55,16 +55,18 @@ export function AutoDjTab({
   className,
 }: AutoDjTabProps) {
   const t = useTranslations('player.autoDj');
+  const [localMode, setLocalMode] = useState(mode);
   const [tags, setTags] = useState<AutoDjTags>(savedTags);
-  const savedRef = useRef({ tags: savedTags });
+  const savedRef = useRef({ mode, tags: savedTags });
 
   // dirty 감지
-  const isDirty = JSON.stringify(tags) !== JSON.stringify(savedRef.current.tags);
+  const isDirty = localMode !== savedRef.current.mode || JSON.stringify(tags) !== JSON.stringify(savedRef.current.tags);
 
   const handleApply = useCallback(() => {
-    onApply(tags, '');
-    savedRef.current = { tags };
-  }, [tags, prompt, onApply]);
+    if (localMode !== savedRef.current.mode) onModeChange(localMode);
+    if (localMode === 'ai') onApply(tags, '');
+    savedRef.current = { mode: localMode, tags };
+  }, [localMode, tags, onApply, onModeChange]);
 
   return (
     <div className={cn('space-y-4', className)}>
@@ -84,31 +86,31 @@ export function AutoDjTab({
         </Button>
       </div>
 
-      <AutoDjModeSelect value={mode} onChange={onModeChange} aiDisabled={aiDisabled} />
+      <AutoDjModeSelect value={localMode} onChange={setLocalMode} aiDisabled={aiDisabled} />
 
-      {mode !== 'ai' && (
+      {localMode !== 'ai' && (
         <p className="text-[11px] leading-relaxed text-white/40">
-          {mode === 'related' && t('guideRelated')}
-          {mode === 'radio' && t('guideRadio')}
-          {mode === 'history' && t('guideHistory')}
-          {mode === 'popular' && t('guidePopular')}
-          {mode === 'mixed' && t('guideMixed')}
-          {mode === 'favorites' && t('guideFavorites')}
+          {localMode === 'related' && t('guideRelated')}
+          {localMode === 'radio' && t('guideRadio')}
+          {localMode === 'history' && t('guideHistory')}
+          {localMode === 'popular' && t('guidePopular')}
+          {localMode === 'mixed' && t('guideMixed')}
+          {localMode === 'favorites' && t('guideFavorites')}
         </p>
       )}
 
-      {mode === 'ai' && (
+      {localMode === 'ai' && (
         <>
           <p className="text-[11px] leading-relaxed text-white/40">{t('aiGuide')}</p>
           <AutoDjTagFilter value={tags} onChange={setTags} />
-
-          {isDirty && (
-            <Button variant="accent" size="sm" onClick={handleApply} loading={applying} className="w-full gap-1.5">
-              <Check size={14} />
-              {t('apply')}
-            </Button>
-          )}
         </>
+      )}
+
+      {isDirty && (
+        <Button variant="accent" size="sm" onClick={handleApply} loading={applying} className="w-full gap-1.5">
+          <Check size={14} />
+          {t('apply')}
+        </Button>
       )}
 
       {(candidates.length > 0 || candidatesLoading) && (
