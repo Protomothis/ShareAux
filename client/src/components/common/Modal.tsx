@@ -58,6 +58,8 @@ interface ModalProps {
   showCloseButton?: boolean;
   /** 모바일에서 전체화면으로 표시 */
   fullscreenMobile?: boolean;
+  /** 중첩 모달 — 백드롭 약하게 */
+  nested?: boolean;
 }
 
 function ModalRoot({
@@ -68,6 +70,7 @@ function ModalRoot({
   className,
   showCloseButton = true,
   fullscreenMobile,
+  nested,
 }: ModalProps) {
   const t = useTranslations('common');
 
@@ -79,7 +82,12 @@ function ModalRoot({
   return (
     <DialogPrimitive.Root open={open} onOpenChange={handleOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Backdrop className="fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
+        <DialogPrimitive.Backdrop
+          className={cn(
+            'fixed inset-0 isolate z-50 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0',
+            nested ? 'bg-black/20' : 'bg-black/10',
+          )}
+        />
         <DialogPrimitive.Popup
           className={cn(
             'fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 grid-rows-[auto_1fr_auto] overflow-hidden rounded-xl bg-popover text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none [&>form]:contents data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
