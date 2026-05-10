@@ -16,6 +16,9 @@ import { CollapsibleSection } from '@/components/ui/collapsible-section';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { formatDuration } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { usePreferencesStore } from '@/stores/preferences';
+
+import { SearchTrackItem } from './SearchTrackItem';
 
 interface SearchShowcaseProps {
   roomId: string;
@@ -158,24 +161,45 @@ export default function SearchShowcase({
     durationMs: t.durationMs,
   });
 
-  const grid = (tracks: SearchResultItem[]) => (
-    <div className="grid grid-cols-3 gap-1">
-      {tracks.map((t) => (
-        <GridCard
-          key={t.sourceId}
-          track={t}
-          selected={selectedIds.has(t.sourceId)}
-          disabled={disabledIds.has(t.sourceId)}
-          order={selectedOrder.indexOf(t.sourceId) + 1}
-          onClick={() => handleClick(t)}
-          isFavorite={favoriteIds?.has(t.sourceId)}
-          favLoading={favLoadingIds?.has(t.sourceId)}
-          onToggleFavorite={() => onToggleFavorite?.(t)}
-          isGuest={isGuest}
-        />
-      ))}
-    </div>
-  );
+  const viewMode = usePreferencesStore((s) => s.viewMode);
+
+  const grid = (tracks: SearchResultItem[]) =>
+    viewMode === 'list' ? (
+      <div className="space-y-1">
+        {tracks.map((t) => (
+          <SearchTrackItem
+            key={t.sourceId}
+            track={t}
+            order={selectedOrder.indexOf(t.sourceId) + 1}
+            disabled={disabledIds.has(t.sourceId)}
+            full={maxReached && !selectedIds.has(t.sourceId)}
+            inQueue={false}
+            onClick={() => handleClick(t)}
+            isFavorite={favoriteIds?.has(t.sourceId)}
+            favLoading={favLoadingIds?.has(t.sourceId)}
+            onToggleFavorite={() => onToggleFavorite?.(t)}
+            isGuest={isGuest}
+          />
+        ))}
+      </div>
+    ) : (
+      <div className="grid grid-cols-3 gap-1">
+        {tracks.map((t) => (
+          <GridCard
+            key={t.sourceId}
+            track={t}
+            selected={selectedIds.has(t.sourceId)}
+            disabled={disabledIds.has(t.sourceId)}
+            order={selectedOrder.indexOf(t.sourceId) + 1}
+            onClick={() => handleClick(t)}
+            isFavorite={favoriteIds?.has(t.sourceId)}
+            favLoading={favLoadingIds?.has(t.sourceId)}
+            onToggleFavorite={() => onToggleFavorite?.(t)}
+            isGuest={isGuest}
+          />
+        ))}
+      </div>
+    );
 
   const { popular = [], recent = [], myHistory = [] } = showcaseData ?? {};
   const recommended = recData?.recommended ?? [];
