@@ -15,7 +15,7 @@ export function ViewModeToggle() {
       type="button"
       onClick={() => setViewMode(mode)}
       className={cn(
-        'rounded-md p-1.5 transition-colors',
+        'flex size-8 items-center justify-center rounded-md transition-colors',
         viewMode === mode ? 'bg-white/10 text-sa-accent' : 'text-white/30 hover:bg-white/5 hover:text-white/60',
       )}
     >

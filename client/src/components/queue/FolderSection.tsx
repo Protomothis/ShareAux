@@ -6,22 +6,12 @@ import { useTranslations } from 'next-intl';
 
 import type { FavoriteItem, SearchResultItem } from '@/api/model';
 import { folderColorClass } from '@/lib/folder-colors';
+import { favToSearchResult } from '@/lib/track-utils';
 import { cn } from '@/lib/utils';
 
 import { FavItem } from './FavItem';
 
 const DROP_PREFIX = 'folder:';
-
-function toSearchResult(fav: FavoriteItem): SearchResultItem {
-  return {
-    provider: 'yt' as SearchResultItem['provider'],
-    sourceId: fav.sourceId,
-    name: fav.name,
-    artist: fav.artist ?? null,
-    thumbnail: fav.thumbnail ?? null,
-    durationMs: fav.durationMs,
-  };
-}
 
 interface FolderSectionProps {
   folderId: string;
@@ -91,7 +81,7 @@ export function FolderSection({
       {!isCollapsed && (
         <div className="mt-0.5 space-y-0.5 pl-1">
           {items.map((fav) => {
-            const track = toSearchResult(fav);
+            const track = favToSearchResult(fav);
             const order = selectedOrder.indexOf(fav.sourceId) + 1;
             const inQueue = disabledIds.has(fav.sourceId);
             const disabled = inQueue || (!order && maxReached);

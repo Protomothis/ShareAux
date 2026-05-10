@@ -171,9 +171,9 @@ export default function SearchShowcase({
             key={t.sourceId}
             track={t}
             order={selectedOrder.indexOf(t.sourceId) + 1}
-            disabled={disabledIds.has(t.sourceId)}
+            disabled={disabledIds.has(t.sourceId) || (maxReached && !selectedIds.has(t.sourceId))}
             full={maxReached && !selectedIds.has(t.sourceId)}
-            inQueue={false}
+            inQueue={disabledIds.has(t.sourceId)}
             onClick={() => handleClick(t)}
             isFavorite={favoriteIds?.has(t.sourceId)}
             favLoading={favLoadingIds?.has(t.sourceId)}
