@@ -1,7 +1,7 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 import { Language } from '@/api/model';
 import { pushControllerGetVapidKey, pushControllerSubscribe } from '@/api/push/push';
@@ -38,14 +38,15 @@ export async function registerPushSubscription(): Promise<boolean> {
 }
 
 /** 방 입장 시 자동 구독 (권한 granted 상태면) */
+let registered = false;
+
 export function usePushSubscription() {
-  const subscribedRef = useRef(false);
   const qc = useQueryClient();
 
   useEffect(() => {
-    if (subscribedRef.current) return;
+    if (registered) return;
     if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
-    subscribedRef.current = true;
+    registered = true;
     registerPushSubscription();
   }, []);
 
