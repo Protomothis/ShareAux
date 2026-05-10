@@ -86,4 +86,18 @@ export class UpdateRoomDto {
   @IsOptional()
   @IsBoolean()
   autoDjFavFallbackMixed?: boolean;
+
+  @ApiProperty({ required: false, nullable: true, description: 'AI DJ 태그' })
+  @IsOptional()
+  autoDjTags?: Record<string, string[]> | null;
+
+  @ApiProperty({ required: false, nullable: true, description: 'AI DJ 프롬프트 (최대 200자)' })
+  @IsOptional()
+  @IsString()
+  autoDjPrompt?: string | null;
+
+  @ApiProperty({ required: false, description: 'AutoDJ 일시중지' })
+  @IsOptional()
+  @IsBoolean()
+  autoDjPaused?: boolean;
 }

@@ -18,6 +18,10 @@ export enum OptionKey {
 
   // AutoDJ
   AutoDjEnabled = 'autodj.enabled',
+  AutoDjAiEnabled = 'autodj.aiEnabled',
+  AutoDjAiModel = 'autodj.aiModel',
+  AutoDjBatchSize = 'autodj.batchSize',
+  AutoDjTemperature = 'autodj.temperature',
 
   // 큐
   QueueMaxPerUser = 'queue.maxPerUser',
@@ -68,6 +72,10 @@ export const OPTION_METAS: Record<OptionKey, OptionMeta> = {
 
   // AutoDJ
   [OptionKey.AutoDjEnabled]: { type: 'boolean', defaultValue: 'true' },
+  [OptionKey.AutoDjAiEnabled]: { type: 'boolean', defaultValue: 'false' },
+  [OptionKey.AutoDjAiModel]: { type: 'select', defaultValue: 'gemini-2.5-flash-lite' },
+  [OptionKey.AutoDjBatchSize]: { type: 'number', defaultValue: '15', min: 5, max: 30 },
+  [OptionKey.AutoDjTemperature]: { type: 'number', defaultValue: '0.8', min: 0.1, max: 1.5 },
 
   // 큐
   [OptionKey.QueueMaxPerUser]: { type: 'number', defaultValue: '10', min: 1, max: 50 },

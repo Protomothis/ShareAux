@@ -20,15 +20,28 @@ import { RoomQueue } from '../entities/room-queue.entity.js';
 import { Track } from '../entities/track.entity.js';
 import { TrackStats } from '../entities/track-stats.entity.js';
 import { UserFavorite } from '../entities/user-favorite.entity.js';
-import type { AutoDjStatus } from '../types/index.js';
+import type { AutoDjStatus, AutoDjTags } from '../types/index.js';
 import { AutoDjMode } from '../types/index.js';
+import { OptionKey } from '../types/settings.types.js';
 import { Provider } from '../types/provider.enum.js';
 import { fetchYtMusicRelated } from './innertube-parser.js';
+import { SettingsService } from './settings.service.js';
 import { type YtdlpSearchResult, YtdlpService } from './ytdlp.service.js';
 
 interface WeightedCandidate {
   track: Track;
   weight: number;
+}
+
+interface AiPoolEntry {
+  track: Track;
+  pinned: boolean;
+}
+
+interface AiPool {
+  candidates: AiPoolEntry[];
+  refreshing: boolean;
+  usedSourceIds: Set<string>;
 }
 
 @Injectable()
@@ -41,6 +54,7 @@ export class AutoDjService {
   private trackAddedCallback?: (roomId: string, track: Track) => void;
   private batchCompleteCallback?: (roomId: string, tracks: Track[]) => void;
   private systemMessageCallback?: (roomId: string, message: string) => void;
+  private readonly aiPools = new Map<string, AiPool>();
 
   constructor(
     @InjectRepository(Room) private readonly roomRepo: Repository<Room>,
@@ -51,6 +65,7 @@ export class AutoDjService {
     @InjectRepository(TrackStats) private readonly statsRepo: Repository<TrackStats>,
     @InjectRepository(UserFavorite) private readonly favoriteRepo: Repository<UserFavorite>,
     private readonly ytdlp: YtdlpService,
+    private readonly settings: SettingsService,
   ) {}
 
   onStatusChange(cb: (roomId: string, status: AutoDjStatus, reason?: string) => void): void {
@@ -225,6 +240,8 @@ export class AutoDjService {
         return this.getMixedCandidates(roomId);
       case AutoDjMode.Favorites:
         return this.getFavoritesCandidates(room);
+      case AutoDjMode.AI:
+        return this.getAiCandidates(roomId, room);
     }
   }
 
@@ -417,5 +434,150 @@ export class AutoDjService {
         fetchedAt: new Date(),
       }),
     );
+  }
+
+  // ─── AI Pool ───
+
+  private async getAiCandidates(roomId: string, room: Room): Promise<WeightedCandidate[]> {
+    const pool = this.aiPools.get(roomId);
+    if (pool && pool.candidates.length > 0) {
+      return pool.candidates.map((e) => ({ track: e.track, weight: e.pinned ? 10 : 1 }));
+    }
+    // 풀 비어있으면 리필 시도, 그 동안 Related 폴백
+    this.refreshAiPool(roomId, room).catch((e: unknown) =>
+      this.logger.warn(`[AI pool refresh] ${(e as Error).message}`),
+    );
+    return this.getRelatedCandidates(roomId);
+  }
+
+  async refreshAiPool(roomId: string, room?: Room): Promise<void> {
+    const existing = this.aiPools.get(roomId);
+    if (existing?.refreshing) return;
+
+    const r = room ?? (await this.roomRepo.findOneBy({ id: roomId }));
+    if (!r) return;
+
+    const pool: AiPool = existing ?? { candidates: [], refreshing: false, usedSourceIds: new Set() };
+    pool.refreshing = true;
+    this.aiPools.set(roomId, pool);
+
+    try {
+      const apiKey = this.settings.getSecret(OptionKey.GeminiApiKey);
+      if (!apiKey) {
+        this.logger.warn('[AI DJ] Gemini API key not configured');
+        return;
+      }
+
+      const batchSize = this.settings.getNumber(OptionKey.AutoDjBatchSize, 15);
+      const temperature = parseFloat(this.settings.get(OptionKey.AutoDjTemperature, '0.8'));
+      const model = this.settings.get(OptionKey.AutoDjAiModel, 'gemini-2.5-flash-lite');
+
+      // 최근 재생 5곡
+      const recentHistory = await this.historyRepo.find({
+        where: { room: { id: roomId } },
+        order: { playedAt: 'DESC' },
+        take: 5,
+      });
+      const recentTracks = recentHistory.length
+        ? await this.trackRepo.find({ where: recentHistory.map((h) => ({ sourceId: h.sourceId })) })
+        : [];
+
+      const context = recentTracks.map((t) => `${t.artist ?? 'Unknown'} - ${t.name}`).join('\n');
+      const tags = (r.autoDjTags as AutoDjTags | null) ?? { mood: [], genre: [], era: [], country: [] };
+      const tagDesc = [
+        tags.mood.length ? `분위기: ${tags.mood.join(', ')}` : '',
+        tags.genre.length ? `장르: ${tags.genre.join(', ')}` : '',
+        tags.era.length ? `시대: ${tags.era.join(', ')}` : '',
+        tags.country.length ? `국가: ${tags.country.join(', ')}` : '',
+      ]
+        .filter(Boolean)
+        .join('. ');
+      const userPrompt = r.autoDjPrompt ?? '';
+
+      const prompt = [
+        '당신은 음악 추천 전문가입니다.',
+        '아래 조건에 맞는 곡을 YouTube Music에서 찾을 수 있는 공식 음원으로 추천해주세요.',
+        '커버, 라이브, 리믹스, instrumental, 강의, 컴필레이션 제외. 1~7분 길이.',
+        `${batchSize}곡을 "아티스트 - 제목" 형식으로, 한 줄에 하나씩 출력.`,
+        '',
+        recentTracks.length ? `최근 재생:\n${context}` : '',
+        tagDesc ? `조건: ${tagDesc}` : '',
+        userPrompt ? `추가 요청: ${userPrompt}` : '',
+      ]
+        .filter(Boolean)
+        .join('\n');
+
+      // Gemini 호출
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const gemini = genAI.getGenerativeModel({ model, generationConfig: { temperature } });
+      const result = await gemini.generateContent(prompt);
+      const text = result.response.text();
+
+      // 파싱 — "아티스트 - 제목" 형식
+      const lines = text
+        .split('\n')
+        .map((l) => l.replace(/^\d+[.)]\s*/, '').trim())
+        .filter((l) => l.includes(' - ') || l.includes(' – '));
+
+      // 검색 + 필터
+      const pinned = pool.candidates.filter((e) => e.pinned);
+      const newCandidates: AiPoolEntry[] = [...pinned];
+      const titleBlacklist = /live|cover|tutorial|lesson|karaoke|instrumental|remix|compilation/i;
+
+      for (const line of lines) {
+        if (newCandidates.length >= batchSize) break;
+        try {
+          const results = await this.ytdlp.searchInnertube(line);
+          const match = results.results.find(
+            (r) =>
+              r.duration >= 60 && r.duration <= 480 && !titleBlacklist.test(r.title) && !pool.usedSourceIds.has(r.id),
+          );
+          if (!match) continue;
+          const track = await this.upsertTrack(match);
+          if (newCandidates.some((c) => c.track.id === track.id)) continue;
+          newCandidates.push({ track, pinned: false });
+          pool.usedSourceIds.add(match.id);
+        } catch {
+          // 개별 검색 실패 무시
+        }
+      }
+
+      pool.candidates = newCandidates;
+      this.logger.log(`[AI DJ] Pool refreshed for ${roomId}: ${newCandidates.length} candidates`);
+    } finally {
+      pool.refreshing = false;
+    }
+  }
+
+  /** 후보 목록 조회 (API용) */
+  getAiPoolCandidates(roomId: string): AiPoolEntry[] {
+    return this.aiPools.get(roomId)?.candidates ?? [];
+  }
+
+  /** 후보 핀 토글 */
+  pinAiCandidate(roomId: string, trackId: string): void {
+    const pool = this.aiPools.get(roomId);
+    if (!pool) return;
+    const entry = pool.candidates.find((c) => c.track.id === trackId);
+    if (entry) entry.pinned = !entry.pinned;
+  }
+
+  /** 후보 스킵 (제거) */
+  skipAiCandidate(roomId: string, trackId: string): void {
+    const pool = this.aiPools.get(roomId);
+    if (!pool) return;
+    pool.candidates = pool.candidates.filter((c) => c.track.id !== trackId);
+  }
+
+  /** 풀에서 다음 곡 소비 (큐 투입 시) */
+  consumeFromAiPool(roomId: string): Track | null {
+    const pool = this.aiPools.get(roomId);
+    if (!pool || !pool.candidates.length) return null;
+    // 핀된 곡 우선
+    const pinnedIdx = pool.candidates.findIndex((c) => c.pinned);
+    const idx = pinnedIdx >= 0 ? pinnedIdx : 0;
+    const [entry] = pool.candidates.splice(idx, 1);
+    return entry.track;
   }
 }

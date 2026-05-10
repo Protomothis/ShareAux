@@ -283,4 +283,65 @@ export class RoomsController {
     this.gateway.broadcastSystem(id, WsEvent.ChatCleared, '');
     return { success: true };
   }
+
+  // ─── AutoDJ AI Pool ───
+
+  @Get(':id/autodj/candidates')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'AutoDJ 후보 조회' })
+  @ApiBearerAuth()
+  getAutoDjCandidates(@Param('id', ParseUUIDPipe) id: string) {
+    const entries = this.autoDj.getAiPoolCandidates(id);
+    return {
+      candidates: entries.map((e) => ({
+        id: e.track.id,
+        name: e.track.name,
+        artist: e.track.artist,
+        thumbnail: e.track.thumbnail,
+        pinned: e.pinned,
+      })),
+    };
+  }
+
+  @Post(':id/autodj/refresh')
+  @UseGuards(JwtAuthGuard, RoomPermissionGuard)
+  @RequirePermission(Permission.Host)
+  @ApiOperation({ summary: 'AutoDJ 풀 새로고침' })
+  @ApiBearerAuth()
+  async refreshAutoDjPool(@Param('id', ParseUUIDPipe) id: string) {
+    await this.autoDj.refreshAiPool(id);
+    return { success: true };
+  }
+
+  @Post(':id/autodj/pin/:trackId')
+  @UseGuards(JwtAuthGuard, RoomPermissionGuard)
+  @RequirePermission(Permission.Host)
+  @ApiOperation({ summary: 'AutoDJ 후보 핀 토글' })
+  @ApiBearerAuth()
+  pinAutoDjCandidate(@Param('id', ParseUUIDPipe) id: string, @Param('trackId', ParseUUIDPipe) trackId: string) {
+    this.autoDj.pinAiCandidate(id, trackId);
+    return { success: true };
+  }
+
+  @Delete(':id/autodj/skip/:trackId')
+  @UseGuards(JwtAuthGuard, RoomPermissionGuard)
+  @RequirePermission(Permission.Host)
+  @ApiOperation({ summary: 'AutoDJ 후보 스킵' })
+  @ApiBearerAuth()
+  skipAutoDjCandidate(@Param('id', ParseUUIDPipe) id: string, @Param('trackId', ParseUUIDPipe) trackId: string) {
+    this.autoDj.skipAiCandidate(id, trackId);
+    return { success: true };
+  }
+
+  @Post(':id/autodj/pause')
+  @UseGuards(JwtAuthGuard, RoomPermissionGuard)
+  @RequirePermission(Permission.Host)
+  @ApiOperation({ summary: 'AutoDJ 일시중지 토글' })
+  @ApiBearerAuth()
+  async toggleAutoDjPause(@Param('id', ParseUUIDPipe) id: string, @Req() req: AuthenticatedRequest) {
+    const room = await this.rooms.findOne(id);
+    const paused = !room.autoDjPaused;
+    await this.rooms.update(id, req.user.userId, { autoDjPaused: paused });
+    return { paused };
+  }
 }

@@ -92,6 +92,18 @@ export class Room {
   @Column({ default: false, name: 'auto_dj_fav_fallback_mixed' })
   autoDjFavFallbackMixed!: boolean;
 
+  @ApiProperty({ required: false, nullable: true, description: 'AI DJ 태그 (mood/genre/era/country)' })
+  @Column({ type: 'jsonb', nullable: true, name: 'auto_dj_tags' })
+  autoDjTags!: Record<string, string[]> | null;
+
+  @ApiProperty({ required: false, nullable: true, description: 'AI DJ 직접 입력 프롬프트' })
+  @Column({ type: 'varchar', length: 200, nullable: true, name: 'auto_dj_prompt' })
+  autoDjPrompt!: string | null;
+
+  @ApiProperty({ default: false, description: 'AutoDJ 일시중지' })
+  @Column({ default: false, name: 'auto_dj_paused' })
+  autoDjPaused!: boolean;
+
   @ApiProperty()
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt!: Date;
