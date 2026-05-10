@@ -26,7 +26,7 @@ const baseArgs = {
 };
 
 const meta: Meta<typeof Player> = {
-  title: 'Features/Player',
+  title: 'Features/Player/Player',
   component: Player,
   args: baseArgs,
   decorators: [

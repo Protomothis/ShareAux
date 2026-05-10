@@ -5,7 +5,7 @@ import type { AutoDjMode } from '@/components/queue/AutoDjModeSelect';
 import { AutoDjModeSelect } from '@/components/queue/AutoDjModeSelect';
 
 const meta: Meta<typeof AutoDjModeSelect> = {
-  title: 'Features/AutoDjModeSelect',
+  title: 'Features/AutoDJ/ModeSelect',
   component: AutoDjModeSelect,
 };
 export default meta;

@@ -5,7 +5,7 @@ import type { AutoDjTags } from '@/components/queue/AutoDjTagFilter';
 import { AutoDjTagFilter } from '@/components/queue/AutoDjTagFilter';
 
 const meta: Meta<typeof AutoDjTagFilter> = {
-  title: 'Features/AutoDjTagFilter',
+  title: 'Features/AutoDJ/TagFilter',
   component: AutoDjTagFilter,
 };
 export default meta;

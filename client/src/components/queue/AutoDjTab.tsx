@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Loader2, RefreshCw } from 'lucide-react';
+import { Check, Loader2, Pause, Play, RefreshCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useRef, useState } from 'react';
 
@@ -18,6 +18,9 @@ import { AutoDjTagFilter } from './AutoDjTagFilter';
 interface AutoDjTabProps {
   mode: AutoDjMode;
   onModeChange: (mode: AutoDjMode) => void;
+  /** 일시중지 상태 */
+  paused: boolean;
+  onTogglePause: () => void;
   /** 서버에 저장된 태그 (초기값) */
   savedTags: AutoDjTags;
   /** 서버에 저장된 프롬프트 (초기값) */
@@ -37,6 +40,8 @@ interface AutoDjTabProps {
 export function AutoDjTab({
   mode,
   onModeChange,
+  paused,
+  onTogglePause,
   savedTags,
   savedPrompt,
   onApply,
@@ -64,6 +69,19 @@ export function AutoDjTab({
 
   return (
     <div className={cn('space-y-4', className)}>
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-medium text-white">🤖 AutoDJ</p>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onTogglePause}
+          className={cn('gap-1.5 text-xs', paused && 'bg-sa-accent/20 text-sa-accent')}
+        >
+          {paused ? <Play size={12} /> : <Pause size={12} />}
+          {paused ? t('resume') : t('pause')}
+        </Button>
+      </div>
+
       <AutoDjModeSelect value={mode} onChange={onModeChange} aiDisabled={aiDisabled} />
 
       {mode === 'ai' && (

@@ -29,7 +29,7 @@ const mockMembers = [
 ] as MemberWithPermission[];
 
 const meta: Meta<typeof MemberList> = {
-  title: 'Features/MemberList',
+  title: 'Features/Room/MemberList',
   component: MemberList,
   args: { roomId: 'r1', hostId: 'u1', members: mockMembers },
 };

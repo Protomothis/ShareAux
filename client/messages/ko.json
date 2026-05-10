@@ -166,7 +166,9 @@
       "era": "시대",
       "country": "국가",
       "nextUp": "다음 후보",
-      "apply": "적용"
+      "apply": "적용",
+      "pause": "일시중지",
+      "resume": "재개"
     }
   },
   "queue": {

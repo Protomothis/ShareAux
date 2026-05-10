@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import PlayerProgress from '@/components/player/PlayerProgress';
 
 const meta: Meta<typeof PlayerProgress> = {
-  title: 'Features/PlayerProgress',
+  title: 'Features/Player/PlayerProgress',
   component: PlayerProgress,
   decorators: [(Story) => <div className="max-w-md"><Story /></div>],
 };

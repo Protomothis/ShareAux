@@ -166,7 +166,9 @@
       "era": "Era",
       "country": "Country",
       "nextUp": "Next up",
-      "apply": "Apply"
+      "apply": "Apply",
+      "pause": "Pause",
+      "resume": "Resume"
     }
   },
   "queue": {

@@ -8,7 +8,7 @@ import { AutoDjTab } from '@/components/queue/AutoDjTab';
 import type { AutoDjTags } from '@/components/queue/AutoDjTagFilter';
 
 const meta: Meta<typeof AutoDjTab> = {
-  title: 'Features/AutoDjTab',
+  title: 'Features/AutoDJ/Tab',
   component: AutoDjTab,
 };
 export default meta;
@@ -25,12 +25,15 @@ const emptyTags: AutoDjTags = { mood: [], genre: [], era: [], country: [] };
 export const RelatedMode: Story = {
   render: () => {
     const [mode, setMode] = useState<AutoDjMode>('related');
+    const [paused, setPaused] = useState(false);
     const [candidates, setCandidates] = useState(mockCandidates);
     return (
       <div className="w-96 rounded-xl bg-black/90 p-4">
         <AutoDjTab
           mode={mode}
           onModeChange={setMode}
+          paused={paused}
+          onTogglePause={() => setPaused(!paused)}
           savedTags={emptyTags}
           savedPrompt=""
           onApply={fn()}
@@ -47,6 +50,7 @@ export const RelatedMode: Story = {
 export const AiMode: Story = {
   render: () => {
     const [mode, setMode] = useState<AutoDjMode>('ai');
+    const [paused, setPaused] = useState(false);
     const savedTags: AutoDjTags = { mood: ['calm'], genre: ['indie'], era: ['2010s'], country: ['jp'] };
     const [candidates, setCandidates] = useState(mockCandidates);
     return (
@@ -54,6 +58,8 @@ export const AiMode: Story = {
         <AutoDjTab
           mode={mode}
           onModeChange={setMode}
+          paused={paused}
+          onTogglePause={() => setPaused(!paused)}
           savedTags={savedTags}
           savedPrompt=""
           onApply={fn()}
@@ -70,11 +76,14 @@ export const AiMode: Story = {
 export const AiDisabled: Story = {
   render: () => {
     const [mode, setMode] = useState<AutoDjMode>('mixed');
+    const [paused, setPaused] = useState(false);
     return (
       <div className="w-96 rounded-xl bg-black/90 p-4">
         <AutoDjTab
           mode={mode}
           onModeChange={setMode}
+          paused={paused}
+          onTogglePause={() => setPaused(!paused)}
           savedTags={emptyTags}
           savedPrompt=""
           onApply={fn()}

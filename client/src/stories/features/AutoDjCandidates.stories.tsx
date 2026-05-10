@@ -6,7 +6,7 @@ import type { CandidateTrack } from '@/components/queue/AutoDjCandidates';
 import { AutoDjCandidates } from '@/components/queue/AutoDjCandidates';
 
 const meta: Meta<typeof AutoDjCandidates> = {
-  title: 'Features/AutoDjCandidates',
+  title: 'Features/AutoDJ/Candidates',
   component: AutoDjCandidates,
 };
 export default meta;

@@ -38,7 +38,7 @@ const base: RoomListItem = {
 };
 
 const meta: Meta<typeof RoomCard> = {
-  title: 'Features/RoomCard',
+  title: 'Features/Room/RoomCard',
   component: RoomCard,
   args: { onClick: fn() },
   decorators: [(Story) => <div className="max-w-sm"><Story /></div>],
