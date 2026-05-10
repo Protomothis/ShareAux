@@ -34,7 +34,7 @@ function QueueList() {
 }
 
 const meta: Meta = {
-  title: 'Features/QueueList',
+  title: 'Features/Queue/QueueList',
   component: QueueList,
   parameters: { layout: 'centered', backgrounds: { default: 'dark' } },
 };

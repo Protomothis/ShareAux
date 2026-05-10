@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 import type { AutoDjMode } from './autoDjMode';
+import type { UpdateRoomDtoAutoDjTags } from './updateRoomDtoAutoDjTags';
 
 export interface UpdateRoomDto {
   /**
@@ -66,4 +67,17 @@ export interface UpdateRoomDto {
   autoDjFolderId?: string | null;
   /** 즐겨찾기 소진 시 혼합 모드 폴백 */
   autoDjFavFallbackMixed?: boolean;
+  /**
+   * AI DJ 태그
+   * @nullable
+   */
+  autoDjTags?: UpdateRoomDtoAutoDjTags;
+  /**
+   * AI DJ 프롬프트 (최대 200자)
+   * @maxLength 200
+   * @nullable
+   */
+  autoDjPrompt?: string | null;
+  /** AutoDJ 일시중지 */
+  autoDjPaused?: boolean;
 }

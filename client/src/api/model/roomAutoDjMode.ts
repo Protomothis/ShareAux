@@ -16,4 +16,5 @@ export const RoomAutoDjMode = {
   popular: 'popular',
   mixed: 'mixed',
   favorites: 'favorites',
+  ai: 'ai',
 } as const;

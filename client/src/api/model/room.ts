@@ -7,6 +7,7 @@
  */
 import type { User } from './user';
 import type { RoomAutoDjMode } from './roomAutoDjMode';
+import type { RoomAutoDjTags } from './roomAutoDjTags';
 
 export interface Room {
   id: string;
@@ -38,5 +39,17 @@ export interface Room {
   autoDjFolderId?: string | null;
   /** AutoDJ 즐겨찾기 소진 시 혼합 모드 폴백 */
   autoDjFavFallbackMixed: boolean;
+  /**
+   * AI DJ 태그 (mood/genre/era/country)
+   * @nullable
+   */
+  autoDjTags?: RoomAutoDjTags;
+  /**
+   * AI DJ 직접 입력 프롬프트
+   * @nullable
+   */
+  autoDjPrompt?: string | null;
+  /** AutoDJ 일시중지 */
+  autoDjPaused: boolean;
   createdAt: string;
 }

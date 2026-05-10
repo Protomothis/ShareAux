@@ -29,6 +29,7 @@ import type {
   AdminControllerGetRoomsParams,
   AdminControllerGetSecrets200,
   AdminControllerGetSettings200,
+  AdminControllerGetTagPresets200,
   AdminControllerGetUsersParams,
   AdminMetricsControllerGetDailyPlaysParams,
   AdminMetricsControllerGetErrorFileParams,
@@ -56,6 +57,7 @@ import type {
   Report,
   StreamingMetricsResponse,
   SystemStatsResponse,
+  TagPresetsDto,
   TrackLyricsResponse,
   UpdateRoleDto,
   UpdateSettingsDto,
@@ -2632,6 +2634,203 @@ export const useAdminControllerResolveReport = <TError = unknown, TContext = unk
   queryClient?: QueryClient,
 ): UseMutationResult<Awaited<ReturnType<typeof adminControllerResolveReport>>, TError, { id: string }, TContext> => {
   const mutationOptions = getAdminControllerResolveReportMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
+ * @summary AI DJ 태그 프리셋 조회
+ */
+export const getAdminControllerGetTagPresetsUrl = () => {
+  return `/api/admin/tag-presets`;
+};
+
+export const adminControllerGetTagPresets = async (options?: RequestInit): Promise<AdminControllerGetTagPresets200> => {
+  return customFetch<AdminControllerGetTagPresets200>(getAdminControllerGetTagPresetsUrl(), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getAdminControllerGetTagPresetsQueryKey = () => {
+  return [`/api/admin/tag-presets`] as const;
+};
+
+export const getAdminControllerGetTagPresetsQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminControllerGetTagPresets>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetTagPresets>>, TError, TData>>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminControllerGetTagPresetsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminControllerGetTagPresets>>> = ({ signal }) =>
+    adminControllerGetTagPresets({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminControllerGetTagPresets>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminControllerGetTagPresetsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminControllerGetTagPresets>>
+>;
+export type AdminControllerGetTagPresetsQueryError = unknown;
+
+export function useAdminControllerGetTagPresets<
+  TData = Awaited<ReturnType<typeof adminControllerGetTagPresets>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetTagPresets>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminControllerGetTagPresets>>,
+          TError,
+          Awaited<ReturnType<typeof adminControllerGetTagPresets>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminControllerGetTagPresets<
+  TData = Awaited<ReturnType<typeof adminControllerGetTagPresets>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetTagPresets>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminControllerGetTagPresets>>,
+          TError,
+          Awaited<ReturnType<typeof adminControllerGetTagPresets>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminControllerGetTagPresets<
+  TData = Awaited<ReturnType<typeof adminControllerGetTagPresets>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetTagPresets>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary AI DJ 태그 프리셋 조회
+ */
+
+export function useAdminControllerGetTagPresets<
+  TData = Awaited<ReturnType<typeof adminControllerGetTagPresets>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminControllerGetTagPresets>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminControllerGetTagPresetsQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary AI DJ 태그 프리셋 저장
+ */
+export const getAdminControllerUpdateTagPresetsUrl = () => {
+  return `/api/admin/tag-presets`;
+};
+
+export const adminControllerUpdateTagPresets = async (
+  tagPresetsDto: TagPresetsDto,
+  options?: RequestInit,
+): Promise<TagPresetsDto> => {
+  return customFetch<TagPresetsDto>(getAdminControllerUpdateTagPresetsUrl(), {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(tagPresetsDto),
+  });
+};
+
+export const getAdminControllerUpdateTagPresetsMutationOptions = <TError = unknown, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminControllerUpdateTagPresets>>,
+    TError,
+    { data: TagPresetsDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminControllerUpdateTagPresets>>,
+  TError,
+  { data: TagPresetsDto },
+  TContext
+> => {
+  const mutationKey = ['adminControllerUpdateTagPresets'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminControllerUpdateTagPresets>>,
+    { data: TagPresetsDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return adminControllerUpdateTagPresets(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminControllerUpdateTagPresetsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminControllerUpdateTagPresets>>
+>;
+export type AdminControllerUpdateTagPresetsMutationBody = TagPresetsDto;
+export type AdminControllerUpdateTagPresetsMutationError = unknown;
+
+/**
+ * @summary AI DJ 태그 프리셋 저장
+ */
+export const useAdminControllerUpdateTagPresets = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminControllerUpdateTagPresets>>,
+      TError,
+      { data: TagPresetsDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminControllerUpdateTagPresets>>,
+  TError,
+  { data: TagPresetsDto },
+  TContext
+> => {
+  const mutationOptions = getAdminControllerUpdateTagPresetsMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

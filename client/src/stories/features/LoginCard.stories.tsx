@@ -5,7 +5,7 @@ import { fn } from 'storybook/test';
 import { LoginCard } from '@/components/common/LoginCard';
 
 const meta: Meta<typeof LoginCard> = {
-  title: 'Features/LoginCard',
+  title: 'Features/Auth/LoginCard',
   component: LoginCard,
   args: { onClick: fn() },
   decorators: [(Story) => <div className="max-w-xs"><Story /></div>],

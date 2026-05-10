@@ -26,7 +26,7 @@ const mockItem: RoomQueue = {
 };
 
 const meta: Meta<typeof QueueTrackItem> = {
-  title: 'Features/QueueTrackItem',
+  title: 'Features/Queue/QueueTrackItem',
   component: QueueTrackItem,
   decorators: [(Story) => <div className="max-w-md"><Story /></div>],
 };

@@ -14,7 +14,7 @@ const mockTrack: SearchResultItem = {
 };
 
 const meta: Meta<typeof SearchTrackItem> = {
-  title: 'Features/SearchTrackItem',
+  title: 'Features/Queue/SearchTrackItem',
   component: SearchTrackItem,
   args: { track: mockTrack, onClick: fn(), order: 0, disabled: false, full: false, inQueue: false },
   decorators: [(Story) => <div className="max-w-md"><Story /></div>],

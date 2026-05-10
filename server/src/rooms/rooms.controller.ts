@@ -7,11 +7,15 @@ import { RoomMember } from '../entities/room-member.entity.js';
 import { ControllerGuard } from '../guards/controller.guard.js';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard.js';
 import { RequirePermission, RoomPermissionGuard } from '../guards/room-permission.guard.js';
+import { AppException } from '../exceptions/app.exception.js';
 import { AutoDjService } from '../services/auto-dj.service.js';
 import { ChatMuteService } from '../services/chat-mute.service.js';
+import { SettingsService } from '../services/settings.service.js';
 import type { AuthenticatedRequest } from '../types/index.js';
-import { Permission, PushEvent, WsEvent } from '../types/index.js';
+import { AutoDjMode, ErrorCode, Permission, PushEvent, WsEvent } from '../types/index.js';
+import { OptionKey } from '../types/settings.types.js';
 import { PUSH_EVENT, pushPayload } from '../types/push-event-payload.js';
+import { AutoDjCandidatesResponse } from './dto/auto-dj-candidates.dto.js';
 import { BanInfo } from './dto/ban-info.dto.js';
 import { CreateRoomDto } from './dto/create-room.dto.js';
 import { JoinRoomDto } from './dto/join-room.dto.js';
@@ -33,6 +37,7 @@ export class RoomsController {
     private autoDj: AutoDjService,
     private chatMute: ChatMuteService,
     private eventEmitter: EventEmitter2,
+    private settings: SettingsService,
   ) {}
 
   @Post()
@@ -66,6 +71,10 @@ export class RoomsController {
   @ApiOperation({ summary: '방 설정 수정' })
   @ApiBearerAuth()
   async update(@Param('id', ParseUUIDPipe) id: string, @Req() req: AuthenticatedRequest, @Body() dto: UpdateRoomDto) {
+    // AI 모드 선택 시 서버 설정 체크
+    if (dto.autoDjMode === AutoDjMode.AI && !this.settings.getBoolean(OptionKey.AutoDjAiEnabled)) {
+      throw new AppException(ErrorCode.ROOM_018);
+    }
     const prevAutoDj = dto.autoDjEnabled !== undefined ? await this.rooms.getAutoDjEnabled(id) : undefined;
     const result = await this.rooms.update(id, req.user.userId, dto);
     this.gateway.broadcastSystem(id, WsEvent.RoomUpdated, '');
@@ -90,8 +99,10 @@ export class RoomsController {
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: '방 삭제' })
   @ApiBearerAuth()
-  remove(@Param('id', ParseUUIDPipe) id: string, @Req() req: AuthenticatedRequest) {
-    return this.rooms.remove(id, req.user.userId);
+  async remove(@Param('id', ParseUUIDPipe) id: string, @Req() req: AuthenticatedRequest) {
+    const result = await this.rooms.remove(id, req.user.userId);
+    this.autoDj.cleanupRoom(id);
+    return result;
   }
 
   @Post(':id/join')
@@ -282,5 +293,69 @@ export class RoomsController {
     this.gateway.clearChatHistory(id);
     this.gateway.broadcastSystem(id, WsEvent.ChatCleared, '');
     return { success: true };
+  }
+
+  // ─── AutoDJ AI Pool ───
+
+  @Get(':id/autodj/candidates')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'AutoDJ 후보 조회' })
+  @ApiResponse({ status: 200, type: AutoDjCandidatesResponse })
+  @ApiBearerAuth()
+  getAutoDjCandidates(@Param('id', ParseUUIDPipe) id: string): AutoDjCandidatesResponse {
+    const entries = this.autoDj.getAiPoolCandidates(id);
+    return {
+      candidates: entries.map((e) => ({
+        id: e.track.id,
+        name: e.track.name,
+        artist: e.track.artist,
+        thumbnail: e.track.thumbnail,
+        pinned: e.pinned,
+      })),
+    };
+  }
+
+  @Post(':id/autodj/refresh')
+  @UseGuards(JwtAuthGuard, RoomPermissionGuard)
+  @RequirePermission(Permission.Host)
+  @ApiOperation({ summary: 'AutoDJ 풀 새로고침' })
+  @ApiBearerAuth()
+  async refreshAutoDjPool(@Param('id', ParseUUIDPipe) id: string) {
+    await this.autoDj.refreshAiPool(id);
+    return { success: true };
+  }
+
+  @Post(':id/autodj/pin/:trackId')
+  @UseGuards(JwtAuthGuard, RoomPermissionGuard)
+  @RequirePermission(Permission.Host)
+  @ApiOperation({ summary: 'AutoDJ 후보 핀 토글' })
+  @ApiBearerAuth()
+  pinAutoDjCandidate(@Param('id', ParseUUIDPipe) id: string, @Param('trackId', ParseUUIDPipe) trackId: string) {
+    this.autoDj.pinAiCandidate(id, trackId);
+    return { success: true };
+  }
+
+  @Delete(':id/autodj/skip/:trackId')
+  @UseGuards(JwtAuthGuard, RoomPermissionGuard)
+  @RequirePermission(Permission.Host)
+  @ApiOperation({ summary: 'AutoDJ 후보 스킵' })
+  @ApiBearerAuth()
+  skipAutoDjCandidate(@Param('id', ParseUUIDPipe) id: string, @Param('trackId', ParseUUIDPipe) trackId: string) {
+    this.autoDj.skipAiCandidate(id, trackId);
+    return { success: true };
+  }
+
+  @Post(':id/autodj/pause')
+  @UseGuards(JwtAuthGuard, RoomPermissionGuard)
+  @RequirePermission(Permission.Host)
+  @ApiOperation({ summary: 'AutoDJ 일시중지 토글' })
+  @ApiBearerAuth()
+  async toggleAutoDjPause(@Param('id', ParseUUIDPipe) id: string, @Req() req: AuthenticatedRequest) {
+    const room = await this.rooms.findOne(id);
+    const paused = !room.autoDjPaused;
+    await this.rooms.update(id, req.user.userId, { autoDjPaused: paused });
+    this.gateway.broadcastSystem(id, WsEvent.RoomUpdated, '');
+    if (!paused) this.autoDj.trigger(id);
+    return { paused };
   }
 }

@@ -103,6 +103,13 @@ NestJS 11 · TypeORM · PostgreSQL 16 · raw `ws` WebSocket · Passport (Google 
 - DTO 내부 enum도 동일: `@ApiProperty({ enum: ErrorCode, enumName: 'ErrorCode' })`
 - 현재 등록된 enum: `WsEvent`, `AutoDjStatus`, `Language`, `AuthProvider`, `SystemChatEvent`, `OptionKey`
 
+### 공유 DTO (`common/dto/`)
+
+- 여러 모듈에서 참조하는 DTO는 `common/dto/`에 배치 (순환 의존 방지)
+- 엔티티의 jsonb 컬럼에 대응하는 DTO도 여기에 정의
+- `@ApiProperty({ type: () => MyDto })`로 Swagger에 정확한 스키마 노출 → orval이 정확한 타입 생성
+- **클라이언트에서 타입 캐스팅으로 우회 금지** — 타입이 안 맞으면 서버 DTO/ApiProperty 수정
+
 ### 오디오 스트리밍 (서버)
 
 - ffmpeg에서 chunk가 나오면 **즉시 `broadcastChunk`** — 모아서 보내지 않음 (burst 금지)
@@ -124,10 +131,29 @@ Next.js 16 · React 19 · Tailwind 4 · zustand · @tanstack/react-query · shad
 
 - 서버 컴포넌트 기본. `"use client"`는 훅/브라우저 API 필요 시에만
 - `components/ui/` shadcn 프리미티브 필수 (인라인 `<button>`, `<input>` 금지)
+- `components/ui/` 수정 금지 — 공통 래퍼는 `components/common/`에 작성
 - 상태: zustand (클라이언트), react-query (서버)
 - 스타일: Tailwind 4 + `cn()` (`@/lib/utils.ts`)
 - 애니메이션: `motion/react`에서 import (`framer-motion` 아님)
 - `client/src/api/`는 orval 자동 생성 — 수동 수정 금지
+
+### 컴포넌트 계층
+
+```
+components/ui/       — shadcn 프리미티브 (수정 금지)
+components/common/   — 프로젝트 공통 래퍼 (Modal, TabBar, MarqueeText 등)
+components/<domain>/ — 기능별 컴포넌트 (player/, queue/, chat/, room/, admin/)
+hooks/               — 커스텀 훅 (도메인 로직 캡슐화)
+```
+
+- 동일 로직이 여러 컴포넌트에서 필요하면 **훅으로 추출** (예: `useAutoDj`)
+- 모바일/데스크톱 래퍼가 동일 로직이면 훅 공유 + UI만 분리
+
+### Storybook
+
+- 그룹핑: `Features/Admin/...`, `Features/Player/...`, `Features/Queue/...`, `Features/AutoDJ/...`, `Features/Room/...`, `Features/Auth/...`, `Primitives/...`
+- 스토리 파일: `client/src/stories/features/<Name>.stories.tsx`
+- 실제 API 호출 없이 props 기반 렌더링
 
 ### API 호출 규칙
 

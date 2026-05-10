@@ -7,6 +7,7 @@
  */
 import type { User } from './user';
 import type { RoomDetailAutoDjMode } from './roomDetailAutoDjMode';
+import type { RoomDetailAutoDjTags } from './roomDetailAutoDjTags';
 import type { MemberWithPermission } from './memberWithPermission';
 import type { RoomDetailPlayback } from './roomDetailPlayback';
 
@@ -40,6 +41,18 @@ export interface RoomDetail {
   autoDjFolderId?: string | null;
   /** AutoDJ 즐겨찾기 소진 시 혼합 모드 폴백 */
   autoDjFavFallbackMixed: boolean;
+  /**
+   * AI DJ 태그 (mood/genre/era/country)
+   * @nullable
+   */
+  autoDjTags?: RoomDetailAutoDjTags;
+  /**
+   * AI DJ 직접 입력 프롬프트
+   * @nullable
+   */
+  autoDjPrompt?: string | null;
+  /** AutoDJ 일시중지 */
+  autoDjPaused: boolean;
   createdAt: string;
   members: MemberWithPermission[];
   /** @nullable */

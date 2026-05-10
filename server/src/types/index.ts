@@ -2,12 +2,13 @@ export type { HttpStreamListener, ListenerState, ParsedInitSegment, RoomAudio, S
 export type { StreamState } from './audio.types.js';
 export type { AuthenticatedRequest, AuthenticatedUser, JwtPayload, OAuthProfile } from './auth.types.js';
 export { AuthProvider } from './auth-provider.enum.js';
-export type { AutoDjStatus } from './auto-dj.types.js';
+export type { AutoDjStatus, AutoDjTags } from './auto-dj.types.js';
 export { AutoDjMode } from './auto-dj.types.js';
 export { ErrorCode } from './error-code.enum.js';
 export { GuestPermission } from './guest-permission.enum.js';
 export { Language } from './language.enum.js';
 export type { LyricsResult } from './lyrics.types.js';
+export { TranslationLang } from './translation-lang.enum.js';
 export { LyricsStatus } from './lyrics.types.js';
 export { MetaStatus } from './meta-status.enum.js';
 export {

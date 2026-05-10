@@ -15,7 +15,7 @@ const mockMessages = [
 ];
 
 const meta: Meta<typeof Chat> = {
-  title: 'Features/Chat',
+  title: 'Features/Room/Chat',
   component: Chat,
   args: { onSend: fn(), onReaction: fn() },
   decorators: [

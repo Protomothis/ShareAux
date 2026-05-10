@@ -159,6 +159,25 @@
       "lyricsFound": "싱크 가사 제공",
       "transSearching": "가사 번역 중",
       "transDone": "번역 가사 제공"
+    },
+    "autoDj": {
+      "helpAutoDj": "모드를 선택하면 큐가 비었을 때 자동으로 곡을 추가합니다. AI 모드는 태그 기반으로 Gemini가 추천합니다. 일시중지하면 자동 추가를 멈춥니다.",
+      "aiGuide": "원하는 태그를 선택하세요. 선택하지 않으면 전체 범위에서 추천합니다.",
+      "guideRelated": "현재 재생 중인 곡과 비슷한 곡을 자동으로 추가합니다.",
+      "guideRadio": "현재 곡 기반 라디오 스타일로 다양한 곡을 추가합니다.",
+      "guideHistory": "이 방에서 이전에 재생했던 곡 중에서 추가합니다.",
+      "guidePopular": "많이 재생된 인기곡 위주로 추가합니다.",
+      "guideMixed": "관련곡, 이력, 인기곡을 섞어서 추가합니다.",
+      "guideFavorites": "호스트의 즐겨찾기에서 곡을 추가합니다.",
+      "mood": "분위기",
+      "genre": "장르",
+      "era": "시대",
+      "country": "국가",
+      "nextUp": "다음 후보",
+      "apply": "적용",
+      "reset": "되돌리기",
+      "pause": "일시중지",
+      "resume": "재개"
     }
   },
   "queue": {
@@ -363,7 +382,9 @@
     "autoDjHistoryDesc": "이 방에서 이전에 재생된 곡을 다시 추가합니다",
     "autoDjPopularDesc": "전체 방에서 인기 있는 곡을 추가합니다",
     "autoDjMixedDesc": "관련곡 + 재생 이력 + 인기곡을 섞어서 추가합니다",
-    "autoDjFavoritesDesc": "호스트의 즐겨찾기에서 곡을 추가합니다"
+    "autoDjFavoritesDesc": "호스트의 즐겨찾기에서 곡을 추가합니다",
+    "autoDjAi": "🧠 AI",
+    "autoDjAiDesc": "AI가 태그와 분위기에 맞는 곡을 추천합니다"
   },
   "profile": {
     "title": "프로필 설정",
@@ -689,6 +710,8 @@
       "dailyLimitDesc": "하루 최대 번역 요청 수",
       "geminiModel": "Gemini 모델",
       "geminiModelDesc": "flash-lite (빠름) / flash (정확)",
+      "targetLang": "번역 타겟 언어",
+      "targetLangDesc": "가사를 어떤 언어로 번역할지 선택합니다",
       "save": "저장",
       "captchaEnabled": "CAPTCHA 활성화",
       "captchaEnabledDesc": "PoW CAPTCHA를 활성화합니다",
@@ -710,7 +733,23 @@
       "requireGeminiKey": "Gemini API Key를 먼저 설정하세요",
       "requireGoogleKey": "Google OAuth 키를 먼저 설정하세요",
       "requireTranslation": "번역 기능을 먼저 활성화하세요",
-      "secretPlaceholder": "새 값 입력"
+      "secretPlaceholder": "새 값 입력",
+      "aiDjSection": "AI DJ",
+      "aiDjEnabled": "AI DJ 활성화",
+      "aiDjEnabledDesc": "Gemini 기반 AI 선곡 모드를 사용합니다",
+      "aiDjModel": "AI DJ 모델",
+      "aiDjModelDesc": "추천에 사용할 Gemini 모델",
+      "aiDjBatchSize": "배치 크기",
+      "aiDjBatchSizeDesc": "한 번에 추천받을 곡 수",
+      "aiDjTemperature": "다양성 (Temperature)",
+      "aiDjTemperatureDesc": "높을수록 다양한 추천, 낮을수록 안정적",
+      "requireAiDj": "AI DJ를 먼저 활성화하세요",
+      "tagPresets": "태그 프리셋 관리",
+      "tagMood": "분위기",
+      "tagGenre": "장르",
+      "tagEra": "시대",
+      "tagCountry": "국가",
+      "tagPlaceholder": "태그 이름 입력"
     },
     "cleanup": {
       "title": "🧹 DB 정리",

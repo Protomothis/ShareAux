@@ -16,4 +16,5 @@ export const AdminRoomItemAutoDjMode = {
   popular: 'popular',
   mixed: 'mixed',
   favorites: 'favorites',
+  ai: 'ai',
 } as const;

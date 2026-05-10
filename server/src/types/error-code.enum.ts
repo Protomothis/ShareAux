@@ -38,6 +38,7 @@ export enum ErrorCode {
   ROOM_015 = 'ROOM_015',
   ROOM_016 = 'ROOM_016',
   ROOM_017 = 'ROOM_017',
+  ROOM_018 = 'ROOM_018',
 
   // Player
   PLAYER_001 = 'PLAYER_001',

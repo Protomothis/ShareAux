@@ -256,6 +256,9 @@ export class RoomsService implements OnModuleInit {
     if (dto.autoDjThreshold !== undefined) room.autoDjThreshold = dto.autoDjThreshold;
     if (dto.autoDjFolderId !== undefined) room.autoDjFolderId = dto.autoDjFolderId ?? null;
     if (dto.autoDjFavFallbackMixed !== undefined) room.autoDjFavFallbackMixed = dto.autoDjFavFallbackMixed;
+    if (dto.autoDjTags !== undefined) room.autoDjTags = dto.autoDjTags as Record<string, string[]> | null;
+    if (dto.autoDjPrompt !== undefined) room.autoDjPrompt = dto.autoDjPrompt ?? null;
+    if (dto.autoDjPaused !== undefined) room.autoDjPaused = dto.autoDjPaused;
     const saved = await this.roomRepo.save(room);
     if (enqueueChanged) {
       const pastDate = new Date(Date.now() - room.enqueueWindowMin * 60_000 - 1000);
