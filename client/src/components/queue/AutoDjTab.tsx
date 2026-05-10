@@ -86,6 +86,17 @@ export function AutoDjTab({
 
       <AutoDjModeSelect value={mode} onChange={onModeChange} aiDisabled={aiDisabled} />
 
+      {mode !== 'ai' && (
+        <p className="text-[11px] leading-relaxed text-white/40">
+          {mode === 'related' && t('guideRelated')}
+          {mode === 'radio' && t('guideRadio')}
+          {mode === 'history' && t('guideHistory')}
+          {mode === 'popular' && t('guidePopular')}
+          {mode === 'mixed' && t('guideMixed')}
+          {mode === 'favorites' && t('guideFavorites')}
+        </p>
+      )}
+
       {mode === 'ai' && (
         <>
           <p className="text-[11px] leading-relaxed text-white/40">{t('aiGuide')}</p>

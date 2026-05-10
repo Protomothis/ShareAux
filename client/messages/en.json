@@ -163,6 +163,12 @@
     "autoDj": {
       "helpAutoDj": "Select a mode to auto-add tracks when the queue is empty. AI mode uses Gemini to recommend based on tags. Pause stops auto-adding.",
       "aiGuide": "Select tags to narrow recommendations. Leave empty for broad suggestions.",
+      "guideRelated": "Automatically adds tracks similar to the currently playing song.",
+      "guideRadio": "Adds varied tracks in a radio style based on the current song.",
+      "guideHistory": "Adds tracks previously played in this room.",
+      "guidePopular": "Adds frequently played popular tracks.",
+      "guideMixed": "Mixes related, history, and popular tracks.",
+      "guideFavorites": "Adds tracks from the host's favorites.",
       "mood": "Mood",
       "genre": "Genre",
       "era": "Era",
