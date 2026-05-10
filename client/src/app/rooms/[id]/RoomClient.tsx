@@ -1,7 +1,6 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { AnimatePresence, motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -31,7 +30,7 @@ import { MobileAutoDjTab } from '@/components/queue/MobileAutoDjTab';
 import Queue from '@/components/queue/Queue';
 import LeaveConfirmModal from '@/components/room/LeaveConfirmModal';
 import MemberList from '@/components/room/MemberList';
-import MobileTabBar from '@/components/room/MobileTabBar';
+import { RoomLayout } from '@/components/room/RoomLayout';
 import PasswordModal from '@/components/room/PasswordModal';
 import RoomNav from '@/components/room/RoomNav';
 import RoomSettingsModal from '@/components/room/RoomSettingsModal';
@@ -54,7 +53,6 @@ import { useWsMessages } from '@/hooks/useWsMessages';
 import { WsCloseCode, WsOpCode } from '@/lib/constants';
 import { getWsUrl } from '@/lib/urls';
 import { useAuthStore } from '@/stores/auth';
-import type { MobileTab } from '@/types';
 import type { StreamState } from '@/types';
 import { LyricsStatus } from '@/types';
 
@@ -63,7 +61,6 @@ export default function RoomClient({ id }: { id: string }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const invalidate = useInvalidate();
-  const [mobileTab, setMobileTab] = useState<MobileTab>('chat');
   const [needPassword, setNeedPassword] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
@@ -523,40 +520,12 @@ export default function RoomClient({ id }: { id: string }) {
         onLeave={() => setShowLeaveConfirm(true)}
       />
 
-      <WsDisconnectBanner connected={wsConnected} />
-
-      {/* Mobile Player */}
-      <div className="shrink-0 border-b border-white/[0.06] lg:hidden">
-        <Player {...playerProps} />
-      </div>
-
-      {/* Desktop Layout */}
-      <div className="hidden flex-1 overflow-hidden p-4 gap-4 lg:grid lg:grid-cols-[420px_1fr] lg:grid-rows-[auto_1fr]">
-        <div className="shrink-0">
-          <Player {...playerProps} />
-        </div>
-        <div className="row-span-2 flex flex-col overflow-hidden glass rounded-2xl">
-          <div className="shrink-0 max-h-48 overflow-y-auto border-b border-white/10">
-            <MemberList {...memberListProps} />
-          </div>
-          <div className="flex-1 overflow-hidden">
-            <Chat
-              messages={messages}
-              onSend={handleSend}
-              onCommand={handleCommand}
-              onReaction={sendReaction}
-              floatingReactions={floatingReactions}
-              canChat={can('chat')}
-              canReaction={can('reaction')}
-              mutedUntil={mutedUntil}
-              isHost={isHost}
-              members={members}
-              currentUserId={userId ?? undefined}
-              roomId={id}
-            />
-          </div>
-        </div>
-        <div className="overflow-hidden glass rounded-2xl">
+      <RoomLayout
+        banner={<WsDisconnectBanner connected={wsConnected} />}
+        player={<Player {...playerProps} />}
+        chat={<Chat {...chatProps} />}
+        members={<MemberList {...memberListProps} />}
+        queuePanel={
           <DesktopQueuePanel
             roomId={id}
             canSearch={can('addQueue')}
@@ -574,69 +543,60 @@ export default function RoomClient({ id }: { id: string }) {
             autoDjPrompt={room?.autoDjPrompt}
             favorites={favorites}
           />
-        </div>
-      </div>
-
-      {/* Mobile Layout */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:hidden">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={mobileTab}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.15 }}
-            className="min-h-0 flex-1 overflow-y-auto bg-white/[0.02]"
-          >
-            {mobileTab === 'chat' && <Chat {...chatProps} />}
-            {mobileTab === 'queue' && (
-              <Queue
-                roomId={id}
-                canSearch={can('addQueue')}
-                canEnqueue={can('addQueue')}
-                canReorder={isHost || can('host')}
-                isHost={isHost}
-                isGuest={role === 'guest'}
-                maxSelectPerAdd={room.maxSelectPerAdd}
-                trackVotes={trackVotes}
-                autoDjStatus={autoDjStatus}
-                favorites={favorites}
-              />
-            )}
-            {mobileTab === 'history' && <HistoryPanel roomId={id} isGuest={role === 'guest'} favorites={favorites} />}
-            {mobileTab === 'autodj' && room?.autoDjEnabled && (
-              <div className="h-full overflow-y-auto p-4">
-                <MobileAutoDjTab roomId={id} room={room} isHost={isHost} />
-              </div>
-            )}
-            {mobileTab === 'members' && <MemberList {...memberListProps} />}
-          </motion.div>
-        </AnimatePresence>
-        <MobileTabBar activeTab={mobileTab} onTabChange={setMobileTab} autoDjEnabled={room?.autoDjEnabled} />
-      </div>
-
-      {/* Modals */}
-      <PasswordModal open={needPassword} onSubmit={joinRoom} onClose={() => router.push('/rooms')} />
-      <RoomSettingsModal
-        open={showSettings}
-        onClose={() => setShowSettings(false)}
-        roomId={id}
-        roomName={room.name}
-        enqueueWindowMin={room.enqueueWindowMin ?? 30}
-        enqueueLimitPerWindow={room.enqueueLimitPerWindow ?? 15}
-        crossfade={room.crossfade ?? true}
-        maxSelectPerAdd={room.maxSelectPerAdd ?? 3}
-        replayCooldownMin={room.replayCooldownMin ?? 0}
-        defaultEnqueueEnabled={room.defaultEnqueueEnabled ?? true}
-        defaultVoteSkipEnabled={room.defaultVoteSkipEnabled ?? true}
-        autoDjEnabled={room.autoDjEnabled ?? false}
-        autoDjMode={room.autoDjMode ?? 'related'}
-        autoDjThreshold={room.autoDjThreshold ?? 2}
-        autoDjFolderId={room.autoDjFolderId}
-        autoDjFavFallbackMixed={room.autoDjFavFallbackMixed}
-        onSaved={() => invalidate.room(id)}
+        }
+        queue={
+          <Queue
+            roomId={id}
+            canSearch={can('addQueue')}
+            canEnqueue={can('addQueue')}
+            canReorder={isHost || can('host')}
+            isHost={isHost}
+            isGuest={role === 'guest'}
+            maxSelectPerAdd={room.maxSelectPerAdd}
+            trackVotes={trackVotes}
+            autoDjStatus={autoDjStatus}
+            favorites={favorites}
+          />
+        }
+        history={<HistoryPanel roomId={id} isGuest={role === 'guest'} favorites={favorites} />}
+        autodj={
+          room?.autoDjEnabled ? (
+            <div className="h-full overflow-y-auto p-4">
+              <MobileAutoDjTab roomId={id} room={room} isHost={isHost} />
+            </div>
+          ) : undefined
+        }
+        autoDjEnabled={room?.autoDjEnabled}
+        modals={
+          <>
+            <PasswordModal open={needPassword} onSubmit={joinRoom} onClose={() => router.push('/rooms')} />
+            <RoomSettingsModal
+              open={showSettings}
+              onClose={() => setShowSettings(false)}
+              roomId={id}
+              roomName={room.name}
+              enqueueWindowMin={room.enqueueWindowMin ?? 30}
+              enqueueLimitPerWindow={room.enqueueLimitPerWindow ?? 15}
+              crossfade={room.crossfade ?? true}
+              maxSelectPerAdd={room.maxSelectPerAdd ?? 3}
+              replayCooldownMin={room.replayCooldownMin ?? 0}
+              defaultEnqueueEnabled={room.defaultEnqueueEnabled ?? true}
+              defaultVoteSkipEnabled={room.defaultVoteSkipEnabled ?? true}
+              autoDjEnabled={room.autoDjEnabled ?? false}
+              autoDjMode={room.autoDjMode ?? 'related'}
+              autoDjThreshold={room.autoDjThreshold ?? 2}
+              autoDjFolderId={room.autoDjFolderId}
+              autoDjFavFallbackMixed={room.autoDjFavFallbackMixed}
+              onSaved={() => invalidate.room(id)}
+            />
+            <LeaveConfirmModal
+              open={showLeaveConfirm}
+              onConfirm={handleLeave}
+              onClose={() => setShowLeaveConfirm(false)}
+            />
+          </>
+        }
       />
-      <LeaveConfirmModal open={showLeaveConfirm} onConfirm={handleLeave} onClose={() => setShowLeaveConfirm(false)} />
     </main>
   );
 }
