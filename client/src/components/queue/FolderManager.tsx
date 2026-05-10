@@ -14,7 +14,7 @@ import {
 import { FolderItemColor } from '@/api/model';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FOLDER_COLOR_MAP,folderColorClass } from '@/lib/folder-colors';
+import { FOLDER_COLOR_MAP, folderColorClass } from '@/lib/folder-colors';
 import { cn } from '@/lib/utils';
 
 import Modal from '../common/Modal';
@@ -29,6 +29,7 @@ export function FolderManager({ onClose }: FolderManagerProps) {
   const t = useTranslations('folders');
   const { data: folders = [], refetch } = useFavoritesControllerListFolders();
   const [creating, setCreating] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [newName, setNewName] = useState('');
   const [newColor, setNewColor] = useState<string>(FolderItemColor.blue);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -36,12 +37,17 @@ export function FolderManager({ onClose }: FolderManagerProps) {
   const [editColor, setEditColor] = useState<string>(FolderItemColor.blue);
 
   const handleCreate = async () => {
-    if (newName.length < 2 || newName.length > 20) return;
-    await favoritesControllerCreateFolder({ name: newName, color: newColor as unknown as undefined });
-    setNewName('');
-    setCreating(false);
-    refetch();
-    toast.success(t('created'));
+    if (submitting || newName.length < 2 || newName.length > 20) return;
+    setSubmitting(true);
+    try {
+      await favoritesControllerCreateFolder({ name: newName, color: newColor as unknown as undefined });
+      setNewName('');
+      setCreating(false);
+      refetch();
+      toast.success(t('created'));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleUpdate = async (id: string) => {
@@ -170,7 +176,12 @@ function FolderForm({
         placeholder={t('placeholder')}
         maxLength={20}
         className="h-8 rounded-lg border-white/10 bg-white/5 text-xs"
-        onKeyDown={(e) => e.key === 'Enter' && onSubmit()}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+            e.preventDefault();
+            onSubmit();
+          }
+        }}
         autoFocus
       />
       <div className="flex flex-wrap gap-1.5">
