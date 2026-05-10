@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 import { AutoDjMode } from '../types/index.js';
+import { AutoDjTagsDto } from '../common/dto/auto-dj-tags.dto.js';
 import { User } from './user.entity.js';
 
 @Entity('rooms')
@@ -91,6 +92,23 @@ export class Room {
   @ApiProperty({ default: false, description: 'AutoDJ 즐겨찾기 소진 시 혼합 모드 폴백' })
   @Column({ default: false, name: 'auto_dj_fav_fallback_mixed' })
   autoDjFavFallbackMixed!: boolean;
+
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description: 'AI DJ 태그 (mood/genre/era/country)',
+    type: () => AutoDjTagsDto,
+  })
+  @Column({ type: 'jsonb', nullable: true, name: 'auto_dj_tags' })
+  autoDjTags!: Record<string, string[]> | null;
+
+  @ApiProperty({ required: false, nullable: true, description: 'AI DJ 직접 입력 프롬프트' })
+  @Column({ type: 'varchar', length: 200, nullable: true, name: 'auto_dj_prompt' })
+  autoDjPrompt!: string | null;
+
+  @ApiProperty({ default: false, description: 'AutoDJ 일시중지' })
+  @Column({ default: false, name: 'auto_dj_paused' })
+  autoDjPaused!: boolean;
 
   @ApiProperty()
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })

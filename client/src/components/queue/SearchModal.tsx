@@ -303,7 +303,7 @@ export default function SearchModal({
         <div
           ref={listRef}
           onScroll={tab === 'search' ? handleScroll : undefined}
-          className={`h-full overflow-y-auto ${adding ? 'pointer-events-none opacity-50' : ''}`}
+          className={`min-h-0 flex-1 ${adding ? 'pointer-events-none opacity-50' : ''}`}
         >
           {tab === 'showcase' && (
             <SearchShowcase

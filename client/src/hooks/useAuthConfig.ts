@@ -5,7 +5,13 @@ import { useEffect, useState } from 'react';
 import { authControllerGetAuthConfig } from '@/api/auth/auth';
 import type { AuthConfigResponse } from '@/api/model';
 
-const defaultConfig: AuthConfigResponse = { google: false, captcha: false, translation: false };
+const defaultConfig: AuthConfigResponse = {
+  google: false,
+  captcha: false,
+  translation: false,
+  translationLang: 'ko',
+  aiDj: false,
+};
 
 let cachedConfig: AuthConfigResponse | null = null;
 

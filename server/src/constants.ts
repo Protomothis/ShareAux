@@ -356,6 +356,13 @@ export const ERROR_META: Record<ErrorCode, ErrorMeta> = {
     description: '방 비밀번호가 올바르지 않습니다',
   },
 
+  [ErrorCode.ROOM_018]: {
+    code: ErrorCode.ROOM_018,
+    httpStatus: HttpStatus.BAD_REQUEST,
+    title: 'AI DJ 비활성',
+    description: '관리자가 AI DJ 기능을 비활성화했습니다',
+  },
+
   // ── Player ──
   [ErrorCode.PLAYER_001]: {
     code: ErrorCode.PLAYER_001,

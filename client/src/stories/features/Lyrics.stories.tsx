@@ -31,7 +31,7 @@ function LyricsMock() {
 }
 
 const meta: Meta = {
-  title: 'Features/Lyrics',
+  title: 'Features/Player/Lyrics',
   component: LyricsMock,
   parameters: { layout: 'centered', backgrounds: { default: 'dark' } },
 };

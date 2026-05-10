@@ -5,6 +5,7 @@ import { FormField } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SettingCard } from '@/components/ui/setting-card';
 import { Switch } from '@/components/ui/switch';
+import { useAuthConfig } from '@/hooks/useAuthConfig';
 import type { AutoDjMode } from '@/types';
 
 interface AutoDjSettingsProps {
@@ -36,6 +37,7 @@ export default function AutoDjSettings({
 }: AutoDjSettingsProps) {
   const { data: folders = [] } = useFavoritesControllerListFolders({ query: { enabled: hasFavorites } });
   const t = useTranslations('settings');
+  const { aiDj } = useAuthConfig();
   const modeLabels: Record<string, string> = {
     related: t('autoDjRelated'),
     radio: t('autoDjRadio'),
@@ -43,6 +45,7 @@ export default function AutoDjSettings({
     popular: t('autoDjPopular'),
     mixed: t('autoDjMixed'),
     favorites: t('autoDjFavorites'),
+    ai: t('autoDjAi'),
   };
 
   const modeDescs: Record<string, string> = {
@@ -52,6 +55,7 @@ export default function AutoDjSettings({
     popular: t('autoDjPopularDesc'),
     mixed: t('autoDjMixedDesc'),
     favorites: t('autoDjFavoritesDesc'),
+    ai: t('autoDjAiDesc'),
   };
 
   return (
@@ -79,6 +83,9 @@ export default function AutoDjSettings({
                 <SelectItem value="favorites" disabled={!hasFavorites}>
                   {t('autoDjFavorites')}
                   {!hasFavorites ? t('autoDjFavEmpty') : ''}
+                </SelectItem>
+                <SelectItem value="ai" disabled={!aiDj}>
+                  {t('autoDjAi')}
                 </SelectItem>
               </SelectContent>
             </Select>

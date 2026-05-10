@@ -32,6 +32,8 @@ export function useInvalidate() {
     setQueue: (roomId: string, data: RoomQueue[]) => qc.setQueryData(queryKeys.queue(roomId), data),
     quota: (roomId: string) => qc.invalidateQueries({ queryKey: queryKeys.quota(roomId) }),
     history: (roomId: string) => qc.invalidateQueries({ queryKey: queryKeys.history(roomId) }),
+    autoDjCandidates: (roomId: string) =>
+      qc.invalidateQueries({ queryKey: [`/api/rooms/${roomId}/autodj/candidates`] }),
     player: (roomId: string) => qc.invalidateQueries({ queryKey: queryKeys.player(roomId) }),
     permissions: (roomId: string) => qc.invalidateQueries({ queryKey: queryKeys.permissions(roomId) }),
   };

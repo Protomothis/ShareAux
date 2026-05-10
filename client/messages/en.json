@@ -159,6 +159,25 @@
       "lyricsFound": "Synced lyrics available",
       "transSearching": "Translating lyrics",
       "transDone": "Translated lyrics available"
+    },
+    "autoDj": {
+      "helpAutoDj": "Select a mode to auto-add tracks when the queue is empty. AI mode uses Gemini to recommend based on tags. Pause stops auto-adding.",
+      "aiGuide": "Select tags to narrow recommendations. Leave empty for broad suggestions.",
+      "guideRelated": "Automatically adds tracks similar to the currently playing song.",
+      "guideRadio": "Adds varied tracks in a radio style based on the current song.",
+      "guideHistory": "Adds tracks previously played in this room.",
+      "guidePopular": "Adds frequently played popular tracks.",
+      "guideMixed": "Mixes related, history, and popular tracks.",
+      "guideFavorites": "Adds tracks from the host's favorites.",
+      "mood": "Mood",
+      "genre": "Genre",
+      "era": "Era",
+      "country": "Country",
+      "nextUp": "Next up",
+      "apply": "Apply",
+      "reset": "Reset",
+      "pause": "Pause",
+      "resume": "Resume"
     }
   },
   "queue": {
@@ -363,7 +382,9 @@
     "autoDjHistoryDesc": "Re-adds previously played tracks from this room",
     "autoDjPopularDesc": "Adds popular tracks across all rooms",
     "autoDjMixedDesc": "Mixes related, history, and popular tracks",
-    "autoDjFavoritesDesc": "Adds tracks from the host's favorites"
+    "autoDjFavoritesDesc": "Adds tracks from the host's favorites",
+    "autoDjAi": "🧠 AI",
+    "autoDjAiDesc": "AI recommends tracks based on tags and mood"
   },
   "profile": {
     "title": "Profile Settings",
@@ -689,6 +710,8 @@
       "dailyLimitDesc": "Max translation requests per day",
       "geminiModel": "Gemini Model",
       "geminiModelDesc": "flash-lite (fast) / flash (accurate)",
+      "targetLang": "Translation Target Language",
+      "targetLangDesc": "Choose which language to translate lyrics into",
       "save": "Save",
       "captchaEnabled": "CAPTCHA Enabled",
       "captchaEnabledDesc": "Enable PoW CAPTCHA",
@@ -710,7 +733,23 @@
       "requireGeminiKey": "Set Gemini API Key first",
       "requireGoogleKey": "Set Google OAuth keys first",
       "requireTranslation": "Enable translation first",
-      "secretPlaceholder": "Enter new value"
+      "secretPlaceholder": "Enter new value",
+      "aiDjSection": "AI DJ",
+      "aiDjEnabled": "Enable AI DJ",
+      "aiDjEnabledDesc": "Use Gemini-based AI song recommendations",
+      "aiDjModel": "AI DJ Model",
+      "aiDjModelDesc": "Gemini model for recommendations",
+      "aiDjBatchSize": "Batch Size",
+      "aiDjBatchSizeDesc": "Number of songs to recommend per batch",
+      "aiDjTemperature": "Diversity (Temperature)",
+      "aiDjTemperatureDesc": "Higher = more diverse, lower = more consistent",
+      "requireAiDj": "Enable AI DJ first",
+      "tagPresets": "Tag Preset Management",
+      "tagMood": "Mood",
+      "tagGenre": "Genre",
+      "tagEra": "Era",
+      "tagCountry": "Country",
+      "tagPlaceholder": "Enter tag name"
     },
     "cleanup": {
       "title": "🧹 DB Cleanup",

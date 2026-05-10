@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import VoteSkip from '@/components/player/VoteSkip';
 
 const meta: Meta<typeof VoteSkip> = {
-  title: 'Features/VoteSkip',
+  title: 'Features/Player/VoteSkip',
   component: VoteSkip,
   args: { roomId: 'r1', hasNext: true },
 };

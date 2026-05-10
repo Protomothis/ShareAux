@@ -1,6 +1,21 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsInt,
+  IsObject,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+  MinLength,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
+import { AutoDjTagsDto } from '../../common/dto/auto-dj-tags.dto.js';
 import { AutoDjMode } from '../../types/index.js';
 
 export class UpdateRoomDto {
@@ -86,4 +101,21 @@ export class UpdateRoomDto {
   @IsOptional()
   @IsBoolean()
   autoDjFavFallbackMixed?: boolean;
+
+  @ApiProperty({ required: false, nullable: true, description: 'AI DJ 태그' })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => AutoDjTagsDto)
+  autoDjTags?: AutoDjTagsDto | null;
+
+  @ApiProperty({ required: false, nullable: true, description: 'AI DJ 프롬프트 (최대 200자)' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  autoDjPrompt?: string | null;
+
+  @ApiProperty({ required: false, description: 'AutoDJ 일시중지' })
+  @IsOptional()
+  @IsBoolean()
+  autoDjPaused?: boolean;
 }

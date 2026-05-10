@@ -16,4 +16,5 @@ export const RoomListItemAutoDjMode = {
   popular: 'popular',
   mixed: 'mixed',
   favorites: 'favorites',
+  ai: 'ai',
 } as const;

@@ -13,7 +13,7 @@ const mockTrack = {
 };
 
 const meta: Meta<typeof DJPanel> = {
-  title: 'Features/DJPanel',
+  title: 'Features/Player/DJPanel',
   component: DJPanel,
   args: { roomId: 'r1' },
   decorators: [
