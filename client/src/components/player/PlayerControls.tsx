@@ -211,7 +211,13 @@ export default function PlayerControls({
         >
           <Type size={14} />
         </Button>
-        <CastButton roomId={roomId} forceShow={forceCast} onCastStateChange={onCastStateChange} disabled={!trackName} track={trackInfo} />
+        <CastButton
+          roomId={roomId}
+          forceShow={forceCast}
+          onCastStateChange={onCastStateChange}
+          disabled={!trackName || streamState !== 'streaming'}
+          track={trackInfo}
+        />
       </div>
     </div>
   );

@@ -118,6 +118,12 @@ export default function RoomClient({ id }: { id: string }) {
     audioLoading,
     setAudioLoading,
     audioLoadingRef,
+    streamCodec,
+    setStreamCodec,
+    streamBitrate,
+    setStreamBitrate,
+    transStatus,
+    setTransStatus,
   } = playback;
 
   // 방 부가 상태
@@ -300,10 +306,24 @@ export default function RoomClient({ id }: { id: string }) {
     trackRef.current = playerData.track;
     setTimeSync({ base: (playerData.elapsedMs ?? 0) + (getOneWayRef.current() ?? 0), at: Date.now() });
     if (playerData.streamState) setStreamState(playerData.streamState as StreamState);
+    if (playerData.streamCodec) setStreamCodec(playerData.streamCodec);
+    if (playerData.streamBitrate) setStreamBitrate(playerData.streamBitrate);
+    if (playerData.transStatus !== undefined) setTransStatus(playerData.transStatus ?? null);
     const ls = playerData.track.lyricsStatus;
     if (ls === 'found') setLyricsStatus(LyricsStatus.Found);
     else if (ls === 'not_found') setLyricsStatus(LyricsStatus.NotFound);
-  }, [playerData, id, setPlaying, setTrack, setTimeSync, setLyricsStatus, setStreamState]);
+  }, [
+    playerData,
+    id,
+    setPlaying,
+    setTrack,
+    setTimeSync,
+    setLyricsStatus,
+    setStreamState,
+    setStreamCodec,
+    setStreamBitrate,
+    setTransStatus,
+  ]);
 
   // --- Media Session ---
   useEffect(() => {
@@ -423,8 +443,9 @@ export default function RoomClient({ id }: { id: string }) {
     hasPrev: history.length > 0,
     getAnalyser: isTouch ? undefined : audio.getAnalyser,
     getDelay: audio.getDelay,
-    streamCodec: playerData?.streamCodec,
-    streamBitrate: playerData?.streamBitrate,
+    streamCodec: streamCodec ?? undefined,
+    streamBitrate: streamBitrate ?? undefined,
+    transStatus,
     lyricsStatus,
     lyricsType,
     lyricsVersion,

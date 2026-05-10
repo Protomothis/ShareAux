@@ -60,8 +60,10 @@ export class PushService implements OnApplicationBootstrap {
 
   // ─── Subscription CRUD ───
 
-  async subscribe(userId: string, endpoint: string, p256dh: string, auth: string, locale: Language): Promise<void> {
+  async subscribe(userId: string, endpoint: string, p256dh: string, auth: string, locale: Language): Promise<boolean> {
+    const existing = await this.subRepo.findOneBy({ endpoint });
     await this.subRepo.upsert({ userId, endpoint, p256dh, auth, locale }, ['endpoint']);
+    return !existing;
   }
 
   async unsubscribe(userId: string, endpoint: string): Promise<void> {

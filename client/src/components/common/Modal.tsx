@@ -58,6 +58,8 @@ interface ModalProps {
   showCloseButton?: boolean;
   /** 모바일에서 전체화면으로 표시 */
   fullscreenMobile?: boolean;
+  /** 중첩 모달 — Portal 비활성화로 base-ui 네이티브 중첩 지원 */
+  disablePortal?: boolean;
 }
 
 function ModalRoot({
@@ -68,6 +70,7 @@ function ModalRoot({
   className,
   showCloseButton = true,
   fullscreenMobile,
+  disablePortal,
 }: ModalProps) {
   const t = useTranslations('common');
 
@@ -76,30 +79,32 @@ function ModalRoot({
     if (!o) onClose?.();
   };
 
+  const content = (
+    <>
+      <DialogPrimitive.Backdrop className="fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
+      <DialogPrimitive.Popup
+        className={cn(
+          'fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 grid-rows-[auto_1fr_auto] overflow-hidden rounded-xl bg-popover text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none [&>form]:contents data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-[nested-dialog-open]:brightness-50 data-[nested-dialog-open]:transition-[filter]',
+          fullscreenMobile
+            ? 'h-[100dvh] max-w-full rounded-none lg:max-h-[90vh] lg:max-w-2xl lg:rounded-xl'
+            : 'max-h-[calc(100dvh-4rem)] max-w-[calc(100%-2rem)] sm:max-w-sm',
+          className,
+        )}
+      >
+        {children}
+        {showCloseButton && (
+          <DialogPrimitive.Close render={<Button variant="ghost" className="absolute top-3 right-3" size="icon-sm" />}>
+            <XIcon />
+            <span className="sr-only">{t('modal.close')}</span>
+          </DialogPrimitive.Close>
+        )}
+      </DialogPrimitive.Popup>
+    </>
+  );
+
   return (
     <DialogPrimitive.Root open={open} onOpenChange={handleOpenChange}>
-      <DialogPrimitive.Portal>
-        <DialogPrimitive.Backdrop className="fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
-        <DialogPrimitive.Popup
-          className={cn(
-            'fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 grid-rows-[auto_1fr_auto] overflow-hidden rounded-xl bg-popover text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none [&>form]:contents data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
-            fullscreenMobile
-              ? 'h-[100dvh] max-w-full rounded-none lg:max-h-[90vh] lg:max-w-2xl lg:rounded-xl'
-              : 'max-h-[calc(100dvh-4rem)] max-w-[calc(100%-2rem)] sm:max-w-sm',
-            className,
-          )}
-        >
-          {children}
-          {showCloseButton && (
-            <DialogPrimitive.Close
-              render={<Button variant="ghost" className="absolute top-3 right-3" size="icon-sm" />}
-            >
-              <XIcon />
-              <span className="sr-only">{t('modal.close')}</span>
-            </DialogPrimitive.Close>
-          )}
-        </DialogPrimitive.Popup>
-      </DialogPrimitive.Portal>
+      {disablePortal ? content : <DialogPrimitive.Portal>{content}</DialogPrimitive.Portal>}
     </DialogPrimitive.Root>
   );
 }

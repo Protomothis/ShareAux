@@ -4,7 +4,6 @@ import { Loader2 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
 
-import { TrackLyricsType } from '@/api/model';
 import type { AutoDjStatus, StreamState, TrackInfo, TrackVoteMap } from '@/types';
 import { LyricsStatus } from '@/types';
 
@@ -12,6 +11,7 @@ import { FavoriteButton } from '../common/FavoriteButton';
 import { InfoTag } from '../common/InfoTag';
 import MarqueeText from '../common/MarqueeText';
 import Thumbnail from '../common/Thumbnail';
+import { StreamTags } from './StreamTags';
 import TrackVoteButtons from '../queue/TrackVoteButtons';
 
 interface PlayerInfoProps {
@@ -21,8 +21,8 @@ interface PlayerInfoProps {
   roomId: string;
   streamCodec?: string;
   streamBitrate?: number;
+  transStatus?: string | null;
   lyricsStatus?: LyricsStatus;
-  lyricsType?: TrackLyricsType;
   trackVotes?: TrackVoteMap;
   autoDjEnabled?: boolean;
   autoDjStatus?: AutoDjStatus;
@@ -39,8 +39,8 @@ export default function PlayerInfo({
   roomId,
   streamCodec,
   streamBitrate,
+  transStatus,
   lyricsStatus,
-  lyricsType,
   trackVotes,
   autoDjEnabled,
   autoDjStatus,
@@ -60,7 +60,7 @@ export default function PlayerInfo({
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -30 }}
         transition={{ duration: 0.25, ease: 'easeOut' }}
-        className="flex items-center gap-4 p-4 pb-3"
+        className="flex items-center gap-4 p-4"
       >
         <div className="relative shrink-0 overflow-visible">
           {track?.thumbnail && track.thumbnail !== 'NA' ? (
@@ -124,13 +124,12 @@ export default function PlayerInfo({
             )}
           </div>
           {isPlaying && (
-            <div className="mt-1 flex h-4 items-center gap-1">
-              {streamCodec ? <InfoTag>{streamCodec}</InfoTag> : null}
-              {streamBitrate ? <InfoTag>{streamBitrate}kbps</InfoTag> : null}
-              {lyricsStatus === LyricsStatus.Found ? (
-                <InfoTag>{lyricsType === TrackLyricsType.karaoke ? 'KLRC' : 'LRC'}</InfoTag>
-              ) : null}
-            </div>
+            <StreamTags
+              codec={streamCodec}
+              bitrate={streamBitrate}
+              lyricsStatus={lyricsStatus}
+              transStatus={transStatus}
+            />
           )}
         </div>
       </motion.div>
