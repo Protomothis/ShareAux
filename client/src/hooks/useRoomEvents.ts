@@ -124,6 +124,7 @@ export function useRoomEvents({ roomId, playback, roomState }: UseRoomEventsOpti
         if (d?.queue) invalidate.setQueue(roomId, d.queue);
         else invalidate.queue(roomId);
         invalidate.history(roomId);
+        invalidate.autoDjCandidates(roomId);
         return;
       }
       if (data.event === WsEvent.autoDjStatus && data.data) {
