@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 
 import { FavItem } from './FavItem';
 
-const DROP_PREFIX = 'folder:';
+const DROP_PREFIX = 'drop:';
 
 interface FolderSectionProps {
   folderId: string;
@@ -59,7 +59,10 @@ export function FolderSection({
   return (
     <div
       ref={setNodeRef}
-      className={cn('rounded-xl transition', isOver && isDragActive && 'bg-sa-accent/10 ring-1 ring-sa-accent/30')}
+      className={cn(
+        'rounded-xl transition',
+        isOver && isDragActive && 'bg-sa-accent/10 ring-1 ring-inset ring-sa-accent/30',
+      )}
     >
       <div className="rounded-lg px-2 py-1.5">
         <button onClick={onToggleCollapse} className="flex w-full items-center gap-2 text-left">

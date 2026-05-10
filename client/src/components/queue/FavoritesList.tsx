@@ -268,7 +268,7 @@ export default function FavoritesList({
         {/* 스크롤 영역 */}
         <div
           className={cn(
-            'min-h-0 flex-1 space-y-2 overflow-x-hidden',
+            'min-h-0 flex-1 space-y-2 overflow-x-hidden px-0.5',
             draggingId ? 'overflow-y-clip' : 'overflow-y-auto',
           )}
         >

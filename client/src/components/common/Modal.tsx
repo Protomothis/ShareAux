@@ -4,6 +4,7 @@ import { Dialog as DialogPrimitive } from '@base-ui/react/dialog';
 import { XIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -58,8 +59,6 @@ interface ModalProps {
   showCloseButton?: boolean;
   /** 모바일에서 전체화면으로 표시 */
   fullscreenMobile?: boolean;
-  /** 중첩 모달 — 백드롭 약하게 */
-  nested?: boolean;
 }
 
 function ModalRoot({
@@ -70,9 +69,13 @@ function ModalRoot({
   className,
   showCloseButton = true,
   fullscreenMobile,
-  nested,
 }: ModalProps) {
   const t = useTranslations('common');
+  const [isNested, setIsNested] = useState(false);
+
+  useEffect(() => {
+    if (open) setIsNested(document.querySelectorAll('[role="dialog"]').length > 0);
+  }, [open]);
 
   const handleOpenChange = (o: boolean) => {
     onOpenChange?.(o);
@@ -84,8 +87,8 @@ function ModalRoot({
       <DialogPrimitive.Portal>
         <DialogPrimitive.Backdrop
           className={cn(
-            'fixed inset-0 isolate z-50 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0',
-            nested ? 'bg-black/20' : 'bg-black/10',
+            'fixed inset-0 isolate z-50 duration-100 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0',
+            isNested ? 'bg-black/30' : 'bg-black/10 supports-backdrop-filter:backdrop-blur-xs',
           )}
         />
         <DialogPrimitive.Popup
