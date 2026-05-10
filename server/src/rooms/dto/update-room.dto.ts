@@ -15,14 +15,8 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
+import { AutoDjTagsDto } from '../../common/dto/auto-dj-tags.dto.js';
 import { AutoDjMode } from '../../types/index.js';
-
-class AutoDjTagsDto {
-  @IsArray() @IsString({ each: true }) mood!: string[];
-  @IsArray() @IsString({ each: true }) genre!: string[];
-  @IsArray() @IsString({ each: true }) era!: string[];
-  @IsArray() @IsString({ each: true }) country!: string[];
-}
 
 export class UpdateRoomDto {
   @ApiProperty({ required: false, description: '방 이름' })

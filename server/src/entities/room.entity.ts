@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 import { AutoDjMode } from '../types/index.js';
+import { AutoDjTagsDto } from '../common/dto/auto-dj-tags.dto.js';
 import { User } from './user.entity.js';
 
 @Entity('rooms')
@@ -92,7 +93,12 @@ export class Room {
   @Column({ default: false, name: 'auto_dj_fav_fallback_mixed' })
   autoDjFavFallbackMixed!: boolean;
 
-  @ApiProperty({ required: false, nullable: true, description: 'AI DJ 태그 (mood/genre/era/country)' })
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description: 'AI DJ 태그 (mood/genre/era/country)',
+    type: () => AutoDjTagsDto,
+  })
   @Column({ type: 'jsonb', nullable: true, name: 'auto_dj_tags' })
   autoDjTags!: Record<string, string[]> | null;
 

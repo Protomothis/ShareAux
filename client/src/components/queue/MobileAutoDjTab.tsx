@@ -18,7 +18,7 @@ export function MobileAutoDjTab({ roomId, room, isHost }: MobileAutoDjTabProps) 
     isHost,
     mode: room.autoDjMode,
     paused: room.autoDjPaused,
-    tags: (room.autoDjTags as Record<string, string[]> | undefined) ?? null,
+    tags: room.autoDjTags ?? null,
     prompt: room.autoDjPrompt ?? null,
   });
 

@@ -5,9 +5,10 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
+import type { AutoDjTagsDto } from './autoDjTagsDto';
 
 /**
  * AI DJ 태그 (mood/genre/era/country)
  * @nullable
  */
-export type RoomListItemAutoDjTags = { [key: string]: unknown } | null;
+export type RoomListItemAutoDjTags = AutoDjTagsDto | null;

@@ -3,7 +3,7 @@
 import { useCallback, useState } from 'react';
 
 import { useAuthControllerGetAuthConfig } from '@/api/auth/auth';
-import type { AutoDjCandidateItem, AutoDjCandidatesResponse } from '@/api/model';
+import type { AutoDjCandidateItem, AutoDjCandidatesResponse, AutoDjTagsDto } from '@/api/model';
 import {
   roomsControllerPinAutoDjCandidate,
   roomsControllerRefreshAutoDjPool,
@@ -15,7 +15,8 @@ import {
 
 import type { CandidateTrack } from '@/components/queue/AutoDjCandidates';
 import type { AutoDjMode } from '@/components/queue/AutoDjModeSelect';
-import type { AutoDjTags } from '@/components/queue/AutoDjTagFilter';
+
+const EMPTY_TAGS: AutoDjTagsDto = { mood: [], genre: [], era: [], country: [] };
 
 interface UseAutoDjOptions {
   roomId: string;
@@ -23,7 +24,7 @@ interface UseAutoDjOptions {
   isHost: boolean;
   mode: string;
   paused: boolean;
-  tags: Record<string, string[]> | null;
+  tags: AutoDjTagsDto | null;
   prompt: string | null;
 }
 
@@ -53,7 +54,7 @@ export function useAutoDj({ roomId, enabled, isHost, mode, paused, tags, prompt 
   );
 
   const handleApply = useCallback(
-    async (t: AutoDjTags, p: string) => {
+    async (t: AutoDjTagsDto, p: string) => {
       if (!isHost) return;
       await roomsControllerUpdate(roomId, { autoDjTags: t, autoDjPrompt: p });
       setRefreshing(true);
@@ -91,7 +92,7 @@ export function useAutoDj({ roomId, enabled, isHost, mode, paused, tags, prompt 
     await roomsControllerToggleAutoDjPause(roomId);
   }, [roomId]);
 
-  const savedTags: AutoDjTags = (tags as AutoDjTags | null) ?? { mood: [], genre: [], era: [], country: [] };
+  const savedTags: AutoDjTagsDto = tags ?? EMPTY_TAGS;
 
   return {
     mode: mode as AutoDjMode,

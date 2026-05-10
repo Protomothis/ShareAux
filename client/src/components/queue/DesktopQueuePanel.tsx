@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
+import type { AutoDjTagsDto } from '@/api/model';
 import TabBar from '@/components/common/TabBar';
 import { useAutoDj } from '@/hooks/useAutoDj';
 import type { AutoDjStatus, FavoriteActions, TrackVoteMap } from '@/types';
@@ -28,7 +29,7 @@ interface DesktopQueuePanelProps {
   autoDjEnabled?: boolean;
   autoDjMode?: string;
   autoDjPaused?: boolean;
-  autoDjTags?: Record<string, string[]> | null;
+  autoDjTags?: AutoDjTagsDto | null;
   autoDjPrompt?: string | null;
   autoDjStatus?: AutoDjStatus;
 }
