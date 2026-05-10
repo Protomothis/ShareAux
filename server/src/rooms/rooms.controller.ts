@@ -354,6 +354,7 @@ export class RoomsController {
     const room = await this.rooms.findOne(id);
     const paused = !room.autoDjPaused;
     await this.rooms.update(id, req.user.userId, { autoDjPaused: paused });
+    this.gateway.broadcastSystem(id, WsEvent.RoomUpdated, '');
     if (!paused) this.autoDj.trigger(id);
     return { paused };
   }
