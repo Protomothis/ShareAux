@@ -5,6 +5,7 @@ import { FormField } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SettingCard } from '@/components/ui/setting-card';
 import { Switch } from '@/components/ui/switch';
+import { useAuthConfig } from '@/hooks/useAuthConfig';
 import type { AutoDjMode } from '@/types';
 
 interface AutoDjSettingsProps {
@@ -36,6 +37,7 @@ export default function AutoDjSettings({
 }: AutoDjSettingsProps) {
   const { data: folders = [] } = useFavoritesControllerListFolders({ query: { enabled: hasFavorites } });
   const t = useTranslations('settings');
+  const { aiDj } = useAuthConfig();
   const modeLabels: Record<string, string> = {
     related: t('autoDjRelated'),
     radio: t('autoDjRadio'),
@@ -82,7 +84,9 @@ export default function AutoDjSettings({
                   {t('autoDjFavorites')}
                   {!hasFavorites ? t('autoDjFavEmpty') : ''}
                 </SelectItem>
-                <SelectItem value="ai">{t('autoDjAi')}</SelectItem>
+                <SelectItem value="ai" disabled={!aiDj}>
+                  {t('autoDjAi')}
+                </SelectItem>
               </SelectContent>
             </Select>
           </FormField>
