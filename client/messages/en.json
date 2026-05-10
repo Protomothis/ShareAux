@@ -159,6 +159,14 @@
       "lyricsFound": "Synced lyrics available",
       "transSearching": "Translating lyrics",
       "transDone": "Translated lyrics available"
+    },
+    "autoDj": {
+      "mood": "Mood",
+      "genre": "Genre",
+      "era": "Era",
+      "country": "Country",
+      "nextUp": "Next up",
+      "apply": "Apply"
     }
   },
   "queue": {

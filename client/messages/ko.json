@@ -159,6 +159,14 @@
       "lyricsFound": "싱크 가사 제공",
       "transSearching": "가사 번역 중",
       "transDone": "번역 가사 제공"
+    },
+    "autoDj": {
+      "mood": "분위기",
+      "genre": "장르",
+      "era": "시대",
+      "country": "국가",
+      "nextUp": "다음 후보",
+      "apply": "적용"
     }
   },
   "queue": {
