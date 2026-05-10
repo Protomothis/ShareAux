@@ -39,6 +39,7 @@ interface DesktopQueuePanelProps {
   autoDjPaused?: boolean;
   autoDjTags?: AutoDjTags;
   autoDjPrompt?: string;
+  autoDjStatus?: import('@/types').AutoDjStatus;
   onRoomUpdate?: (dto: Record<string, unknown>) => void;
 }
 
