@@ -11,6 +11,7 @@ import { FavoriteButton } from '../common/FavoriteButton';
 import { InfoTag } from '../common/InfoTag';
 import MarqueeText from '../common/MarqueeText';
 import Thumbnail from '../common/Thumbnail';
+import { StreamTags } from './StreamTags';
 import TrackVoteButtons from '../queue/TrackVoteButtons';
 
 interface PlayerInfoProps {
@@ -123,24 +124,12 @@ export default function PlayerInfo({
             )}
           </div>
           {isPlaying && (
-            <div className="mt-1 flex h-4 items-center gap-1">
-              {streamCodec ? <InfoTag>{streamCodec}</InfoTag> : null}
-              {streamBitrate ? <InfoTag>{streamBitrate}kbps</InfoTag> : null}
-              {lyricsStatus === LyricsStatus.Searching ? (
-                <InfoTag>
-                  <Loader2 size={8} className="shrink-0 animate-spin" /> LRC
-                </InfoTag>
-              ) : lyricsStatus === LyricsStatus.Found ? (
-                <InfoTag>LRC</InfoTag>
-              ) : null}
-              {lyricsStatus === LyricsStatus.Found && transStatus === 'pending' ? (
-                <InfoTag>
-                  <Loader2 size={8} className="shrink-0 animate-spin" /> 번역
-                </InfoTag>
-              ) : lyricsStatus === LyricsStatus.Found && transStatus === 'done' ? (
-                <InfoTag>번역</InfoTag>
-              ) : null}
-            </div>
+            <StreamTags
+              codec={streamCodec}
+              bitrate={streamBitrate}
+              lyricsStatus={lyricsStatus}
+              transStatus={transStatus}
+            />
           )}
         </div>
       </motion.div>
