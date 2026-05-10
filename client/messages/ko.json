@@ -701,6 +701,8 @@
       "dailyLimitDesc": "하루 최대 번역 요청 수",
       "geminiModel": "Gemini 모델",
       "geminiModelDesc": "flash-lite (빠름) / flash (정확)",
+      "targetLang": "번역 타겟 언어",
+      "targetLangDesc": "가사를 어떤 언어로 번역할지 선택합니다",
       "save": "저장",
       "captchaEnabled": "CAPTCHA 활성화",
       "captchaEnabledDesc": "PoW CAPTCHA를 활성화합니다",

@@ -8,6 +8,7 @@ export { ErrorCode } from './error-code.enum.js';
 export { GuestPermission } from './guest-permission.enum.js';
 export { Language } from './language.enum.js';
 export type { LyricsResult } from './lyrics.types.js';
+export { TranslationLang } from './translation-lang.enum.js';
 export { LyricsStatus } from './lyrics.types.js';
 export { MetaStatus } from './meta-status.enum.js';
 export {

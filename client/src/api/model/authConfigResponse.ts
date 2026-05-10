@@ -10,5 +10,6 @@ export interface AuthConfigResponse {
   google: boolean;
   captcha: boolean;
   translation: boolean;
+  translationLang: string;
   aiDj: boolean;
 }

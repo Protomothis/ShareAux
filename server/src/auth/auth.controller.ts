@@ -29,6 +29,7 @@ import { TranslationService } from '../services/translation.service.js';
 import type { AuthenticatedRequest } from '../types/index.js';
 import { ErrorCode } from '../types/index.js';
 import { OptionKey } from '../types/settings.types.js';
+import { TranslationLang } from '../types/translation-lang.enum.js';
 import { AuthService } from './auth.service.js';
 import { clearAuthCookies, setAuthCookies } from './cookie.util.js';
 import { AuthConfigResponse } from './dto/auth-config-response.dto.js';
@@ -71,6 +72,7 @@ export class AuthController {
       google: this.isGoogleEnabled,
       captcha: this.captcha.isEnabled(),
       translation: this.translationService.isEnabled,
+      translationLang: this.settingsService.get(OptionKey.TranslationTargetLang) as TranslationLang,
       aiDj: this.settingsService.getBoolean(OptionKey.AutoDjAiEnabled),
     };
   }

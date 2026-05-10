@@ -701,6 +701,8 @@
       "dailyLimitDesc": "Max translation requests per day",
       "geminiModel": "Gemini Model",
       "geminiModelDesc": "flash-lite (fast) / flash (accurate)",
+      "targetLang": "Translation Target Language",
+      "targetLangDesc": "Choose which language to translate lyrics into",
       "save": "Save",
       "captchaEnabled": "CAPTCHA Enabled",
       "captchaEnabledDesc": "Enable PoW CAPTCHA",

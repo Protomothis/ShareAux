@@ -36,6 +36,7 @@ export enum OptionKey {
   TranslationEnabled = 'translation.enabled',
   TranslationDailyLimit = 'translation.dailyLimit',
   TranslationModel = 'translation.model',
+  TranslationTargetLang = 'translation.targetLang',
 
   // Push 알림
   VapidPublicKey = 'secret.vapidPublicKey',
@@ -91,6 +92,7 @@ export const OPTION_METAS: Record<OptionKey, OptionMeta> = {
   [OptionKey.TranslationEnabled]: { type: 'boolean', defaultValue: 'true' },
   [OptionKey.TranslationDailyLimit]: { type: 'number', defaultValue: '200', min: 10, max: 1000 },
   [OptionKey.TranslationModel]: { type: 'select', defaultValue: 'gemini-2.5-flash-lite' },
+  [OptionKey.TranslationTargetLang]: { type: 'select', defaultValue: 'ko' },
 
   // Push 알림
   [OptionKey.VapidPublicKey]: { type: 'string', defaultValue: '', secret: true },

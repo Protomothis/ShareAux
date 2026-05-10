@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 
 import { Track } from '../entities/track.entity.js';
 import { OptionKey } from '../types/settings.types.js';
+import { TranslationLang } from '../types/translation-lang.enum.js';
 import { detectLang } from './detect-lang.js';
 import { SettingsService } from './settings.service.js';
 
@@ -37,6 +38,35 @@ const CONTEXT_OVERLAP = 5;
 /** N|번역 또는 N|번역|발음 — 구분자 유연 (|, │, /, 탭) */
 const LINE_WITH_READING = /^\s*(\d+)\s*[|│/\t]\s*([^|│/\t]*?)\s*[|│/\t]\s*(.+?)\s*$/;
 const LINE_TRANSLATION = /^\s*(\d+)\s*[.|)│/\t]\s*(.+?)\s*$/;
+
+const LANG_NAMES: Record<TranslationLang, string> = {
+  [TranslationLang.Ko]: 'Korean',
+  [TranslationLang.En]: 'English',
+  [TranslationLang.Ja]: 'Japanese',
+  [TranslationLang.Zh]: 'Chinese',
+  [TranslationLang.ZhTW]: 'Traditional Chinese',
+  [TranslationLang.Es]: 'Spanish',
+  [TranslationLang.Fr]: 'French',
+  [TranslationLang.De]: 'German',
+  [TranslationLang.Pt]: 'Portuguese',
+  [TranslationLang.Th]: 'Thai',
+  [TranslationLang.Vi]: 'Vietnamese',
+  [TranslationLang.Id]: 'Indonesian',
+};
+
+const SOURCE_LANG_NAMES: Record<string, string> = {
+  ja: '일본어',
+  zh: '중국어',
+  en: '영어',
+  ko: '한국어',
+  es: '스페인어',
+  fr: '프랑스어',
+  de: '독일어',
+  pt: '포르투갈어',
+  th: '태국어',
+  vi: '베트남어',
+  id: '인도네시아어',
+};
 
 @Injectable()
 export class TranslationService implements OnApplicationBootstrap {
@@ -153,7 +183,8 @@ export class TranslationService implements OnApplicationBootstrap {
       const lang = track.lyricsLang ?? detectLang(lyricsText);
       if (lang) await this.trackRepo.update(track.id, { lyricsLang: lang });
 
-      if (lang === 'ko') {
+      const targetLang = this.settings.get(OptionKey.TranslationTargetLang) as TranslationLang;
+      if (lang === targetLang) {
         await this.trackRepo.update(track.id, { lyricsTransStatus: 'done' });
         return;
       }
@@ -165,8 +196,9 @@ export class TranslationService implements OnApplicationBootstrap {
 
       const lines = this.parseLrc(track.lyricsData);
       const isJa = lang === 'ja';
+      const includeReading = isJa && (targetLang === TranslationLang.Ko || targetLang === TranslationLang.En);
 
-      const result = await this.translateWithChunks(lines, lang ?? 'en', isJa);
+      const result = await this.translateWithChunks(lines, lang ?? 'en', includeReading);
 
       if (!result || result.translations.size < lines.length * 0.5) {
         await this.trackRepo.update(track.id, { lyricsTransStatus: 'failed' });
@@ -176,7 +208,7 @@ export class TranslationService implements OnApplicationBootstrap {
       const translatedLrc = lines.map((l, i) => `${l.time} ${result.translations.get(i + 1) ?? ''}`).join('\n');
       const update: Partial<Track> = { lyricsTranslated: translatedLrc, lyricsTransStatus: 'done' as const };
 
-      if (isJa && result.readings.size > 0) {
+      if (includeReading && result.readings.size > 0) {
         update.lyricsRuby = lines.map((l, i) => `${l.time} ${result.readings.get(i + 1) ?? l.text}`).join('\n');
       }
 
@@ -235,29 +267,33 @@ export class TranslationService implements OnApplicationBootstrap {
     context: ParsedLine[],
   ): Promise<TranslationResult | null> {
     const numbered = lines.map((l, i) => `${offset + i + 1}|${l.text}`).join('\n');
-    const langName = lang === 'ja' ? '일본어' : lang === 'zh' ? '중국어' : '영어';
+    const targetLang = this.settings.get(OptionKey.TranslationTargetLang) as TranslationLang;
+    const targetName = LANG_NAMES[targetLang];
+    const sourceName = SOURCE_LANG_NAMES[lang] ?? lang;
 
-    const format = includeReading ? 'N|한국어번역|한글발음' : 'N|한국어번역';
+    const format = includeReading ? `N|${targetName}|reading` : `N|${targetName}`;
     const readingRule = includeReading
       ? `
-- 한글발음: 원문 발음을 한글로 표기 (외래어 표기법)
-- 영어/기호는 발음란에 원문 그대로 유지
-- 한자 읽기는 곡 전체에서 동일 단어는 같은 음독/훈독으로 통일
-- 반드시 번역|발음 두 칸 모두 채울 것`
+- reading: Romanized pronunciation of the original text
+- Keep English words/symbols as-is in reading column
+- Use consistent readings for the same kanji throughout
+- Both translation and reading columns must be filled`
       : '';
     const example = includeReading
-      ? '\n예시:\n1|砂を払えば → 1|모래를 털면|스나오 하라에바\n2|I love you → 2|널 사랑해|I love you\n3|La la la → 3|La la la|La la la'
+      ? `\nExample:\n1|砂を払えば → 1|${targetLang === 'ko' ? '모래를 털면' : 'If I brush off the sand'}|suna o haraeba\n2|I love you → 2|${targetLang === 'ko' ? '널 사랑해' : 'I love you'}|I love you`
       : '';
 
     const contextBlock =
-      context.length > 0 ? `\n앞 가사 (참고용, 번역하지 말 것):\n${context.map((l) => l.text).join('\n')}\n` : '';
+      context.length > 0
+        ? `\nPreceding lyrics (for context only, do NOT translate):\n${context.map((l) => l.text).join('\n')}\n`
+        : '';
 
-    const prompt = `${langName}→한국어 가사 번역.
-규칙:
-- 정확히 ${lines.length}줄 출력. 절대 생략하지 말 것
-- ${format} 형식만 출력. 설명/주석 금지
-- 가사체 직역. 의역 최소화
-- 감탄사/의성어(oh, yeah, la la 등)는 번역하지 않고 원문 유지${readingRule}${example}${contextBlock}
+    const prompt = `Translate ${sourceName} lyrics to ${targetName}.
+Rules:
+- Output exactly ${lines.length} lines. Never omit any.
+- Output ONLY in ${format} format. No explanations.
+- Literal lyrical translation. Minimize paraphrasing.
+- Keep interjections/onomatopoeia (oh, yeah, la la) untranslated${readingRule}${example}${contextBlock}
 ${numbered}`;
 
     try {
@@ -277,11 +313,13 @@ ${numbered}`;
     includeReading: boolean,
   ): Promise<TranslationResult | null> {
     if (!missing.length) return null;
-    const langName = lang === 'ja' ? '일본어' : lang === 'zh' ? '중국어' : '영어';
-    const format = includeReading ? 'N|한국어번역|한글발음' : 'N|한국어번역';
+    const targetLang = this.settings.get(OptionKey.TranslationTargetLang) as TranslationLang;
+    const targetName = LANG_NAMES[targetLang];
+    const sourceName = SOURCE_LANG_NAMES[lang] ?? lang;
+    const format = includeReading ? `N|${targetName}|reading` : `N|${targetName}`;
     const numbered = missing.map((m) => `${m.idx}|${m.text}`).join('\n');
 
-    const prompt = `${langName}→한국어 가사 번역. 누락된 ${missing.length}줄만 번역. ${format} 형식만. 번호 유지.\n\n${numbered}`;
+    const prompt = `Translate ${sourceName} lyrics to ${targetName}. Only the ${missing.length} missing lines. ${format} format only. Keep line numbers.\n\n${numbered}`;
 
     try {
       const result = await this.geminiModel!.generateContent(prompt);

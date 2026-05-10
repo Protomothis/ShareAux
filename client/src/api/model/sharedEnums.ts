@@ -13,6 +13,7 @@ import type { SystemChatEvent } from './systemChatEvent';
 import type { OptionKey } from './optionKey';
 import type { MetaStatus } from './metaStatus';
 import type { PushEvent } from './pushEvent';
+import type { TranslationLang } from './translationLang';
 
 export interface SharedEnums {
   wsEvent: WsEvent;
@@ -23,4 +24,5 @@ export interface SharedEnums {
   optionKey: OptionKey;
   metaStatus: MetaStatus;
   pushEvent: PushEvent;
+  translationLang: TranslationLang;
 }

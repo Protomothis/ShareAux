@@ -17,7 +17,10 @@ import { TagPresetSection } from '@/components/admin/TagPresetSection';
 import { BoolField, NumField, SecretSection, SelectField, SettingSection } from '@/components/admin/settings';
 import { Button } from '@/components/ui/button';
 import { SkeletonCard } from '@/components/ui/skeleton';
+import { TranslationLang } from '@/api/model';
 import { useAdminSettings, useUpdateSettings } from '@/hooks/admin/useAdminSettings';
+
+const TRANSLATION_LANGS = Object.values(TranslationLang);
 
 export default function AdminSettingsPage() {
   const t = useTranslations('admin.settings');
@@ -236,6 +239,15 @@ export default function AdminSettingsPage() {
             value={draft['translation.model'] ?? ''}
             onChange={(v) => set('translation.model', v)}
             options={geminiModels}
+            disabled={!hasGemini || !translationOn}
+            disabledReason={!hasGemini ? t('requireGeminiKey') : t('requireTranslation')}
+          />
+          <SelectField
+            label={t('targetLang')}
+            description={t('targetLangDesc')}
+            value={draft['translation.targetLang'] ?? 'ko'}
+            onChange={(v) => set('translation.targetLang', v)}
+            options={TRANSLATION_LANGS}
             disabled={!hasGemini || !translationOn}
             disabledReason={!hasGemini ? t('requireGeminiKey') : t('requireTranslation')}
           />

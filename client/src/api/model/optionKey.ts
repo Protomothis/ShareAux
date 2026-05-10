@@ -33,6 +33,7 @@ export const OptionKey = {
   translationenabled: 'translation.enabled',
   translationdailyLimit: 'translation.dailyLimit',
   translationmodel: 'translation.model',
+  translationtargetLang: 'translation.targetLang',
   secretvapidPublicKey: 'secret.vapidPublicKey',
   secretvapidPrivateKey: 'secret.vapidPrivateKey',
   pushvapidMailto: 'push.vapidMailto',

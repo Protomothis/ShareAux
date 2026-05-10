@@ -2,7 +2,15 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { SystemChatEvent } from '../../rooms/dto/system-chat-message.dto.js';
 import type { AutoDjStatus } from '../../types/index.js';
-import { AuthProvider, Language, MetaStatus, OptionKey, PushEvent, WsEvent } from '../../types/index.js';
+import {
+  AuthProvider,
+  Language,
+  MetaStatus,
+  OptionKey,
+  PushEvent,
+  TranslationLang,
+  WsEvent,
+} from '../../types/index.js';
 
 /** Swagger에 공유 enum을 노출하기 위한 스키마 */
 export class SharedEnums {
@@ -29,4 +37,7 @@ export class SharedEnums {
 
   @ApiProperty({ enum: PushEvent, enumName: 'PushEvent' })
   pushEvent!: PushEvent;
+
+  @ApiProperty({ enum: TranslationLang, enumName: 'TranslationLang' })
+  translationLang!: TranslationLang;
 }

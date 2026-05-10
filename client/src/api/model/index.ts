@@ -168,6 +168,7 @@ export * from './trackSource';
 export * from './trackSourceProvider';
 export * from './trackStats';
 export * from './trackStatsProperty';
+export * from './translationLang';
 export * from './updateFolderBody';
 export * from './updateFolderBodyColor';
 export * from './updateNicknameDto';
