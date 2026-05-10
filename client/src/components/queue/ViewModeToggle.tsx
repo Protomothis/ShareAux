@@ -15,8 +15,8 @@ export function ViewModeToggle() {
       type="button"
       onClick={() => setViewMode(mode)}
       className={cn(
-        'rounded p-1 transition-colors',
-        viewMode === mode ? 'text-sa-accent' : 'text-white/30 hover:text-white/60',
+        'rounded-md p-1.5 transition-colors',
+        viewMode === mode ? 'bg-white/10 text-sa-accent' : 'text-white/30 hover:bg-white/5 hover:text-white/60',
       )}
     >
       <Icon size={14} />
@@ -24,7 +24,7 @@ export function ViewModeToggle() {
   );
 
   return (
-    <div className="flex items-center gap-0.5">
+    <div className="flex items-center gap-0.5 rounded-lg bg-white/5 p-0.5">
       {btn('grid', LayoutGrid)}
       {btn('list', LayoutList)}
     </div>

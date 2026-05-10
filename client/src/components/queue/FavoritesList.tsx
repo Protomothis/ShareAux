@@ -1,19 +1,10 @@
 'use client';
 
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
-import {
-  DndContext,
-  PointerSensor,
-  pointerWithin,
-  TouchSensor,
-  useDraggable,
-  useDroppable,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import { ChevronDown, ChevronRight, FolderOpen, GripVertical, Heart, Search, Trash2 } from 'lucide-react';
+import { DndContext, PointerSensor, pointerWithin, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { FolderOpen, Heart, Search, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import {
@@ -23,16 +14,13 @@ import {
   useFavoritesControllerListFolders,
 } from '@/api/favorites/favorites';
 import type { FavoriteItem, SearchResultItem } from '@/api/model';
-import { FavoriteButton } from '@/components/common/FavoriteButton';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
-import { folderColorClass } from '@/lib/folder-colors';
-import { formatDuration } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
-import Thumbnail from '../common/Thumbnail';
 import { FolderManager } from './FolderManager';
+import { FolderSection } from './FolderSection';
 
 type SortKey = 'recent' | 'oldest' | 'name' | 'artist';
 
@@ -45,17 +33,6 @@ interface FavoritesListProps {
   favoriteIds: Set<string>;
   favLoadingIds?: Set<string>;
   onToggleFavorite: (track: SearchResultItem) => void;
-}
-
-function toSearchResult(f: FavoriteItem): SearchResultItem {
-  return {
-    provider: f.provider as unknown as SearchResultItem['provider'],
-    sourceId: f.sourceId,
-    name: f.name,
-    artist: f.artist ?? null,
-    thumbnail: f.thumbnail ?? null,
-    durationMs: f.durationMs,
-  };
 }
 
 function sortFavs(list: FavoriteItem[], sort: SortKey): FavoriteItem[] {
@@ -363,209 +340,5 @@ export default function FavoritesList({
         />
       )}
     </DndContext>
-  );
-}
-
-// --- 폴더 섹션 (droppable = 섹션 전체) ---
-interface FolderSectionProps {
-  folderId: string;
-  folderName: string;
-  folderColor: string | null;
-  items: FavoriteItem[];
-  isCollapsed: boolean;
-  onToggleCollapse: () => void;
-  isDragActive: boolean;
-  editMode: boolean;
-  removeSet: Set<string>;
-  selectedOrder: string[];
-  disabledIds: Set<string>;
-  maxReached: boolean;
-  favoriteIds: Set<string>;
-  favLoadingIds?: Set<string>;
-  onToggleFavorite: (track: SearchResultItem) => void;
-  onSelectTrack: (track: SearchResultItem) => void;
-  onToggleRemove: (sourceId: string) => void;
-}
-
-function FolderSection({
-  folderId,
-  folderName,
-  folderColor,
-  items,
-  isCollapsed,
-  onToggleCollapse,
-  isDragActive,
-  editMode,
-  removeSet,
-  selectedOrder,
-  disabledIds,
-  maxReached,
-  favoriteIds,
-  favLoadingIds,
-  onToggleFavorite,
-  onSelectTrack,
-  onToggleRemove,
-}: FolderSectionProps) {
-  const t = useTranslations('favorites');
-  const dropId = `${DROP_PREFIX}${folderId}`;
-  const { setNodeRef, isOver } = useDroppable({ id: dropId });
-
-  return (
-    <div
-      ref={setNodeRef}
-      className={cn('rounded-xl transition', isOver && isDragActive && 'bg-sa-accent/10 ring-1 ring-sa-accent/30')}
-    >
-      <div className="rounded-lg px-2 py-1.5">
-        <button onClick={onToggleCollapse} className="flex w-full items-center gap-2 text-left">
-          {isCollapsed ? (
-            <ChevronRight size={14} className="text-sa-text-muted" />
-          ) : (
-            <ChevronDown size={14} className="text-sa-text-muted" />
-          )}
-          {folderColor ? (
-            <span className={cn('size-2.5 shrink-0 rounded-full', folderColorClass(folderColor))} />
-          ) : (
-            <FolderOpen size={14} className="text-sa-text-muted" />
-          )}
-          <span className="flex-1 truncate text-xs font-medium text-white">{folderName}</span>
-          <span className="text-[10px] text-sa-text-muted">{t('trackCount', { count: items.length })}</span>
-        </button>
-      </div>
-
-      {!isCollapsed && (
-        <div className="mt-0.5 space-y-0.5 pl-1">
-          {items.map((fav) => {
-            const track = toSearchResult(fav);
-            const order = selectedOrder.indexOf(fav.sourceId) + 1;
-            const inQueue = disabledIds.has(fav.sourceId);
-            const disabled = inQueue || (!order && maxReached);
-            return (
-              <FavItem
-                key={fav.id}
-                fav={fav}
-                order={order}
-                disabled={disabled}
-                inQueue={inQueue}
-                editMode={editMode}
-                selected={removeSet.has(fav.sourceId)}
-                isFavorite={favoriteIds.has(fav.sourceId)}
-                favLoading={favLoadingIds?.has(fav.sourceId)}
-                onToggleFavorite={() => onToggleFavorite(track)}
-                onClick={() => {
-                  if (editMode) onToggleRemove(fav.sourceId);
-                  else if (!disabled) onSelectTrack(track);
-                }}
-              />
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// --- 곡 아이템 (draggable — transform 방식) ---
-function FavItem({
-  fav,
-  order,
-  disabled,
-  inQueue,
-  editMode,
-  selected,
-  isFavorite,
-  favLoading,
-  onToggleFavorite,
-  onClick,
-}: {
-  fav: FavoriteItem;
-  order: number;
-  disabled: boolean;
-  inQueue: boolean;
-  editMode: boolean;
-  selected: boolean;
-  isFavorite: boolean;
-  favLoading?: boolean;
-  onToggleFavorite: () => void;
-  onClick: () => void;
-}) {
-  const t = useTranslations('favorites');
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: fav.sourceId });
-  const widthRef = useRef(0);
-  const nodeRef = useCallback(
-    (el: HTMLElement | null) => {
-      setNodeRef(el);
-      if (el) widthRef.current = el.offsetWidth;
-    },
-    [setNodeRef],
-  );
-  const style: React.CSSProperties | undefined = transform
-    ? {
-        transform: `translate(${transform.x}px, ${transform.y}px)`,
-        zIndex: 999,
-        position: 'relative',
-        width: widthRef.current || undefined,
-      }
-    : undefined;
-
-  return (
-    <div
-      ref={nodeRef}
-      style={style}
-      onClick={onClick}
-      className={cn(
-        'flex select-none items-center gap-2.5 rounded-xl p-2 text-left hover:bg-white/5',
-        order && !editMode && 'bg-sa-accent/10 border border-sa-accent/30',
-        disabled && !editMode && 'opacity-40',
-        isDragging && '!bg-[#242424] shadow-xl ring-1 ring-sa-accent/30',
-      )}
-    >
-      {editMode ? (
-        <div
-          className={cn(
-            'flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold',
-            selected ? 'bg-red-400 text-white' : 'border border-white/20',
-          )}
-        >
-          {selected ? '✓' : ''}
-        </div>
-      ) : (
-        <div
-          {...attributes}
-          {...listeners}
-          className="flex shrink-0 cursor-grab items-center justify-center touch-none text-sa-text-muted max-md:-ml-2 max-md:h-10 max-md:w-10 md:h-6 md:w-6"
-        >
-          <GripVertical size={14} />
-        </div>
-      )}
-
-      <div className="relative shrink-0">
-        <div className="size-9 overflow-hidden rounded-lg">
-          <Thumbnail src={fav.thumbnail} size="sm" className="size-9 rounded-lg" />
-        </div>
-        {!editMode && (
-          <FavoriteButton
-            active={isFavorite}
-            loading={favLoading}
-            onClick={onToggleFavorite}
-            className="absolute -left-1.5 -top-1.5 z-10"
-            size={11}
-          />
-        )}
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-xs font-medium text-white">{fav.name}</p>
-        <p className="truncate text-[10px] text-sa-text-secondary">
-          {fav.artist} · {formatDuration(fav.durationMs)}
-        </p>
-      </div>
-
-      {order > 0 && !editMode && (
-        <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-sa-accent text-[10px] font-bold text-white">
-          {order}
-        </span>
-      )}
-      {inQueue && <span className="shrink-0 text-[10px] text-sa-text-muted">{t('inQueue')}</span>}
-    </div>
   );
 }
