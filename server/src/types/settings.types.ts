@@ -22,6 +22,7 @@ export enum OptionKey {
   AutoDjAiModel = 'autodj.aiModel',
   AutoDjBatchSize = 'autodj.batchSize',
   AutoDjTemperature = 'autodj.temperature',
+  AutoDjTagPresets = 'autodj.tagPresets',
 
   // 큐
   QueueMaxPerUser = 'queue.maxPerUser',
@@ -76,6 +77,7 @@ export const OPTION_METAS: Record<OptionKey, OptionMeta> = {
   [OptionKey.AutoDjAiModel]: { type: 'select', defaultValue: 'gemini-2.5-flash-lite' },
   [OptionKey.AutoDjBatchSize]: { type: 'number', defaultValue: '15', min: 5, max: 30 },
   [OptionKey.AutoDjTemperature]: { type: 'number', defaultValue: '0.8', min: 0.1, max: 1.5 },
+  [OptionKey.AutoDjTagPresets]: { type: 'string', defaultValue: '{"mood":[],"genre":[],"era":[],"country":[]}' },
 
   // 큐
   [OptionKey.QueueMaxPerUser]: { type: 'number', defaultValue: '10', min: 1, max: 50 },

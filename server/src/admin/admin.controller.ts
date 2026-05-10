@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Put,
   Query,
   Req,
   UseGuards,
@@ -51,6 +52,7 @@ import { DailyPlaysItem, PlaysMetricsResponse } from './dto/plays-metrics-respon
 import { PaginatedReportsResponse, ReportItem } from './dto/report-response.dto.js';
 import { StreamingMetricsResponse } from './dto/streaming-metrics-response.dto.js';
 import { SystemSettingItem, UpdateSettingsDto } from './dto/system-setting.dto.js';
+import { TagPresetsDto } from './dto/tag-presets.dto.js';
 import { SystemStatsResponse } from './dto/system-stats-response.dto.js';
 import { TrackLyricsResponse } from './dto/track-lyrics-response.dto.js';
 import { TrackRankingItem } from './dto/track-ranking-item.dto.js';
@@ -387,5 +389,22 @@ export class AdminController {
     const report = await this.adminService.resolveReport(id, req.user.userId, status);
     await this.auditService.log(req.user.userId, 'report_resolve', 'report', id, { status }, req.ip);
     return report;
+  }
+
+  // --- Tag Presets ---
+
+  @Get('tag-presets')
+  @ApiOperation({ summary: 'AI DJ 태그 프리셋 조회' })
+  async getTagPresets() {
+    const raw = await this.settingsService.get(OptionKey.AutoDjTagPresets);
+    return JSON.parse(raw) as unknown;
+  }
+
+  @Put('tag-presets')
+  @ApiOperation({ summary: 'AI DJ 태그 프리셋 저장' })
+  async updateTagPresets(@Body() body: TagPresetsDto, @Req() req: AuthenticatedRequest) {
+    await this.settingsService.set(OptionKey.AutoDjTagPresets, JSON.stringify(body));
+    await this.auditService.log(req.user.userId, 'settings_update', 'settings', 'tag-presets', {}, req.ip);
+    return body;
   }
 }

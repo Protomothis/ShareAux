@@ -13,6 +13,7 @@ import {
 } from '@/api/admin/admin';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AiDjSettings } from '@/components/admin/AiDjSettings';
+import { TagPresetSection } from '@/components/admin/TagPresetSection';
 import { BoolField, NumField, SecretSection, SelectField, SettingSection } from '@/components/admin/settings';
 import { Button } from '@/components/ui/button';
 import { SkeletonCard } from '@/components/ui/skeleton';
@@ -171,6 +172,8 @@ export default function AdminSettingsPage() {
         </SettingSection>
 
         <AiDjSettings draft={draft} set={set} hasGemini={hasGemini} />
+
+        <TagPresetSection />
 
         <SettingSection icon="📋" title={t('queueSection')}>
           <NumField

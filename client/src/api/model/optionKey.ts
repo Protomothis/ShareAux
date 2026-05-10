@@ -25,6 +25,7 @@ export const OptionKey = {
   autodjaiModel: 'autodj.aiModel',
   autodjbatchSize: 'autodj.batchSize',
   autodjtemperature: 'autodj.temperature',
+  autodjtagPresets: 'autodj.tagPresets',
   queuemaxPerUser: 'queue.maxPerUser',
   queuemaxDuration: 'queue.maxDuration',
   streammaxBitrateEnabled: 'stream.maxBitrateEnabled',
