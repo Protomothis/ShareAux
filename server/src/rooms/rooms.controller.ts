@@ -73,7 +73,7 @@ export class RoomsController {
   async update(@Param('id', ParseUUIDPipe) id: string, @Req() req: AuthenticatedRequest, @Body() dto: UpdateRoomDto) {
     // AI 모드 선택 시 서버 설정 체크
     if (dto.autoDjMode === AutoDjMode.AI && !this.settings.getBoolean(OptionKey.AutoDjAiEnabled)) {
-      throw new AppException(ErrorCode.ROOM_004);
+      throw new AppException(ErrorCode.ROOM_018);
     }
     const prevAutoDj = dto.autoDjEnabled !== undefined ? await this.rooms.getAutoDjEnabled(id) : undefined;
     const result = await this.rooms.update(id, req.user.userId, dto);
