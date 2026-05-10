@@ -105,6 +105,7 @@ export function useRoomEvents({ roomId, playback, roomState }: UseRoomEventsOpti
       }
       if (data.event === WsEvent.lyricsUpdated && data.data) {
         playback.setLyricsVersion((v) => v + 1);
+        playback.setTransStatus('done');
         return;
       }
 

@@ -24,9 +24,8 @@ export class PushController {
   /** Push 구독 등록 */
   @Post('subscribe')
   async subscribe(@Req() req: AuthenticatedRequest, @Body() dto: SubscribePushDto) {
-    await this.push.subscribe(req.user.userId, dto.endpoint, dto.p256dh, dto.auth, dto.locale);
-    // 등록 확인용 테스트 Push
-    await this.push.sendTestPush(req.user.userId);
+    const isNew = await this.push.subscribe(req.user.userId, dto.endpoint, dto.p256dh, dto.auth, dto.locale);
+    if (isNew) await this.push.sendTestPush(req.user.userId);
     return { ok: true };
   }
 

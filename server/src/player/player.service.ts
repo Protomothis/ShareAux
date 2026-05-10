@@ -203,6 +203,7 @@ export class PlayerService {
       streamCodec: 'aac',
       streamBitrate: pb.track?.bitrateKbps ?? 0,
       streamState: state,
+      transStatus: pb.track?.lyricsTransStatus ?? null,
     });
   }
 

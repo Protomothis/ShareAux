@@ -27,4 +27,9 @@ export interface PlaybackStatus {
   streamBitrate: number;
   /** 스트림 상태 */
   streamState: PlaybackStatusStreamState;
+  /**
+   * 번역 상태
+   * @nullable
+   */
+  transStatus: string | null;
 }

@@ -35,6 +35,7 @@ interface PlayerProps {
   getDelay?: () => number;
   streamCodec?: string;
   streamBitrate?: number;
+  transStatus?: string | null;
   lyricsStatus?: LyricsStatus;
   lyricsType?: TrackLyricsType;
   lyricsVersion?: number;
@@ -71,6 +72,7 @@ export default function Player({
   getDelay: _getDelay,
   streamCodec,
   streamBitrate,
+  transStatus,
   lyricsStatus,
   lyricsType,
   lyricsVersion,
@@ -115,8 +117,8 @@ export default function Player({
         roomId={roomId}
         streamCodec={streamCodec}
         streamBitrate={streamBitrate}
+        transStatus={transStatus}
         lyricsStatus={lyricsStatus}
-        lyricsType={lyricsType}
         trackVotes={trackVotes}
         autoDjEnabled={autoDjEnabled}
         autoDjStatus={autoDjStatus}
@@ -182,7 +184,6 @@ export default function Player({
         }
         streamState={streamState}
         onSkipError={onSkipError}
-
         forceCast={forceCast}
         onCastStateChange={onCastStateChange}
       />

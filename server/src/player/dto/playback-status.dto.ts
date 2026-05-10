@@ -15,4 +15,7 @@ export class PlaybackStatus extends RoomPlayback {
 
   @ApiProperty({ description: '스트림 상태', enum: ['idle', 'preparing', 'skipping', 'streaming'] })
   streamState!: StreamState;
+
+  @ApiProperty({ description: '번역 상태', nullable: true, example: 'done' })
+  transStatus!: string | null;
 }

@@ -151,7 +151,15 @@
     "cast": "Cast to device",
     "castNoDevice": "No available devices found",
     "castNotSupported": "Cannot cast current stream",
-    "castRetry": "Preparing, please try again"
+    "castRetry": "Preparing, please try again",
+    "tags": {
+      "codec": "Audio codec",
+      "bitrate": "Stream bitrate",
+      "lyricsSearching": "Searching lyrics",
+      "lyricsFound": "Synced lyrics available",
+      "transSearching": "Translating lyrics",
+      "transDone": "Translated lyrics available"
+    }
   },
   "queue": {
     "title": "📋 Queue",
