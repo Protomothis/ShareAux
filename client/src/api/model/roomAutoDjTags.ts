@@ -6,9 +6,8 @@
  * OpenAPI spec version: 1.0
  */
 
-export interface AuthConfigResponse {
-  google: boolean;
-  captcha: boolean;
-  translation: boolean;
-  aiDj: boolean;
-}
+/**
+ * AI DJ 태그 (mood/genre/era/country)
+ * @nullable
+ */
+export type RoomAutoDjTags = { [key: string]: unknown } | null;

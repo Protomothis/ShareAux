@@ -5,10 +5,10 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
+import type { AutoDjTagsDto } from './autoDjTagsDto';
 
-export interface AuthConfigResponse {
-  google: boolean;
-  captcha: boolean;
-  translation: boolean;
-  aiDj: boolean;
-}
+/**
+ * AI DJ 태그
+ * @nullable
+ */
+export type UpdateRoomDtoAutoDjTags = AutoDjTagsDto | null;

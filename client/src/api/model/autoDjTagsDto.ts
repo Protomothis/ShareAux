@@ -6,9 +6,9 @@
  * OpenAPI spec version: 1.0
  */
 
-export interface AuthConfigResponse {
-  google: boolean;
-  captcha: boolean;
-  translation: boolean;
-  aiDj: boolean;
+export interface AutoDjTagsDto {
+  mood: string[];
+  genre: string[];
+  era: string[];
+  country: string[];
 }

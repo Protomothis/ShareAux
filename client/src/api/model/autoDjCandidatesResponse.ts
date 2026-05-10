@@ -5,10 +5,8 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
+import type { AutoDjCandidateItem } from './autoDjCandidateItem';
 
-export interface AuthConfigResponse {
-  google: boolean;
-  captcha: boolean;
-  translation: boolean;
-  aiDj: boolean;
+export interface AutoDjCandidatesResponse {
+  candidates: AutoDjCandidateItem[];
 }

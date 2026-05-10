@@ -15,6 +15,7 @@ import type { AuthenticatedRequest } from '../types/index.js';
 import { AutoDjMode, ErrorCode, Permission, PushEvent, WsEvent } from '../types/index.js';
 import { OptionKey } from '../types/settings.types.js';
 import { PUSH_EVENT, pushPayload } from '../types/push-event-payload.js';
+import { AutoDjCandidatesResponse } from './dto/auto-dj-candidates.dto.js';
 import { BanInfo } from './dto/ban-info.dto.js';
 import { CreateRoomDto } from './dto/create-room.dto.js';
 import { JoinRoomDto } from './dto/join-room.dto.js';
@@ -299,8 +300,9 @@ export class RoomsController {
   @Get(':id/autodj/candidates')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'AutoDJ 후보 조회' })
+  @ApiResponse({ status: 200, type: AutoDjCandidatesResponse })
   @ApiBearerAuth()
-  getAutoDjCandidates(@Param('id', ParseUUIDPipe) id: string) {
+  getAutoDjCandidates(@Param('id', ParseUUIDPipe) id: string): AutoDjCandidatesResponse {
     const entries = this.autoDj.getAiPoolCandidates(id);
     return {
       candidates: entries.map((e) => ({

@@ -23,6 +23,7 @@ const base: RoomListItem = {
   autoDjMode: 'mixed' as RoomListItem['autoDjMode'],
   autoDjThreshold: 2,
   autoDjFavFallbackMixed: true,
+  autoDjPaused: false,
   createdAt: new Date().toISOString(),
   memberCount: 5,
   memberPreview: ['u1', 'u2', 'u3'],
@@ -41,7 +42,13 @@ const meta: Meta<typeof RoomCard> = {
   title: 'Features/Room/RoomCard',
   component: RoomCard,
   args: { onClick: fn() },
-  decorators: [(Story) => <div className="max-w-sm"><Story /></div>],
+  decorators: [
+    (Story) => (
+      <div className="max-w-sm">
+        <Story />
+      </div>
+    ),
+  ],
 };
 export default meta;
 type Story = StoryObj<typeof RoomCard>;
@@ -49,7 +56,9 @@ type Story = StoryObj<typeof RoomCard>;
 export const Playing: Story = { args: { room: base } };
 
 export const Empty: Story = {
-  args: { room: { ...base, playback: null as unknown as RoomListItem['playback'], memberCount: 1, memberPreview: ['u1'] } },
+  args: {
+    room: { ...base, playback: null as unknown as RoomListItem['playback'], memberCount: 1, memberPreview: ['u1'] },
+  },
 };
 
 export const Private: Story = {
