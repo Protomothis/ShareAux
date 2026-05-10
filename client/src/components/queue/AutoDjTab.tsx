@@ -88,6 +88,7 @@ export function AutoDjTab({
 
       {mode === 'ai' && (
         <>
+          <p className="text-[11px] leading-relaxed text-white/40">{t('aiGuide')}</p>
           <AutoDjTagFilter value={tags} onChange={setTags} />
 
           {isDirty && (

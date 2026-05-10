@@ -162,6 +162,7 @@
     },
     "autoDj": {
       "helpAutoDj": "Select a mode to auto-add tracks when the queue is empty. AI mode uses Gemini to recommend based on tags. Pause stops auto-adding.",
+      "aiGuide": "Select tags to narrow recommendations. Leave empty for broad suggestions.",
       "mood": "Mood",
       "genre": "Genre",
       "era": "Era",
