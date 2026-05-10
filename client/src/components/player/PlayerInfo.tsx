@@ -60,7 +60,7 @@ export default function PlayerInfo({
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -30 }}
         transition={{ duration: 0.25, ease: 'easeOut' }}
-        className="flex items-center gap-4 p-4 pb-3"
+        className="flex items-center gap-4 p-4"
       >
         <div className="relative shrink-0 overflow-visible">
           {track?.thumbnail && track.thumbnail !== 'NA' ? (
