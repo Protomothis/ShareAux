@@ -4,6 +4,8 @@ import { Check, Loader2, Pause, Play, RefreshCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useRef, useState } from 'react';
 
+import { HelpTip } from '@/components/common/HelpTip';
+
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -67,7 +69,10 @@ export function AutoDjTab({
   return (
     <div className={cn('space-y-4', className)}>
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-white">🤖 AutoDJ</p>
+        <div className="flex items-center gap-1">
+          <p className="text-sm font-medium text-white">🤖 AutoDJ</p>
+          <HelpTip>{t('helpAutoDj')}</HelpTip>
+        </div>
         <Button
           variant="ghost"
           size="sm"
