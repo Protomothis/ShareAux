@@ -84,7 +84,7 @@ function ModalRoot({
       <DialogPrimitive.Backdrop className="fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
       <DialogPrimitive.Popup
         className={cn(
-          'fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 grid-rows-[auto_1fr_auto] overflow-hidden rounded-xl bg-popover text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none [&>form]:contents data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-[nested-dialog-open]:brightness-50 data-[nested-dialog-open]:transition-[filter]',
+          'fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 grid-rows-[auto_1fr_auto] overflow-hidden rounded-xl bg-popover text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none [&>form]:contents data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-[nested-dialog-open]:after:absolute data-[nested-dialog-open]:after:inset-0 data-[nested-dialog-open]:after:z-40 data-[nested-dialog-open]:after:rounded-xl data-[nested-dialog-open]:after:bg-black/40',
           fullscreenMobile
             ? 'h-[100dvh] max-w-full rounded-none lg:max-h-[90vh] lg:max-w-2xl lg:rounded-xl'
             : 'max-h-[calc(100dvh-4rem)] max-w-[calc(100%-2rem)] sm:max-w-sm',
