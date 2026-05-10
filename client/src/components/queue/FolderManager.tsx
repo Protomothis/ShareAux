@@ -66,7 +66,7 @@ export function FolderManager({ onClose }: FolderManagerProps) {
   };
 
   return (
-    <Modal open onOpenChange={(open) => !open && onClose()} className="sm:max-w-sm">
+    <Modal open disablePortal onOpenChange={(open) => !open && onClose()} className="sm:max-w-sm">
       <Modal.Header>
         <Modal.Title>{t('title')}</Modal.Title>
         <Modal.Description>{t('count', { count: folders.length })}</Modal.Description>

@@ -1,10 +1,19 @@
 'use client';
 
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
-import { DndContext, PointerSensor, pointerWithin, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  pointerWithin,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
 import { FolderOpen, Heart, Search, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { toast } from 'sonner';
 
 import {
@@ -19,6 +28,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
+import Thumbnail from '../common/Thumbnail';
 import { FolderManager } from './FolderManager';
 import { FolderSection } from './FolderSection';
 
@@ -71,6 +81,7 @@ export default function FavoritesList({
   const [removeSet, setRemoveSet] = useState<Set<string>>(new Set());
   const [showFolderManager, setShowFolderManager] = useState(false);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dragWidth, setDragWidth] = useState<number | undefined>();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -116,7 +127,10 @@ export default function FavoritesList({
       return next;
     });
 
-  const handleDragStart = (e: DragStartEvent) => setDraggingId(e.active.id as string);
+  const handleDragStart = (e: DragStartEvent) => {
+    setDraggingId(e.active.id as string);
+    setDragWidth(e.active.rect.current.translated?.width ?? undefined);
+  };
 
   const handleDragEnd = async (e: DragEndEvent) => {
     setDraggingId(null);
@@ -268,7 +282,7 @@ export default function FavoritesList({
         {/* 스크롤 영역 */}
         <div
           className={cn(
-            'min-h-0 flex-1 space-y-2 overflow-x-hidden px-0.5',
+            'min-h-0 flex-1 space-y-2 overflow-x-clip px-0.5',
             draggingId ? 'overflow-y-clip' : 'overflow-y-auto',
           )}
         >
@@ -338,6 +352,29 @@ export default function FavoritesList({
             refetchFolders();
           }}
         />
+      )}
+      {createPortal(
+        <DragOverlay dropAnimation={null}>
+          {draggingId
+            ? (() => {
+                const fav = favorites?.find((f) => f.sourceId === draggingId);
+                if (!fav) return null;
+                return (
+                  <div
+                    style={{ width: dragWidth }}
+                    className="flex items-center gap-2.5 rounded-xl bg-[#242424] p-2 shadow-2xl ring-1 ring-sa-accent/30"
+                  >
+                    <Thumbnail src={fav.thumbnail} size="sm" className="size-9 shrink-0 rounded-lg" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-medium text-white">{fav.name}</p>
+                      <p className="truncate text-[10px] text-sa-text-secondary">{fav.artist}</p>
+                    </div>
+                  </div>
+                );
+              })()
+            : null}
+        </DragOverlay>,
+        document.body,
       )}
     </DndContext>
   );

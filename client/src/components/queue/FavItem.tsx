@@ -3,7 +3,6 @@
 import { useDraggable } from '@dnd-kit/core';
 import { GripVertical } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useRef } from 'react';
 
 import type { FavoriteItem } from '@/api/model';
 import { FavoriteButton } from '@/components/common/FavoriteButton';
@@ -37,34 +36,17 @@ export function FavItem({
   onClick,
 }: FavItemProps) {
   const t = useTranslations('favorites');
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: fav.sourceId });
-  const widthRef = useRef(0);
-  const nodeRef = useCallback(
-    (el: HTMLElement | null) => {
-      setNodeRef(el);
-      if (el) widthRef.current = el.offsetWidth;
-    },
-    [setNodeRef],
-  );
-  const style: React.CSSProperties | undefined = transform
-    ? {
-        transform: `translate(${transform.x}px, ${transform.y}px)`,
-        zIndex: 999,
-        position: 'relative',
-        width: widthRef.current || undefined,
-      }
-    : undefined;
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: fav.sourceId });
 
   return (
     <div
-      ref={nodeRef}
-      style={style}
+      ref={setNodeRef}
       onClick={onClick}
       className={cn(
         'flex select-none items-center gap-2.5 rounded-xl p-2 text-left hover:bg-white/5',
         order && !editMode && 'bg-sa-accent/10 border border-sa-accent/30',
         disabled && !editMode && 'opacity-40',
-        isDragging && '!bg-[#242424] shadow-xl ring-1 ring-sa-accent/30',
+        isDragging && 'opacity-0',
       )}
     >
       {editMode ? (

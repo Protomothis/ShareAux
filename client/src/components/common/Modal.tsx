@@ -4,7 +4,6 @@ import { Dialog as DialogPrimitive } from '@base-ui/react/dialog';
 import { XIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
-import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -59,6 +58,8 @@ interface ModalProps {
   showCloseButton?: boolean;
   /** 모바일에서 전체화면으로 표시 */
   fullscreenMobile?: boolean;
+  /** 중첩 모달 — Portal 비활성화로 base-ui 네이티브 중첩 지원 */
+  disablePortal?: boolean;
 }
 
 function ModalRoot({
@@ -69,48 +70,41 @@ function ModalRoot({
   className,
   showCloseButton = true,
   fullscreenMobile,
+  disablePortal,
 }: ModalProps) {
   const t = useTranslations('common');
-  const [isNested, setIsNested] = useState(false);
-
-  useEffect(() => {
-    if (open) setIsNested(document.querySelectorAll('[role="dialog"]').length > 0);
-  }, [open]);
 
   const handleOpenChange = (o: boolean) => {
     onOpenChange?.(o);
     if (!o) onClose?.();
   };
 
+  const content = (
+    <>
+      <DialogPrimitive.Backdrop className="fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
+      <DialogPrimitive.Popup
+        className={cn(
+          'fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 grid-rows-[auto_1fr_auto] overflow-hidden rounded-xl bg-popover text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none [&>form]:contents data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-[nested-dialog-open]:brightness-50 data-[nested-dialog-open]:transition-[filter]',
+          fullscreenMobile
+            ? 'h-[100dvh] max-w-full rounded-none lg:max-h-[90vh] lg:max-w-2xl lg:rounded-xl'
+            : 'max-h-[calc(100dvh-4rem)] max-w-[calc(100%-2rem)] sm:max-w-sm',
+          className,
+        )}
+      >
+        {children}
+        {showCloseButton && (
+          <DialogPrimitive.Close render={<Button variant="ghost" className="absolute top-3 right-3" size="icon-sm" />}>
+            <XIcon />
+            <span className="sr-only">{t('modal.close')}</span>
+          </DialogPrimitive.Close>
+        )}
+      </DialogPrimitive.Popup>
+    </>
+  );
+
   return (
     <DialogPrimitive.Root open={open} onOpenChange={handleOpenChange}>
-      <DialogPrimitive.Portal>
-        <DialogPrimitive.Backdrop
-          className={cn(
-            'fixed inset-0 isolate z-50 duration-100 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0',
-            isNested ? 'bg-black/30' : 'bg-black/10 supports-backdrop-filter:backdrop-blur-xs',
-          )}
-        />
-        <DialogPrimitive.Popup
-          className={cn(
-            'fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 grid-rows-[auto_1fr_auto] overflow-hidden rounded-xl bg-popover text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none [&>form]:contents data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
-            fullscreenMobile
-              ? 'h-[100dvh] max-w-full rounded-none lg:max-h-[90vh] lg:max-w-2xl lg:rounded-xl'
-              : 'max-h-[calc(100dvh-4rem)] max-w-[calc(100%-2rem)] sm:max-w-sm',
-            className,
-          )}
-        >
-          {children}
-          {showCloseButton && (
-            <DialogPrimitive.Close
-              render={<Button variant="ghost" className="absolute top-3 right-3" size="icon-sm" />}
-            >
-              <XIcon />
-              <span className="sr-only">{t('modal.close')}</span>
-            </DialogPrimitive.Close>
-          )}
-        </DialogPrimitive.Popup>
-      </DialogPrimitive.Portal>
+      {disablePortal ? content : <DialogPrimitive.Portal>{content}</DialogPrimitive.Portal>}
     </DialogPrimitive.Root>
   );
 }
