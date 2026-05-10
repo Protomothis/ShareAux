@@ -29,6 +29,7 @@ interface AutoDjTabProps {
   onApply: (tags: AutoDjTags, prompt: string) => void;
   applying?: boolean;
   candidates: CandidateTrack[];
+  candidatesLoading?: boolean;
   onPin: (id: string) => void;
   onSkip: (id: string) => void;
   onRefresh?: () => void;
@@ -47,6 +48,7 @@ export function AutoDjTab({
   onApply,
   applying,
   candidates,
+  candidatesLoading,
   onPin,
   onSkip,
   onRefresh,
@@ -115,6 +117,19 @@ export function AutoDjTab({
             )}
           </div>
           <AutoDjCandidates candidates={candidates} onPin={onPin} onSkip={onSkip} />
+          {candidatesLoading && !candidates.length && (
+            <div className="space-y-1">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-2.5 rounded-lg bg-white/[0.03] p-2">
+                  <div className="size-8 shrink-0 animate-pulse rounded bg-white/10" />
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <div className="h-3 w-3/4 animate-pulse rounded bg-white/10" />
+                    <div className="h-2.5 w-1/2 animate-pulse rounded bg-white/[0.06]" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -31,7 +31,11 @@ interface UseAutoDjOptions {
 export function useAutoDj({ roomId, enabled, isHost, mode, paused, tags, prompt }: UseAutoDjOptions) {
   const [refreshing, setRefreshing] = useState(false);
   const { data: config } = useAuthControllerGetAuthConfig();
-  const { data: candidatesData, refetch } = useRoomsControllerGetAutoDjCandidates(roomId, {
+  const {
+    data: candidatesData,
+    refetch,
+    isLoading: candidatesLoading,
+  } = useRoomsControllerGetAutoDjCandidates(roomId, {
     query: { enabled },
   });
 
@@ -100,6 +104,7 @@ export function useAutoDj({ roomId, enabled, isHost, mode, paused, tags, prompt 
     savedTags,
     savedPrompt: prompt ?? '',
     candidates,
+    candidatesLoading,
     refreshing,
     aiDisabled: !config?.aiDj,
     onModeChange: handleModeChange,
