@@ -73,7 +73,7 @@ export const OPTION_METAS: Record<OptionKey, OptionMeta> = {
 
   // AutoDJ
   [OptionKey.AutoDjEnabled]: { type: 'boolean', defaultValue: 'true' },
-  [OptionKey.AutoDjAiEnabled]: { type: 'boolean', defaultValue: 'false' },
+  [OptionKey.AutoDjAiEnabled]: { type: 'boolean', defaultValue: 'true' },
   [OptionKey.AutoDjAiModel]: { type: 'select', defaultValue: 'gemini-2.5-flash-lite' },
   [OptionKey.AutoDjBatchSize]: { type: 'number', defaultValue: '15', min: 5, max: 30 },
   [OptionKey.AutoDjTemperature]: { type: 'number', defaultValue: '0.8', min: 0.1, max: 1.5 },
