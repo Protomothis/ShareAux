@@ -27,6 +27,7 @@ import type { CastState } from '@/components/player/CastButton';
 import Player from '@/components/player/Player';
 import DesktopQueuePanel from '@/components/queue/DesktopQueuePanel';
 import HistoryPanel from '@/components/queue/HistoryPanel';
+import { MobileAutoDjTab } from '@/components/queue/MobileAutoDjTab';
 import Queue from '@/components/queue/Queue';
 import LeaveConfirmModal from '@/components/room/LeaveConfirmModal';
 import MemberList from '@/components/room/MemberList';
@@ -597,10 +598,15 @@ export default function RoomClient({ id }: { id: string }) {
               />
             )}
             {mobileTab === 'history' && <HistoryPanel roomId={id} isGuest={role === 'guest'} favorites={favorites} />}
+            {mobileTab === 'autodj' && room?.autoDjEnabled && (
+              <div className="h-full overflow-y-auto p-4">
+                <MobileAutoDjTab roomId={id} room={room} isHost={isHost} />
+              </div>
+            )}
             {mobileTab === 'members' && <MemberList {...memberListProps} />}
           </motion.div>
         </AnimatePresence>
-        <MobileTabBar activeTab={mobileTab} onTabChange={setMobileTab} />
+        <MobileTabBar activeTab={mobileTab} onTabChange={setMobileTab} autoDjEnabled={room?.autoDjEnabled} />
       </div>
 
       {/* Modals */}
