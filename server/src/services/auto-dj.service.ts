@@ -591,11 +591,17 @@ export class AutoDjService {
       in: 'Indian (Bollywood, Indian indie)',
     };
 
+    const TASTE_PROMPT: Record<string, string> = {
+      mainstream: 'well-known popular hits and chart songs',
+      underground: 'underground, lesser-known, hidden gems',
+    };
+
     const tagDesc = [
       tags.mood.length ? `mood: ${toPromptLabel(tags.mood, MOOD_PROMPT)}` : '',
       tags.genre.length ? `genre: ${toPromptLabel(tags.genre, GENRE_PROMPT)}` : '',
       tags.era.length ? `era: ${tags.era.join(', ')}` : '',
       tags.country.length ? `country: ${toPromptLabel(tags.country, COUNTRY_PROMPT)}` : '',
+      tags.taste && tags.taste !== 'neutral' ? `preference: ${TASTE_PROMPT[tags.taste] ?? ''}` : '',
     ]
       .filter(Boolean)
       .join('. ');

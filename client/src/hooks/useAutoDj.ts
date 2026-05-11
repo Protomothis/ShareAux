@@ -17,7 +17,7 @@ import {
 import type { CandidateTrack } from '@/components/queue/AutoDjCandidates';
 import type { AutoDjMode } from '@/components/queue/AutoDjModeSelect';
 
-const EMPTY_TAGS: AutoDjTagsDto = { mood: [], genre: [], era: [], country: [] };
+const EMPTY_TAGS = { mood: [], genre: [], era: [], country: [], taste: 'neutral' };
 
 interface UseAutoDjOptions {
   roomId: string;
@@ -105,7 +105,7 @@ export function useAutoDj({ roomId, enabled, isHost, mode, paused, tags, prompt 
     await roomsControllerToggleAutoDjPause(roomId);
   }, [roomId]);
 
-  const savedTags: AutoDjTagsDto = tags ?? EMPTY_TAGS;
+  const savedTags = { taste: 'neutral', ...(tags ?? EMPTY_TAGS) };
 
   return {
     mode: mode as AutoDjMode,

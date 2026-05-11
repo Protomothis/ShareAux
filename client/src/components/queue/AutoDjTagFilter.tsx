@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import type { ChipOption } from '@/components/ui/chip-select';
 import { ChipGroup } from '@/components/ui/chip-group';
+import { RangeSlider } from '@/components/common/RangeSlider';
 import { cn } from '@/lib/utils';
 
 export interface AutoDjTags {
@@ -11,6 +12,7 @@ export interface AutoDjTags {
   genre: string[];
   era: string[];
   country: string[];
+  taste?: string;
 }
 
 interface AutoDjTagFilterProps {
@@ -51,6 +53,7 @@ const GENRE_VALUES = [
 ] as const;
 const ERA_VALUES = ['latest', '2010s', '2000s', '90s', '80s', '70s', 'oldschool'] as const;
 const COUNTRY_VALUES = ['kr', 'jp', 'us', 'gb', 'fr', 'br', 'es', 'se', 'cn', 'au', 'in'] as const;
+const TASTE_VALUES = ['mainstream', 'neutral', 'underground'] as const;
 
 const COUNTRY_ICONS: Record<string, string> = {
   kr: '🇰🇷',
@@ -86,6 +89,23 @@ export function AutoDjTagFilter({ value, onChange, className }: AutoDjTagFilterP
       <ChipGroup title={t('genre')} options={genreOptions} value={value.genre} onChange={update('genre')} />
       <ChipGroup title={t('era')} options={eraOptions} value={value.era} onChange={update('era')} single />
       <ChipGroup title={t('country')} options={countryOptions} value={value.country} onChange={update('country')} />
+      <div className="space-y-1">
+        <p className="text-[10px] font-medium uppercase tracking-wider text-white/50">{t('taste')}</p>
+        <RangeSlider
+          value={
+            TASTE_VALUES.indexOf((value.taste ?? 'neutral') as (typeof TASTE_VALUES)[number]) >= 0
+              ? TASTE_VALUES.indexOf((value.taste ?? 'neutral') as (typeof TASTE_VALUES)[number])
+              : 1
+          }
+          onChange={(v) => onChange({ ...value, taste: TASTE_VALUES[v] })}
+          min={0}
+          max={2}
+          step={1}
+          labelStart={t('tasteMainstream')}
+          labelCenter={t('tasteNeutral')}
+          labelEnd={t('tasteUnderground')}
+        />
+      </div>
     </div>
   );
 }
