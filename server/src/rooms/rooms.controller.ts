@@ -91,11 +91,12 @@ export class RoomsController {
     const prevAutoDj = dto.autoDjEnabled !== undefined ? await this.rooms.getAutoDjEnabled(id) : undefined;
     const result = await this.rooms.update(id, req.user.userId, dto);
     this.gateway.broadcastSystem(id, WsEvent.RoomUpdated, '');
-    // AutoDJ 토글 시 즉시 트리거 (실제 변경된 경우만)
+    // AutoDJ 토글 시 (실제 변경된 경우만)
     if (dto.autoDjEnabled !== undefined && prevAutoDj !== dto.autoDjEnabled) {
       if (dto.autoDjEnabled) {
+        // 활성화 시 paused 상태로 시작 — 패널에서 직접 시작해야 동작
+        await this.rooms.update(id, req.user.userId, { autoDjPaused: true } as UpdateRoomDto);
         this.autoDj.resetFailCount(id);
-        this.autoDj.trigger(id);
         this.gateway.broadcastSystem(id, WsEvent.AutoDjEnabled, '');
       } else {
         this.gateway.broadcastSystem(id, WsEvent.AutoDjDisabled, '');
@@ -104,7 +105,7 @@ export class RoomsController {
       // 모드/폴더 변경 시 풀 초기화 + 재트리거
       this.autoDj.resetFailCount(id);
       this.autoDj.clearPool(id);
-      this.autoDj.trigger(id);
+      if (!result.autoDjPaused) this.autoDj.trigger(id);
     }
     return result;
   }

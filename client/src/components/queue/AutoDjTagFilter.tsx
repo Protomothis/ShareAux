@@ -42,6 +42,7 @@ const GENRE_VALUES = [
   'jazz',
   'classical',
   'anime',
+  'game',
   'lofi',
   'metal',
   'soul',

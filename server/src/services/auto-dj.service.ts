@@ -469,7 +469,7 @@ export class AutoDjService {
     if (existing?.refreshing) return;
 
     const r = room ?? (await this.roomRepo.findOneBy({ id: roomId }));
-    if (!r) return;
+    if (!r || r.autoDjPaused) return;
 
     const pool: CandidatePool = existing ?? {
       candidates: [],
@@ -556,7 +556,8 @@ export class AutoDjService {
       electronic: 'electronic/EDM',
       jazz: 'jazz',
       classical: 'classical/orchestral',
-      anime: 'anime/game soundtrack (opening, ending, insert songs)',
+      anime: 'anime soundtrack (opening, ending, insert songs)',
+      game: 'video game soundtrack (OST, boss themes)',
       lofi: 'lo-fi hip-hop/chill beats',
       metal: 'metal/hard rock',
       soul: 'soul/funk/motown',
