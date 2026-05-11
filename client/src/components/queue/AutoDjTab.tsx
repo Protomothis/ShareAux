@@ -31,6 +31,7 @@ interface AutoDjTabProps {
   candidatesLoading?: boolean;
   onPin: (id: string) => void;
   onSkip: (id: string) => void;
+  onEnqueue: (id: string) => void;
   onRefresh?: () => void;
   refreshing?: boolean;
   aiDisabled?: boolean;
@@ -49,6 +50,7 @@ export function AutoDjTab({
   candidatesLoading,
   onPin,
   onSkip,
+  onEnqueue,
   onRefresh,
   refreshing,
   aiDisabled,
@@ -69,94 +71,104 @@ export function AutoDjTab({
   }, [localMode, tags, onApply, onModeChange]);
 
   return (
-    <div className={cn('space-y-4', className)}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <p className="text-sm font-medium text-white">🤖 AutoDJ</p>
-          <HelpTip>{t('helpAutoDj')}</HelpTip>
-          <Button variant="ghost" size="icon-xs" onClick={onTogglePause} className={cn(paused && 'text-sa-accent')}>
-            {paused ? <Play size={14} /> : <Pause size={14} />}
-          </Button>
+    <div className={cn('flex h-full flex-col', className)}>
+      <div className="shrink-0 space-y-4 border-b border-white/[0.06] px-4 pb-4 pt-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-medium text-white">🤖 AutoDJ</p>
+            <HelpTip>{t('helpAutoDj')}</HelpTip>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setLocalMode(mode);
+                setTags(savedTags);
+              }}
+              disabled={!isDirty}
+              className="text-xs text-white/50"
+            >
+              {t('reset')}
+            </Button>
+            <Button
+              variant="accent"
+              size="sm"
+              onClick={() => {
+                if (isDirty) handleApply();
+                if (paused) onTogglePause();
+                if (!paused && !isDirty) onTogglePause();
+              }}
+              loading={applying}
+              className="gap-1 text-xs"
+            >
+              {paused ? <Play size={12} /> : isDirty ? <Check size={12} /> : <Pause size={12} />}
+              {paused ? (isDirty ? t('applyAndStart') : t('startAutoDj')) : isDirty ? t('apply') : t('pause')}
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setLocalMode(mode);
-              setTags(savedTags);
-            }}
-            disabled={!isDirty}
-            className="text-xs text-white/50"
-          >
-            {t('reset')}
-          </Button>
-          <Button
-            variant="accent"
-            size="sm"
-            onClick={handleApply}
-            disabled={!isDirty}
-            loading={applying}
-            className="gap-1 text-xs"
-          >
-            <Check size={12} />
-            {t('apply')}
-          </Button>
-        </div>
+
+        <AutoDjModeSelect value={localMode} onChange={setLocalMode} aiDisabled={aiDisabled} />
+
+        {localMode !== 'ai' && (
+          <p className="text-[11px] leading-relaxed text-white/40">
+            {localMode === 'related' && t('guideRelated')}
+            {localMode === 'radio' && t('guideRadio')}
+            {localMode === 'history' && t('guideHistory')}
+            {localMode === 'popular' && t('guidePopular')}
+            {localMode === 'mixed' && t('guideMixed')}
+            {localMode === 'favorites' && t('guideFavorites')}
+          </p>
+        )}
       </div>
 
-      <AutoDjModeSelect value={localMode} onChange={setLocalMode} aiDisabled={aiDisabled} />
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+        {localMode === 'ai' && (
+          <div className="space-y-3">
+            <p className="rounded-md bg-white/[0.03] px-2.5 py-2 text-[11px] leading-relaxed text-white/40">
+              {t('aiGuide')}
+            </p>
+            <AutoDjTagFilter value={tags} onChange={setTags} />
+          </div>
+        )}
 
-      {localMode !== 'ai' && (
-        <p className="text-[11px] leading-relaxed text-white/40">
-          {localMode === 'related' && t('guideRelated')}
-          {localMode === 'radio' && t('guideRadio')}
-          {localMode === 'history' && t('guideHistory')}
-          {localMode === 'popular' && t('guidePopular')}
-          {localMode === 'mixed' && t('guideMixed')}
-          {localMode === 'favorites' && t('guideFavorites')}
-        </p>
-      )}
-
-      {localMode === 'ai' && (
-        <>
-          <p className="text-[11px] leading-relaxed text-white/40">{t('aiGuide')}</p>
-          <AutoDjTagFilter value={tags} onChange={setTags} />
-        </>
-      )}
-
-      {(candidates.length > 0 || candidatesLoading) && (
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-white/40">{t('nextUp')}</p>
-            {onRefresh && (
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                onClick={onRefresh}
-                disabled={refreshing}
-                className="text-white/30 hover:text-white/60"
-              >
-                {refreshing ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
-              </Button>
+        {!paused && (
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-medium uppercase tracking-wider text-white/40">{t('nextUp')}</p>
+              {onRefresh && (
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={onRefresh}
+                  disabled={refreshing || candidatesLoading}
+                  className="text-white/30 hover:text-white/60"
+                >
+                  {refreshing || (candidatesLoading && !candidates.length) ? (
+                    <Loader2 size={12} className="animate-spin" />
+                  ) : (
+                    <RefreshCw size={12} />
+                  )}
+                </Button>
+              )}
+            </div>
+            <AutoDjCandidates candidates={candidates} onPin={onPin} onSkip={onSkip} onEnqueue={onEnqueue} />
+            {(candidatesLoading || !candidates.length) && (
+              <div className="space-y-1">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-2.5 rounded-lg bg-white/[0.03] p-2">
+                    <div className="size-8 shrink-0 animate-pulse rounded bg-white/10" />
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="h-3 w-3/4 animate-pulse rounded bg-white/10" />
+                      <div className="h-2.5 w-1/2 animate-pulse rounded bg-white/[0.06]" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
-          <AutoDjCandidates candidates={candidates} onPin={onPin} onSkip={onSkip} />
-          {candidatesLoading && !candidates.length && (
-            <div className="space-y-1">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-2.5 rounded-lg bg-white/[0.03] p-2">
-                  <div className="size-8 shrink-0 animate-pulse rounded bg-white/10" />
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <div className="h-3 w-3/4 animate-pulse rounded bg-white/10" />
-                    <div className="h-2.5 w-1/2 animate-pulse rounded bg-white/[0.06]" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

@@ -39,6 +39,7 @@ export const RelatedMode: Story = {
           candidates={candidates}
           onPin={(id) => setCandidates((p) => p.map((c) => (c.id === id ? { ...c, pinned: !c.pinned } : c)))}
           onSkip={(id) => setCandidates((p) => p.filter((c) => c.id !== id))}
+          onEnqueue={(id) => setCandidates((p) => p.filter((c) => c.id !== id))}
           onRefresh={fn()}
         />
       </div>
@@ -64,6 +65,7 @@ export const AiMode: Story = {
           candidates={candidates}
           onPin={(id) => setCandidates((p) => p.map((c) => (c.id === id ? { ...c, pinned: !c.pinned } : c)))}
           onSkip={(id) => setCandidates((p) => p.filter((c) => c.id !== id))}
+          onEnqueue={(id) => setCandidates((p) => p.filter((c) => c.id !== id))}
           onRefresh={fn()}
         />
       </div>
@@ -87,6 +89,7 @@ export const AiDisabled: Story = {
           candidates={[]}
           onPin={fn()}
           onSkip={fn()}
+          onEnqueue={fn()}
           aiDisabled
         />
       </div>

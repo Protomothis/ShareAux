@@ -5,11 +5,12 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
+import type { TranslationLang } from './translationLang';
 
 export interface AuthConfigResponse {
   google: boolean;
   captcha: boolean;
   translation: boolean;
-  translationLang: string;
+  translationLang: TranslationLang;
   aiDj: boolean;
 }

@@ -62,7 +62,7 @@ export default function AutoDjSettings({
     <SettingCard
       icon="🤖"
       label="AutoDJ"
-      description={t('autoDjDescription')}
+      description={enabled ? t('autoDjPausedHint') : t('autoDjDescription')}
       htmlFor="autoDj"
       checked={enabled}
       onCheckedChange={onEnabledChange}

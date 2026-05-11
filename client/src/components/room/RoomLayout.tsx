@@ -21,6 +21,8 @@ interface RoomLayoutProps {
   autodj?: ReactNode;
   /** AutoDJ 탭 표시 여부 */
   autoDjEnabled?: boolean;
+  /** AutoDJ 일시중지 상태 */
+  autoDjPaused?: boolean;
   /** 하단 모달 영역 */
   modals?: ReactNode;
 }
@@ -35,6 +37,7 @@ export function RoomLayout({
   history,
   autodj,
   autoDjEnabled,
+  autoDjPaused,
   modals,
 }: RoomLayoutProps) {
   const [mobileTab, setMobileTab] = useState<MobileTab>('chat');
@@ -74,7 +77,12 @@ export function RoomLayout({
             {mobileTab === 'members' && members}
           </motion.div>
         </AnimatePresence>
-        <MobileTabBar activeTab={mobileTab} onTabChange={setMobileTab} autoDjEnabled={autoDjEnabled} />
+        <MobileTabBar
+          activeTab={mobileTab}
+          onTabChange={setMobileTab}
+          autoDjEnabled={autoDjEnabled}
+          autoDjPaused={autoDjPaused}
+        />
       </div>
 
       {modals}
