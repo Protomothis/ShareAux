@@ -1965,6 +1965,90 @@ export const useRoomsControllerSkipAutoDjCandidate = <TError = unknown, TContext
   return useMutation(mutationOptions, queryClient);
 };
 /**
+ * @summary AutoDJ 후보를 큐에 즉시 추가
+ */
+export const getRoomsControllerEnqueueAutoDjCandidateUrl = (id: string, trackId: string) => {
+  return `/api/rooms/${id}/autodj/enqueue/${trackId}`;
+};
+
+export const roomsControllerEnqueueAutoDjCandidate = async (
+  id: string,
+  trackId: string,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getRoomsControllerEnqueueAutoDjCandidateUrl(id, trackId), {
+    ...options,
+    method: 'POST',
+  });
+};
+
+export const getRoomsControllerEnqueueAutoDjCandidateMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof roomsControllerEnqueueAutoDjCandidate>>,
+    TError,
+    { id: string; trackId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof roomsControllerEnqueueAutoDjCandidate>>,
+  TError,
+  { id: string; trackId: string },
+  TContext
+> => {
+  const mutationKey = ['roomsControllerEnqueueAutoDjCandidate'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof roomsControllerEnqueueAutoDjCandidate>>,
+    { id: string; trackId: string }
+  > = (props) => {
+    const { id, trackId } = props ?? {};
+
+    return roomsControllerEnqueueAutoDjCandidate(id, trackId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RoomsControllerEnqueueAutoDjCandidateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof roomsControllerEnqueueAutoDjCandidate>>
+>;
+
+export type RoomsControllerEnqueueAutoDjCandidateMutationError = unknown;
+
+/**
+ * @summary AutoDJ 후보를 큐에 즉시 추가
+ */
+export const useRoomsControllerEnqueueAutoDjCandidate = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof roomsControllerEnqueueAutoDjCandidate>>,
+      TError,
+      { id: string; trackId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof roomsControllerEnqueueAutoDjCandidate>>,
+  TError,
+  { id: string; trackId: string },
+  TContext
+> => {
+  const mutationOptions = getRoomsControllerEnqueueAutoDjCandidateMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
  * @summary AutoDJ 일시중지 토글
  */
 export const getRoomsControllerToggleAutoDjPauseUrl = (id: string) => {

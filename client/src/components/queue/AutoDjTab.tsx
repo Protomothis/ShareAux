@@ -31,6 +31,7 @@ interface AutoDjTabProps {
   candidatesLoading?: boolean;
   onPin: (id: string) => void;
   onSkip: (id: string) => void;
+  onEnqueue: (id: string) => void;
   onRefresh?: () => void;
   refreshing?: boolean;
   aiDisabled?: boolean;
@@ -49,6 +50,7 @@ export function AutoDjTab({
   candidatesLoading,
   onPin,
   onSkip,
+  onEnqueue,
   onRefresh,
   refreshing,
   aiDisabled,
@@ -125,38 +127,40 @@ export function AutoDjTab({
         </>
       )}
 
-      {(candidates.length > 0 || candidatesLoading) && (
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-white/40">{t('nextUp')}</p>
-            {onRefresh && (
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                onClick={onRefresh}
-                disabled={refreshing}
-                className="text-white/30 hover:text-white/60"
-              >
-                {refreshing ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
-              </Button>
-            )}
-          </div>
-          <AutoDjCandidates candidates={candidates} onPin={onPin} onSkip={onSkip} />
-          {candidatesLoading && !candidates.length && (
-            <div className="space-y-1">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-2.5 rounded-lg bg-white/[0.03] p-2">
-                  <div className="size-8 shrink-0 animate-pulse rounded bg-white/10" />
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <div className="h-3 w-3/4 animate-pulse rounded bg-white/10" />
-                    <div className="h-2.5 w-1/2 animate-pulse rounded bg-white/[0.06]" />
-                  </div>
-                </div>
-              ))}
-            </div>
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <p className="text-[11px] font-medium uppercase tracking-wider text-white/40">{t('nextUp')}</p>
+          {onRefresh && (
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              onClick={onRefresh}
+              disabled={refreshing || candidatesLoading}
+              className="text-white/30 hover:text-white/60"
+            >
+              {refreshing || (candidatesLoading && !candidates.length) ? (
+                <Loader2 size={12} className="animate-spin" />
+              ) : (
+                <RefreshCw size={12} />
+              )}
+            </Button>
           )}
         </div>
-      )}
+        <AutoDjCandidates candidates={candidates} onPin={onPin} onSkip={onSkip} onEnqueue={onEnqueue} />
+        {(candidatesLoading || !candidates.length) && (
+          <div className="space-y-1">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-2.5 rounded-lg bg-white/[0.03] p-2">
+                <div className="size-8 shrink-0 animate-pulse rounded bg-white/10" />
+                <div className="min-w-0 flex-1 space-y-1">
+                  <div className="h-3 w-3/4 animate-pulse rounded bg-white/10" />
+                  <div className="h-2.5 w-1/2 animate-pulse rounded bg-white/[0.06]" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

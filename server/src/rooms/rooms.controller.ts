@@ -1,4 +1,17 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Put, Req, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Put,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
@@ -88,8 +101,9 @@ export class RoomsController {
         this.gateway.broadcastSystem(id, WsEvent.AutoDjDisabled, '');
       }
     } else if (result.autoDjEnabled && (dto.autoDjMode !== undefined || dto.autoDjFolderId !== undefined)) {
-      // 모드/폴더 변경 시 재트리거
+      // 모드/폴더 변경 시 풀 초기화 + 재트리거
       this.autoDj.resetFailCount(id);
+      this.autoDj.clearPool(id);
       this.autoDj.trigger(id);
     }
     return result;
@@ -303,12 +317,12 @@ export class RoomsController {
   @ApiResponse({ status: 200, type: AutoDjCandidatesResponse })
   @ApiBearerAuth()
   getAutoDjCandidates(@Param('id', ParseUUIDPipe) id: string): AutoDjCandidatesResponse {
-    const entries = this.autoDj.getAiPoolCandidates(id);
+    const entries = this.autoDj.getPoolCandidates(id);
     return {
       candidates: entries.map((e) => ({
         id: e.track.id,
-        name: e.track.name,
-        artist: e.track.artist,
+        name: e.track.songTitle ?? e.track.name,
+        artist: e.track.songArtist ?? e.track.artist,
         thumbnail: e.track.thumbnail,
         pinned: e.pinned,
       })),
@@ -321,7 +335,7 @@ export class RoomsController {
   @ApiOperation({ summary: 'AutoDJ 풀 새로고침' })
   @ApiBearerAuth()
   async refreshAutoDjPool(@Param('id', ParseUUIDPipe) id: string) {
-    await this.autoDj.refreshAiPool(id);
+    await this.autoDj.refreshPool(id);
     return { success: true };
   }
 
@@ -342,6 +356,22 @@ export class RoomsController {
   @ApiBearerAuth()
   skipAutoDjCandidate(@Param('id', ParseUUIDPipe) id: string, @Param('trackId', ParseUUIDPipe) trackId: string) {
     this.autoDj.skipAiCandidate(id, trackId);
+    return { success: true };
+  }
+
+  @Post(':id/autodj/enqueue/:trackId')
+  @UseGuards(JwtAuthGuard, RoomPermissionGuard)
+  @RequirePermission(Permission.Host)
+  @ApiOperation({ summary: 'AutoDJ 후보를 큐에 즉시 추가' })
+  @ApiBearerAuth()
+  async enqueueAutoDjCandidate(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('trackId', ParseUUIDPipe) trackId: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    const track = this.autoDj.removeCandidate(id, trackId);
+    if (!track) throw new BadRequestException('Candidate not found');
+    this.eventEmitter.emit('autodj.enqueue', { roomId: id, track, userId: req.user.userId });
     return { success: true };
   }
 

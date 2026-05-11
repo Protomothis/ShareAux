@@ -5,6 +5,7 @@ import { useCallback, useState } from 'react';
 import { useAuthControllerGetAuthConfig } from '@/api/auth/auth';
 import type { AutoDjCandidateItem, AutoDjCandidatesResponse, AutoDjTagsDto } from '@/api/model';
 import {
+  roomsControllerEnqueueAutoDjCandidate,
   roomsControllerPinAutoDjCandidate,
   roomsControllerRefreshAutoDjPool,
   roomsControllerSkipAutoDjCandidate,
@@ -92,6 +93,14 @@ export function useAutoDj({ roomId, enabled, isHost, mode, paused, tags, prompt 
     [roomId, refetch],
   );
 
+  const handleEnqueue = useCallback(
+    async (trackId: string) => {
+      await roomsControllerEnqueueAutoDjCandidate(roomId, trackId);
+      refetch();
+    },
+    [roomId, refetch],
+  );
+
   const handleTogglePause = useCallback(async () => {
     await roomsControllerToggleAutoDjPause(roomId);
   }, [roomId]);
@@ -111,6 +120,7 @@ export function useAutoDj({ roomId, enabled, isHost, mode, paused, tags, prompt 
     onRefresh: handleRefresh,
     onPin: handlePin,
     onSkip: handleSkip,
+    onEnqueue: handleEnqueue,
     onTogglePause: handleTogglePause,
   };
 }
