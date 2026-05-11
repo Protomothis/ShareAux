@@ -3,7 +3,14 @@ import { ConfigService } from '@nestjs/config';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 
-import { YTDLP_FORMAT, YTDLP_PLAYLIST_MAX_BUFFER, YTDLP_PLAYLIST_TIMEOUT_MS, YTDLP_TIMEOUT_MS } from '../constants.js';
+import {
+  TRACK_MAX_DURATION_SEC,
+  TRACK_MIN_DURATION_SEC,
+  YTDLP_FORMAT,
+  YTDLP_PLAYLIST_MAX_BUFFER,
+  YTDLP_PLAYLIST_TIMEOUT_MS,
+  YTDLP_TIMEOUT_MS,
+} from '../constants.js';
 import { AppException } from '../exceptions/app.exception.js';
 import { ErrorCode } from '../types/error-code.enum.js';
 import type { AudioInfo } from '../types/index.js';
@@ -119,7 +126,10 @@ export class YtdlpService {
             duration: (entry.duration as number) ?? 0,
           };
         })
-        .filter((r): r is YtdlpSearchResult => r !== null && r.duration >= 30 && r.duration <= 900);
+        .filter(
+          (r): r is YtdlpSearchResult =>
+            r !== null && r.duration >= TRACK_MIN_DURATION_SEC && r.duration <= TRACK_MAX_DURATION_SEC,
+        );
     } catch (e) {
       this.logger.warn(`Failed to get playlist ${playlistId}`, e instanceof Error ? e.message : e);
       return [];
@@ -136,7 +146,7 @@ export class YtdlpService {
       );
       const entry = JSON.parse(stdout) as Record<string, unknown>;
       const duration = (entry.duration as number) ?? 0;
-      const available = duration >= 30 && duration <= 900;
+      const available = duration >= TRACK_MIN_DURATION_SEC && duration <= TRACK_MAX_DURATION_SEC;
       return {
         id: videoId,
         title: (entry.title as string) ?? '',
@@ -168,7 +178,7 @@ export class YtdlpService {
           const id = entry.id as string | undefined;
           const isUnavailable = !id || title === '[Deleted video]' || title === '[Private video]';
           const duration = (entry.duration as number) ?? 0;
-          const available = !isUnavailable && duration >= 30 && duration <= 900;
+          const available = !isUnavailable && duration >= TRACK_MIN_DURATION_SEC && duration <= TRACK_MAX_DURATION_SEC;
           return {
             id: id ?? '',
             title: isUnavailable ? title || '[비공개 동영상]' : title,

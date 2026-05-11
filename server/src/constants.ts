@@ -34,11 +34,21 @@ export const FFMPEG_RECENT_CHUNKS = 3;
 /** 곡 전환 전 마지막 버퍼 재생 대기 — 클라이언트 버퍼 소진 시간 + 여유 */
 export const TRACK_END_DELAY_MS = 3000;
 
+// ─── Track Duration ─────────────────────────────────────
+/** 검색 결과 최소 길이 (초) — 이보다 짧으면 효과음/인트로로 간주 */
+export const TRACK_MIN_DURATION_SEC = 30;
+/** 검색 결과 최대 길이 (초) — 이보다 길면 믹스/강의로 간주 */
+export const TRACK_MAX_DURATION_SEC = 900;
+/** AutoDJ 후보 최소 길이 (초) */
+export const AUTODJ_MIN_DURATION_SEC = 60;
+/** AutoDJ 후보 최대 길이 (초) */
+export const AUTODJ_MAX_DURATION_SEC = 480;
+
 // ─── Preload ────────────────────────────────────────────
 export const PRELOAD_MAX_CONCURRENT = 20;
 export const PRELOAD_MAX_PER_ROOM = 3;
 export const PRELOAD_MAX_MEMORY_BYTES = 50 * 1024 * 1024; // 50MB
-export const PRELOAD_MAX_TRACK_DURATION_SEC = 480; // 8분
+export const PRELOAD_MAX_TRACK_DURATION_SEC = AUTODJ_MAX_DURATION_SEC;
 export const PRELOAD_TTL_MS = 30 * 60 * 1000; // 30분
 export const PRELOAD_RETRY_COUNT = 1;
 

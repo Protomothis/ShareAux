@@ -82,6 +82,7 @@ export class PlayerController {
       // AutoDJ: 곡 전환 시 트리거 + 실패 카운터 리셋
       this.autoDjService.resetFailCount(roomId);
       this.autoDjService.trigger(roomId);
+      this.autoDjService.onTrackChanged(roomId).catch(() => {});
     });
 
     this.playerService.onPlayFail((roomId, trackTitle) => {
@@ -102,6 +103,21 @@ export class PlayerController {
     // AutoDJ 시스템 메시지 (실패 등)
     this.autoDjService.onSystemMessage((roomId, message) => {
       this.gateway.broadcastSystem(roomId, WsEvent.SystemMessage, message);
+    });
+
+    // AutoDJ 후보 풀 enrich — 백그라운드 Content ID 매칭
+    this.autoDjService.onEnrich((roomId, tracks) => {
+      Promise.all(tracks.map((t) => this.searchService.enrichTrackCredits(t.id, t.sourceId)))
+        .then(async () => {
+          // enrich 완료 → QueueUpdated broadcast → 클라이언트 candidates 자동 refetch
+          const queue = await this.queueRepo.find({
+            where: { room: { id: roomId }, played: false },
+            order: { position: 'ASC' },
+            relations: ['track', 'addedBy'],
+          });
+          this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue });
+        })
+        .catch(() => {});
     });
 
     // 번역 완료 → WS 브로드캐스트

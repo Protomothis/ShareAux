@@ -1,9 +1,11 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 
 import { THROTTLE_LIMIT_QUEUE_ADD, THROTTLE_TTL_MS } from '../constants.js';
 import { RoomQueue } from '../entities/room-queue.entity.js';
+import { Track } from '../entities/track.entity.js';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard.js';
 import { RequirePermission, RoomPermissionGuard } from '../guards/room-permission.guard.js';
 import { PlayerService } from '../player/player.service.js';
@@ -106,6 +108,7 @@ export class QueueController {
     });
     this.player.triggerPreload(roomId);
     this.autoPlayIfIdle(roomId, entries[0]?.track?.id ?? addedTracks[0]?.id);
+    this.autoDj.syncPoolWithQueue(roomId).catch(() => {});
     return entries;
   }
 
@@ -122,6 +125,7 @@ export class QueueController {
     const updatedQueue = await this.queue.getQueue(roomId);
     this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue: updatedQueue });
     this.autoDj.trigger(roomId);
+    this.autoDj.syncPoolWithQueue(roomId).catch(() => {});
     return result;
   }
 
@@ -142,7 +146,27 @@ export class QueueController {
       const status = await this.player.getStatus(roomId);
       if (status?.isPlaying) return;
       await this.player.play(roomId, trackId).catch(() => {});
-      // onTrackChange 콜백이 PlaybackUpdated + QueueUpdated를 broadcast하므로 여기서는 생략
     })();
+  }
+
+  @OnEvent('autodj.enqueue')
+  async handleAutoDjEnqueue(payload: { roomId: string; track: Track; userId: string }) {
+    const { roomId, track, userId } = payload;
+    await this.queue.addTracks(
+      roomId,
+      [
+        {
+          provider: track.provider,
+          sourceId: track.sourceId,
+          name: track.name,
+          artist: track.artist ?? undefined,
+          thumbnail: track.thumbnail ?? undefined,
+          durationMs: track.durationMs,
+        },
+      ],
+      userId,
+    );
+    const updatedQueue = await this.queue.getQueue(roomId);
+    this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue: updatedQueue });
   }
 }

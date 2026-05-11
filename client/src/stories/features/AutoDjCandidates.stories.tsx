@@ -35,6 +35,7 @@ export const Interactive: Story = {
           candidates={candidates}
           onPin={(id) => setCandidates((prev) => prev.map((c) => (c.id === id ? { ...c, pinned: !c.pinned } : c)))}
           onSkip={(id) => setCandidates((prev) => prev.filter((c) => c.id !== id))}
+          onEnqueue={(id) => setCandidates((prev) => prev.filter((c) => c.id !== id))}
         />
       </div>
     );

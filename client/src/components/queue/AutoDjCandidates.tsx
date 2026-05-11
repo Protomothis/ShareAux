@@ -1,6 +1,6 @@
 'use client';
 
-import { Pin, X } from 'lucide-react';
+import { ListPlus, Pin, X } from 'lucide-react';
 
 import MarqueeText from '@/components/common/MarqueeText';
 import Thumbnail from '@/components/common/Thumbnail';
@@ -18,10 +18,11 @@ interface AutoDjCandidatesProps {
   candidates: CandidateTrack[];
   onPin: (id: string) => void;
   onSkip: (id: string) => void;
+  onEnqueue: (id: string) => void;
   className?: string;
 }
 
-export function AutoDjCandidates({ candidates, onPin, onSkip, className }: AutoDjCandidatesProps) {
+export function AutoDjCandidates({ candidates, onPin, onSkip, onEnqueue, className }: AutoDjCandidatesProps) {
   if (!candidates.length) return null;
 
   return (
@@ -48,6 +49,13 @@ export function AutoDjCandidates({ candidates, onPin, onSkip, className }: AutoD
             )}
           >
             <Pin size={12} />
+          </button>
+          <button
+            type="button"
+            onClick={() => onEnqueue(track.id)}
+            className="flex size-7 items-center justify-center rounded-md text-white/30 transition-colors touch-manipulation hover:bg-white/5 hover:text-green-400"
+          >
+            <ListPlus size={12} />
           </button>
           <button
             type="button"

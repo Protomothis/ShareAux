@@ -8,7 +8,9 @@ import {
   AUTODJ_DEBOUNCE_MS,
   AUTODJ_FRESHNESS_HARD_EXCLUDE,
   AUTODJ_FRESHNESS_HISTORY_DEPTH,
+  AUTODJ_MAX_DURATION_SEC,
   AUTODJ_MAX_FAIL_COUNT,
+  AUTODJ_MIN_DURATION_SEC,
   AUTODJ_SAME_ARTIST_HARD_LIMIT,
   AUTODJ_SAME_ARTIST_SOFT_LIMIT,
   AUTODJ_SCAN_INTERVAL_MS,
@@ -21,7 +23,7 @@ import { Track } from '../entities/track.entity.js';
 import { TrackStats } from '../entities/track-stats.entity.js';
 import { UserFavorite } from '../entities/user-favorite.entity.js';
 import type { AutoDjStatus, AutoDjTags } from '../types/index.js';
-import { AutoDjMode } from '../types/index.js';
+import { AutoDjMode, MetaStatus } from '../types/index.js';
 import { OptionKey } from '../types/settings.types.js';
 import { Provider } from '../types/provider.enum.js';
 import { fetchYtMusicRelated } from './innertube-parser.js';
@@ -33,15 +35,17 @@ interface WeightedCandidate {
   weight: number;
 }
 
-interface AiPoolEntry {
+interface PoolEntry {
   track: Track;
   pinned: boolean;
 }
 
-interface AiPool {
-  candidates: AiPoolEntry[];
+interface CandidatePool {
+  candidates: PoolEntry[];
   refreshing: boolean;
   usedSourceIds: Set<string>;
+  /** 풀 생성 시 기준이 된 현재 곡 sourceId (related/radio 갱신 판단용) */
+  basedOnSourceId: string | null;
 }
 
 @Injectable()
@@ -54,7 +58,8 @@ export class AutoDjService {
   private trackAddedCallback?: (roomId: string, track: Track) => void;
   private batchCompleteCallback?: (roomId: string, tracks: Track[]) => void;
   private systemMessageCallback?: (roomId: string, message: string) => void;
-  private readonly aiPools = new Map<string, AiPool>();
+  private enrichCallback?: (roomId: string, tracks: Track[]) => void;
+  private readonly pools = new Map<string, CandidatePool>();
 
   constructor(
     @InjectRepository(Room) private readonly roomRepo: Repository<Room>,
@@ -84,9 +89,17 @@ export class AutoDjService {
     this.systemMessageCallback = cb;
   }
 
+  onEnrich(cb: (roomId: string, tracks: Track[]) => void): void {
+    this.enrichCallback = cb;
+  }
+
   /** 이벤트 기반 트리거 (디바운스) */
   trigger(roomId: string): void {
     this.logger.debug(`[AutoDJ] trigger for ${roomId}`);
+    // 풀이 비어있으면 즉시 채우기
+    if (!this.pools.has(roomId) || !this.pools.get(roomId)!.candidates.length) {
+      this.refreshPool(roomId).catch(() => {});
+    }
     const existing = this.debounceTimers.get(roomId);
     if (existing) clearTimeout(existing);
     this.debounceTimers.set(
@@ -438,139 +451,282 @@ export class AutoDjService {
   // ─── AI Pool ───
 
   private async getAiCandidates(roomId: string, room: Room): Promise<WeightedCandidate[]> {
-    const pool = this.aiPools.get(roomId);
+    const pool = this.pools.get(roomId);
     if (pool && pool.candidates.length > 0) {
-      // 풀이 5곡 이하면 백그라운드 리필
       if (pool.candidates.length <= 5 && !pool.refreshing) {
-        this.refreshAiPool(roomId, room).catch((e: unknown) =>
+        this.refreshPool(roomId, room).catch((e: unknown) =>
           this.logger.warn(`[AI pool refill] ${(e as Error).message}`),
         );
       }
       return pool.candidates.map((e) => ({ track: e.track, weight: e.pinned ? 10 : 1 }));
     }
-    // 풀 비어있으면 리필 시도, 그 동안 Related 폴백
-    this.refreshAiPool(roomId, room).catch((e: unknown) =>
-      this.logger.warn(`[AI pool refresh] ${(e as Error).message}`),
-    );
+    this.refreshPool(roomId, room).catch((e: unknown) => this.logger.warn(`[AI pool refresh] ${(e as Error).message}`));
     return this.getRelatedCandidates(roomId);
   }
 
-  async refreshAiPool(roomId: string, room?: Room): Promise<void> {
-    const existing = this.aiPools.get(roomId);
+  async refreshPool(roomId: string, room?: Room): Promise<void> {
+    const existing = this.pools.get(roomId);
     if (existing?.refreshing) return;
 
     const r = room ?? (await this.roomRepo.findOneBy({ id: roomId }));
-    if (!r) return;
+    if (!r || r.autoDjPaused) return;
 
-    const pool: AiPool = existing ?? { candidates: [], refreshing: false, usedSourceIds: new Set() };
+    const pool: CandidatePool = existing ?? {
+      candidates: [],
+      refreshing: false,
+      usedSourceIds: new Set(),
+      basedOnSourceId: null,
+    };
     pool.refreshing = true;
-    this.aiPools.set(roomId, pool);
+    this.pools.set(roomId, pool);
 
     try {
-      const apiKey = this.settings.getSecret(OptionKey.GeminiApiKey);
-      if (!apiKey) {
-        this.logger.warn('[AI DJ] Gemini API key not configured');
-        return;
-      }
-
       const batchSize = this.settings.getNumber(OptionKey.AutoDjBatchSize, 15);
-      const temperature = parseFloat(this.settings.get(OptionKey.AutoDjTemperature, '0.8'));
-      const model = this.settings.get(OptionKey.AutoDjAiModel, 'gemini-2.5-flash-lite');
-
-      // 최근 재생 5곡
-      const recentHistory = await this.historyRepo.find({
-        where: { room: { id: roomId } },
-        order: { playedAt: 'DESC' },
-        take: 5,
-      });
-      const recentTracks = recentHistory.length
-        ? await this.trackRepo.find({ where: recentHistory.map((h) => ({ sourceId: h.sourceId })) })
-        : [];
-
-      const context = recentTracks.map((t) => `${t.artist ?? 'Unknown'} - ${t.name}`).join('\n');
-      const tags = (r.autoDjTags as AutoDjTags | null) ?? { mood: [], genre: [], era: [], country: [] };
-      const tagDesc = [
-        tags.mood.length ? `분위기: ${tags.mood.join(', ')}` : '',
-        tags.genre.length ? `장르: ${tags.genre.join(', ')}` : '',
-        tags.era.length ? `시대: ${tags.era.join(', ')}` : '',
-        tags.country.length ? `국가: ${tags.country.join(', ')}` : '',
-      ]
-        .filter(Boolean)
-        .join('. ');
-      const userPrompt = r.autoDjPrompt ?? '';
-
-      const prompt = [
-        '당신은 음악 추천 전문가입니다.',
-        '아래 조건에 맞는 곡을 YouTube Music에서 찾을 수 있는 공식 음원으로 추천해주세요.',
-        '커버, 라이브, 리믹스, instrumental, 강의, 컴필레이션 제외. 1~7분 길이.',
-        `${batchSize}곡을 "아티스트 - 제목" 형식으로, 한 줄에 하나씩 출력.`,
-        '',
-        recentTracks.length ? `최근 재생:\n${context}` : '',
-        tagDesc ? `조건: ${tagDesc}` : '',
-        userPrompt ? `추가 요청: ${userPrompt}` : '',
-      ]
-        .filter(Boolean)
-        .join('\n');
-
-      // Gemini 호출
-      const { GoogleGenerativeAI } = await import('@google/generative-ai');
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const gemini = genAI.getGenerativeModel({ model, generationConfig: { temperature } });
-      const result = await gemini.generateContent(prompt);
-      const text = result.response.text();
-
-      // 파싱 — "아티스트 - 제목" 형식
-      const lines = text
-        .split('\n')
-        .map((l) => l.replace(/^\d+[.)]\s*/, '').trim())
-        .filter((l) => l.includes(' - ') || l.includes(' – '));
-
-      // 검색 + 필터
       const pinned = pool.candidates.filter((e) => e.pinned);
-      const newCandidates: AiPoolEntry[] = [...pinned];
-      const titleBlacklist = /live|cover|tutorial|lesson|karaoke|instrumental|remix|compilation/i;
 
-      for (const line of lines) {
-        if (newCandidates.length >= batchSize) break;
-        try {
-          const results = await this.ytdlp.searchInnertube(line);
-          const match = results.results.find(
-            (r) =>
-              r.duration >= 60 && r.duration <= 480 && !titleBlacklist.test(r.title) && !pool.usedSourceIds.has(r.id),
-          );
-          if (!match) continue;
-          const track = await this.upsertTrack(match);
-          if (newCandidates.some((c) => c.track.id === track.id)) continue;
-          newCandidates.push({ track, pinned: false });
-          pool.usedSourceIds.add(match.id);
-        } catch {
-          // 개별 검색 실패 무시
+      if (r.autoDjMode === AutoDjMode.AI) {
+        await this.refreshAiPoolInternal(roomId, r, pool, batchSize);
+      } else {
+        // 비-AI 모드: getCandidates → filterFreshness → 풀 채우기
+        const raw = await this.getCandidates(roomId, r.autoDjMode, r);
+        const filtered = await this.filterFreshness(raw, roomId);
+        const pinnedIds = new Set(pinned.map((p) => p.track.id));
+        const newCandidates: PoolEntry[] = [...pinned];
+        for (const c of filtered) {
+          if (newCandidates.length >= batchSize) break;
+          if (pinnedIds.has(c.track.id)) continue;
+          if (newCandidates.some((e) => e.track.id === c.track.id)) continue;
+          if (pool.usedSourceIds.has(c.track.sourceId)) continue;
+          newCandidates.push({ track: c.track, pinned: false });
         }
+        // usedSourceIds 소진 시 초기화 후 재시도
+        if (newCandidates.length <= pinned.length && filtered.length > 0) {
+          pool.usedSourceIds.clear();
+          for (const c of filtered) {
+            if (newCandidates.length >= batchSize) break;
+            if (pinnedIds.has(c.track.id)) continue;
+            if (newCandidates.some((e) => e.track.id === c.track.id)) continue;
+            newCandidates.push({ track: c.track, pinned: false });
+          }
+        }
+        pool.candidates = newCandidates;
       }
 
-      pool.candidates = newCandidates;
-      this.logger.log(`[AI DJ] Pool refreshed for ${roomId}: ${newCandidates.length} candidates`);
+      // 현재 곡 기준 저장 (related/radio 갱신 판단용)
+      pool.basedOnSourceId = await this.getCurrentVideoId(roomId);
+      this.logger.log(`[AutoDJ] Pool refreshed for ${roomId} (${r.autoDjMode}): ${pool.candidates.length} candidates`);
+
+      // 백그라운드 Content ID enrich
+      const pending = pool.candidates.filter((c) => c.track.metaStatus === MetaStatus.Pending).map((c) => c.track);
+      if (pending.length && this.enrichCallback) this.enrichCallback(roomId, pending);
     } finally {
       pool.refreshing = false;
     }
   }
 
+  private async refreshAiPoolInternal(roomId: string, r: Room, pool: CandidatePool, batchSize: number): Promise<void> {
+    const apiKey = this.settings.getSecret(OptionKey.GeminiApiKey);
+    if (!apiKey) {
+      this.logger.warn('[AI DJ] Gemini API key not configured');
+      return;
+    }
+
+    const temperature = parseFloat(this.settings.get(OptionKey.AutoDjTemperature, '0.8'));
+    const model = this.settings.get(OptionKey.AutoDjAiModel, 'gemini-2.5-flash-lite');
+
+    const recentHistory = await this.historyRepo.find({
+      where: { room: { id: roomId } },
+      order: { playedAt: 'DESC' },
+      take: 5,
+    });
+    const recentTracks = recentHistory.length
+      ? await this.trackRepo.find({ where: recentHistory.map((h) => ({ sourceId: h.sourceId })) })
+      : [];
+
+    const context = recentTracks.map((t) => `${t.artist ?? 'Unknown'} - ${t.name}`).join('\n');
+    const tags = (r.autoDjTags as AutoDjTags | null) ?? { mood: [], genre: [], era: [], country: [] };
+    const toPromptLabel = (values: string[], map: Record<string, string>) => values.map((v) => map[v] ?? v).join(', ');
+
+    const GENRE_PROMPT: Record<string, string> = {
+      indie: 'indie/alternative',
+      pop: 'pop',
+      hiphop: 'hip-hop/rap',
+      rnb: 'R&B/soul',
+      rock: 'rock',
+      electronic: 'electronic/EDM',
+      jazz: 'jazz',
+      classical: 'classical/orchestral',
+      anime: 'anime soundtrack (opening, ending, insert songs)',
+      game: 'video game soundtrack (OST, boss themes)',
+      lofi: 'lo-fi hip-hop/chill beats',
+      metal: 'metal/hard rock',
+      soul: 'soul/funk/motown',
+      reggae: 'reggae/ska',
+      folk: 'folk/acoustic/singer-songwriter',
+    };
+    const MOOD_PROMPT: Record<string, string> = {
+      calm: 'calm/peaceful',
+      upbeat: 'upbeat/happy',
+      emotional: 'emotional/touching',
+      dreamy: 'dreamy/atmospheric',
+      energetic: 'energetic/high-energy',
+      dark: 'dark/intense',
+      chill: 'chill/laid-back',
+      melancholy: 'melancholy/sad',
+      epic: 'epic/cinematic/grandiose',
+      romantic: 'romantic/love songs',
+      nostalgic: 'nostalgic/retro feel',
+    };
+    const COUNTRY_PROMPT: Record<string, string> = {
+      kr: 'Korean (K-pop, K-indie, K-R&B)',
+      jp: 'Japanese (J-pop, J-rock, city pop)',
+      us: 'American',
+      gb: 'British',
+      fr: 'French (chanson, French pop)',
+      br: 'Brazilian (bossa nova, MPB, sertanejo)',
+      es: 'Spanish/Latin (reggaeton, Latin pop)',
+      se: 'Swedish (Scandinavian pop)',
+      cn: 'Chinese (C-pop, Mandopop)',
+      au: 'Australian (Aussie indie, electronic)',
+      in: 'Indian (Bollywood, Indian indie)',
+    };
+
+    const TASTE_PROMPT: Record<string, string> = {
+      mainstream: 'well-known popular hits and chart songs',
+      underground: 'underground, lesser-known, hidden gems',
+    };
+
+    const tagDesc = [
+      tags.mood.length ? `mood: ${toPromptLabel(tags.mood, MOOD_PROMPT)}` : '',
+      tags.genre.length ? `genre: ${toPromptLabel(tags.genre, GENRE_PROMPT)}` : '',
+      tags.era.length ? `era: ${tags.era.join(', ')}` : '',
+      tags.country.length ? `country: ${toPromptLabel(tags.country, COUNTRY_PROMPT)}` : '',
+      tags.taste && tags.taste !== 'neutral' ? `preference: ${TASTE_PROMPT[tags.taste] ?? ''}` : '',
+    ]
+      .filter(Boolean)
+      .join('. ');
+    const userPrompt = r.autoDjPrompt ?? '';
+
+    const prompt = [
+      '당신은 음악 추천 전문가입니다.',
+      '아래 조건에 맞는 곡을 YouTube Music에서 찾을 수 있는 공식 음원으로 추천해주세요.',
+      '커버, 라이브, 리믹스, instrumental, 강의, 컴필레이션 제외. 1~7분 길이.',
+      `${batchSize}곡을 "아티스트 - 제목" 형식으로, 한 줄에 하나씩 출력.`,
+      '',
+      recentTracks.length ? `최근 재생:\n${context}` : '',
+      tagDesc ? `조건: ${tagDesc}` : '',
+      userPrompt ? `추가 요청: ${userPrompt}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    const { GoogleGenerativeAI } = await import('@google/generative-ai');
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const gemini = genAI.getGenerativeModel({ model, generationConfig: { temperature } });
+    const result = await gemini.generateContent(prompt);
+    const text = result.response.text();
+
+    const lines = text
+      .split('\n')
+      .map((l) => l.replace(/^\d+[.)]\s*/, '').trim())
+      .filter((l) => l.includes(' - ') || l.includes(' – '));
+
+    const pinned = pool.candidates.filter((e) => e.pinned);
+    const newCandidates: PoolEntry[] = [...pinned];
+    const titleBlacklist = /live|cover|tutorial|lesson|karaoke|instrumental|remix|compilation/i;
+    const BATCH_CONCURRENCY = 5;
+
+    for (let i = 0; i < lines.length && newCandidates.length < batchSize; i += BATCH_CONCURRENCY) {
+      const batch = lines.slice(i, i + BATCH_CONCURRENCY);
+      const results = await Promise.allSettled(
+        batch.map(async (line) => {
+          const res = await this.ytdlp.searchInnertube(line);
+          const match = res.results.find(
+            (sr) =>
+              sr.duration >= AUTODJ_MIN_DURATION_SEC &&
+              sr.duration <= AUTODJ_MAX_DURATION_SEC &&
+              !titleBlacklist.test(sr.title) &&
+              !pool.usedSourceIds.has(sr.id),
+          );
+          return match ? this.upsertTrack(match) : null;
+        }),
+      );
+      for (const r of results) {
+        if (newCandidates.length >= batchSize) break;
+        if (r.status !== 'fulfilled' || !r.value) continue;
+        const track = r.value;
+        if (newCandidates.some((c) => c.track.id === track.id)) continue;
+        newCandidates.push({ track, pinned: false });
+        pool.usedSourceIds.add(track.sourceId);
+      }
+    }
+
+    pool.candidates = newCandidates;
+  }
+
   /** 후보 목록 조회 (API용) */
-  getAiPoolCandidates(roomId: string): AiPoolEntry[] {
-    return this.aiPools.get(roomId)?.candidates ?? [];
+  getPoolCandidates(roomId: string): PoolEntry[] {
+    return this.pools.get(roomId)?.candidates ?? [];
+  }
+
+  /** 큐 변경 시 풀에서 중복 제거 + 부족하면 리필 */
+  async syncPoolWithQueue(roomId: string): Promise<void> {
+    const pool = this.pools.get(roomId);
+    if (!pool || !pool.candidates.length) return;
+
+    const queueTrackIds = await this.queueRepo
+      .find({ where: { room: { id: roomId }, played: false }, relations: ['track'], select: ['id', 'track'] })
+      .then((qs) => new Set(qs.map((q) => q.track.id)));
+
+    const before = pool.candidates.length;
+    pool.candidates = pool.candidates.filter((c) => c.pinned || !queueTrackIds.has(c.track.id));
+
+    if (pool.candidates.length < before) {
+      this.logger.debug(`[AutoDJ] Pool sync: removed ${before - pool.candidates.length} duplicates for ${roomId}`);
+    }
+
+    // 풀이 비었으면 리필
+    if (!pool.candidates.length) {
+      this.refreshPool(roomId).catch(() => {});
+    }
+  }
+
+  /** 곡 전환 시 호출 — related/radio 모드면 풀 갱신 */
+  async onTrackChanged(roomId: string): Promise<void> {
+    const pool = this.pools.get(roomId);
+    if (!pool) return;
+
+    const room = await this.roomRepo.findOneBy({ id: roomId });
+    if (!room) return;
+
+    const currentSourceId = await this.getCurrentVideoId(roomId);
+    const needsRefresh =
+      (room.autoDjMode === AutoDjMode.Related ||
+        room.autoDjMode === AutoDjMode.Radio ||
+        room.autoDjMode === AutoDjMode.Mixed) &&
+      currentSourceId !== pool.basedOnSourceId;
+
+    if (needsRefresh) {
+      this.refreshPool(roomId, room).catch(() => {});
+    }
   }
 
   /** 방 삭제/비활성화 시 풀 정리 */
   cleanupRoom(roomId: string): void {
-    this.aiPools.delete(roomId);
+    this.pools.delete(roomId);
     this.processing.delete(roomId);
     this.failCounts.delete(roomId);
     this.debounceTimers.delete(roomId);
   }
 
+  /** 모드 변경 시 풀 초기화 (핀 포함 전부 제거, usedSourceIds 리셋) */
+  clearPool(roomId: string): void {
+    this.pools.delete(roomId);
+  }
+
   /** 후보 핀 토글 */
   pinAiCandidate(roomId: string, trackId: string): void {
-    const pool = this.aiPools.get(roomId);
+    const pool = this.pools.get(roomId);
     if (!pool) return;
     const entry = pool.candidates.find((c) => c.track.id === trackId);
     if (entry) entry.pinned = !entry.pinned;
@@ -578,14 +734,26 @@ export class AutoDjService {
 
   /** 후보 스킵 (제거) */
   skipAiCandidate(roomId: string, trackId: string): void {
-    const pool = this.aiPools.get(roomId);
+    const pool = this.pools.get(roomId);
     if (!pool) return;
+    const entry = pool.candidates.find((c) => c.track.id === trackId);
+    if (entry) pool.usedSourceIds.add(entry.track.sourceId);
     pool.candidates = pool.candidates.filter((c) => c.track.id !== trackId);
   }
 
+  /** 후보를 풀에서 제거하고 Track 반환 (큐 투입용) */
+  removeCandidate(roomId: string, trackId: string): Track | null {
+    const pool = this.pools.get(roomId);
+    if (!pool) return null;
+    const idx = pool.candidates.findIndex((c) => c.track.id === trackId);
+    if (idx < 0) return null;
+    const [entry] = pool.candidates.splice(idx, 1);
+    return entry.track;
+  }
+
   /** 풀에서 다음 곡 소비 (큐 투입 시) */
-  consumeFromAiPool(roomId: string): Track | null {
-    const pool = this.aiPools.get(roomId);
+  consumeFromPool(roomId: string): Track | null {
+    const pool = this.pools.get(roomId);
     if (!pool || !pool.candidates.length) return null;
     // 핀된 곡 우선
     const pinnedIdx = pool.candidates.findIndex((c) => c.pinned);

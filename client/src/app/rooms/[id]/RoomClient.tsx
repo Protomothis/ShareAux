@@ -567,6 +567,7 @@ export default function RoomClient({ id }: { id: string }) {
           ) : undefined
         }
         autoDjEnabled={room?.autoDjEnabled}
+        autoDjPaused={room?.autoDjPaused}
         modals={
           <>
             <PasswordModal open={needPassword} onSubmit={joinRoom} onClose={() => router.push('/rooms')} />
