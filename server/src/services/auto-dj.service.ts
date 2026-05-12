@@ -96,10 +96,6 @@ export class AutoDjService {
   /** 이벤트 기반 트리거 (디바운스) */
   trigger(roomId: string): void {
     this.logger.debug(`[AutoDJ] trigger for ${roomId}`);
-    // 풀이 비어있으면 즉시 채우기
-    if (!this.pools.has(roomId) || !this.pools.get(roomId)!.candidates.length) {
-      this.refreshPool(roomId).catch(() => {});
-    }
     const existing = this.debounceTimers.get(roomId);
     if (existing) clearTimeout(existing);
     this.debounceTimers.set(
@@ -109,6 +105,10 @@ export class AutoDjService {
         void this.checkAndFill(roomId);
       }, AUTODJ_DEBOUNCE_MS),
     );
+    // 풀이 비어있으면 즉시 채우기 (refreshPool 내부에서 paused 체크)
+    if (!this.pools.has(roomId) || !this.pools.get(roomId)!.candidates.length) {
+      this.refreshPool(roomId).catch(() => {});
+    }
   }
 
   /** 안전망: 전체 활성 방 스캔 */

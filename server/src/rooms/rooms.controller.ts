@@ -60,7 +60,7 @@ export class RoomsController {
   @ApiResponse({ status: 201, type: Room })
   async create(@Req() req: AuthenticatedRequest, @Body() dto: CreateRoomDto) {
     const room = await this.rooms.create(req.user.userId, dto);
-    if (room.autoDjEnabled) this.autoDj.trigger(room.id);
+    if (room.autoDjEnabled && !room.autoDjPaused) this.autoDj.trigger(room.id);
     return room;
   }
 

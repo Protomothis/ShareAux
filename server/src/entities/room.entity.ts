@@ -107,7 +107,7 @@ export class Room {
   autoDjPrompt!: string | null;
 
   @ApiProperty({ default: false, description: 'AutoDJ 일시중지' })
-  @Column({ default: false, name: 'auto_dj_paused' })
+  @Column({ default: true, name: 'auto_dj_paused' })
   autoDjPaused!: boolean;
 
   @ApiProperty()
