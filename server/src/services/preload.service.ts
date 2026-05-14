@@ -68,7 +68,7 @@ export class PreloadService {
       .then((items) => {
         for (const item of items) this.release(item.track.id);
       })
-      .catch(() => {});
+      .catch((e: unknown) => this.logger.warn(`[preload] ${(e as Error).message}`));
   }
 
   /** 방의 다음 곡들 프리로드 트리거 */

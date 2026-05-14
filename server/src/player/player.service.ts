@@ -376,6 +376,6 @@ export class PlayerService {
         track.bitrateKbps = info.bitrateKbps;
         await this.trackRepo.update(track.id, { codec: info.codec, bitrateKbps: info.bitrateKbps });
       })
-      .catch(() => {});
+      .catch((e: unknown) => this.logger.warn(`[recordPlay] ${(e as Error).message}`));
   }
 }

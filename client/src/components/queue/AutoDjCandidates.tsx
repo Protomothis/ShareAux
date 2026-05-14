@@ -43,6 +43,7 @@ export function AutoDjCandidates({ candidates, onPin, onSkip, onEnqueue, classNa
           <button
             type="button"
             onClick={() => onPin(track.id)}
+            aria-label="Pin"
             className={cn(
               'flex size-7 items-center justify-center rounded-md transition-colors touch-manipulation',
               track.pinned ? 'text-sa-accent' : 'text-white/30 hover:bg-white/5 hover:text-white/60',
@@ -53,6 +54,7 @@ export function AutoDjCandidates({ candidates, onPin, onSkip, onEnqueue, classNa
           <button
             type="button"
             onClick={() => onEnqueue(track.id)}
+            aria-label="Add to queue"
             className="flex size-7 items-center justify-center rounded-md text-white/30 transition-colors touch-manipulation hover:bg-white/5 hover:text-green-400"
           >
             <ListPlus size={12} />
@@ -60,6 +62,7 @@ export function AutoDjCandidates({ candidates, onPin, onSkip, onEnqueue, classNa
           <button
             type="button"
             onClick={() => onSkip(track.id)}
+            aria-label="Skip"
             className="flex size-7 items-center justify-center rounded-md text-white/30 transition-colors touch-manipulation hover:bg-white/5 hover:text-red-400"
           >
             <X size={12} />

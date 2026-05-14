@@ -1,17 +1,4 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Put,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
@@ -28,7 +15,6 @@ import type { AuthenticatedRequest } from '../types/index.js';
 import { AutoDjMode, ErrorCode, Permission, PushEvent, WsEvent } from '../types/index.js';
 import { OptionKey } from '../types/settings.types.js';
 import { PUSH_EVENT, pushPayload } from '../types/push-event-payload.js';
-import { AutoDjCandidatesResponse } from './dto/auto-dj-candidates.dto.js';
 import { BanInfo } from './dto/ban-info.dto.js';
 import { CreateRoomDto } from './dto/create-room.dto.js';
 import { JoinRoomDto } from './dto/join-room.dto.js';
@@ -311,82 +297,4 @@ export class RoomsController {
   }
 
   // ─── AutoDJ AI Pool ───
-
-  @Get(':id/autodj/candidates')
-  @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'AutoDJ 후보 조회' })
-  @ApiResponse({ status: 200, type: AutoDjCandidatesResponse })
-  @ApiBearerAuth()
-  getAutoDjCandidates(@Param('id', ParseUUIDPipe) id: string): AutoDjCandidatesResponse {
-    const entries = this.autoDj.getPoolCandidates(id);
-    return {
-      candidates: entries.map((e) => ({
-        id: e.track.id,
-        name: e.track.songTitle ?? e.track.name,
-        artist: e.track.songArtist ?? e.track.artist,
-        thumbnail: e.track.thumbnail,
-        pinned: e.pinned,
-      })),
-    };
-  }
-
-  @Post(':id/autodj/refresh')
-  @UseGuards(JwtAuthGuard, RoomPermissionGuard)
-  @RequirePermission(Permission.Host)
-  @ApiOperation({ summary: 'AutoDJ 풀 새로고침' })
-  @ApiBearerAuth()
-  async refreshAutoDjPool(@Param('id', ParseUUIDPipe) id: string) {
-    await this.autoDj.refreshPool(id);
-    return { success: true };
-  }
-
-  @Post(':id/autodj/pin/:trackId')
-  @UseGuards(JwtAuthGuard, RoomPermissionGuard)
-  @RequirePermission(Permission.Host)
-  @ApiOperation({ summary: 'AutoDJ 후보 핀 토글' })
-  @ApiBearerAuth()
-  pinAutoDjCandidate(@Param('id', ParseUUIDPipe) id: string, @Param('trackId', ParseUUIDPipe) trackId: string) {
-    this.autoDj.pinAiCandidate(id, trackId);
-    return { success: true };
-  }
-
-  @Delete(':id/autodj/skip/:trackId')
-  @UseGuards(JwtAuthGuard, RoomPermissionGuard)
-  @RequirePermission(Permission.Host)
-  @ApiOperation({ summary: 'AutoDJ 후보 스킵' })
-  @ApiBearerAuth()
-  skipAutoDjCandidate(@Param('id', ParseUUIDPipe) id: string, @Param('trackId', ParseUUIDPipe) trackId: string) {
-    this.autoDj.skipAiCandidate(id, trackId);
-    return { success: true };
-  }
-
-  @Post(':id/autodj/enqueue/:trackId')
-  @UseGuards(JwtAuthGuard, RoomPermissionGuard)
-  @RequirePermission(Permission.Host)
-  @ApiOperation({ summary: 'AutoDJ 후보를 큐에 즉시 추가' })
-  @ApiBearerAuth()
-  async enqueueAutoDjCandidate(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Param('trackId', ParseUUIDPipe) trackId: string,
-    @Req() req: AuthenticatedRequest,
-  ) {
-    const track = this.autoDj.removeCandidate(id, trackId);
-    if (!track) throw new BadRequestException('Candidate not found');
-    this.eventEmitter.emit('autodj.enqueue', { roomId: id, track, userId: req.user.userId });
-    return { success: true };
-  }
-
-  @Post(':id/autodj/pause')
-  @UseGuards(JwtAuthGuard, RoomPermissionGuard)
-  @RequirePermission(Permission.Host)
-  @ApiOperation({ summary: 'AutoDJ 일시중지 토글' })
-  @ApiBearerAuth()
-  async toggleAutoDjPause(@Param('id', ParseUUIDPipe) id: string, @Req() req: AuthenticatedRequest) {
-    const room = await this.rooms.findOne(id);
-    const paused = !room.autoDjPaused;
-    await this.rooms.update(id, req.user.userId, { autoDjPaused: paused });
-    this.gateway.broadcastSystem(id, WsEvent.RoomUpdated, '');
-    if (!paused) this.autoDj.trigger(id);
-    return { paused };
-  }
 }

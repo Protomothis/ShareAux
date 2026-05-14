@@ -142,6 +142,7 @@ export function AutoDjTab({
                   size="icon-xs"
                   onClick={onRefresh}
                   disabled={refreshing || candidatesLoading}
+                  aria-label={t('refresh')}
                   className="text-white/30 hover:text-white/60"
                 >
                   {refreshing || (candidatesLoading && !candidates.length) ? (

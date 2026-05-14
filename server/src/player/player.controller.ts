@@ -1,10 +1,9 @@
 import { Body, Controller, Get, Logger, Param, ParseUUIDPipe, Post, Put, Req, UseGuards } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { RoomMember } from '../entities/room-member.entity.js';
 import { RoomQueue } from '../entities/room-queue.entity.js';
 import { Track } from '../entities/track.entity.js';
 import { AppException } from '../exceptions/app.exception.js';
@@ -39,7 +38,6 @@ export class PlayerController {
     private readonly translationService: TranslationService,
     private readonly searchService: SearchService,
     private readonly eventEmitter: EventEmitter2,
-    @InjectRepository(RoomMember) private readonly memberRepo: Repository<RoomMember>,
     @InjectRepository(RoomQueue) private readonly queueRepo: Repository<RoomQueue>,
   ) {
     this.playerService.onTrackChange(async (roomId) => {
@@ -53,14 +51,12 @@ export class PlayerController {
       this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue });
 
       if (status?.track) {
-        // Content ID가 notFound/pending이면 재시도
         if (status.track.metaStatus !== MetaStatus.Matched) {
           this.searchService
             .enrichTrackCredits(status.track.id, status.track.sourceId)
             .catch((e: unknown) => this.logger.warn(`[enrich retry] ${(e as Error).message}`));
         }
         this.searchLyricsWhenReady(roomId, status.track, true);
-        // Push 알림 — streaming 전환 시에만 (preparing에서는 스킵)
         if (status.streamState === 'streaming') {
           this.eventEmitter.emit(
             PUSH_EVENT,
@@ -79,84 +75,76 @@ export class PlayerController {
         this.searchLyricsWhenReady(roomId, q.track);
       }
 
-      // AutoDJ: 곡 전환 시 트리거 + 실패 카운터 리셋
       this.autoDjService.resetFailCount(roomId);
       this.autoDjService.trigger(roomId);
-      this.autoDjService.onTrackChanged(roomId).catch(() => {});
+      this.autoDjService
+        .onTrackChanged(roomId)
+        .catch((e: unknown) => this.logger.warn(`[onTrackChanged] ${(e as Error).message}`));
     });
 
     this.playerService.onPlayFail((roomId, trackTitle) => {
       this.gateway.broadcastSystem(roomId, WsEvent.TrackUnavailable, '', { trackName: trackTitle });
     });
 
-    // AutoDJ 상태 → WS 브로드캐스트
-    this.autoDjService.onStatusChange((roomId, status, reason) => {
-      this.gateway.broadcastSystem(roomId, WsEvent.AutoDjStatus, '', { status, reason });
-      if (status === 'disabled') this.gateway.broadcastSystem(roomId, WsEvent.RoomUpdated, '');
-    });
-
-    // AutoDJ 곡 추가 → 시스템 메시지
-    this.autoDjService.onTrackAdded((roomId, track) => {
-      this.gateway.broadcastSystem(roomId, WsEvent.TrackAdded, '', { trackName: track.name });
-    });
-
-    // AutoDJ 시스템 메시지 (실패 등)
-    this.autoDjService.onSystemMessage((roomId, message) => {
-      this.gateway.broadcastSystem(roomId, WsEvent.SystemMessage, message);
-    });
-
-    // AutoDJ 후보 풀 enrich — 백그라운드 Content ID 매칭
-    this.autoDjService.onEnrich((roomId, tracks) => {
-      Promise.all(tracks.map((t) => this.searchService.enrichTrackCredits(t.id, t.sourceId)))
-        .then(async () => {
-          // enrich 완료 → QueueUpdated broadcast → 클라이언트 candidates 자동 refetch
-          const queue = await this.queueRepo.find({
-            where: { room: { id: roomId }, played: false },
-            order: { position: 'ASC' },
-            relations: ['track', 'addedBy'],
-          });
-          this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue });
-        })
-        .catch(() => {});
-    });
-
-    // 번역 완료 → WS 브로드캐스트
     this.translationService.onUpdated((trackId, roomIds) => {
       for (const roomId of roomIds) {
         this.gateway.broadcastSystem(roomId, WsEvent.LyricsUpdated, '', { trackId });
       }
     });
+  }
 
-    // AutoDJ 배치 완료 → 큐 업데이트 + 자동 재생
-    this.autoDjService.onBatchComplete((roomId, tracks) => {
-      void (async () => {
-        // 재생 중이 아니면 첫 곡 자동 재생 (play 내부에서 QueueUpdated broadcast)
-        const status = await this.playerService.getStatus(roomId);
-        this.logger.debug(
-          `[AutoDJ] batchComplete: roomId=${roomId}, isPlaying=${status?.isPlaying}, trackCount=${tracks.length}, firstTrackId=${tracks[0]?.id}`,
-        );
-        if (!status?.isPlaying && tracks.length > 0) {
-          await this.playerService.play(roomId, tracks[0].id).catch((e: unknown) => {
-            this.logger.warn(`[AutoDJ] auto-play failed: ${e instanceof Error ? e.message : e}`);
-          });
-          const newStatus = await this.playerService.getStatus(roomId);
-          this.gateway.broadcastSystem(roomId, WsEvent.PlaybackUpdated, '', newStatus);
-        } else {
-          // 재생 중이면 큐만 업데이트
-          const queue = await this.queueRepo.find({
-            where: { room: { id: roomId }, played: false },
-            order: { position: 'ASC' },
-            relations: ['track', 'addedBy'],
-          });
-          this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue });
-        }
-      })();
-    });
+  // ─── AutoDJ Event Listeners ───
+
+  @OnEvent('autodj.status')
+  handleAutoDjStatus(roomId: string, status: string, reason?: string): void {
+    this.gateway.broadcastSystem(roomId, WsEvent.AutoDjStatus, '', { status, reason });
+    if (status === 'disabled') this.gateway.broadcastSystem(roomId, WsEvent.RoomUpdated, '');
+  }
+
+  @OnEvent('autodj.trackAdded')
+  handleAutoDjTrackAdded(roomId: string, track: Track): void {
+    this.gateway.broadcastSystem(roomId, WsEvent.TrackAdded, '', { trackName: track.name });
+  }
+
+  @OnEvent('autodj.systemMessage')
+  handleAutoDjSystemMessage(roomId: string, message: string): void {
+    this.gateway.broadcastSystem(roomId, WsEvent.SystemMessage, message);
+  }
+
+  @OnEvent('autodj.enrich')
+  handleAutoDjEnrich(roomId: string, tracks: Track[]): void {
+    Promise.all(tracks.map((t) => this.searchService.enrichTrackCredits(t.id, t.sourceId)))
+      .then(() => this.broadcastQueue(roomId))
+      .catch((e: unknown) => this.logger.warn(`[autodj.enrich] ${(e as Error).message}`));
+  }
+
+  @OnEvent('autodj.batchComplete')
+  handleAutoDjBatchComplete(roomId: string, tracks: Track[]): void {
+    void (async () => {
+      const status = await this.playerService.getStatus(roomId);
+      if (!status?.isPlaying && tracks.length > 0) {
+        await this.playerService.play(roomId, tracks[0].id).catch((e: unknown) => {
+          this.logger.warn(`[AutoDJ] auto-play failed: ${e instanceof Error ? e.message : e}`);
+        });
+        await this.broadcastPlayback(roomId);
+      } else {
+        await this.broadcastQueue(roomId);
+      }
+    })();
   }
 
   private async broadcastPlayback(roomId: string) {
     const status = await this.playerService.getStatus(roomId);
     this.gateway.broadcastSystem(roomId, WsEvent.PlaybackUpdated, '', status);
+  }
+
+  private async broadcastQueue(roomId: string) {
+    const queue = await this.queueRepo.find({
+      where: { room: { id: roomId }, played: false },
+      order: { position: 'ASC' },
+      relations: ['track', 'addedBy'],
+    });
+    this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue });
   }
 
   /** metaStatus가 done이 될 때까지 대기 후 가사 검색 */

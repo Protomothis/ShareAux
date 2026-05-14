@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Logger, Param, ParseUUIDPipe, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
@@ -23,6 +23,7 @@ import { QueueService } from './queue.service.js';
 @ApiTags('Queue')
 @Controller('queue')
 export class QueueController {
+  private readonly logger = new Logger(QueueController.name);
   constructor(
     private queue: QueueService,
     private player: PlayerService,
@@ -92,7 +93,7 @@ export class QueueController {
             }
           }
         })
-        .catch(() => {});
+        .catch((e: unknown) => this.logger.warn(`[enrich] ${(e as Error).message}`));
     }
 
     // codec/bitrate 미리 채우기
@@ -108,7 +109,7 @@ export class QueueController {
     });
     this.player.triggerPreload(roomId);
     this.autoPlayIfIdle(roomId, entries[0]?.track?.id ?? addedTracks[0]?.id);
-    this.autoDj.syncPoolWithQueue(roomId).catch(() => {});
+    this.autoDj.syncPoolWithQueue(roomId).catch((e: unknown) => this.logger.warn(`[syncPool] ${(e as Error).message}`));
     return entries;
   }
 
@@ -125,7 +126,7 @@ export class QueueController {
     const updatedQueue = await this.queue.getQueue(roomId);
     this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue: updatedQueue });
     this.autoDj.trigger(roomId);
-    this.autoDj.syncPoolWithQueue(roomId).catch(() => {});
+    this.autoDj.syncPoolWithQueue(roomId).catch((e: unknown) => this.logger.warn(`[syncPool] ${(e as Error).message}`));
     return result;
   }
 
@@ -145,7 +146,9 @@ export class QueueController {
     void (async () => {
       const status = await this.player.getStatus(roomId);
       if (status?.isPlaying) return;
-      await this.player.play(roomId, trackId).catch(() => {});
+      await this.player
+        .play(roomId, trackId)
+        .catch((e: unknown) => this.logger.warn(`[autoPlay] ${(e as Error).message}`));
     })();
   }
 

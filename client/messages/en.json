@@ -977,6 +977,9 @@
     "trackCount": "{count} tracks"
   },
   "room": {
+    "roomNotFound": "Room not found",
+    "roomNotFoundDesc": "This room has ended or does not exist",
+    "backToRooms": "Back to rooms",
     "chat": "Chat",
     "queue": "Queue",
     "history": "History",
