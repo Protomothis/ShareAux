@@ -5,15 +5,15 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
-import type { TrackProvider } from './trackProvider';
+import type { Provider } from './provider';
 import type { MetaStatus } from './metaStatus';
-import type { TrackLyricsStatus } from './trackLyricsStatus';
+import type { LyricsStatus } from './lyricsStatus';
 import type { TrackLyricsType } from './trackLyricsType';
 import type { TrackStatsProperty } from './trackStatsProperty';
 
 export interface Track {
   id: string;
-  provider: TrackProvider;
+  provider: Provider;
   sourceId: string;
   name: string;
   /** @nullable */
@@ -34,7 +34,7 @@ export interface Track {
   /** @nullable */
   bitrateKbps?: number | null;
   metaStatus: MetaStatus;
-  lyricsStatus: TrackLyricsStatus;
+  lyricsStatus: LyricsStatus;
   /** @nullable */
   lyricsType: TrackLyricsType;
   fetchedAt: string;

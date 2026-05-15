@@ -16,7 +16,7 @@ import { Track } from '../entities/track.entity.js';
 import { TrackStats } from '../entities/track-stats.entity.js';
 import { TrackVote } from '../entities/track-vote.entity.js';
 import { User } from '../entities/user.entity.js';
-import { UserRole } from '../types/index.js';
+import { LyricsStatus, UserRole } from '../types/index.js';
 import type { CleanupSummaryResponse } from './dto/cleanup-summary-response.dto.js';
 
 @Injectable()
@@ -63,7 +63,7 @@ export class AdminCleanupService {
       this.roomRepo.count({ where: { isActive: false } }),
       this.userRepo.count(),
       this.userRepo.count({ where: { role: UserRole.Guest } }),
-      this.trackRepo.count({ where: { lyricsStatus: 'found' } }),
+      this.trackRepo.count({ where: { lyricsStatus: LyricsStatus.Found } }),
       this.queueRepo.count(),
       this.trackRepo
         .createQueryBuilder('t')

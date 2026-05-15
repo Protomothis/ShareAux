@@ -23,6 +23,9 @@ export const SystemChatEvent = {
   roomClosed: 'roomClosed',
   autoDjEnabled: 'autoDjEnabled',
   autoDjDisabled: 'autoDjDisabled',
+  autoDjNoCandidates: 'autoDjNoCandidates',
+  autoDjRetry: 'autoDjRetry',
+  autoDjFreshness: 'autoDjFreshness',
   enqueueCountsReset: 'enqueueCountsReset',
   chatCleared: 'chatCleared',
 } as const;

@@ -5,6 +5,8 @@ import type { AutoDjStatus } from '../../types/index.js';
 import {
   AuthProvider,
   Language,
+  LyricsStatus,
+  LyricsType,
   MetaStatus,
   OptionKey,
   PushEvent,
@@ -40,4 +42,10 @@ export class SharedEnums {
 
   @ApiProperty({ enum: TranslationLang, enumName: 'TranslationLang' })
   translationLang!: TranslationLang;
+
+  @ApiProperty({ enum: LyricsStatus, enumName: 'LyricsStatus' })
+  lyricsStatus!: LyricsStatus;
+
+  @ApiProperty({ enum: LyricsType, enumName: 'LyricsType' })
+  lyricsType!: LyricsType;
 }

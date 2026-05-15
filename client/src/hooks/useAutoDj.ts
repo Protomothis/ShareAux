@@ -1,18 +1,20 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
 
 import { useAuthControllerGetAuthConfig } from '@/api/auth/auth';
-import type { AutoDjCandidateItem, AutoDjCandidatesResponse, AutoDjTagsDto } from '@/api/model';
 import {
-  roomsControllerEnqueueAutoDjCandidate,
-  roomsControllerPinAutoDjCandidate,
-  roomsControllerRefreshAutoDjPool,
-  roomsControllerSkipAutoDjCandidate,
-  roomsControllerToggleAutoDjPause,
-  roomsControllerUpdate,
-  useRoomsControllerGetAutoDjCandidates,
-} from '@/api/rooms/rooms';
+  autoDjControllerEnqueue,
+  autoDjControllerPin,
+  autoDjControllerRefresh,
+  autoDjControllerSkip,
+  autoDjControllerTogglePause,
+  getAutoDjControllerGetCandidatesQueryKey,
+  useAutoDjControllerGetCandidates,
+} from '@/api/auto-d-j/auto-d-j';
+import type { AutoDjCandidateItem, AutoDjCandidatesResponse, AutoDjTagsDto } from '@/api/model';
+import { roomsControllerUpdate } from '@/api/rooms/rooms';
 
 import type { CandidateTrack } from '@/components/queue/AutoDjCandidates';
 import type { AutoDjMode } from '@/components/queue/AutoDjModeSelect';
@@ -30,13 +32,14 @@ interface UseAutoDjOptions {
 }
 
 export function useAutoDj({ roomId, enabled, isHost, mode, paused, tags, prompt }: UseAutoDjOptions) {
+  const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
   const { data: config } = useAuthControllerGetAuthConfig();
   const {
     data: candidatesData,
     refetch,
     isLoading: candidatesLoading,
-  } = useRoomsControllerGetAutoDjCandidates(roomId, {
+  } = useAutoDjControllerGetCandidates(roomId, {
     query: { enabled },
   });
 
@@ -63,7 +66,7 @@ export function useAutoDj({ roomId, enabled, isHost, mode, paused, tags, prompt 
       if (!isHost) return;
       await roomsControllerUpdate(roomId, { autoDjTags: t, autoDjPrompt: p });
       setRefreshing(true);
-      await roomsControllerRefreshAutoDjPool(roomId);
+      await autoDjControllerRefresh(roomId);
       await refetch();
       setRefreshing(false);
     },
@@ -72,14 +75,27 @@ export function useAutoDj({ roomId, enabled, isHost, mode, paused, tags, prompt 
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    await roomsControllerRefreshAutoDjPool(roomId);
+    await autoDjControllerRefresh(roomId);
     await refetch();
     setRefreshing(false);
   }, [roomId, refetch]);
 
+  const removeFromCache = useCallback(
+    (trackId: string) => {
+      queryClient.setQueryData(
+        getAutoDjControllerGetCandidatesQueryKey(roomId),
+        (old: AutoDjCandidatesResponse | undefined) => {
+          if (!old) return old;
+          return { candidates: old.candidates.filter((c: AutoDjCandidateItem) => c.id !== trackId) };
+        },
+      );
+    },
+    [queryClient, roomId],
+  );
+
   const handlePin = useCallback(
     async (trackId: string) => {
-      await roomsControllerPinAutoDjCandidate(roomId, trackId);
+      await autoDjControllerPin(roomId, trackId);
       refetch();
     },
     [roomId, refetch],
@@ -87,22 +103,22 @@ export function useAutoDj({ roomId, enabled, isHost, mode, paused, tags, prompt 
 
   const handleSkip = useCallback(
     async (trackId: string) => {
-      await roomsControllerSkipAutoDjCandidate(roomId, trackId);
-      refetch();
+      removeFromCache(trackId);
+      await autoDjControllerSkip(roomId, trackId);
     },
-    [roomId, refetch],
+    [roomId, removeFromCache],
   );
 
   const handleEnqueue = useCallback(
     async (trackId: string) => {
-      await roomsControllerEnqueueAutoDjCandidate(roomId, trackId);
-      refetch();
+      removeFromCache(trackId);
+      await autoDjControllerEnqueue(roomId, trackId);
     },
-    [roomId, refetch],
+    [roomId, removeFromCache],
   );
 
   const handleTogglePause = useCallback(async () => {
-    await roomsControllerToggleAutoDjPause(roomId);
+    await autoDjControllerTogglePause(roomId);
   }, [roomId]);
 
   const savedTags = { taste: 'neutral', ...(tags ?? EMPTY_TAGS) };

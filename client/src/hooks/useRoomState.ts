@@ -1,7 +1,10 @@
 'use client';
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
-import type { AutoDjStatus, TrackVoteMap } from '@/types';
+import { AutoDjStatus } from '@/api/model';
+import type { TrackVoteMap } from '@/types';
+
+const AUTODJ_STATUS_MIN_DISPLAY_MS = 2000;
 
 /**
  * useRoomState — 방 부가 상태 관리
@@ -12,8 +15,27 @@ export function useRoomState() {
   const [skipRequired, setSkipRequired] = useState(1);
   const [listenerCount, setListenerCount] = useState(0);
   const [trackVotes, setTrackVotes] = useState<TrackVoteMap>(new Map());
-  const [autoDjStatus, setAutoDjStatus] = useState<AutoDjStatus>('idle');
+  const [autoDjStatus, setAutoDjStatusRaw] = useState<AutoDjStatus>(AutoDjStatus.idle);
   const [mutedUntil, setMutedUntil] = useState(0);
+
+  const activeAtRef = useRef(0);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  const setAutoDjStatus = useCallback((status: AutoDjStatus) => {
+    if (status !== AutoDjStatus.idle) {
+      activeAtRef.current = Date.now();
+      if (timerRef.current) clearTimeout(timerRef.current);
+      setAutoDjStatusRaw(status);
+    } else {
+      const elapsed = Date.now() - activeAtRef.current;
+      const remaining = AUTODJ_STATUS_MIN_DISPLAY_MS - elapsed;
+      if (remaining <= 0) {
+        setAutoDjStatusRaw(AutoDjStatus.idle);
+      } else {
+        timerRef.current = setTimeout(() => setAutoDjStatusRaw(AutoDjStatus.idle), remaining);
+      }
+    }
+  }, []);
 
   return {
     skipVotes,

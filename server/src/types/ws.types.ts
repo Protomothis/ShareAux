@@ -1,6 +1,7 @@
 import type { WebSocket } from 'ws';
 
 import type { Permission } from './permission.enum.js';
+import type { UserRole } from './user-role.enum.js';
 
 export const enum WsOpCode {
   Audio = 0x01,
@@ -19,7 +20,7 @@ export interface WsClient extends WebSocket {
     userId: string;
     roomId: string;
     nickname: string;
-    role: string;
+    role: UserRole;
     audioCallback: (frame: Buffer) => void;
     listening?: boolean;
     permissions: Permission[];
@@ -30,6 +31,6 @@ export interface ChatHistoryEntry {
   userId: string;
   nickname: string;
   message: string;
-  role?: string;
+  role?: UserRole;
   timestamp: string;
 }

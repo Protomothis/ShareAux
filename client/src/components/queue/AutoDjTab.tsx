@@ -1,6 +1,7 @@
 'use client';
 
-import { Check, Loader2, Pause, Play, RefreshCw } from 'lucide-react';
+import { Check, ChevronDown, Loader2, Pause, Play, RefreshCw } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useRef, useState } from 'react';
 
@@ -15,6 +16,49 @@ import type { AutoDjMode } from './AutoDjModeSelect';
 import { AutoDjModeSelect } from './AutoDjModeSelect';
 import type { AutoDjTags } from './AutoDjTagFilter';
 import { AutoDjTagFilter } from './AutoDjTagFilter';
+
+function TagFilterSection({
+  tags,
+  onChange,
+  guide,
+}: {
+  tags: AutoDjTags;
+  onChange: (t: AutoDjTags) => void;
+  guide: string;
+}) {
+  const tp = useTranslations('player.autoDj');
+  const [open, setOpen] = useState(true);
+  const selectedCount = tags.mood.length + tags.genre.length + tags.era.length + tags.country.length;
+
+  return (
+    <div className="space-y-3">
+      <p className="rounded-md bg-white/[0.03] px-2.5 py-2 text-[11px] leading-relaxed text-white/40">{guide}</p>
+      <div>
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          className="flex w-full items-center gap-2 py-1 touch-manipulation"
+        >
+          <span className="text-[11px] font-medium text-white/60">{tp('tagSettings')}</span>
+          {selectedCount > 0 && (
+            <span className="rounded-full bg-sa-accent/20 px-1.5 py-0.5 text-[10px] font-medium text-sa-accent">
+              {selectedCount}
+            </span>
+          )}
+          <ChevronDown
+            size={12}
+            className={cn('ml-auto shrink-0 text-white/30 transition-transform', open && 'rotate-180')}
+          />
+        </button>
+        {open && (
+          <div className="pt-2">
+            <AutoDjTagFilter value={tags} onChange={onChange} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 interface AutoDjTabProps {
   mode: AutoDjMode;
@@ -87,7 +131,7 @@ export function AutoDjTab({
                 setTags(savedTags);
               }}
               disabled={!isDirty}
-              className="text-xs text-white/50"
+              className="text-xs text-white/50 disabled:opacity-0"
             >
               {t('reset')}
             </Button>
@@ -123,51 +167,55 @@ export function AutoDjTab({
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
-        {localMode === 'ai' && (
-          <div className="space-y-3">
-            <p className="rounded-md bg-white/[0.03] px-2.5 py-2 text-[11px] leading-relaxed text-white/40">
-              {t('aiGuide')}
-            </p>
-            <AutoDjTagFilter value={tags} onChange={setTags} />
-          </div>
-        )}
+        {localMode === 'ai' && <TagFilterSection tags={tags} onChange={setTags} guide={t('aiGuide')} />}
 
-        {!paused && (
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <p className="text-[11px] font-medium uppercase tracking-wider text-white/40">{t('nextUp')}</p>
-              {onRefresh && (
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  onClick={onRefresh}
-                  disabled={refreshing || candidatesLoading}
-                  className="text-white/30 hover:text-white/60"
-                >
-                  {refreshing || (candidatesLoading && !candidates.length) ? (
-                    <Loader2 size={12} className="animate-spin" />
-                  ) : (
-                    <RefreshCw size={12} />
-                  )}
-                </Button>
-              )}
-            </div>
-            <AutoDjCandidates candidates={candidates} onPin={onPin} onSkip={onSkip} onEnqueue={onEnqueue} />
-            {(candidatesLoading || !candidates.length) && (
-              <div className="space-y-1">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-2.5 rounded-lg bg-white/[0.03] p-2">
-                    <div className="size-8 shrink-0 animate-pulse rounded bg-white/10" />
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <div className="h-3 w-3/4 animate-pulse rounded bg-white/10" />
-                      <div className="h-2.5 w-1/2 animate-pulse rounded bg-white/[0.06]" />
-                    </div>
-                  </div>
-                ))}
+        {!paused && localMode === 'ai' && <div className="my-3 border-t border-white/[0.06]" />}
+
+        <AnimatePresence>
+          {!paused && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-1.5"
+            >
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] font-medium uppercase tracking-wider text-white/40">{t('nextUp')}</p>
+                {onRefresh && (
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={onRefresh}
+                    disabled={refreshing || candidatesLoading}
+                    aria-label={t('refresh')}
+                    className="text-white/30 hover:text-white/60"
+                  >
+                    {refreshing || (candidatesLoading && !candidates.length) ? (
+                      <Loader2 size={12} className="animate-spin" />
+                    ) : (
+                      <RefreshCw size={12} />
+                    )}
+                  </Button>
+                )}
               </div>
-            )}
-          </div>
-        )}
+              <AutoDjCandidates candidates={candidates} onPin={onPin} onSkip={onSkip} onEnqueue={onEnqueue} />
+              {(candidatesLoading || !candidates.length) && (
+                <div className="space-y-1">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-2.5 rounded-lg bg-white/[0.03] p-2">
+                      <div className="size-8 shrink-0 animate-pulse rounded bg-white/10" />
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="h-3 w-3/4 animate-pulse rounded bg-white/10" />
+                        <div className="h-2.5 w-1/2 animate-pulse rounded bg-white/[0.06]" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

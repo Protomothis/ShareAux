@@ -21,8 +21,8 @@ import {
 import { AudioService } from '../services/audio.service.js';
 import { ChatMuteService } from '../services/chat-mute.service.js';
 import { IpBanService } from '../services/ip-ban.service.js';
-import type { JwtPayload, WsClient } from '../types/index.js';
-import { WsEvent, WsOpCode } from '../types/index.js';
+import type { JwtPayload, WsClient, WsPayloadMap } from '../types/index.js';
+import { UserRole, WsEvent, WsOpCode } from '../types/index.js';
 import { RoomsService } from './rooms.service.js';
 import { WsBroadcaster } from './ws-broadcaster.service.js';
 import { WsMessageRouter } from './ws-message-router.service.js';
@@ -202,7 +202,14 @@ export class RoomsGateway implements OnModuleDestroy {
         return;
       }
 
-      client.data = { userId, roomId, audioCallback, nickname, role: payload.role ?? 'user', permissions: perms };
+      client.data = {
+        userId,
+        roomId,
+        audioCallback,
+        nickname,
+        role: payload.role ?? UserRole.User,
+        permissions: perms,
+      };
 
       // Grace period 재연결 체크
       const pendingKey = `${userId}:${roomId}`;
@@ -309,14 +316,18 @@ export class RoomsGateway implements OnModuleDestroy {
   private async finalizeDisconnect(roomId: string, userId: string, nickname: string): Promise<void> {
     if (this.broadcaster.isUserConnected(roomId, userId)) return;
 
-    await this.rooms.removeMember(roomId, userId).catch(() => {});
+    await this.rooms
+      .removeMember(roomId, userId)
+      .catch((e: unknown) => this.logger.warn(`[removeMember] ${(e as Error).message}`));
     this.broadcaster.broadcastSystem(roomId, WsEvent.UserLeft, '', { nickname });
 
     const count = await this.rooms.getMemberCount(roomId).catch(() => 0);
     if (count === 0) {
       this.audio.destroyRoom(roomId);
       this.router.cleanupRoom(roomId);
-      await this.rooms.deactivateRoom(roomId).catch(() => {});
+      await this.rooms
+        .deactivateRoom(roomId)
+        .catch((e: unknown) => this.logger.warn(`[deactivateRoom] ${(e as Error).message}`));
       this.logger.log(`Room ${roomId} deactivated (no members)`);
     } else {
       const wasHost = await this.rooms.isHost(roomId, userId).catch(() => false);
@@ -342,8 +353,13 @@ export class RoomsGateway implements OnModuleDestroy {
     this.broadcaster.sendToUser(roomId, userId, event, detail);
   }
 
-  broadcastSystem(roomId: string, event: WsEvent, detail: string, data?: unknown): void {
-    this.broadcaster.broadcastSystem(roomId, event, detail, data);
+  broadcastSystem<E extends WsEvent>(
+    roomId: string,
+    event: E,
+    detail: string,
+    ...args: undefined extends WsPayloadMap[E] ? [data?: WsPayloadMap[E]] : [data: WsPayloadMap[E]]
+  ): void {
+    this.broadcaster.broadcastSystem(roomId, event, detail, ...args);
   }
 
   clearChatHistory(roomId: string): void {

@@ -163,6 +163,8 @@
     "autoDj": {
       "helpAutoDj": "모드를 선택하면 큐가 비었을 때 자동으로 곡을 추가합니다. AI 모드는 태그 기반으로 Gemini가 추천합니다. 일시중지하면 자동 추가를 멈춥니다.",
       "aiGuide": "원하는 태그를 선택하세요. 선택하지 않으면 전체 범위에서 추천합니다.",
+      "tagSettings": "태그 설정",
+      "refresh": "새로고침",
       "guideRelated": "현재 재생 중인 곡과 비슷한 곡을 자동으로 추가합니다.",
       "guideRadio": "현재 곡 기반 라디오 스타일로 다양한 곡을 추가합니다.",
       "guideHistory": "이 방에서 이전에 재생했던 곡 중에서 추가합니다.",
@@ -358,7 +360,10 @@
       "voteSkipPassed": "스킵 투표가 통과되어 곡이 넘어갑니다",
       "userTrackAdded": "{nickname}님이 \"{trackName}\" 외 {count}곡을 추가했습니다",
       "userTrackAddedSingle": "{nickname}님이 \"{trackName}\"을(를) 추가했습니다",
-      "chatCleared": "채팅이 초기화되었습니다"
+      "chatCleared": "채팅이 초기화되었습니다",
+      "autoDjNoCandidates": "🤖 추천할 곡을 찾지 못했습니다",
+      "autoDjRetry": "🤖 추천 결과가 없습니다. 잠시 후 다시 시도합니다",
+      "autoDjFreshness": "🤖 최근 재생된 곡만 있어 새 곡을 추가하지 못했습니다"
     },
     "paletteEmpty": "표시할 항목이 없습니다"
   },
@@ -977,6 +982,9 @@
     "trackCount": "{count}곡"
   },
   "room": {
+    "roomNotFound": "방을 찾을 수 없습니다",
+    "roomNotFoundDesc": "종료되었거나 존재하지 않는 방입니다",
+    "backToRooms": "방 목록으로",
     "chat": "채팅",
     "queue": "신청곡",
     "history": "기록",

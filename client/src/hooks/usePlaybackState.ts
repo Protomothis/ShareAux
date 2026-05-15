@@ -20,7 +20,7 @@ export function usePlaybackState(
   const [isPlaying, setPlaying] = useState(false);
   const [streamState, setStreamState] = useState<StreamState>('idle');
   const [timeSync, setTimeSync] = useState({ base: 0, at: 0 });
-  const [lyricsStatus, setLyricsStatus] = useState(LyricsStatus.Searching);
+  const [lyricsStatus, setLyricsStatus] = useState<LyricsStatus>(LyricsStatus.searching);
   const [lyricsType, setLyricsType] = useState<TrackLyricsType>(null);
   const [lyricsVersion, setLyricsVersion] = useState(0);
 
@@ -56,7 +56,11 @@ export function usePlaybackState(
     (track: Track | undefined) => {
       const ls = track?.lyricsStatus;
       setLyricsStatus(
-        ls === 'found' ? LyricsStatus.Found : ls === 'not_found' ? LyricsStatus.NotFound : LyricsStatus.Searching,
+        ls === LyricsStatus.found
+          ? LyricsStatus.found
+          : ls === LyricsStatus.notFound
+            ? LyricsStatus.notFound
+            : LyricsStatus.searching,
       );
       setLyricsType(null);
       setStreamState('preparing');
@@ -120,7 +124,7 @@ export function usePlaybackState(
         trackRef.current = d.track ?? null;
         handleTrackChange(d.track);
       } else if (d.track?.lyricsStatus === 'found') {
-        setLyricsStatus(LyricsStatus.Found);
+        setLyricsStatus(LyricsStatus.found);
       }
 
       if (d.isPlaying) {

@@ -14,6 +14,8 @@ import type { OptionKey } from './optionKey';
 import type { MetaStatus } from './metaStatus';
 import type { PushEvent } from './pushEvent';
 import type { TranslationLang } from './translationLang';
+import type { LyricsStatus } from './lyricsStatus';
+import type { LyricsType } from './lyricsType';
 
 export interface SharedEnums {
   wsEvent: WsEvent;
@@ -25,4 +27,6 @@ export interface SharedEnums {
   metaStatus: MetaStatus;
   pushEvent: PushEvent;
   translationLang: TranslationLang;
+  lyricsStatus: LyricsStatus;
+  lyricsType: LyricsType;
 }
