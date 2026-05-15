@@ -171,5 +171,6 @@ export class QueueController {
     );
     const updatedQueue = await this.queue.getQueue(roomId);
     this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue: updatedQueue });
+    this.autoDj.syncPoolWithQueue(roomId).catch((e: unknown) => this.logger.warn(`[syncPool] ${(e as Error).message}`));
   }
 }

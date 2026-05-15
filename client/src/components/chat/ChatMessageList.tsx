@@ -60,9 +60,15 @@ export default function ChatMessageList({ messages, bottomRef, hostId }: ChatMes
         return t('system.autoDjEnabled');
       case SystemChatEvent.autoDjDisabled:
         return t('system.autoDjDisabled');
+      case SystemChatEvent.autoDjNoCandidates:
+        return t('system.autoDjNoCandidates');
+      case SystemChatEvent.autoDjRetry:
+        return t('system.autoDjRetry');
+      case SystemChatEvent.autoDjFreshness:
+        return t('system.autoDjFreshness');
       case SystemChatEvent.enqueueCountsReset:
         return t('system.enqueueCountsReset');
-      case 'chatCleared':
+      case SystemChatEvent.chatCleared:
         return t('system.chatCleared');
 
       default:

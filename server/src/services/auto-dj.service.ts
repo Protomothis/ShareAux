@@ -106,9 +106,7 @@ export class AutoDjService {
     if (this.processing.has(roomId)) return;
 
     const room = await this.roomRepo.findOneBy({ id: roomId });
-    if (!room?.autoDjEnabled || !room.isActive || room.autoDjPaused) {
-      return;
-    }
+    if (!room?.autoDjEnabled || !room.isActive || room.autoDjPaused) return;
 
     const failCount = this.failCounts.get(roomId) ?? 0;
     if (failCount >= AUTODJ_MAX_FAIL_COUNT) return;
@@ -121,20 +119,15 @@ export class AutoDjService {
       this.eventEmitter.emit('autodj.status', roomId, 'thinking');
 
       const toAdd = room.autoDjThreshold - remaining + 1;
-      const candidates = await this.getCandidates(roomId, room.autoDjMode, room);
-      if (!candidates.length) {
-        this.logger.warn(`[AutoDJ] No candidates for room ${roomId}`);
-        await this.disableAutoDj(roomId, '추가할 곡을 찾지 못했습니다. 먼저 곡을 신청해주세요.');
-        return;
-      }
+      const picks = await this.pickTracks(roomId, room, toAdd);
 
-      let filtered = await this.filterFreshness(candidates, roomId);
-      if (!filtered.length && room.autoDjMode === AutoDjMode.Favorites && room.autoDjFavFallbackMixed) {
-        const mixed = await this.getMixedCandidates(roomId);
-        filtered = await this.filterFreshness(mixed, roomId);
-      }
-      if (!filtered.length) {
-        await this.disableAutoDj(roomId, '최근 재생된 곡만 있어 새 곡을 추가하지 못했습니다.');
+      if (!picks.length) {
+        this.failCounts.set(roomId, (this.failCounts.get(roomId) ?? 0) + 1);
+        if ((this.failCounts.get(roomId) ?? 0) >= AUTODJ_MAX_FAIL_COUNT) {
+          await this.disableAutoDj(roomId, 'noCandidates');
+        } else {
+          this.eventEmitter.emit('autodj.systemMessage', roomId, 'autoDjRetry');
+        }
         return;
       }
 
@@ -148,40 +141,22 @@ export class AutoDjService {
       let nextPos = (maxPos?.max ?? 0) + 1;
 
       const added: Track[] = [];
-      let pool = [...filtered];
-
-      for (let i = 0; i < toAdd && pool.length > 0; i++) {
-        // 추가 직전 재확인
+      for (const track of picks) {
         const freshRoom = await this.roomRepo.findOneBy({ id: roomId });
         if (!freshRoom?.autoDjEnabled) break;
-
-        const pick = this.weightedRandom(pool);
-        if (!pick) break;
-
-        // 큐 중복 체크
-        const dup = await this.queueRepo.findOneBy({
-          room: { id: roomId },
-          track: { id: pick.track.id },
-          played: false,
-        });
-        if (dup) {
-          pool = pool.filter((c) => c.track.id !== pick.track.id);
-          i--;
-          continue;
-        }
 
         await this.queueRepo.save(
           this.queueRepo.create({
             room: { id: roomId } as Room,
-            track: { id: pick.track.id } as Track,
+            track: { id: track.id } as Track,
             addedBy: null,
             isAutoDj: true,
             position: nextPos++,
           }),
         );
-        added.push(pick.track);
-        this.eventEmitter.emit('autodj.trackAdded', roomId, pick.track);
-        pool = pool.filter((c) => c.track.id !== pick.track.id);
+        added.push(track);
+        this.removeFromPool(roomId, track.id);
+        this.eventEmitter.emit('autodj.trackAdded', roomId, track);
       }
 
       if (added.length) {
@@ -200,6 +175,48 @@ export class AutoDjService {
     }
   }
 
+  /**
+   * 풀에서 큐에 추가할 곡을 순서대로 선택 (핀 우선).
+   * 큐 중복은 제외. 풀이 비면 채운 후 선택.
+   */
+  private async pickTracks(roomId: string, room: Room, count: number): Promise<Track[]> {
+    const candidates = await this.getCandidates(roomId, room.autoDjMode, room);
+    if (!candidates.length) return [];
+
+    let filtered = await this.filterFreshness(candidates, roomId);
+    if (!filtered.length && room.autoDjMode === AutoDjMode.Favorites && room.autoDjFavFallbackMixed) {
+      const mixed = await this.getMixedCandidates(roomId);
+      filtered = await this.filterFreshness(mixed, roomId);
+    }
+    if (!filtered.length) {
+      await this.disableAutoDj(roomId, 'autoDjFreshness');
+      return [];
+    }
+
+    // 핀 우선 → weight 높은 순 정렬
+    const sorted = filtered.sort((a, b) => b.weight - a.weight);
+    const picks: Track[] = [];
+
+    for (const candidate of sorted) {
+      if (picks.length >= count) break;
+      const dup = await this.queueRepo.findOneBy({
+        room: { id: roomId },
+        track: { id: candidate.track.id },
+        played: false,
+      });
+      if (dup) continue;
+      picks.push(candidate.track);
+    }
+    return picks;
+  }
+
+  /** 풀에서 곡 제거 (단일 진실 소스) */
+  private removeFromPool(roomId: string, trackId: string): void {
+    const pool = this.pools.get(roomId);
+    if (!pool) return;
+    pool.candidates = pool.candidates.filter((c) => c.track.id !== trackId);
+  }
+
   /** 연속 실패 카운터 리셋 (곡 전환 시 호출) */
   resetFailCount(roomId: string): void {
     this.failCounts.delete(roomId);
@@ -211,7 +228,7 @@ export class AutoDjService {
     await this.roomRepo.update(roomId, { autoDjEnabled: false });
     this.logger.warn(`[AutoDJ] Disabled for room ${roomId}: ${reason}`);
     this.eventEmitter.emit('autodj.status', roomId, 'disabled', reason);
-    this.eventEmitter.emit('autodj.systemMessage', roomId, `🤖 AutoDJ가 비활성화되었습니다: ${reason}`);
+    this.eventEmitter.emit('autodj.systemMessage', roomId, reason);
   }
 
   private async getCandidates(roomId: string, mode: AutoDjMode, room: Room): Promise<WeightedCandidate[]> {
@@ -384,18 +401,6 @@ export class AutoDjService {
 
   // ─── 유틸 ────────────────────────────────────────────────
 
-  /** @internal — 테스트 접근용 */
-  weightedRandom(candidates: WeightedCandidate[]): WeightedCandidate | null {
-    if (!candidates.length) return null;
-    const total = candidates.reduce((sum, c) => sum + c.weight, 0);
-    let r = Math.random() * total;
-    for (const c of candidates) {
-      r -= c.weight;
-      if (r <= 0) return c;
-    }
-    return candidates[candidates.length - 1];
-  }
-
   private async getCurrentVideoId(roomId: string): Promise<string | null> {
     const playback = await this.playbackRepo.findOne({ where: { roomId }, relations: ['track'] });
     if (playback?.track?.sourceId) return playback.track.sourceId;
@@ -430,15 +435,16 @@ export class AutoDjService {
   private async getAiCandidates(roomId: string, room: Room): Promise<WeightedCandidate[]> {
     const pool = this.pools.get(roomId);
     if (pool && pool.candidates.length > 0) {
-      if (pool.candidates.length <= 5 && !pool.refreshing) {
-        this.refreshPool(roomId, room).catch((e: unknown) =>
-          this.logger.warn(`[AI pool refill] ${(e as Error).message}`),
-        );
-      }
       return pool.candidates.map((e) => ({ track: e.track, weight: e.pinned ? 10 : 1 }));
     }
-    this.refreshPool(roomId, room).catch((e: unknown) => this.logger.warn(`[AI pool refresh] ${(e as Error).message}`));
-    return this.getRelatedCandidates(roomId);
+    // 풀이 비어있으면 채운 후 반환
+    await this.refreshPool(roomId, room);
+    const filled = this.pools.get(roomId);
+    if (filled && filled.candidates.length > 0) {
+      return filled.candidates.map((e) => ({ track: e.track, weight: e.pinned ? 10 : 1 }));
+    }
+    // AI 실패 — 빈 배열 반환 (checkAndFill에서 disableAutoDj 처리)
+    return [];
   }
 
   async refreshPool(roomId: string, room?: Room): Promise<void> {
@@ -533,11 +539,6 @@ export class AutoDjService {
 
     if (pool.candidates.length < before) {
       this.logger.debug(`[AutoDJ] Pool sync: removed ${before - pool.candidates.length} duplicates for ${roomId}`);
-    }
-
-    // 풀이 비었으면 리필
-    if (!pool.candidates.length) {
-      this.refreshPool(roomId).catch((e: unknown) => this.logger.warn(`[refreshPool] ${(e as Error).message}`));
     }
   }
 

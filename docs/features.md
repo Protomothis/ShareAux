@@ -67,11 +67,15 @@ Non-host participants can skip tracks by voting.
 
 ### Auto DJ
 
-Automatically adds tracks when the queue is empty.
+Automatically adds tracks when the queue runs low.
 
-- Enable/disable in room settings
-- Modes: Popular-based / Random / Similar to current track
-- Auto-disables on consecutive failures (notified via system message)
+- Enable/disable in room settings, start/pause in AutoDJ panel
+- **Modes**: Related, Radio, History, Popular, Mixed, Favorites, AI
+- **AI mode**: Tag-based recommendations (mood, genre, era, language) via Gemini
+- **Candidate preview**: See upcoming picks, pin/skip/enqueue individually
+- Sequential selection (top of list first, pinned priority)
+- Auto-refills when candidates are exhausted
+- Failure handling: retry with system message, auto-disable after 3 consecutive failures
 
 ---
 

@@ -9,13 +9,12 @@ import {
   favoritesControllerRemove,
   getFavoritesControllerListQueryKey,
 } from '@/api/favorites/favorites';
-import type { AddFavoriteBodyProvider } from '@/api/model';
-import { TrackProvider } from '@/api/model';
+import { AddFavoriteBodyProvider } from '@/api/model';
 
 /** toggle()에 전달할 수 있는 최소 트랙 정보 */
 export interface FavoriteTarget {
   sourceId: string;
-  provider: AddFavoriteBodyProvider | TrackProvider | string;
+  provider: AddFavoriteBodyProvider | string;
   name: string;
   artist?: string | null;
   thumbnail?: string | null;
@@ -51,7 +50,7 @@ export function useFavorites(enabled: boolean) {
           await favoritesControllerRemove(id);
         } else {
           await favoritesControllerAdd({
-            provider: TrackProvider.yt,
+            provider: AddFavoriteBodyProvider.yt,
             sourceId: track.sourceId,
             name: track.name,
             artist: track.artist ?? undefined,

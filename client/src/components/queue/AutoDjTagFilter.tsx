@@ -1,10 +1,11 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useCallback } from 'react';
 
+import { RangeSlider } from '@/components/common/RangeSlider';
 import type { ChipOption } from '@/components/ui/chip-select';
 import { ChipGroup } from '@/components/ui/chip-group';
-import { RangeSlider } from '@/components/common/RangeSlider';
 import { cn } from '@/lib/utils';
 
 export interface AutoDjTags {
@@ -81,7 +82,10 @@ export function AutoDjTagFilter({ value, onChange, className }: AutoDjTagFilterP
     icon: COUNTRY_ICONS[v],
   }));
 
-  const update = (key: keyof AutoDjTags) => (v: string[]) => onChange({ ...value, [key]: v });
+  const update = useCallback(
+    (key: keyof AutoDjTags) => (v: string[]) => onChange({ ...value, [key]: v }),
+    [value, onChange],
+  );
 
   return (
     <div className={cn('space-y-3', className)}>

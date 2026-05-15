@@ -99,36 +99,41 @@ export class AiDjGeminiService {
     const recentHistory = await this.historyRepo.find({
       where: { room: { id: roomId } },
       order: { playedAt: 'DESC' },
-      take: 5,
+      take: 10,
     });
     const recentTracks = recentHistory.length
       ? await this.trackRepo.find({ where: recentHistory.map((h) => ({ sourceId: h.sourceId })) })
       : [];
 
     const context = recentTracks.map((t) => `${t.artist ?? 'Unknown'} - ${t.name}`).join('\n');
-    const tags: AutoDjTags = (room.autoDjTags as AutoDjTags | null) ?? { mood: [], genre: [], era: [], country: [] };
+    const recentArtists = [...new Set(recentTracks.map((t) => t.artist).filter(Boolean))];
+    const tags: AutoDjTags = room.autoDjTags ?? { mood: [], genre: [], era: [], country: [] };
 
     const toLabel = (values: string[], map: Record<string, string>) => values.map((v) => map[v] ?? v).join(', ');
-    const tagDesc = [
-      tags.mood.length ? `mood: ${toLabel(tags.mood, MOOD_PROMPT)}` : '',
-      tags.genre.length ? `genre: ${toLabel(tags.genre, GENRE_PROMPT)}` : '',
-      tags.era.length ? `era: ${tags.era.join(', ')}` : '',
-      tags.country.length ? `country: ${toLabel(tags.country, COUNTRY_PROMPT)}` : '',
-      tags.taste && tags.taste !== 'neutral' ? `preference: ${TASTE_PROMPT[tags.taste] ?? ''}` : '',
-    ]
-      .filter(Boolean)
-      .join('. ');
+    const tagLines: string[] = [];
+    if (tags.mood.length) tagLines.push(`- Mood MUST be: ${toLabel(tags.mood, MOOD_PROMPT)}`);
+    if (tags.genre.length) tagLines.push(`- Genre MUST be: ${toLabel(tags.genre, GENRE_PROMPT)}`);
+    if (tags.era.length) tagLines.push(`- Era: ${tags.era.join(', ')}`);
+    if (tags.country.length) tagLines.push(`- Country/origin: ${toLabel(tags.country, COUNTRY_PROMPT)}`);
+    if (tags.taste && tags.taste !== 'neutral') tagLines.push(`- Taste: ${TASTE_PROMPT[tags.taste] ?? ''}`);
     const userPrompt = room.autoDjPrompt ?? '';
 
     return [
-      '당신은 음악 추천 전문가입니다.',
-      '아래 조건에 맞는 곡을 YouTube Music에서 찾을 수 있는 공식 음원으로 추천해주세요.',
-      '커버, 라이브, 리믹스, instrumental, 강의, 컴필레이션 제외. 1~7분 길이.',
-      `${batchSize}곡을 "아티스트 - 제목" 형식으로, 한 줄에 하나씩 출력.`,
+      'You are an expert music curator. Recommend songs that STRICTLY match ALL conditions below.',
       '',
-      recentTracks.length ? `최근 재생:\n${context}` : '',
-      tagDesc ? `조건: ${tagDesc}` : '',
-      userPrompt ? `추가 요청: ${userPrompt}` : '',
+      'Rules:',
+      '- Only real, officially released songs (if unsure, exclude)',
+      '- Maximum 1 song per artist',
+      recentArtists.length ? `- Exclude these artists: ${recentArtists.join(', ')}` : '',
+      '- No covers, live versions, remixes, instrumentals, tutorials, or compilations',
+      '- Duration: 1~7 minutes',
+      '- Pick from diverse artists, eras, and regions',
+      '',
+      recentTracks.length ? `Recently played (for context, do NOT repeat):\n${context}` : '',
+      tagLines.length ? `\nRequired conditions (every song must match):\n${tagLines.join('\n')}` : '',
+      userPrompt ? `\nAdditional request: ${userPrompt}` : '',
+      '',
+      `Output exactly ${batchSize} songs in "Artist - Title" format, one per line. Nothing else.`,
     ]
       .filter(Boolean)
       .join('\n');
