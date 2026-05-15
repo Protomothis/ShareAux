@@ -15,6 +15,9 @@ export enum SystemChatEvent {
   RoomClosed = 'roomClosed',
   AutoDjEnabled = 'autoDjEnabled',
   AutoDjDisabled = 'autoDjDisabled',
+  AutoDjNoCandidates = 'autoDjNoCandidates',
+  AutoDjRetry = 'autoDjRetry',
+  AutoDjFreshness = 'autoDjFreshness',
   EnqueueCountsReset = 'enqueueCountsReset',
   ChatCleared = 'chatCleared',
 }

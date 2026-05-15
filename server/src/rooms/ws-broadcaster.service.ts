@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { WebSocket } from 'ws';
 
-import type { WsClient } from '../types/index.js';
+import type { WsClient, WsPayloadMap } from '../types/index.js';
 import { WsEvent, WsOpCode } from '../types/index.js';
 
 /**
@@ -33,7 +33,13 @@ export class WsBroadcaster {
     });
   }
 
-  broadcastSystem(roomId: string, event: WsEvent, detail: string, data?: unknown): void {
+  broadcastSystem<E extends WsEvent>(
+    roomId: string,
+    event: E,
+    detail: string,
+    ...args: undefined extends WsPayloadMap[E] ? [data?: WsPayloadMap[E]] : [data: WsPayloadMap[E]]
+  ): void {
+    const data = args[0];
     const msg = JSON.stringify({ event, detail, ...(data ? { data } : {}) });
     const buf = Buffer.alloc(1 + Buffer.byteLength(msg));
     buf[0] = WsOpCode.System;

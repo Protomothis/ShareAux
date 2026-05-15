@@ -5,9 +5,9 @@ import { ArrayMaxSize, ArrayMinSize, IsNumber, IsOptional, IsString, ValidateNes
 import { Provider } from '../../types/provider.enum.js';
 
 export class TrackSource {
-  @ApiProperty({ enum: Provider, default: Provider.YT })
+  @ApiProperty({ enum: Provider, enumName: 'Provider', default: Provider.YT })
   @IsString()
-  provider!: string;
+  provider!: Provider;
 
   @ApiProperty()
   @IsString()

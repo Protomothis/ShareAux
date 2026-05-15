@@ -163,6 +163,8 @@
     "autoDj": {
       "helpAutoDj": "Select a mode to auto-add tracks when the queue is empty. AI mode uses Gemini to recommend based on tags. Pause stops auto-adding.",
       "aiGuide": "Select tags to narrow recommendations. Leave empty for broad suggestions.",
+      "tagSettings": "Tag settings",
+      "refresh": "Refresh",
       "guideRelated": "Automatically adds tracks similar to the currently playing song.",
       "guideRadio": "Adds varied tracks in a radio style based on the current song.",
       "guideHistory": "Adds tracks previously played in this room.",
@@ -358,7 +360,10 @@
       "voteSkipPassed": "Skip vote passed",
       "userTrackAdded": "{nickname} added \"{trackName}\" and {count} more",
       "userTrackAddedSingle": "{nickname} added \"{trackName}\"",
-      "chatCleared": "Chat has been cleared"
+      "chatCleared": "Chat has been cleared",
+      "autoDjNoCandidates": "🤖 Could not find songs to recommend",
+      "autoDjRetry": "🤖 No recommendations found. Will retry shortly",
+      "autoDjFreshness": "🤖 All candidates were recently played"
     },
     "paletteEmpty": "No items to display"
   },
@@ -977,6 +982,9 @@
     "trackCount": "{count} tracks"
   },
   "room": {
+    "roomNotFound": "Room not found",
+    "roomNotFoundDesc": "This room has ended or does not exist",
+    "backToRooms": "Back to rooms",
     "chat": "Chat",
     "queue": "Queue",
     "history": "History",

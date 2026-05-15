@@ -8,6 +8,7 @@ import helmet from 'helmet';
 
 import { AppModule } from './app.module.js';
 import { SharedEnums } from './common/dto/shared-enums.schema.js';
+import { WsPayloadsSchema } from './common/dto/ws-payloads.schema.js';
 import { ErrorResponseDto } from './filters/dto/error-response.dto.js';
 import { GlobalExceptionFilter } from './filters/http-exception.filter.js';
 import { SystemChatMessage } from './rooms/dto/system-chat-message.dto.js';
@@ -45,7 +46,7 @@ async function bootstrap() {
       .addBearerAuth()
       .build();
     const document = SwaggerModule.createDocument(app, config, {
-      extraModels: [SharedEnums, ErrorResponseDto, SystemChatMessage],
+      extraModels: [SharedEnums, WsPayloadsSchema, ErrorResponseDto, SystemChatMessage],
     });
     SwaggerModule.setup('api/docs', app, document);
   }

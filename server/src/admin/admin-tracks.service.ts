@@ -8,6 +8,7 @@ import { TrackStats } from '../entities/track-stats.entity.js';
 import { TrackVote } from '../entities/track-vote.entity.js';
 import { AppException } from '../exceptions/app.exception.js';
 import { ErrorCode } from '../types/error-code.enum.js';
+import { LyricsStatus } from '../types/lyrics.types.js';
 import { MetaStatus } from '../types/meta-status.enum.js';
 
 @Injectable()
@@ -64,7 +65,7 @@ export class AdminTracksService {
 
   async resetTrackLyrics(trackId: string) {
     await this.trackRepo.update(trackId, {
-      lyricsStatus: 'searching',
+      lyricsStatus: LyricsStatus.Searching,
       lyricsData: null,
       lyricsLang: null,
       lyricsType: null,

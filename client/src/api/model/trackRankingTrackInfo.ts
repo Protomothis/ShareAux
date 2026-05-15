@@ -5,7 +5,7 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
-import type { TrackRankingTrackInfoLyricsStatus } from './trackRankingTrackInfoLyricsStatus';
+import type { LyricsStatus } from './lyricsStatus';
 import type { MetaStatus } from './metaStatus';
 import type { TrackRankingTrackInfoLyricsType } from './trackRankingTrackInfoLyricsType';
 
@@ -20,7 +20,7 @@ export interface TrackRankingTrackInfo {
   songArtist?: string | null;
   /** @nullable */
   songAlbum?: string | null;
-  lyricsStatus: TrackRankingTrackInfoLyricsStatus;
+  lyricsStatus: LyricsStatus;
   /** @nullable */
   lyricsLang?: string | null;
   metaStatus: MetaStatus;

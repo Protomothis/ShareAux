@@ -1,9 +1,12 @@
-import type { LyricsType } from './lyrics-type.enum.js';
-
 export enum LyricsStatus {
   Searching = 'searching',
   Found = 'found',
-  NotFound = 'not_found',
+  NotFound = 'notFound',
+}
+
+export enum LyricsType {
+  Plain = 'plain',
+  Synced = 'synced',
 }
 
 export interface LyricsResult {

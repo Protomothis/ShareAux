@@ -13,6 +13,6 @@ export type TrackLyricsType = (typeof TrackLyricsType)[keyof typeof TrackLyricsT
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const TrackLyricsType = {
+  plain: 'plain',
   synced: 'synced',
-  karaoke: 'karaoke',
 } as const;

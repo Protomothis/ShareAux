@@ -9,7 +9,7 @@ export { GuestPermission } from './guest-permission.enum.js';
 export { Language } from './language.enum.js';
 export type { LyricsResult } from './lyrics.types.js';
 export { TranslationLang } from './translation-lang.enum.js';
-export { LyricsStatus } from './lyrics.types.js';
+export { LyricsStatus, LyricsType } from './lyrics.types.js';
 export { MetaStatus } from './meta-status.enum.js';
 export {
   DEFAULT_GUEST_PERMISSIONS,
@@ -28,3 +28,4 @@ export type { ChatHistoryEntry, WsClient } from './ws.types.js';
 export { WsOpCode } from './ws.types.js';
 export { WsEvent } from './ws-event.enum.js';
 export type { AudioInfo } from './ytdlp.types.js';
+export type { WsPayloadMap } from './ws-payload-map.js';

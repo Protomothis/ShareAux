@@ -12,7 +12,7 @@ import {
   adminTracksControllerResetTrackMeta,
 } from '@/api/admin/admin';
 import type { TrackRankingItem } from '@/api/model';
-import { MetaStatus,TrackRankingTrackInfoLyricsStatus, TrackRankingTrackInfoLyricsType } from '@/api/model';
+import { MetaStatus, LyricsStatus, LyricsType } from '@/api/model';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import Modal from '@/components/common/Modal';
 import { Button } from '@/components/ui/button';
@@ -41,7 +41,7 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
     setLyrics(null);
     setTranslated(null);
     setLyricsTab('original');
-    if (!track || track.track.lyricsStatus !== TrackRankingTrackInfoLyricsStatus.found) return;
+    if (!track || track.track.lyricsStatus !== LyricsStatus.found) return;
     setLyricsLoading(true);
     adminTracksControllerGetTrackLyrics(track.trackId)
       .then((r) => {
@@ -113,18 +113,18 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
           <div className="flex items-center justify-between">
             <span className="text-sa-text-muted">{t('lyrics')}</span>
             <div className="flex items-center gap-1.5">
-              {track.track.lyricsStatus === TrackRankingTrackInfoLyricsStatus.found ? (
+              {track.track.lyricsStatus === LyricsStatus.found ? (
                 <StatusBadge variant="success">
-                  {track.track.lyricsType === TrackRankingTrackInfoLyricsType.karaoke ? 'KLRC' : 'LRC'}{' '}
+                  {track.track.lyricsType === LyricsType.synced ? 'KLRC' : 'LRC'}{' '}
                   {track.track.lyricsLang?.toUpperCase() ?? ''}
                   {track.track.hasTranslation ? t('translated') : ''}
                 </StatusBadge>
-              ) : track.track.lyricsStatus === TrackRankingTrackInfoLyricsStatus.not_found ? (
+              ) : track.track.lyricsStatus === LyricsStatus.notFound ? (
                 <StatusBadge variant="danger">{t('noLyrics')}</StatusBadge>
               ) : (
                 <StatusBadge variant="muted">{t('searching')}</StatusBadge>
               )}
-              {track.track.lyricsStatus !== TrackRankingTrackInfoLyricsStatus.searching && (
+              {track.track.lyricsStatus !== LyricsStatus.searching && (
                 <Button
                   variant="ghost"
                   size="icon-xs"
@@ -140,7 +140,7 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
                             ...prev,
                             track: {
                               ...prev.track,
-                              lyricsStatus: TrackRankingTrackInfoLyricsStatus.searching,
+                              lyricsStatus: LyricsStatus.searching,
                               lyricsLang: null,
                               lyricsType: null,
                               hasTranslation: false,

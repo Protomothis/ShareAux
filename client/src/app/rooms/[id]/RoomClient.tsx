@@ -21,6 +21,7 @@ import {
 } from '@/api/rooms/rooms';
 import Chat from '@/components/chat/Chat';
 import { MinLoading } from '@/components/common/MinLoading';
+import { SlotErrorBoundary } from '@/components/common/SlotErrorBoundary';
 import { WsDisconnectBanner } from '@/components/common/WsDisconnectBanner';
 import type { CastState } from '@/components/player/CastButton';
 import Player from '@/components/player/Player';
@@ -303,13 +304,13 @@ export default function RoomClient({ id }: { id: string }) {
     setTrack(playerData.track);
     trackRef.current = playerData.track;
     setTimeSync({ base: (playerData.elapsedMs ?? 0) + (getOneWayRef.current() ?? 0), at: Date.now() });
-    if (playerData.streamState) setStreamState(playerData.streamState as StreamState);
+    if (playerData.streamState) setStreamState(playerData.streamState);
     if (playerData.streamCodec) setStreamCodec(playerData.streamCodec);
     if (playerData.streamBitrate) setStreamBitrate(playerData.streamBitrate);
     if (playerData.transStatus !== undefined) setTransStatus(playerData.transStatus ?? null);
     const ls = playerData.track.lyricsStatus;
-    if (ls === 'found') setLyricsStatus(LyricsStatus.Found);
-    else if (ls === 'not_found') setLyricsStatus(LyricsStatus.NotFound);
+    if (ls === 'found') setLyricsStatus(LyricsStatus.found);
+    else if (ls === LyricsStatus.notFound) setLyricsStatus(LyricsStatus.notFound);
   }, [
     playerData,
     id,
@@ -489,10 +490,10 @@ export default function RoomClient({ id }: { id: string }) {
       return (
         <div className="fixed inset-0 flex flex-col items-center justify-center bg-room-gradient text-white">
           <p className="mb-2 text-4xl">🎵</p>
-          <p className="mb-1 text-lg font-semibold">방을 찾을 수 없습니다</p>
-          <p className="mb-6 text-sm text-white/50">종료되었거나 존재하지 않는 방입니다</p>
+          <p className="mb-1 text-lg font-semibold">{t('roomNotFound')}</p>
+          <p className="mb-6 text-sm text-white/50">{t('roomNotFoundDesc')}</p>
           <Button variant="accent" onClick={() => router.push('/rooms')}>
-            방 목록으로
+            {t('backToRooms')}
           </Button>
         </div>
       );
@@ -522,9 +523,21 @@ export default function RoomClient({ id }: { id: string }) {
 
       <RoomLayout
         banner={<WsDisconnectBanner connected={wsConnected} />}
-        player={<Player {...playerProps} />}
-        chat={<Chat {...chatProps} />}
-        members={<MemberList {...memberListProps} />}
+        player={
+          <SlotErrorBoundary>
+            <Player {...playerProps} />
+          </SlotErrorBoundary>
+        }
+        chat={
+          <SlotErrorBoundary>
+            <Chat {...chatProps} />
+          </SlotErrorBoundary>
+        }
+        members={
+          <SlotErrorBoundary>
+            <MemberList {...memberListProps} />
+          </SlotErrorBoundary>
+        }
         queuePanel={
           <DesktopQueuePanel
             roomId={id}

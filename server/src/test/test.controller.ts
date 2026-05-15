@@ -13,11 +13,12 @@ import { QueueService } from '../queue/queue.service.js';
 import { RoomsGateway } from '../rooms/rooms.gateway.js';
 import { RoomsService } from '../rooms/rooms.service.js';
 import { AuthProvider } from '../types/auth-provider.enum.js';
+import { Provider } from '../types/provider.enum.js';
 import { UserRole } from '../types/user-role.enum.js';
 
 const NCS_TRACKS = [
   {
-    provider: 'yt',
+    provider: Provider.YT,
     sourceId: 'TW9d8vYrVFQ',
     name: 'Elektronomia — Sky High',
     artist: 'Elektronomia',
@@ -25,7 +26,7 @@ const NCS_TRACKS = [
     durationMs: 283000,
   },
   {
-    provider: 'yt',
+    provider: Provider.YT,
     sourceId: 'J2X5mJ3HDYE',
     name: 'DEAF KEV — Invincible',
     artist: 'DEAF KEV',
@@ -33,7 +34,7 @@ const NCS_TRACKS = [
     durationMs: 253000,
   },
   {
-    provider: 'yt',
+    provider: Provider.YT,
     sourceId: 'K4DyBUG242c',
     name: 'Cartoon — On & On',
     artist: 'Cartoon ft. Daniel Levi',
@@ -41,7 +42,7 @@ const NCS_TRACKS = [
     durationMs: 208000,
   },
   {
-    provider: 'yt',
+    provider: Provider.YT,
     sourceId: '__CRWE-L45k',
     name: 'Tobu — Candyland',
     artist: 'Tobu',
@@ -49,7 +50,7 @@ const NCS_TRACKS = [
     durationMs: 219000,
   },
   {
-    provider: 'yt',
+    provider: Provider.YT,
     sourceId: 'n1WpP7iowLc',
     name: 'Elektronomia — Energy',
     artist: 'Elektronomia',

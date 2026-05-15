@@ -142,10 +142,10 @@ export default function Player({
           elapsed={elapsed}
           elapsedBase={elapsedBase}
           syncTime={syncTime}
-          lyricsStatus={lyricsStatus ?? LyricsStatus.Searching}
+          lyricsStatus={lyricsStatus ?? LyricsStatus.searching}
           trackId={track?.id}
           lyricsVersion={lyricsVersion}
-          karaoke={lyricsType === TrackLyricsType.karaoke}
+          karaoke={lyricsType === TrackLyricsType.synced}
         />
       </div>
 

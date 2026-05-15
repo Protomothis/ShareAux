@@ -50,7 +50,7 @@ export const HostPlaying: Story = {
     syncTime: Date.now(),
     streamCodec: 'opus',
     streamBitrate: 128,
-    lyricsStatus: LyricsStatus.Found,
+    lyricsStatus: LyricsStatus.found,
   },
 };
 

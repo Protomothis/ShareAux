@@ -17,7 +17,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { useInvalidate } from '@/hooks/useQueries';
 import { useQueueDnd } from '@/hooks/useQueueDnd';
 import { MAX_QUEUE_SIZE } from '@/lib/constants';
-import type { AutoDjStatus, FavoriteActions, TrackVoteMap } from '@/types';
+import type { FavoriteActions, TrackVoteMap } from '@/types';
+import { AutoDjStatus } from '@/api/model';
 
 import QueueTrackItem from './QueueTrackItem';
 import SearchModal from './SearchModal';
@@ -59,7 +60,7 @@ export default function Queue({
   isGuest = false,
   maxSelectPerAdd = 3,
   trackVotes,
-  autoDjStatus = 'idle',
+  autoDjStatus = AutoDjStatus.idle,
   favorites,
 }: QueueProps) {
   const { data: queue = [] } = useQueueControllerGetQueue(roomId);
@@ -180,8 +181,7 @@ export default function Queue({
                       favLoading={favLoadingIds.has(item.track.sourceId)}
                       onToggleFavorite={() =>
                         toggleFavorite({
-                          provider: item.track
-                            .provider as unknown as SearchResultItem['provider'],
+                          provider: item.track.provider as unknown as SearchResultItem['provider'],
                           sourceId: item.track.sourceId,
                           name: item.track.name,
                           artist: item.track.artist ?? null,
@@ -202,7 +202,7 @@ export default function Queue({
         )}
 
         <AnimatePresence>
-          {autoDjStatus !== 'idle' && (
+          {autoDjStatus !== AutoDjStatus.idle && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
@@ -212,7 +212,7 @@ export default function Queue({
             >
               <div className="flex items-center justify-center gap-2 py-2 text-xs text-white/30">
                 <span className="animate-pulse">🤖</span>
-                <span>{autoDjStatus === 'thinking' ? t('autoDjThinking') : t('autoDjAdding')}</span>
+                <span>{autoDjStatus === AutoDjStatus.thinking ? t('autoDjThinking') : t('autoDjAdding')}</span>
               </div>
             </motion.div>
           )}

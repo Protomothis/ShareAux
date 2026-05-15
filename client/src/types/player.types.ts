@@ -25,11 +25,8 @@ export type TrackVoteMap = Map<string, { likes: number; dislikes: number }>;
 /** 큐 아이템 shimmer 색상 */
 export type ShimmerVariant = 'accent' | 'white';
 
-export enum LyricsStatus {
-  Searching = 'searching',
-  Found = 'found',
-  NotFound = 'not_found',
-}
+/** swagger 기반 LyricsStatus (server LyricsStatus enum) */
+export { LyricsStatus } from '@/api/model';
 
 /** Enhanced LRC word-level 타임스탬프 */
 export interface LyricWord {
