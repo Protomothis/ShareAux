@@ -34,7 +34,7 @@ export class FavoritesService {
     });
     return favs.map((f) => ({
       id: f.id,
-      provider: f.track.provider as Provider,
+      provider: f.track.provider,
       sourceId: f.track.sourceId,
       name: f.track.name,
       artist: f.track.artist,

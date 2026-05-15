@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
-import { LyricsType } from '../types/lyrics-type.enum.js';
+import { LyricsStatus, LyricsType } from '../types/index.js';
 import { MetaStatus } from '../types/meta-status.enum.js';
 import { Provider } from '../types/provider.enum.js';
 import type { TrackStats } from './track-stats.entity.js';
@@ -13,9 +13,9 @@ export class Track {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ApiProperty({ enum: Provider, default: Provider.YT })
+  @ApiProperty({ enum: Provider, enumName: 'Provider', default: Provider.YT })
   @Column({ type: 'varchar', default: Provider.YT })
-  provider!: string;
+  provider!: Provider;
 
   @ApiProperty()
   @Column({ name: 'source_id' })
@@ -70,9 +70,17 @@ export class Track {
   metaStatus!: MetaStatus;
 
   /** 가사 검색 상태: searching → found / not_found */
-  @ApiProperty({ enum: ['searching', 'found', 'not_found'], default: 'searching' })
-  @Column({ type: 'varchar', name: 'lyrics_status', default: 'searching' })
-  lyricsStatus!: 'searching' | 'found' | 'not_found';
+  @ApiProperty({ enum: LyricsStatus, enumName: 'LyricsStatus', default: 'searching' })
+  @Column({
+    type: 'varchar',
+    name: 'lyrics_status',
+    default: 'searching',
+    transformer: {
+      to: (v: LyricsStatus) => (v === LyricsStatus.NotFound ? 'not_found' : v),
+      from: (v: string) => (v === 'not_found' ? LyricsStatus.NotFound : (v as LyricsStatus)),
+    },
+  })
+  lyricsStatus!: LyricsStatus;
 
   /** synced LRC 가사 데이터 (found일 때만) */
   @Column({ type: 'text', nullable: true, name: 'lyrics_data', select: false })

@@ -304,13 +304,13 @@ export default function RoomClient({ id }: { id: string }) {
     setTrack(playerData.track);
     trackRef.current = playerData.track;
     setTimeSync({ base: (playerData.elapsedMs ?? 0) + (getOneWayRef.current() ?? 0), at: Date.now() });
-    if (playerData.streamState) setStreamState(playerData.streamState as StreamState);
+    if (playerData.streamState) setStreamState(playerData.streamState);
     if (playerData.streamCodec) setStreamCodec(playerData.streamCodec);
     if (playerData.streamBitrate) setStreamBitrate(playerData.streamBitrate);
     if (playerData.transStatus !== undefined) setTransStatus(playerData.transStatus ?? null);
     const ls = playerData.track.lyricsStatus;
-    if (ls === 'found') setLyricsStatus(LyricsStatus.Found);
-    else if (ls === 'not_found') setLyricsStatus(LyricsStatus.NotFound);
+    if (ls === 'found') setLyricsStatus(LyricsStatus.found);
+    else if (ls === LyricsStatus.notFound) setLyricsStatus(LyricsStatus.notFound);
   }, [
     playerData,
     id,

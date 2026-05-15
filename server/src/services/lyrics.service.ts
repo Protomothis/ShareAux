@@ -7,7 +7,7 @@ import { promisify } from 'util';
 
 import { Track } from '../entities/track.entity.js';
 import type { LyricsResult } from '../types/index.js';
-import { LyricsType } from '../types/lyrics-type.enum.js';
+import { LyricsStatus, LyricsType } from '../types/index.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -59,14 +59,14 @@ export class LyricsService {
         .addSelect('t.lyrics_data', 't_lyrics_data')
         .where('t.id = :trackId', { trackId })
         .getOne();
-      if (existing?.lyricsStatus === 'found' && existing.lyricsData) {
+      if (existing?.lyricsStatus === LyricsStatus.Found && existing.lyricsData) {
         return {
           syncedLyrics: existing.lyricsData,
-          lyricsType: existing.lyricsType ?? LyricsType.SYNCED,
+          lyricsType: existing.lyricsType ?? LyricsType.Synced,
           lang: existing.lyricsLang,
         };
       }
-      if (existing?.lyricsStatus === 'not_found') {
+      if (existing?.lyricsStatus === LyricsStatus.NotFound) {
         // 24시간 후 재시도 허용
         const age = Date.now() - new Date(existing.fetchedAt).getTime();
         if (age < 24 * 60 * 60_000) return null;
@@ -84,7 +84,7 @@ export class LyricsService {
     // DB에 저장
     if (trackId) {
       await this.trackRepo.update(trackId, {
-        lyricsStatus: result?.syncedLyrics ? 'found' : 'not_found',
+        lyricsStatus: result?.syncedLyrics ? LyricsStatus.Found : LyricsStatus.NotFound,
         lyricsData: result?.syncedLyrics ?? null,
         lyricsType: result?.lyricsType ?? null,
         lyricsLang: result?.syncedLyrics ? detectLang(result.syncedLyrics) : null,
@@ -112,7 +112,7 @@ export class LyricsService {
       const klrc = await this.runSyncedlyrics(q, true);
       if (klrc) {
         this.logger.log(`KLRC found for "${q}"`);
-        return { syncedLyrics: klrc, lyricsType: LyricsType.KARAOKE };
+        return { syncedLyrics: klrc, lyricsType: LyricsType.Synced };
       }
     }
 
@@ -160,7 +160,7 @@ export class LyricsService {
   private async trySearch(query: string): Promise<LyricsResult | null> {
     // LRC만 시도 (KLRC는 getLyrics 1순위에서 이미 시도)
     const synced = await this.runSyncedlyrics(query, false);
-    if (synced) return { syncedLyrics: synced, lyricsType: LyricsType.SYNCED };
+    if (synced) return { syncedLyrics: synced, lyricsType: LyricsType.Synced };
     return null;
   }
 
@@ -193,7 +193,7 @@ export class LyricsService {
       }[];
       if (!results.length) return null;
       const matched = results.find((r) => r.duration && Math.abs(r.duration - duration) < 10 && r.syncedLyrics);
-      if (matched?.syncedLyrics) return { syncedLyrics: matched.syncedLyrics, lyricsType: LyricsType.SYNCED };
+      if (matched?.syncedLyrics) return { syncedLyrics: matched.syncedLyrics, lyricsType: LyricsType.Synced };
       return null;
     } catch (e) {
       this.logger.warn('LRCLIB API failed', e instanceof Error ? e.message : e);

@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
+import type { AutoDjTags } from '../types/index.js';
 import { AutoDjMode } from '../types/index.js';
 import { AutoDjTagsDto } from '../common/dto/auto-dj-tags.dto.js';
 import { User } from './user.entity.js';
@@ -100,7 +101,7 @@ export class Room {
     type: () => AutoDjTagsDto,
   })
   @Column({ type: 'jsonb', nullable: true, name: 'auto_dj_tags' })
-  autoDjTags!: Record<string, string[]> | null;
+  autoDjTags!: AutoDjTags | null;
 
   @ApiProperty({ required: false, nullable: true, description: 'AI DJ 직접 입력 프롬프트' })
   @Column({ type: 'varchar', length: 200, nullable: true, name: 'auto_dj_prompt' })

@@ -235,7 +235,7 @@ export class RoomsService implements OnModuleInit {
     await this.roomRepo.remove(room);
   }
 
-  async update(roomId: string, hostId: string, dto: UpdateRoomDto): Promise<Room> {
+  async update(roomId: string, hostId: string, dto: Partial<UpdateRoomDto>): Promise<Room> {
     const room = await this.roomRepo.findOneBy({ id: roomId, isActive: true });
     if (!room) throw new AppException(ErrorCode.ROOM_001);
     if (room.hostId !== hostId) throw new AppException(ErrorCode.ROOM_004);
@@ -256,7 +256,7 @@ export class RoomsService implements OnModuleInit {
     if (dto.autoDjThreshold !== undefined) room.autoDjThreshold = dto.autoDjThreshold;
     if (dto.autoDjFolderId !== undefined) room.autoDjFolderId = dto.autoDjFolderId ?? null;
     if (dto.autoDjFavFallbackMixed !== undefined) room.autoDjFavFallbackMixed = dto.autoDjFavFallbackMixed;
-    if (dto.autoDjTags !== undefined) room.autoDjTags = dto.autoDjTags as Record<string, string[]> | null;
+    if (dto.autoDjTags !== undefined) room.autoDjTags = dto.autoDjTags ?? null;
     if (dto.autoDjPrompt !== undefined) room.autoDjPrompt = dto.autoDjPrompt ?? null;
     if (dto.autoDjPaused !== undefined) room.autoDjPaused = dto.autoDjPaused;
     const saved = await this.roomRepo.save(room);

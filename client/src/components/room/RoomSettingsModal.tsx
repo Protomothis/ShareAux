@@ -29,7 +29,7 @@ interface RoomSettingsModalProps {
   defaultEnqueueEnabled: boolean;
   defaultVoteSkipEnabled: boolean;
   autoDjEnabled: boolean;
-  autoDjMode: string;
+  autoDjMode: AutoDjMode;
   autoDjThreshold: number;
   autoDjFolderId?: string | null;
   autoDjFavFallbackMixed?: boolean;
@@ -66,7 +66,7 @@ export default function RoomSettingsModal({
     maxSelectPerAdd,
     replayCooldownMin,
     autoDjEnabled,
-    autoDjMode: autoDjMode as AutoDjMode,
+    autoDjMode,
     autoDjThreshold,
     autoDjFolderId: autoDjFolderId ?? null,
     autoDjFavFallbackMixed: autoDjFavFallbackMixed ?? false,
@@ -104,7 +104,7 @@ export default function RoomSettingsModal({
       maxSelectPerAdd,
       replayCooldownMin,
       autoDjEnabled,
-      autoDjMode: autoDjMode as AutoDjMode,
+      autoDjMode,
       autoDjThreshold,
       autoDjFolderId: autoDjFolderId ?? null,
       autoDjFavFallbackMixed: autoDjFavFallbackMixed ?? false,

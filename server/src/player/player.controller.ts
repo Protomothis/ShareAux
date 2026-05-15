@@ -16,7 +16,7 @@ import { AutoDjService } from '../services/auto-dj.service.js';
 import { LyricsService } from '../services/lyrics.service.js';
 import { TranslationService } from '../services/translation.service.js';
 import { ErrorCode } from '../types/error-code.enum.js';
-import type { AuthenticatedRequest } from '../types/index.js';
+import type { AuthenticatedRequest, AutoDjStatus } from '../types/index.js';
 import { LyricsStatus, Permission, PushEvent, WsEvent } from '../types/index.js';
 import { MetaStatus } from '../types/meta-status.enum.js';
 import { PUSH_EVENT, pushPayload } from '../types/push-event-payload.js';
@@ -96,7 +96,7 @@ export class PlayerController {
   // ─── AutoDJ Event Listeners ───
 
   @OnEvent('autodj.status')
-  handleAutoDjStatus(roomId: string, status: string, reason?: string): void {
+  handleAutoDjStatus(roomId: string, status: AutoDjStatus, reason?: string): void {
     this.gateway.broadcastSystem(roomId, WsEvent.AutoDjStatus, '', { status, reason });
     if (status === 'disabled') this.gateway.broadcastSystem(roomId, WsEvent.RoomUpdated, '');
   }
@@ -304,7 +304,7 @@ export class PlayerController {
       .getOne();
 
     // 가사가 아직 없으면 검색
-    if (!track?.lyricsData && track?.lyricsStatus !== 'not_found') {
+    if (!track?.lyricsData && track?.lyricsStatus !== LyricsStatus.NotFound) {
       const result = await this.lyricsService.getLyrics(
         status.track.name,
         status.track.durationMs / 1000,

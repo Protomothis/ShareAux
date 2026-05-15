@@ -22,6 +22,12 @@
 ## 공통 규칙
 
 - TypeScript strict 모드. `any` 사용 금지 — `unknown` 사용
+- **`as` 타입 캐스팅 금지** — 캐스팅이 필요하면 타입 정의가 잘못된 것. 근본 수정:
+  - 서버 → 클라이언트: DTO/enum을 서버에서 정확히 정의 → Swagger → orval 자동 생성
+  - DB ↔ 코드 불일치: TypeORM transformer로 변환
+  - jsonb 컬럼: 엔티티에 정확한 타입 선언
+  - 외부 API JSON: 전용 interface 정의 후 제네릭 파싱 (`fetch<T>`)
+  - 허용 예외: 외부 라이브러리 내부 접근(passport 등), `as const`, `as Error`
 - 조기 리턴 선호 (중첩 조건문 지양)
 - 한국어 주석 허용, 코드 식별자는 영어
 - 환경 변수 하드코딩 금지

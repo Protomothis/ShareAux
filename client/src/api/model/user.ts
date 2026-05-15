@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 import type { UserProvider } from './userProvider';
-import type { UserRole } from './userRole';
+import type { UserRoleProperty } from './userRoleProperty';
 import type { UserInviteCode } from './userInviteCode';
 import type { UserAccountPermissionsItem } from './userAccountPermissionsItem';
 
@@ -22,7 +22,7 @@ export interface User {
   nickname: string;
   /** @nullable */
   avatarUrl?: string | null;
-  role: UserRole;
+  role: UserRoleProperty;
   /** @nullable */
   inviteCode?: UserInviteCode;
   accountPermissions: UserAccountPermissionsItem[];

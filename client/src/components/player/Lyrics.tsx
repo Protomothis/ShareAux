@@ -250,7 +250,7 @@ export default function Lyrics({
         transStatus: r.transStatus ?? null,
       };
     },
-    enabled: !!trackId && lyricsStatus === LyricsStatus.Found,
+    enabled: !!trackId && lyricsStatus === LyricsStatus.found,
     staleTime: 30_000,
     retry: 1,
   });
@@ -301,11 +301,11 @@ export default function Lyrics({
     </div>
   );
 
-  if (lyricsStatus === LyricsStatus.Searching && !lines.length && trackId) {
+  if (lyricsStatus === LyricsStatus.searching && !lines.length && trackId) {
     return shell('가사 검색 중...', 'text-white/20');
   }
   if (!lines.length) {
-    return shell(lyricsStatus === LyricsStatus.NotFound ? '가사 없음' : '♪');
+    return shell(lyricsStatus === LyricsStatus.notFound ? '가사 없음' : '♪');
   }
 
   // ─── Current index ─────────────────────────────────

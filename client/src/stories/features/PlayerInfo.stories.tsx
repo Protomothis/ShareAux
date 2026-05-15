@@ -29,7 +29,7 @@ export const Playing: Story = {
     isPlaying: true,
     streamCodec: 'opus',
     streamBitrate: 128,
-    lyricsStatus: LyricsStatus.Found,
+    lyricsStatus: LyricsStatus.found,
   },
 };
 

@@ -11,4 +11,5 @@ export interface AutoDjTagsDto {
   genre: string[];
   era: string[];
   country: string[];
+  taste?: string;
 }

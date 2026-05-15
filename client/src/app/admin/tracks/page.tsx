@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import type { TrackRankingItem } from '@/api/model';
-import { MetaStatus, TrackRankingTrackInfoLyricsStatus, TrackRankingTrackInfoLyricsType } from '@/api/model';
+import { LyricsStatus, LyricsType, MetaStatus } from '@/api/model';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import type { Column } from '@/components/admin/AdminTable';
 import { AdminTable } from '@/components/admin/AdminTable';
@@ -81,13 +81,13 @@ export default function AdminTracksPage() {
         const s = item.track.lyricsStatus;
         const lang = item.track.lyricsLang;
         const translated = item.track.hasTranslation;
-        const type = item.track.lyricsType === TrackRankingTrackInfoLyricsType.karaoke ? 'KLRC' : 'LRC';
-        return s === TrackRankingTrackInfoLyricsStatus.found ? (
+        const type = item.track.lyricsType === LyricsType.synced ? 'KLRC' : 'LRC';
+        return s === LyricsStatus.found ? (
           <StatusBadge variant="success">
             {type} {lang?.toUpperCase() ?? ''}
             {translated ? t('translated') : ''}
           </StatusBadge>
-        ) : s === TrackRankingTrackInfoLyricsStatus.not_found ? (
+        ) : s === LyricsStatus.notFound ? (
           <StatusBadge variant="danger">{t('noLyrics')}</StatusBadge>
         ) : (
           <StatusBadge variant="muted">{t('searching')}</StatusBadge>

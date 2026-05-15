@@ -81,7 +81,7 @@ export class RoomsController {
     if (dto.autoDjEnabled !== undefined && prevAutoDj !== dto.autoDjEnabled) {
       if (dto.autoDjEnabled) {
         // 활성화 시 paused 상태로 시작 — 패널에서 직접 시작해야 동작
-        await this.rooms.update(id, req.user.userId, { autoDjPaused: true } as UpdateRoomDto);
+        await this.rooms.update(id, req.user.userId, { autoDjPaused: true });
         this.autoDj.resetFailCount(id);
         this.gateway.broadcastSystem(id, WsEvent.AutoDjEnabled, '');
       } else {
@@ -125,11 +125,7 @@ export class RoomsController {
     if (result.roomClosed) {
       this.gateway.broadcastSystem(id, WsEvent.RoomClosed, '');
     } else if (result.hostChanged) {
-      this.gateway.broadcastSystem(
-        id,
-        WsEvent.HostChanged,
-        `${result.hostChanged.nickname}님이 새 호스트가 되었습니다`,
-      );
+      this.gateway.broadcastSystem(id, WsEvent.HostChanged, '', { nickname: result.hostChanged.nickname });
     }
     return result;
   }

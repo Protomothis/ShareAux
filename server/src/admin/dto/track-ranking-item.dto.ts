@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-import { LyricsType } from '../../types/lyrics-type.enum.js';
+import { LyricsStatus, LyricsType } from '../../types/index.js';
 import { MetaStatus } from '../../types/meta-status.enum.js';
 
 export class TrackRankingTrackInfo {
@@ -22,8 +22,8 @@ export class TrackRankingTrackInfo {
   @ApiPropertyOptional({ nullable: true })
   songAlbum!: string | null;
 
-  @ApiProperty({ enum: ['searching', 'found', 'not_found'] })
-  lyricsStatus!: 'searching' | 'found' | 'not_found';
+  @ApiProperty({ enum: LyricsStatus, enumName: 'LyricsStatus' })
+  lyricsStatus!: LyricsStatus;
 
   @ApiPropertyOptional({ nullable: true })
   lyricsLang!: string | null;
@@ -31,7 +31,7 @@ export class TrackRankingTrackInfo {
   @ApiProperty({ enum: MetaStatus, enumName: 'MetaStatus' })
   metaStatus!: MetaStatus;
 
-  @ApiPropertyOptional({ enum: LyricsType, nullable: true })
+  @ApiPropertyOptional({ enum: LyricsType, enumName: 'LyricsType', nullable: true })
   lyricsType!: LyricsType | null;
 
   @ApiProperty({ description: '번역 가사 존재 여부' })

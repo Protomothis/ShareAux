@@ -5,7 +5,7 @@ import { WebSocket } from 'ws';
 import { AudioService } from '../services/audio.service.js';
 import { ChatMuteService } from '../services/chat-mute.service.js';
 import type { ChatHistoryEntry, WsClient } from '../types/index.js';
-import { Permission, WsEvent, WsOpCode } from '../types/index.js';
+import { Permission, UserRole, WsEvent, WsOpCode } from '../types/index.js';
 import { PushEvent } from '../types/push-event.enum.js';
 import { PUSH_EVENT, pushPayload } from '../types/push-event-payload.js';
 import { WsBroadcaster } from './ws-broadcaster.service.js';
@@ -179,7 +179,13 @@ export class WsMessageRouter {
 
   /** 외부에서 채팅 메시지 주입 (시스템용) */
   broadcastChatMessage(roomId: string, nickname: string, message: string): void {
-    const enriched = { userId: 'system', nickname, role: 'user', message, timestamp: new Date().toISOString() };
+    const enriched: ChatHistoryEntry = {
+      userId: 'system',
+      nickname,
+      role: UserRole.User,
+      message,
+      timestamp: new Date().toISOString(),
+    };
     const hist = this.chatHistory.get(roomId) ?? [];
     hist.push(enriched);
     if (hist.length > 50) hist.shift();
