@@ -60,3 +60,18 @@ describe('TranslationService.parseResponse', () => {
     expect(r.readings.has(1)).toBe(false);
   });
 });
+
+describe('TranslationService.parseResponse — trailing separator', () => {
+  it('N│번역│ (발음 비어있음) → 번역만 파싱, trailing │ 제거', () => {
+    const r = parse('1│모래를 털면│\n2│널 사랑해│', true);
+    expect(r.translations.get(1)).toBe('모래를 털면');
+    expect(r.translations.get(2)).toBe('널 사랑해');
+    expect(r.readings.get(1)).toBeFalsy();
+  });
+
+  it('N│번역│ (reading 모드 아닐 때) → trailing │ 제거', () => {
+    const r = parse('1│모래를 털면│\n2│널 사랑해│', false);
+    expect(r.translations.get(1)).toBe('모래를 털면');
+    expect(r.translations.get(2)).toBe('널 사랑해');
+  });
+});

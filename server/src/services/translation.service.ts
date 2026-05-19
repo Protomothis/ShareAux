@@ -41,8 +41,8 @@ const CONCURRENCY = 2;
 const CONTEXT_OVERLAP = 10;
 /** 구분자: 유니코드 BOX DRAWINGS LIGHT VERTICAL (│ U+2502) */
 const SEP = '│';
-/** 파싱: N│번역 또는 N│번역│발음 */
-const LINE_WITH_READING = /^\s*(\d+)\s*│\s*([^│]*?)\s*│\s*(.+?)\s*$/;
+/** 파싱: N│번역│발음 (발음이 비어있을 수도 있음) */
+const LINE_WITH_READING = /^\s*(\d+)\s*│\s*([^│]*?)\s*│\s*(.*?)\s*$/;
 const LINE_TRANSLATION = /^\s*(\d+)\s*│\s*(.+?)\s*$/;
 /** 폴백: 파이프, 탭, 슬래시, 마침표+공백, 괄호 구분자도 허용 */
 const LINE_WITH_READING_FALLBACK = /^\s*(\d+)\s*[|/\t.)]\s*([^|/\t]*?)\s*[|/\t]\s*(.+?)\s*$/;
@@ -453,7 +453,7 @@ ${numbered}`;
       const m2 = LINE_TRANSLATION.exec(line) ?? LINE_TRANSLATION_FALLBACK.exec(line);
       if (m2) {
         const num = Number(m2[1]);
-        const trans = m2[2].trim();
+        const trans = m2[2].trim().replace(/[│|/]\s*$/, '');
         if (trans) translations.set(num, trans);
       }
     }
