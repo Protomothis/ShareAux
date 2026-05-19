@@ -1,258 +1,177 @@
 # ShareAux — AI 에이전트 규칙
 
-> AI 코딩 어시스턴트(Copilot, Cursor, Kiro 등)를 사용하여 이 프로젝트에 기여할 때 참고하세요.
-> 이 파일은 AI가 프로젝트 컨텍스트를 이해하고 일관된 코드를 생성하도록 돕습니다.
+> 서버 작업 시 `server/AGENTS.md`, 클라이언트 작업 시 `client/AGENTS.md`도 함께 참조.
 
 ## 프로젝트 개요
 
-셀프호스팅 실시간 음악 공유 플랫폼. 방을 만들고, 음악을 검색하고, 모든 참여자에게 WebSocket 바이너리로 실시간 스트리밍합니다.
+셀프호스팅 실시간 음악 공유 플랫폼. 방을 만들고, YouTube 음악을 검색하고, 모든 참여자에게 WebSocket 바이너리로 실시간 스트리밍.
 
 ```
-클라이언트 (Next.js 16) → NestJS API + raw WebSocket → media resolver → ffmpeg (fMP4 AAC) → WS 바이너리 → 브라우저 (MSE)
+Client (Next.js 16) → NestJS API + raw WS → yt-dlp → ffmpeg (fMP4 AAC) → WS binary → Browser (MSE)
 ```
 
 ## 모노레포 구조
 
-- `server/` — NestJS 11 백엔드
-- `client/` — Next.js 16 프론트엔드
-- `docker-compose.yml` — 로컬 개발 (PostgreSQL + 서버 + 클라이언트)
+```
+/
+├── server/          NestJS 11 백엔드 (ESM, TypeORM, PostgreSQL 16, raw ws)
+├── client/          Next.js 16 프론트엔드 (React 19, Tailwind 4, zustand, react-query)
+├── docker-compose.yml   Caddy + PostgreSQL + server + client
+└── .env             환경변수 (DB_PASSWORD, JWT_SECRET, CLIENT_URL 필수)
+```
 
 ---
 
-## 공통 규칙
+## 공통 규칙 (반드시 준수)
 
-- TypeScript strict 모드. `any` 사용 금지 — `unknown` 사용
-- **`as` 타입 캐스팅 금지** — 캐스팅이 필요하면 타입 정의가 잘못된 것. 근본 수정:
-  - 서버 → 클라이언트: DTO/enum을 서버에서 정확히 정의 → Swagger → orval 자동 생성
-  - DB ↔ 코드 불일치: TypeORM transformer로 변환
-  - jsonb 컬럼: 엔티티에 정확한 타입 선언
-  - 외부 API JSON: 전용 interface 정의 후 제네릭 파싱 (`fetch<T>`)
-  - 허용 예외: 외부 라이브러리 내부 접근(passport 등), `as const`, `as Error`
+### TypeScript
+
+- strict 모드. `any` 금지 → `unknown` 사용
+- **`as` 캐스팅 금지** — 타입이 안 맞으면 근본 수정:
+  - 서버→클라이언트: DTO/enum 서버에서 정의 → Swagger → orval 자동생성
+  - DB↔코드: TypeORM transformer
+  - jsonb: 엔티티에 정확한 타입
+  - 외부 API: 전용 interface + 제네릭 파싱
+  - 허용 예외: 외부 라이브러리 내부 접근(passport), `as const`, `as Error`
+- 인라인 객체 타입 금지 → `types/`에 named interface
+- `type` import: `import type { Foo } from './foo.js';`
 - 조기 리턴 선호 (중첩 조건문 지양)
-- 한국어 주석 허용, 코드 식별자는 영어
+
+### 코드 스타일
+
+- 한국어 주석 허용, 식별자는 영어
 - 환경 변수 하드코딩 금지
-- **UI 라벨/메타데이터 하드코딩 금지** — 서버 API 기반으로 표시
-- 인라인 객체 타입 금지 — `types/` 디렉토리에 named interface 정의
-- `type` import 사용: `import type { Foo } from './foo.js';`
+- UI 라벨/메타데이터 하드코딩 금지 → 서버 API 기반
+- Prettier: singleQuote, trailingComma: all, printWidth: 120, endOfLine: lf
 
-### 코드 검증
-
-파일 수정 후 반드시 실행:
+### 코드 검증 (파일 수정 후 필수)
 
 ```bash
 npx prettier --write <파일>
 npx tsc --noEmit
 ```
 
-### 브랜치 전략
+---
 
-- `main` — 안정 릴리스. 직접 커밋 금지
-- `develop` — 개발 통합 브랜치
+## Git 워크플로
+
+### 브랜치
+
+- `main` — 안정 릴리스 (직접 커밋 금지)
+- `develop` — 개발 통합
 - `feat/<이름>`, `fix/<이름>`, `chore/<이름>` — develop에서 분기
 - 릴리스: `feat/v{version}` → develop → main 머지 + 태그
 
-### 커밋 메시지
+### 커밋
 
-한국어. Conventional Commits: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `style:`
+- 한국어 Conventional Commits: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `style:`
+- 커밋/푸시/배포는 사용자 명시 요청 시에만
 
 ### 이슈 & 마일스톤
 
-**이슈 우선 원칙**: 코드 수정 전에 반드시 GitHub 이슈 먼저 작성.
-
-- 버전별 `v{major}.{minor}.{patch}` 마일스톤 생성
-- 릴리스 완료 시 마일스톤 close + 태그
-
-### 커밋/푸시/배포
-
-사용자가 명시적으로 요청할 때만 수행.
-
-### CHANGELOG
-
-유저 친화적 — 기술 용어 금지, 체감 변화 중심, 이슈 번호 참조.
+- **이슈 우선 원칙**: 코드 수정 전 GitHub 이슈 먼저 작성
+- 버전별 `v{major}.{minor}.{patch}` 마일스톤
+- CHANGELOG: 유저 친화적, 기술 용어 금지, 이슈 번호 참조
 
 ---
 
-## 서버 (NestJS 11)
+## 아키텍처 개요
 
-### 기술 스택
+### 서버 모듈 (12개)
 
-NestJS 11 · TypeORM · PostgreSQL 16 · raw `ws` WebSocket · Passport (Google OAuth + JWT) · media resolver · ffmpeg
+| 모듈 | 역할 |
+|------|------|
+| auth | Google OAuth + 로컬 + 게스트, JWT 발급/갱신 |
+| rooms | 방 CRUD + WebSocket 게이트웨이 (Gateway → MessageRouter → Broadcaster) |
+| player | 재생 제어, 투표 스킵, 상태 관리 |
+| queue | 큐 추가/삭제/재정렬, 개인 한도 |
+| search | YouTube innertube 직접 파싱 |
+| services | Audio, Ytdlp, Preload, AutoDJ, AI DJ(Gemini), Lyrics, Settings, Translation, ChatMute, IpBan, Metrics |
+| admin | 대시보드, 유저/방/설정/메트릭/정리/신고 |
+| favorites | 즐겨찾기 + 폴더 |
+| tracks | 트랙 정보/투표 |
+| push | Web Push (VAPID) |
+| captcha | PoW CAPTCHA |
+| test | 개발 전용 |
 
-### ESM 필수
+### WebSocket 바이너리 프로토콜
 
-- `"module": "nodenext"` — **모든 상대 import에 `.js` 확장자 필수**
+첫 바이트 = opcode, 나머지 = payload:
 
-### 규칙
+| OpCode | 값 | 방향 | 설명 |
+|--------|-----|------|------|
+| Audio | 0x01 | S→C | fMP4 AAC 청크 |
+| Chat | 0x02 | 양방향 | JSON 채팅 |
+| System | 0x03 | S→C | JSON 이벤트 (WsEvent enum) |
+| Heartbeat | 0x04 | C→S | 60초 간격 |
+| Resync | 0x05 | C→S | init segment 재요청 |
+| ListenerStatus | 0x06 | C→S | 1바이트 (0=off, 1=on) |
+| Reaction | 0x07 | 양방향 | 이모지 인덱스 |
+| PingMeasure | 0x08 | 양방향 | Float64 RTT |
+| ResyncWait | 0x09 | S→C | init 미준비, 2초 후 재시도 |
 
-- 인프라 환경 변수 (`DATABASE_URL`, `JWT_SECRET`, `CLIENT_URL`): `ConfigService` 사용
-- 런타임 설정 (옵션): `SettingsService` 사용 — DB 기반, 어드민에서 변경 가능
-- `process.env` 직접 접근 금지
-- 엔티티: camelCase 프로퍼티, `@Column({ name: 'snake_case' })`
-- DTO: `class-validator` 데코레이터, `dto/` 하위 디렉토리
-- WebSocket: raw `ws` 라이브러리 (`socket.io` 아님)
-- 기능별 1모듈 (module + service + controller 같은 디렉토리)
-
-### 시스템 설정 (SettingsService)
-
-- `OptionKey` enum으로 설정 키 정의 (`types/settings.types.ts`)
-- `OPTION_METAS`에 타입/기본값/min/max/secret 플래그 정의
-- 시크릿 키 (`secret: true`): AES-256-GCM 암호화 저장, 캐시에는 평문
-- `.env` → DB 시딩: 첫 실행 시 `.env` 값이 DB에 없으면 자동 저장, 이후 DB 값 우선
-- 설정 변경 시 핫 리로드: `GoogleStrategy.reinitialize()`, `TranslationService.reinitialize()`
-- 새 설정 추가 시: `OptionKey` enum + `OPTION_METAS` + `SharedEnums`에 등록 → orval 재생성
-
-### Swagger enum 노출 컨벤션
-
-- 공유 enum은 `common/dto/shared-enums.schema.ts`의 `SharedEnums` 클래스에 등록
-- 반드시 `enumName` 지정: `@ApiProperty({ enum: MyEnum, enumName: 'MyEnum' })`
-- `enumName` 미지정 시 orval이 `부모DTO명 + 프로퍼티명`으로 생성 (예: `WsEnumsSchemaLanguage`) — 금지
-- DTO 내부 enum도 동일: `@ApiProperty({ enum: ErrorCode, enumName: 'ErrorCode' })`
-- 현재 등록된 enum: `WsEvent`, `AutoDjStatus`, `Language`, `AuthProvider`, `SystemChatEvent`, `OptionKey`
-
-### 공유 DTO (`common/dto/`)
-
-- 여러 모듈에서 참조하는 DTO는 `common/dto/`에 배치 (순환 의존 방지)
-- 엔티티의 jsonb 컬럼에 대응하는 DTO도 여기에 정의
-- `@ApiProperty({ type: () => MyDto })`로 Swagger에 정확한 스키마 노출 → orval이 정확한 타입 생성
-- **클라이언트에서 타입 캐스팅으로 우회 금지** — 타입이 안 맞으면 서버 DTO/ApiProperty 수정
-
-### 오디오 스트리밍 (서버)
-
-- ffmpeg에서 chunk가 나오면 **즉시 `broadcastChunk`** — 모아서 보내지 않음 (burst 금지)
-- `onStart` 콜백은 **첫 chunk 전송 시점**에 호출
-- `TRACK_END_DELAY_MS`(3초) — 곡 종료 후 클라이언트 버퍼 소진 대기. 스킵 시 즉시 전환
-- init segment는 `resyncListener`에서만 전송. `broadcastChunk`는 `synced === true`인 리스너에게만
-- resync 응답에 `recentChunks` 포함 금지 — moof boundary 불일치로 파싱 에러
-- init segment 미준비 시 `ResyncWait`(0x09) → 클라이언트 2초 후 재시도
-
----
-
-## 클라이언트 (Next.js 16)
-
-### 기술 스택
-
-Next.js 16 · React 19 · Tailwind 4 · zustand · @tanstack/react-query · shadcn/ui · dnd-kit · motion
-
-### 규칙
-
-- 서버 컴포넌트 기본. `"use client"`는 훅/브라우저 API 필요 시에만
-- `components/ui/` shadcn 프리미티브 필수 (인라인 `<button>`, `<input>` 금지)
-- `components/ui/` 수정 금지 — 공통 래퍼는 `components/common/`에 작성
-- 상태: zustand (클라이언트), react-query (서버)
-- 스타일: Tailwind 4 + `cn()` (`@/lib/utils.ts`)
-- 애니메이션: `motion/react`에서 import (`framer-motion` 아님)
-- `client/src/api/`는 orval 자동 생성 — 수동 수정 금지
-
-### 컴포넌트 계층
+### 오디오 파이프라인
 
 ```
-components/ui/       — shadcn 프리미티브 (수정 금지)
-components/common/   — 프로젝트 공통 래퍼 (Modal, TabBar, MarqueeText 등)
-components/<domain>/ — 기능별 컴포넌트 (player/, queue/, chat/, room/, admin/)
-hooks/               — 커스텀 훅 (도메인 로직 캡슐화)
+PreloadService (50MB 메모리 풀, 방당 3곡)
+    ↓ Buffer 또는 URL
+AudioService.startStream()
+    ↓ ffmpeg -i pipe:0 (또는 URL)
+    ├─ stdout: fMP4 AAC (1초 fragment) → WS binary (0x01) → synced 리스너
+    └─ fd 3: ADTS AAC → HTTP 스트림 (Cast/AirPlay)
 ```
 
-- 동일 로직이 여러 컴포넌트에서 필요하면 **훅으로 추출** (예: `useAutoDj`)
-- 모바일/데스크톱 래퍼가 동일 로직이면 훅 공유 + UI만 분리
+- init segment: ftyp+moov 파싱 후 분리, resyncListener에서만 전송
+- 곡 전환: TRACK_END_DELAY_MS(3초) 대기 후 다음 곡. 스킵 시 즉시
+- 실패 시 최대 3회 재시도 (새 URL 획득)
 
-### Storybook
+### 인증 흐름
 
-- 그룹핑: `Features/Admin/...`, `Features/Player/...`, `Features/Queue/...`, `Features/AutoDJ/...`, `Features/Room/...`, `Features/Auth/...`, `Primitives/...`
-- 스토리 파일: `client/src/stories/features/<Name>.stories.tsx`
-- 실제 API 호출 없이 props 기반 렌더링
+| 방식 | 토큰 | 특징 |
+|------|------|------|
+| 로컬 (username+password) | Access(15분) + Refresh(7일) | 첫 유저 = SuperAdmin |
+| Google OAuth | Access + Refresh | SettingsService에서 credentials 로드 |
+| 게스트 (초대코드+닉네임) | Access(12시간)만 | Permission.Listen만 기본 |
 
-### API 호출 규칙
+- JWT payload: `{ sub, email, nickname, role }`
+- 쿠키: `sat`(access), `sart`(refresh)
+- Token Rotation: refresh 사용 시 즉시 revoke + 새 쌍 발급
 
-- orval 생성 함수만 사용 — `customFetch` 직접 호출 금지
-- 서버 타입만 사용 — 클라이언트에서 API 응답 타입 직접 정의 금지
-- `as unknown as` 강제 캐스팅 금지 — 서버 DTO 누락 시 서버에서 수정
-- enum은 서버에서 정의 — 클라이언트 전용 enum 금지
-- 재생성: 서버 DTO 변경 → 서버 재시작 → `cd client && rm src/api/model/index.ts && npx orval`
+### 설정 시스템
 
-### React 19 컴파일러 규칙
-
-- ref 변수: `Ref` 접미사 필수 (`goneRef`, `wsRef`)
-- 렌더 중 `ref.current` 읽기/쓰기 금지 — `useEffect`, `useCallback`, 이벤트 핸들러에서만
-- props/훅 반환값 불변 — 절대 mutate 금지
-
-### MSE 오디오 재생 (useAudio)
-
-- `Audio` + `MediaSource` + `SourceBuffer`는 `init()`에서 1회 생성, 재생성 금지
-- 곡 전환: `clearBuffer()` — `sb.abort()` + `sb.remove()`. 새 MediaSource 생성 금지
-- `audio.load()` 호출 금지 (재생 상태 리셋, iOS 제스처 토큰 소비)
-- `audio.play()`는 `updateend`에서 버퍼 확보(`tryPlay`) 후 호출
-
-#### 적응형 버퍼링
-
-- **상태별 임계값**: startup 2.0s / rebuffer 1.0~2.5s (stall 에스컬레이션) / steady 0.4s
-- **stall 감지**: `waiting` → `pause()` → rebuffer → 임계값 확보 후 resume
-  - `play()` 직후 500ms 이내 `waiting`은 디코더 초기화 — stall 아님 (`playStartedAtRef`)
-- **타임아웃 폴백**: 5초 내 미도달 시 현재 버퍼로 재생
-- **`currentTime` 갱신**:
-  - 첫 play 전: seek 1회 (버퍼 시작점)
-  - 재생 중: drift > 5초일 때만 보정
-  - 매 updateend마다 무조건 갱신 금지 — 재생 위치 밀림 버그
-- **`buffering` 상태**: 외부 노출 → play 버튼 로딩 표시
-
-#### resync 규칙
-
-- `sendResync`는 `streaming` 전환 시에만 — `preparing`에서는 `prepareResync`(버퍼 정리)만
-- 중간 입장(이미 streaming)은 `handleListenToggle`에서 `sendResync`
-- 가드: `gotInitRef` + `resettingRef` 두 개만 — useWebSocket에 가드 넣지 말 것
-- REST API 초기 상태에서 `trackRef` 즉시 세팅 — 중복 trackChanged 판정 방지
-
-#### 경과 시간 동기화 (useRoomEvents)
-
-- `elapsedBase` + `syncTime`은 단일 state 객체(`timeSync`)로 원자적 업데이트
-- listening 중 갱신은 `useAudio`의 `onTimeUpdate` 콜백 — interval 폴링 금지
-
-### 모바일 호환
-
-- 레이아웃: `fixed inset-0` (`100vh`/`100dvh` 금지)
-- 퇴장 감지: `pagehide` + `sendBeacon` (`beforeunload` 불안정)
-- 스크롤 방지: `overscroll-behavior: none`
-- 터치: `touch-manipulation` (300ms 딜레이 제거)
-- fixed 요소: 부모에 `transition-*` 금지 (iOS containing block)
-
-### i18n (next-intl)
-
-- `next-intl` v4 — 쿠키 기반 locale 감지 (URL 경로 변경 없음)
-- 번역 파일: `messages/ko.json`, `messages/en.json`
-- 서버 컴포넌트: `const t = await getTranslations('namespace')`
-- 클라이언트 컴포넌트: `const t = useTranslations('namespace')`
-- `Language` enum은 서버에서 정의 → orval 자동생성 (`@/api/model`에서 import)
-- 클라이언트에서 locale 하드코딩 금지 — `Language` enum 사용
-- `global.d.ts`에 `Messages` 타입 augmentation → 잘못된 키 사용 시 tsc 에러
-
-#### t() 호출 규칙
-
-- **반드시 순수 문자열 리터럴 사용**: `t('guestLogin')` ✅
-- **변수/연결 금지**: `t(item.label)` ❌, `t(key + 'Desc')` ❌
-- 이유: next-intl 타입 augmentation이 리터럴만 체크 — 변수 넘기면 타입 안전성 상실
-- 도메인 컴포넌트: `useTranslations('namespace')` 직접 사용
-- 공통 컴포넌트: 텍스트를 props로 받음 (내부에서 t() 호출 금지)
-- 어드민 네임스페이스: `useTranslations('admin.xxx')` 서브 패턴
-
-#### 시스템 채팅 메시지
-
-- `SystemChatEvent` enum (서버 정의 → orval 자동생성)
-- `ChatMessageList`의 `sysLabel()`: switch/case로 이벤트별 명시적 t() 호출
-- 각 이벤트에 필요한 변수(nickname, trackName) 명확히 전달
-
-### URL / 리버스 프록시
-
-- 클라이언트: `window.location.origin` 기반
-- 서버 컴포넌트: `getServerApiUrl()` (`INTERNAL_API_URL`)
-- WebSocket: `getWsUrl()` — dev/prod 자동 감지
-- 빌드 타임 URL 환경 변수 금지 — `lib/urls.ts`에서 런타임 해석
+- `OptionKey` enum (27개) → `OPTION_METAS` (타입/기본값/min/max/secret)
+- 시크릿: AES-256-GCM 암호화 저장, 캐시에는 평문
+- `.env` → DB 시딩 (첫 실행), 이후 DB 값 우선
+- 변경 시 핫 리로드: GoogleStrategy, TranslationService
+- 새 설정 추가: `OptionKey` + `OPTION_METAS` + `SharedEnums` 등록 → orval 재생성
 
 ---
 
 ## 로컬 개발
 
 ```bash
-./dev.sh up        # DB + 서버 + 클라이언트 일괄 실행
-./dev.sh down      # 전부 종료
+./dev.sh up          # DB + 서버 + 클라이언트 일괄 실행
+./dev.sh down        # 전부 종료
+./dev.sh up --https  # HTTPS 모드 (Cast/AirPlay 테스트)
+./dev.sh swagger     # swagger.json 재생성 + orval
+./dev.sh db:reset    # DB 볼륨 삭제 후 재시작
 ```
 
-> `nest start`, `next dev` 직접 실행 금지 — `dev.js`를 거치지 않으면 포트 충돌 발생
+> `nest start`, `next dev` 직접 실행 금지 — `dev.js`를 거치지 않으면 포트 충돌
+
+### orval 재생성 (서버 DTO 변경 시)
+
+```bash
+# 서버 재시작 후
+cd client && rm src/api/model/index.ts && npx orval
+```
+
+---
+
+## 인프라
+
+- **Gateway**: Caddy — `/api/*` → server:3000, `/ws` → server:3000, 나머지 → client:3001
+- **DB**: PostgreSQL 16, 볼륨 `pgdata`
+- **Docker**: server(node:22 + ffmpeg + yt-dlp), client(Next.js standalone)
+- **CI**: GitHub Actions — Docker 빌드 → GHCR push (수동 트리거)
+- **Pre-commit**: Husky — 양쪽 `tsc --noEmit`
