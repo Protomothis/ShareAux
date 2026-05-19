@@ -17,7 +17,10 @@ interface TranslationJob {
 }
 
 interface GeminiModel {
-  generateContent: (prompt: string) => Promise<{ response: { text: () => string } }>;
+  generateContent: (req: {
+    contents: Array<{ role: string; parts: Array<{ text: string }> }>;
+    systemInstruction?: { parts: Array<{ text: string }> };
+  }) => Promise<{ response: { text: () => string } }>;
 }
 
 interface ParsedLine {
@@ -34,11 +37,15 @@ interface TranslationResult {
 
 const CHUNK_SIZE = 40;
 const CONCURRENCY = 2;
-const CONTEXT_OVERLAP = 5;
-
-/** N|번역 또는 N|번역|발음 — 구분자 유연 (|, │, /, 탭) */
-const LINE_WITH_READING = /^\s*(\d+)\s*[|│/\t]\s*([^|│/\t]*?)\s*[|│/\t]\s*(.+?)\s*$/;
-const LINE_TRANSLATION = /^\s*(\d+)\s*[.|)│/\t]\s*(.+?)\s*$/;
+const CONTEXT_OVERLAP = 10;
+/** 구분자: 유니코드 BOX DRAWINGS LIGHT VERTICAL (│ U+2502) */
+const SEP = '│';
+/** 파싱: N│번역 또는 N│번역│발음 */
+const LINE_WITH_READING = /^\s*(\d+)\s*│\s*([^│]*?)\s*│\s*(.+?)\s*$/;
+const LINE_TRANSLATION = /^\s*(\d+)\s*│\s*(.+?)\s*$/;
+/** 폴백: 파이프, 탭, 슬래시, 마침표+공백, 괄호 구분자도 허용 */
+const LINE_WITH_READING_FALLBACK = /^\s*(\d+)\s*[|/\t.)]\s*([^|/\t]*?)\s*[|/\t]\s*(.+?)\s*$/;
+const LINE_TRANSLATION_FALLBACK = /^\s*(\d+)\s*[|/\t.)]\s*(.+?)\s*$/;
 
 const LANG_NAMES: Record<TranslationLang, string> = {
   [TranslationLang.Ko]: 'Korean',
@@ -55,18 +62,57 @@ const LANG_NAMES: Record<TranslationLang, string> = {
   [TranslationLang.Id]: 'Indonesian',
 };
 
-const SOURCE_LANG_NAMES: Record<string, string> = {
-  ja: '일본어',
-  zh: '중국어',
-  en: '영어',
-  ko: '한국어',
-  es: '스페인어',
-  fr: '프랑스어',
-  de: '독일어',
-  pt: '포르투갈어',
-  th: '태국어',
-  vi: '베트남어',
-  id: '인도네시아어',
+/** 타겟 언어별 문체 가이드 */
+const STYLE_GUIDE: Record<TranslationLang, string> = {
+  [TranslationLang.Ko]: '반말 서술체 (해체). 자연스러운 한국어 가사체. 예: "너를 사랑해", "떠나지 마"',
+  [TranslationLang.En]: 'Casual, poetic English. Natural song lyrics tone. e.g. "I love you", "don\'t go"',
+  [TranslationLang.Ja]: 'カジュアルな歌詞体。例：「愛してる」「行かないで」',
+  [TranslationLang.Zh]: '口语化歌词体。例："我爱你"、"别走"',
+  [TranslationLang.ZhTW]: '口語化歌詞體。例：「我愛你」、「別走」',
+  [TranslationLang.Es]: 'Tono lírico casual. Ejemplo: "te amo", "no te vayas"',
+  [TranslationLang.Fr]: "Ton lyrique décontracté. Exemple : « je t'aime », « ne pars pas »",
+  [TranslationLang.De]: 'Lockerer Liedtext-Ton. Beispiel: „Ich liebe dich", „Geh nicht"',
+  [TranslationLang.Pt]: 'Tom lírico casual. Exemplo: "eu te amo", "não vá"',
+  [TranslationLang.Th]: 'น้ำเสียงเนื้อเพลงแบบสบายๆ',
+  [TranslationLang.Vi]: 'Giọng lời bài hát tự nhiên',
+  [TranslationLang.Id]: 'Nada lirik lagu yang santai dan natural',
+};
+
+/** 언어 조합별 few-shot 예시 */
+const FEW_SHOT: Record<string, string> = {
+  'ja→ko': `1│夜に駆ける│요루니 카케루
+2│沈むように溶けてゆくように│시즈무요우니 토케테유쿠요우니
+3│二人だけの空が広がる夜に│후타리다케노 소라가 히로가루 요루니
+
+→
+
+1│밤을 달려│요루니 카케루
+2│가라앉듯이 녹아가듯이│시즈무요우니 토케테유쿠요우니
+3│둘만의 하늘이 펼쳐지는 밤에│후타리다케노 소라가 히로가루 요루니`,
+
+  'ja→en': `1│夜に駆ける│yoru ni kakeru
+2│沈むように溶けてゆくように│shizumu you ni tokete yuku you ni
+
+→
+
+1│Racing into the night│yoru ni kakeru
+2│As if sinking, as if melting away│shizumu you ni tokete yuku you ni`,
+
+  'en→ko': `1│I don't wanna live forever
+2│'Cause I know I'll be living in vain
+
+→
+
+1│영원히 살고 싶지 않아
+2│헛되이 살게 될 걸 아니까`,
+
+  'zh→ko': `1│我们一起学猫叫
+2│一起喵喵喵喵喵
+
+→
+
+1│우리 같이 고양이 울음 배우자
+2│같이 야옹야옹야옹야옹야옹`,
 };
 
 @Injectable()
@@ -101,7 +147,7 @@ export class TranslationService implements OnApplicationBootstrap {
       this.geminiModel = genAI.getGenerativeModel({
         model,
         generationConfig: { temperature: 0 },
-      });
+      }) as unknown as GeminiModel;
       this.logger.log(`Gemini initialized (${model})`);
     } catch (e) {
       this.logger.warn(`Gemini init failed: ${(e as Error).message}`);
@@ -119,15 +165,12 @@ export class TranslationService implements OnApplicationBootstrap {
 
   // ─── Queue (영속성) ────────────────────────────────────
 
-  /** 서버 재시작 시 pending 상태 트랙 복구 */
   private async restoreQueue(): Promise<void> {
     const pending = await this.trackRepo.find({
       where: { lyricsTransStatus: 'pending' },
       select: ['id'],
     });
     if (!pending.length) return;
-
-    // pending → 큐에 복원 (roomIds 비워둠 — 알림은 안 가지만 번역은 완료됨)
     for (const t of pending) {
       this.queue.push({ trackId: t.id, roomIds: [] });
     }
@@ -170,7 +213,6 @@ export class TranslationService implements OnApplicationBootstrap {
       .getOne();
 
     if (!track?.lyricsData || track.lyricsTransStatus === 'done') return;
-    // failed도 재시도 허용 (pending은 이미 다른 worker가 처리 중일 수 있으므로 스킵)
     if (track.lyricsTransStatus === 'pending') return;
 
     await this.trackRepo.update(track.id, { lyricsTransStatus: 'pending' });
@@ -195,7 +237,7 @@ export class TranslationService implements OnApplicationBootstrap {
       const isJa = lang === 'ja';
       const includeReading = isJa && (targetLang === TranslationLang.Ko || targetLang === TranslationLang.En);
 
-      const result = await this.translateWithChunks(lines, lang ?? 'en', includeReading);
+      const result = await this.translateWithChunks(lines, lang ?? 'en', targetLang, includeReading);
 
       if (!result || result.translations.size < lines.length * 0.5) {
         await this.trackRepo.update(track.id, { lyricsTransStatus: 'failed' });
@@ -221,30 +263,36 @@ export class TranslationService implements OnApplicationBootstrap {
   private async translateWithChunks(
     lines: ParsedLine[],
     lang: string,
+    targetLang: TranslationLang,
     includeReading: boolean,
   ): Promise<TranslationResult | null> {
     if (lines.length <= CHUNK_SIZE) {
-      return this.callGemini(lines, 0, lang, includeReading, []);
+      return this.callGemini(lines, 0, lang, targetLang, includeReading, [], null);
     }
 
     const translations = new Map<number, string>();
     const readings = new Map<number, string>();
+    /** 이전 청크의 번역 결과 마지막 몇 줄 — 톤 연속성 참고용 */
+    let prevTranslated: string[] = [];
 
     for (let offset = 0; offset < lines.length; offset += CHUNK_SIZE) {
       const chunk = lines.slice(offset, offset + CHUNK_SIZE);
-      // 이전 청크 마지막 줄을 컨텍스트로 포함 (번역 대상 아님, 문체 참고용)
       const context = offset > 0 ? lines.slice(Math.max(0, offset - CONTEXT_OVERLAP), offset) : [];
-      const result = await this.callGemini(chunk, offset, lang, includeReading, context);
+      const result = await this.callGemini(chunk, offset, lang, targetLang, includeReading, context, prevTranslated);
       if (!result) continue;
       for (const [k, v] of result.translations) translations.set(k, v);
       for (const [k, v] of result.readings) readings.set(k, v);
+
+      // 다음 청크를 위해 이번 청크 마지막 5줄 번역 결과 저장
+      const lastKeys = [...result.translations.keys()].sort((a, b) => a - b).slice(-5);
+      prevTranslated = lastKeys.map((k) => result.translations.get(k) ?? '');
     }
 
     // 누락 보충 (1회)
     const missing = lines.map((l, i) => ({ idx: i + 1, text: l.text })).filter((m) => !translations.has(m.idx));
 
     if (missing.length > 0 && missing.length <= lines.length * 0.3) {
-      const partial = await this.callGeminiPartial(missing, lang, includeReading);
+      const partial = await this.callGeminiPartial(missing, lines, translations, lang, targetLang, includeReading);
       if (partial) {
         for (const [k, v] of partial.translations) translations.set(k, v);
         for (const [k, v] of partial.readings) readings.set(k, v);
@@ -256,45 +304,72 @@ export class TranslationService implements OnApplicationBootstrap {
 
   // ─── Gemini ────────────────────────────────────────────
 
+  private buildSystemInstruction(lang: string, targetLang: TranslationLang, includeReading: boolean): string {
+    const targetName = LANG_NAMES[targetLang];
+    const style = STYLE_GUIDE[targetLang];
+
+    const readingDesc =
+      targetLang === TranslationLang.Ko
+        ? '- reading = 원문의 한글 발음 표기 (예: 夜に駆ける → 요루니 카케루)'
+        : '- reading = romanized pronunciation of the ORIGINAL text (e.g. 夜に駆ける → yoru ni kakeru)';
+
+    return `You are a professional song lyrics translator.
+
+Your task: Translate song lyrics to ${targetName}.
+
+Style: ${style}
+
+Critical rules:
+- Maintain the SAME tone and style throughout the entire song. Never switch between formal/informal.
+- Translate meaning faithfully. Prioritize meaning over rhyme.
+- Keep interjections untranslated: oh, yeah, la la, na na, ah, uh, hmm, wow
+- Keep proper nouns (names, places) in original form
+- Never add explanations, notes, or commentary
+- Output format: N${SEP}translation${includeReading ? `${SEP}reading` : ''}
+- N = line number. Must match exactly.${includeReading ? `\n${readingDesc}` : ''}`;
+  }
+
+  private buildFewShot(lang: string, targetLang: TranslationLang): string {
+    const key = `${lang}→${targetLang}`;
+    const example = FEW_SHOT[key];
+    if (!example) return '';
+    return `\nExample:\n${example}\n`;
+  }
+
   private async callGemini(
     lines: ParsedLine[],
     offset: number,
     lang: string,
+    targetLang: TranslationLang,
     includeReading: boolean,
     context: ParsedLine[],
+    prevTranslated: string[] | null,
   ): Promise<TranslationResult | null> {
-    const numbered = lines.map((l, i) => `${offset + i + 1}|${l.text}`).join('\n');
-    const targetLang = this.settings.get(OptionKey.TranslationTargetLang) as TranslationLang;
+    const numbered = lines.map((l, i) => `${offset + i + 1}${SEP}${l.text}`).join('\n');
     const targetName = LANG_NAMES[targetLang];
-    const sourceName = SOURCE_LANG_NAMES[lang] ?? lang;
 
-    const format = includeReading ? `N|${targetName}|reading` : `N|${targetName}`;
-    const readingRule = includeReading
-      ? `
-- reading: Romanized pronunciation of the original text
-- Keep English words/symbols as-is in reading column
-- Use consistent readings for the same kanji throughout
-- Both translation and reading columns must be filled`
-      : '';
-    const example = includeReading
-      ? `\nExample:\n1|砂を払えば → 1|${targetLang === 'ko' ? '모래를 털면' : 'If I brush off the sand'}|suna o haraeba\n2|I love you → 2|${targetLang === 'ko' ? '널 사랑해' : 'I love you'}|I love you`
-      : '';
+    let userPrompt = '';
 
-    const contextBlock =
-      context.length > 0
-        ? `\nPreceding lyrics (for context only, do NOT translate):\n${context.map((l) => l.text).join('\n')}\n`
-        : '';
+    // 컨텍스트: 이전 원문
+    if (context.length > 0) {
+      userPrompt += `[Context — preceding lyrics, do NOT translate]\n${context.map((l) => l.text).join('\n')}\n\n`;
+    }
 
-    const prompt = `Translate ${sourceName} lyrics to ${targetName}.
-Rules:
-- Output exactly ${lines.length} lines. Never omit any.
-- Output ONLY in ${format} format. No explanations.
-- Literal lyrical translation. Minimize paraphrasing.
-- Keep interjections/onomatopoeia (oh, yeah, la la) untranslated${readingRule}${example}${contextBlock}
-${numbered}`;
+    // 이전 청크 번역 결과 (톤 연속성)
+    if (prevTranslated?.length) {
+      userPrompt += `[Previous translations — match this tone]\n${prevTranslated.join('\n')}\n\n`;
+    }
+
+    userPrompt += `Translate these ${lines.length} lines to ${targetName}. Output exactly ${lines.length} lines.\n\n${numbered}`;
+
+    const fewShot = this.buildFewShot(lang, targetLang);
+    if (fewShot) userPrompt = fewShot + '\n' + userPrompt;
 
     try {
-      const result = await this.geminiModel!.generateContent(prompt);
+      const result = await this.geminiModel!.generateContent({
+        systemInstruction: { parts: [{ text: this.buildSystemInstruction(lang, targetLang, includeReading) }] },
+        contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+      });
       const text = result.response.text();
       this.dailyCount++;
       return this.parseResponse(text, includeReading);
@@ -306,20 +381,43 @@ ${numbered}`;
 
   private async callGeminiPartial(
     missing: { idx: number; text: string }[],
+    allLines: ParsedLine[],
+    existingTranslations: Map<number, string>,
     lang: string,
+    targetLang: TranslationLang,
     includeReading: boolean,
   ): Promise<TranslationResult | null> {
     if (!missing.length) return null;
-    const targetLang = this.settings.get(OptionKey.TranslationTargetLang) as TranslationLang;
     const targetName = LANG_NAMES[targetLang];
-    const sourceName = SOURCE_LANG_NAMES[lang] ?? lang;
-    const format = includeReading ? `N|${targetName}|reading` : `N|${targetName}`;
-    const numbered = missing.map((m) => `${m.idx}|${m.text}`).join('\n');
 
-    const prompt = `Translate ${sourceName} lyrics to ${targetName}. Only the ${missing.length} missing lines. ${format} format only. Keep line numbers.\n\n${numbered}`;
+    // 주변 컨텍스트 구성: 각 누락 줄의 앞뒤 2줄 번역 결과 포함
+    const contextLines: string[] = [];
+    for (const m of missing.slice(0, 5)) {
+      for (let d = -2; d <= 2; d++) {
+        const neighborIdx = m.idx + d;
+        if (d === 0) continue;
+        const trans = existingTranslations.get(neighborIdx);
+        const orig = allLines[neighborIdx - 1]?.text;
+        if (trans && orig) contextLines.push(`${neighborIdx}${SEP}${orig} → ${trans}`);
+      }
+    }
+    const uniqueContext = [...new Set(contextLines)].sort().slice(0, 10);
+
+    const numbered = missing.map((m) => `${m.idx}${SEP}${m.text}`).join('\n');
+
+    const userPrompt = `These ${missing.length} lines were missed. Translate to ${targetName}, matching the tone of surrounding lines.
+
+[Surrounding translations for reference]
+${uniqueContext.join('\n')}
+
+[Lines to translate]
+${numbered}`;
 
     try {
-      const result = await this.geminiModel!.generateContent(prompt);
+      const result = await this.geminiModel!.generateContent({
+        systemInstruction: { parts: [{ text: this.buildSystemInstruction(lang, targetLang, includeReading) }] },
+        contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+      });
       const text = result.response.text();
       this.dailyCount++;
       return this.parseResponse(text, includeReading);
@@ -329,7 +427,7 @@ ${numbered}`;
     }
   }
 
-  // ─── Response Parsing (강화) ───────────────────────────
+  // ─── Response Parsing ──────────────────────────────────
 
   private parseResponse(text: string, includeReading: boolean): TranslationResult {
     const translations = new Map<number, string>();
@@ -337,19 +435,26 @@ ${numbered}`;
 
     for (const raw of text.split('\n')) {
       const line = raw.trim();
-      if (!line) continue;
+      if (!line || line.startsWith('[') || line.startsWith('→')) continue;
 
       if (includeReading) {
-        const m = LINE_WITH_READING.exec(line);
+        const m = LINE_WITH_READING.exec(line) ?? LINE_WITH_READING_FALLBACK.exec(line);
         if (m) {
-          translations.set(Number(m[1]), m[2].trim());
-          readings.set(Number(m[1]), m[3].trim());
+          const num = Number(m[1]);
+          const trans = m[2].trim();
+          const reading = m[3].trim();
+          if (trans) translations.set(num, trans);
+          if (reading) readings.set(num, reading);
           continue;
         }
       }
 
-      const m2 = LINE_TRANSLATION.exec(line);
-      if (m2) translations.set(Number(m2[1]), m2[2].trim());
+      const m2 = LINE_TRANSLATION.exec(line) ?? LINE_TRANSLATION_FALLBACK.exec(line);
+      if (m2) {
+        const num = Number(m2[1]);
+        const trans = m2[2].trim();
+        if (trans) translations.set(num, trans);
+      }
     }
 
     return { translations, readings };
