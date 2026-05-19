@@ -1,5 +1,5 @@
+'use client';
 import { UserRole } from '@/api/model';
-('use client');
 
 import { useQueryClient } from '@tanstack/react-query';
 import { Loader2, Trash2, Users } from 'lucide-react';

@@ -1,5 +1,5 @@
+'use client';
 import { LyricsTransStatus } from '@/api/model';
-('use client');
 
 import { useQuery } from '@tanstack/react-query';
 import { Clock, Loader2, Minus, Plus, X } from 'lucide-react';

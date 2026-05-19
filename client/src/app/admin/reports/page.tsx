@@ -1,5 +1,5 @@
+'use client';
 import { ReportStatus } from '@/api/model';
-('use client');
 
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';

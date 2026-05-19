@@ -1,5 +1,5 @@
+'use client';
 import { LyricsTransStatus } from '@/api/model';
-('use client');
 
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
