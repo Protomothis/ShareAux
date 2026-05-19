@@ -80,15 +80,15 @@ const STYLE_GUIDE: Record<TranslationLang, string> = {
 
 /** 언어 조합별 few-shot 예시 */
 const FEW_SHOT: Record<string, string> = {
-  'ja→ko': `1│夜に駆ける│yoru ni kakeru
-2│沈むように溶けてゆくように│shizumu you ni tokete yuku you ni
-3│二人だけの空が広がる夜に│futari dake no sora ga hirogaru yoru ni
+  'ja→ko': `1│夜に駆ける│요루니 카케루
+2│沈むように溶けてゆくように│시즈무요우니 토케테유쿠요우니
+3│二人だけの空が広がる夜に│후타리다케노 소라가 히로가루 요루니
 
 →
 
-1│밤을 달려│yoru ni kakeru
-2│가라앉듯이 녹아가듯이│shizumu you ni tokete yuku you ni
-3│둘만의 하늘이 펼쳐지는 밤에│futari dake no sora ga hirogaru yoru ni`,
+1│밤을 달려│요루니 카케루
+2│가라앉듯이 녹아가듯이│시즈무요우니 토케테유쿠요우니
+3│둘만의 하늘이 펼쳐지는 밤에│후타리다케노 소라가 히로가루 요루니`,
 
   'ja→en': `1│夜に駆ける│yoru ni kakeru
 2│沈むように溶けてゆくように│shizumu you ni tokete yuku you ni
@@ -308,6 +308,11 @@ export class TranslationService implements OnApplicationBootstrap {
     const targetName = LANG_NAMES[targetLang];
     const style = STYLE_GUIDE[targetLang];
 
+    const readingDesc =
+      targetLang === TranslationLang.Ko
+        ? '- reading = 원문의 한글 발음 표기 (예: 夜に駆ける → 요루니 카케루)'
+        : '- reading = romanized pronunciation of the ORIGINAL text (e.g. 夜に駆ける → yoru ni kakeru)';
+
     return `You are a professional song lyrics translator.
 
 Your task: Translate song lyrics to ${targetName}.
@@ -321,7 +326,7 @@ Critical rules:
 - Keep proper nouns (names, places) in original form
 - Never add explanations, notes, or commentary
 - Output format: N${SEP}translation${includeReading ? `${SEP}reading` : ''}
-- N = line number. Must match exactly.${includeReading ? `\n- reading = romanized pronunciation of the ORIGINAL ${lang} text` : ''}`;
+- N = line number. Must match exactly.${includeReading ? `\n${readingDesc}` : ''}`;
   }
 
   private buildFewShot(lang: string, targetLang: TranslationLang): string {
