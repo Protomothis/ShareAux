@@ -1,4 +1,5 @@
 import { Injectable, Logger, type OnApplicationBootstrap } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -76,11 +77,11 @@ export class TranslationService implements OnApplicationBootstrap {
   private dailyCount = 0;
   private lastResetDate = '';
   private geminiModel: GeminiModel | null = null;
-  private onUpdatedCallback?: (trackId: string, roomIds: string[]) => void;
 
   constructor(
     @InjectRepository(Track) private readonly trackRepo: Repository<Track>,
     private readonly settings: SettingsService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
@@ -114,10 +115,6 @@ export class TranslationService implements OnApplicationBootstrap {
   async reinitialize(): Promise<void> {
     this.geminiModel = null;
     await this.initGemini();
-  }
-
-  onUpdated(cb: (trackId: string, roomIds: string[]) => void): void {
-    this.onUpdatedCallback = cb;
   }
 
   // ─── Queue (영속성) ────────────────────────────────────
@@ -213,7 +210,7 @@ export class TranslationService implements OnApplicationBootstrap {
       }
 
       await this.trackRepo.update(track.id, update);
-      this.onUpdatedCallback?.(job.trackId, job.roomIds);
+      this.eventEmitter.emit('translation.updated', job.trackId, job.roomIds);
     } catch {
       await this.trackRepo.update(track.id, { lyricsTransStatus: 'failed' });
     }

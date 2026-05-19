@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
 
@@ -22,8 +23,6 @@ export class PlayerService {
   private readonly logger = new Logger(PlayerService.name);
   private skipVotes = new Map<string, Set<string>>();
   private streamState = new Map<string, StreamState>();
-  private onTrackChangeCallback?: (roomId: string) => void;
-  private onPlayFailCallback?: (roomId: string, trackTitle: string) => void;
   /** 현재 재생 중인 곡의 신청자 (completed 추적용) */
   private currentAddedBy = new Map<string, string>();
   /** skip으로 종료된 건지 구분 */
@@ -33,6 +32,7 @@ export class PlayerService {
     private readonly audio: AudioService,
     private readonly ytdlp: YtdlpService,
     private readonly preload: PreloadService,
+    private readonly eventEmitter: EventEmitter2,
     @InjectRepository(Track) private readonly trackRepo: Repository<Track>,
     @InjectRepository(RoomPlayback) private readonly playbackRepo: Repository<RoomPlayback>,
     @InjectRepository(RoomQueue) private readonly queueRepo: Repository<RoomQueue>,
@@ -66,7 +66,7 @@ export class PlayerService {
     );
 
     // preparing 상태 즉시 broadcast (클라이언트가 트랙 정보 + 준비 중 상태를 받음)
-    this.onTrackChangeCallback?.(roomId);
+    this.eventEmitter.emit('player.trackChanged', roomId);
 
     // 글로벌 stats/history UPSERT (fire-and-forget)
     this.recordPlay(roomId, track, addedByUserId).catch((e: unknown) =>
@@ -83,7 +83,7 @@ export class PlayerService {
         this.logger.warn(`[${roomId}] Play failed: cannot get audio for ${track.sourceId}`);
         this.preload.release(trackId);
         this.streamState.set(roomId, 'idle');
-        this.onPlayFailCallback?.(roomId, track.name);
+        this.eventEmitter.emit('player.playFail', roomId, track.name);
         // 자동으로 다음 곡 시도
         void this.onTrackEnd(roomId);
         return pb;
@@ -99,7 +99,7 @@ export class PlayerService {
       async () => {
         this.streamState.set(roomId, 'streaming');
         await this.playbackRepo.update(roomId, { startedAt: new Date() });
-        this.onTrackChangeCallback?.(roomId);
+        this.eventEmitter.emit('player.trackChanged', roomId);
       },
       audioBuffer ?? undefined,
       track.bitrateKbps || undefined,
@@ -161,7 +161,7 @@ export class PlayerService {
     await this.queueRepo.update(prev.id, { played: false });
     this.audio.stopStream(roomId);
     await this.play(roomId, prev.track.id);
-    this.onTrackChangeCallback?.(roomId);
+    this.eventEmitter.emit('player.trackChanged', roomId);
   }
 
   // --- Vote skip ---
@@ -205,16 +205,6 @@ export class PlayerService {
       streamState: state,
       transStatus: pb.track?.lyricsTransStatus ?? null,
     });
-  }
-
-  // --- Callbacks ---
-
-  onTrackChange(cb: (roomId: string) => void): void {
-    this.onTrackChangeCallback = cb;
-  }
-
-  onPlayFail(cb: (roomId: string, trackTitle: string) => void): void {
-    this.onPlayFailCallback = cb;
   }
 
   triggerPreload(roomId: string): void {
@@ -274,7 +264,7 @@ export class PlayerService {
 
     if (next) {
       this.streamState.set(roomId, 'preparing');
-      this.onTrackChangeCallback?.(roomId);
+      this.eventEmitter.emit('player.trackChanged', roomId);
       // 자연 종료 시에만 마지막 버퍼 재생 대기 (스킵은 즉시 전환)
       if (!wasSkipped) {
         await new Promise((r) => setTimeout(r, TRACK_END_DELAY_MS));
@@ -289,7 +279,7 @@ export class PlayerService {
         pb.track = null;
         await this.playbackRepo.save(pb);
       }
-      this.onTrackChangeCallback?.(roomId);
+      this.eventEmitter.emit('player.trackChanged', roomId);
     }
   }
 
