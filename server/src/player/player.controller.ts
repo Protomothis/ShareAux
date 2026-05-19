@@ -85,12 +85,13 @@ export class PlayerController {
     this.playerService.onPlayFail((roomId, trackTitle) => {
       this.gateway.broadcastSystem(roomId, WsEvent.TrackUnavailable, '', { trackName: trackTitle });
     });
+  }
 
-    this.translationService.onUpdated((trackId, roomIds) => {
-      for (const roomId of roomIds) {
-        this.gateway.broadcastSystem(roomId, WsEvent.LyricsUpdated, '', { trackId });
-      }
-    });
+  @OnEvent('translation.updated')
+  handleTranslationUpdated(trackId: string, roomIds: string[]): void {
+    for (const roomId of roomIds) {
+      this.gateway.broadcastSystem(roomId, WsEvent.LyricsUpdated, '', { trackId });
+    }
   }
 
   // ─── AutoDJ Event Listeners ───
