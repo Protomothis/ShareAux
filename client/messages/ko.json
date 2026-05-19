@@ -229,7 +229,8 @@
       "tagCountry_se": "스웨덴",
       "tagCountry_cn": "중국",
       "tagCountry_au": "호주",
-      "tagCountry_in": "인도"
+      "tagCountry_in": "인도",
+      "title": "AutoDJ"
     }
   },
   "queue": {
@@ -249,7 +250,8 @@
     "addedExtra": " 외 {count}곡",
     "tabQueue": "신청곡",
     "tabHistory": "재생 기록",
-    "reorderFailed": "순서 변경에 실패했습니다"
+    "reorderFailed": "순서 변경에 실패했습니다",
+    "tabAutoDj": "AutoDJ"
   },
   "search": {
     "title": "곡 추가",

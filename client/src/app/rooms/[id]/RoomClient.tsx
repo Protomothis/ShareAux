@@ -422,7 +422,10 @@ export default function RoomClient({ id }: { id: string }) {
   if (!room) {
     if (roomError) {
       return (
-        <div className="fixed inset-0 flex flex-col items-center justify-center bg-room-gradient text-white">
+        <div
+          className="fixed inset-0 flex flex-col items-center justify-center bg-room-gradient text-white"
+          role="alert"
+        >
           <p className="mb-2 text-4xl">🎵</p>
           <p className="mb-1 text-lg font-semibold">{t('roomNotFound')}</p>
           <p className="mb-6 text-sm text-white/50">{t('roomNotFoundDesc')}</p>

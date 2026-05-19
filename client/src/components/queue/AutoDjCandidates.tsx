@@ -27,7 +27,7 @@ export function AutoDjCandidates({ candidates, onPin, onSkip, onEnqueue, classNa
   if (!candidates.length) return null;
 
   return (
-    <div className={cn('space-y-1', className)}>
+    <div className={cn('space-y-1', className)} role="list">
       <AnimatePresence initial={false}>
         {candidates.map((track) => (
           <motion.div
@@ -37,6 +37,7 @@ export function AutoDjCandidates({ candidates, onPin, onSkip, onEnqueue, classNa
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
+            role="listitem"
             className={cn(
               'flex items-center gap-2.5 rounded-lg p-2 transition-colors',
               track.pinned ? 'bg-sa-accent/10 ring-1 ring-inset ring-sa-accent/30' : 'bg-white/[0.03]',

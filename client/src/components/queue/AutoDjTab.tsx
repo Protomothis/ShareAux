@@ -119,7 +119,7 @@ export function AutoDjTab({
       <div className="shrink-0 space-y-4 border-b border-white/[0.06] px-4 pb-4 pt-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <p className="text-sm font-medium text-white">🤖 AutoDJ</p>
+            <p className="text-sm font-medium text-white">🤖 {t('title')}</p>
             <HelpTip>{t('helpAutoDj')}</HelpTip>
           </div>
           <div className="flex items-center gap-1.5">
