@@ -43,14 +43,19 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.image }}:latest
             ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.image }}:${{ env.VERSION }}
-          build-args: ${{ matrix.build-args }}
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}
           provenance: false
 
       - name: Delete untagged versions
-        uses: actions/delete-package-versions@v5
-        with:
-          package-name: ${{ matrix.image }}
-          package-type: container
-          delete-only-untagged-versions: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSIONS=$(gh api \
+            "/orgs/${{ env.OWNER }}/packages/container/${{ matrix.image }}/versions" \
+            --paginate --jq '.[] | select(.metadata.container.tags | length == 0) | .id')
+          for id in $VERSIONS; do
+            gh api --method DELETE \
+              "/orgs/${{ env.OWNER }}/packages/container/${{ matrix.image }}/versions/$id" \
+              2>/dev/null || true
+          done
