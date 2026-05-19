@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { UserRole } from '@/api/model';
 import type { UpdatePermissionsBodyPermissionsItem, UserDetailResponse } from '@/api/model';
 import type { UpdateRoleDtoRole } from '@/api/model';
 import { CheckboxGroup } from '@/components/admin/CheckboxGroup';
@@ -38,8 +39,8 @@ export function UserPermissionSection({ user }: UserPermissionSectionProps) {
     disabled: m.key === 'listen',
   }));
 
-  const isSuperAdmin = role === 'superAdmin';
-  const isAdmin = role === 'admin' || isSuperAdmin;
+  const isSuperAdmin = role === UserRole.superAdmin;
+  const isAdmin = role === UserRole.admin || isSuperAdmin;
   const saving = updateRole.isPending || updatePermissions.isPending;
 
   const effectiveOptions = useMemo(

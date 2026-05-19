@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Track } from '../entities/track.entity.js';
+import { LyricsTransStatus } from '../types/lyrics-trans-status.enum.js';
 import { OptionKey } from '../types/settings.types.js';
 import { TranslationLang } from '../types/translation-lang.enum.js';
 import { detectLang } from './detect-lang.js';
@@ -167,7 +168,7 @@ export class TranslationService implements OnApplicationBootstrap {
 
   private async restoreQueue(): Promise<void> {
     const pending = await this.trackRepo.find({
-      where: { lyricsTransStatus: 'pending' },
+      where: { lyricsTransStatus: LyricsTransStatus.Pending },
       select: ['id'],
     });
     if (!pending.length) return;
@@ -212,10 +213,10 @@ export class TranslationService implements OnApplicationBootstrap {
       .where('t.id = :id', { id: job.trackId })
       .getOne();
 
-    if (!track?.lyricsData || track.lyricsTransStatus === 'done') return;
-    if (track.lyricsTransStatus === 'pending') return;
+    if (!track?.lyricsData || track.lyricsTransStatus === LyricsTransStatus.Done) return;
+    if (track.lyricsTransStatus === LyricsTransStatus.Pending) return;
 
-    await this.trackRepo.update(track.id, { lyricsTransStatus: 'pending' });
+    await this.trackRepo.update(track.id, { lyricsTransStatus: LyricsTransStatus.Pending });
 
     try {
       const lyricsText = this.extractText(track.lyricsData);
@@ -224,12 +225,12 @@ export class TranslationService implements OnApplicationBootstrap {
 
       const targetLang = this.settings.get(OptionKey.TranslationTargetLang) as TranslationLang;
       if (lang === targetLang) {
-        await this.trackRepo.update(track.id, { lyricsTransStatus: 'done' });
+        await this.trackRepo.update(track.id, { lyricsTransStatus: LyricsTransStatus.Done });
         return;
       }
 
       if (!this.geminiModel || !this.checkDailyLimit()) {
-        await this.trackRepo.update(track.id, { lyricsTransStatus: 'failed' });
+        await this.trackRepo.update(track.id, { lyricsTransStatus: LyricsTransStatus.Failed });
         return;
       }
 
@@ -240,12 +241,12 @@ export class TranslationService implements OnApplicationBootstrap {
       const result = await this.translateWithChunks(lines, lang ?? 'en', targetLang, includeReading);
 
       if (!result || result.translations.size < lines.length * 0.5) {
-        await this.trackRepo.update(track.id, { lyricsTransStatus: 'failed' });
+        await this.trackRepo.update(track.id, { lyricsTransStatus: LyricsTransStatus.Failed });
         return;
       }
 
       const translatedLrc = lines.map((l, i) => `${l.time} ${result.translations.get(i + 1) ?? ''}`).join('\n');
-      const update: Partial<Track> = { lyricsTranslated: translatedLrc, lyricsTransStatus: 'done' as const };
+      const update: Partial<Track> = { lyricsTranslated: translatedLrc, lyricsTransStatus: LyricsTransStatus.Done };
 
       if (includeReading && result.readings.size > 0) {
         update.lyricsRuby = lines.map((l, i) => `${l.time} ${result.readings.get(i + 1) ?? l.text}`).join('\n');
@@ -254,7 +255,7 @@ export class TranslationService implements OnApplicationBootstrap {
       await this.trackRepo.update(track.id, update);
       this.eventEmitter.emit('translation.updated', job.trackId, job.roomIds);
     } catch {
-      await this.trackRepo.update(track.id, { lyricsTransStatus: 'failed' });
+      await this.trackRepo.update(track.id, { lyricsTransStatus: LyricsTransStatus.Failed });
     }
   }
 

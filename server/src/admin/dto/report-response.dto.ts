@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+import { ReportStatus } from '../../types/index.js';
+
 export class ReportItem {
   @ApiProperty() id!: string;
   @ApiProperty() reporterId!: string;
@@ -8,7 +10,7 @@ export class ReportItem {
   @ApiProperty() targetId!: string;
   @ApiProperty() reason!: string;
   @ApiProperty({ nullable: true }) details!: string | null;
-  @ApiProperty() status!: string;
+  @ApiProperty({ enum: ReportStatus, enumName: 'ReportStatus' }) status!: ReportStatus;
   @ApiProperty({ nullable: true }) resolvedBy!: string | null;
   @ApiProperty({ nullable: true }) resolvedAt!: Date | null;
   @ApiProperty() createdAt!: Date;

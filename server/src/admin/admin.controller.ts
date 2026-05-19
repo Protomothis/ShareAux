@@ -30,7 +30,7 @@ import { SettingsService } from '../services/settings.service.js';
 import { TranslationService } from '../services/translation.service.js';
 import { ErrorCode } from '../types/error-code.enum.js';
 import type { AuthenticatedRequest } from '../types/index.js';
-import { Permission } from '../types/index.js';
+import { Permission, ReportStatus } from '../types/index.js';
 import { OptionKey } from '../types/settings.types.js';
 import { AdminService } from './admin.service.js';
 import { AdminCleanupService } from './admin-cleanup.service.js';
@@ -381,10 +381,10 @@ export class AdminController {
   @Patch('reports/:id/resolve')
   @ApiOperation({ summary: '신고 처리' })
   async resolveReport(@Param('id') id: string, @Body('status') status: string, @Req() req: AuthenticatedRequest) {
-    if (status !== 'resolved' && status !== 'dismissed') {
+    if (status !== ReportStatus.Resolved && status !== ReportStatus.Dismissed) {
       throw new AppException(ErrorCode.ADMIN_008);
     }
-    const report = await this.adminService.resolveReport(id, req.user.userId, status);
+    const report = await this.adminService.resolveReport(id, req.user.userId, status as ReportStatus);
     await this.auditService.log(req.user.userId, 'report_resolve', 'report', id, { status }, req.ip);
     return report;
   }

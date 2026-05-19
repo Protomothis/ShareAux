@@ -1,5 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
+import { ReportStatus } from '../types/index.js';
 import { User } from './user.entity.js';
 
 @Entity('reports')
@@ -22,8 +23,8 @@ export class Report {
   @Column({ type: 'text', nullable: true })
   details!: string | null;
 
-  @Column({ default: 'pending' })
-  status!: string;
+  @Column({ default: ReportStatus.Pending })
+  status!: ReportStatus;
 
   @Column({ name: 'resolved_by', type: 'varchar', nullable: true })
   resolvedBy!: string | null;

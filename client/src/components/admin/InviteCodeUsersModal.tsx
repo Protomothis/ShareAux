@@ -1,4 +1,5 @@
-'use client';
+import { UserRole } from '@/api/model';
+('use client');
 
 import { useQueryClient } from '@tanstack/react-query';
 import { Loader2, Trash2, Users } from 'lucide-react';
@@ -19,8 +20,7 @@ interface InviteCodeUsersModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function InviteCodeUsersModal({
-  inviteCodeId, code, onOpenChange }: InviteCodeUsersModalProps) {
+export function InviteCodeUsersModal({ inviteCodeId, code, onOpenChange }: InviteCodeUsersModalProps) {
   const t = useTranslations('admin.inviteCodes');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -30,7 +30,7 @@ export function InviteCodeUsersModal({
     query: { enabled: !!inviteCodeId },
   });
 
-  const guestCount = users.filter((u) => u.role === 'guest').length;
+  const guestCount = users.filter((u) => u.role === UserRole.guest).length;
 
   const handleDeleteGuests = useCallback(async () => {
     if (!inviteCodeId) return;
@@ -70,7 +70,7 @@ export function InviteCodeUsersModal({
                   <span className="text-sm text-white">{u.nickname}</span>
                   {u.username && <span className="ml-2 text-xs text-sa-text-muted">@{u.username}</span>}
                 </div>
-                <StatusBadge variant={u.role === 'guest' ? 'muted' : 'success'}>{u.role}</StatusBadge>
+                <StatusBadge variant={u.role === UserRole.guest ? 'muted' : 'success'}>{u.role}</StatusBadge>
               </div>
             ))}
           </div>

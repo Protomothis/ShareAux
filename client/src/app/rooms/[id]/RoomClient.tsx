@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { UserRole } from '@/api/model';
 import type { Track } from '@/api/model';
 import { usePlayerControllerGetStatus } from '@/api/player/player';
 import { useQueueControllerGetHistory, useQueueControllerGetQueue } from '@/api/queue/queue';
@@ -45,7 +46,7 @@ import { useWsMessages } from '@/hooks/useWsMessages';
 import { WsCloseCode, WsOpCode } from '@/lib/constants';
 import { getWsUrl } from '@/lib/urls';
 import { useAuthStore } from '@/stores/auth';
-import { LyricsStatus } from '@/types';
+import { LyricsStatus, StreamState } from '@/types';
 
 export default function RoomClient({ id }: { id: string }) {
   const t = useTranslations('room');
@@ -70,7 +71,7 @@ export default function RoomClient({ id }: { id: string }) {
 
   const isHost = !!(room && userId && room.hostId === userId);
   const { can } = useMyPermissions(id);
-  const { favoriteIds, loadingIds: favLoadingIds, toggle: toggleFavorite } = useFavorites(role !== 'guest');
+  const { favoriteIds, loadingIds: favLoadingIds, toggle: toggleFavorite } = useFavorites(role !== UserRole.guest);
   const favorites = useMemo(
     () => ({ favoriteIds, favLoadingIds, toggleFavorite }),
     [favoriteIds, favLoadingIds, toggleFavorite],
@@ -123,7 +124,7 @@ export default function RoomClient({ id }: { id: string }) {
     audioLoadingRef,
     setAudioLoading,
     (ms) => {
-      if (listeningRef.current && streamState === 'streaming') {
+      if (listeningRef.current && streamState === StreamState.streaming) {
         setTimeSync({ base: ms, at: Date.now() });
       }
     },
@@ -309,7 +310,7 @@ export default function RoomClient({ id }: { id: string }) {
           setListeningState(true);
           await audio.init();
           sendListening(true);
-          if (streamState === 'streaming') sendResync();
+          if (streamState === StreamState.streaming) sendResync();
         } else {
           audio.pause();
           setListeningState(false);
@@ -341,7 +342,7 @@ export default function RoomClient({ id }: { id: string }) {
       onSkipError: () => invalidate.player(id),
       isFavorite: track ? favorites.favoriteIds.has(track.sourceId) : false,
       favoriteLoading: track ? favorites.favLoadingIds.has(track.sourceId) : false,
-      onToggleFavorite: track && role !== 'guest' ? () => favorites.toggleFavorite(track) : undefined,
+      onToggleFavorite: track && role !== UserRole.guest ? () => favorites.toggleFavorite(track) : undefined,
       onCastStateChange: (state: CastState) => audio.setMuted(state === 'connected'),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -483,7 +484,7 @@ export default function RoomClient({ id }: { id: string }) {
               canEnqueue={can('addQueue')}
               canReorder={isHost || can('host')}
               isHost={isHost}
-              isGuest={role === 'guest'}
+              isGuest={role === UserRole.guest}
               maxSelectPerAdd={room.maxSelectPerAdd}
               trackVotes={trackVotes}
               autoDjStatus={autoDjStatus}
@@ -504,7 +505,7 @@ export default function RoomClient({ id }: { id: string }) {
               canEnqueue={can('addQueue')}
               canReorder={isHost || can('host')}
               isHost={isHost}
-              isGuest={role === 'guest'}
+              isGuest={role === UserRole.guest}
               maxSelectPerAdd={room.maxSelectPerAdd}
               trackVotes={trackVotes}
               autoDjStatus={autoDjStatus}
@@ -514,7 +515,7 @@ export default function RoomClient({ id }: { id: string }) {
         }
         history={
           <SlotErrorBoundary>
-            <HistoryPanel roomId={id} isGuest={role === 'guest'} favorites={favorites} />
+            <HistoryPanel roomId={id} isGuest={role === UserRole.guest} favorites={favorites} />
           </SlotErrorBoundary>
         }
         autodj={

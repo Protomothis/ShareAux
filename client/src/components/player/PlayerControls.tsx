@@ -6,7 +6,8 @@ import { useState } from 'react';
 
 import { playerControllerPrevious, playerControllerSkip } from '@/api/player/player';
 import { SKIP_COOLDOWN_MS } from '@/lib/constants';
-import type { StreamState, VisualMode } from '@/types';
+import { StreamState } from '@/types';
+import type { VisualMode } from '@/types';
 
 import { Button } from '@/components/common/Button';
 import { VolumeSlider } from '../ui/volume-slider';

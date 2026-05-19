@@ -9,6 +9,7 @@ import type { Provider } from './provider';
 import type { MetaStatus } from './metaStatus';
 import type { LyricsStatus } from './lyricsStatus';
 import type { TrackLyricsType } from './trackLyricsType';
+import type { TrackLyricsTransStatus } from './trackLyricsTransStatus';
 import type { TrackStatsProperty } from './trackStatsProperty';
 
 export interface Track {
@@ -47,7 +48,7 @@ export interface Track {
   /** @nullable */
   lyricsTranslated: string | null;
   /** @nullable */
-  lyricsTransStatus: string | null;
+  lyricsTransStatus: TrackLyricsTransStatus;
   /** @nullable */
   stats?: TrackStatsProperty;
 }

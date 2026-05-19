@@ -17,7 +17,7 @@ import { LyricsService } from '../services/lyrics.service.js';
 import { TranslationService } from '../services/translation.service.js';
 import { ErrorCode } from '../types/error-code.enum.js';
 import type { AuthenticatedRequest, AutoDjStatus } from '../types/index.js';
-import { LyricsStatus, Permission, PushEvent, WsEvent } from '../types/index.js';
+import { LyricsStatus, LyricsTransStatus, Permission, PushEvent, StreamState, WsEvent } from '../types/index.js';
 import { MetaStatus } from '../types/meta-status.enum.js';
 import { PUSH_EVENT, pushPayload } from '../types/push-event-payload.js';
 import { LyricsResponse } from './dto/lyrics-response.dto.js';
@@ -66,7 +66,7 @@ export class PlayerController {
           .catch((e: unknown) => this.logger.warn(`[enrich retry] ${(e as Error).message}`));
       }
       this.searchLyricsWhenReady(roomId, status.track, true);
-      if (status.streamState === 'streaming') {
+      if (status.streamState === StreamState.Streaming) {
         this.eventEmitter.emit(
           PUSH_EVENT,
           pushPayload(PushEvent.TrackChanged, {
@@ -226,7 +226,7 @@ export class PlayerController {
   @ApiOperation({ summary: '다음 곡' })
   @ApiBearerAuth()
   async skip(@Param('roomId', ParseUUIDPipe) roomId: string, @Req() req: AuthenticatedRequest) {
-    this.gateway.broadcastSystem(roomId, WsEvent.PlaybackUpdated, '', { streamState: 'skipping' });
+    this.gateway.broadcastSystem(roomId, WsEvent.PlaybackUpdated, '', { streamState: StreamState.Skipping });
     const r = await this.playerService.skip(roomId);
     this.gateway.broadcastSystem(roomId, WsEvent.TrackSkipped, '', { nickname: req.user.nickname ?? '' });
     await this.broadcastPlayback(roomId);
@@ -238,7 +238,7 @@ export class PlayerController {
   @ApiOperation({ summary: '이전 곡' })
   @ApiBearerAuth()
   async previous(@Param('roomId', ParseUUIDPipe) roomId: string, @Req() req: AuthenticatedRequest) {
-    this.gateway.broadcastSystem(roomId, WsEvent.PlaybackUpdated, '', { streamState: 'skipping' });
+    this.gateway.broadcastSystem(roomId, WsEvent.PlaybackUpdated, '', { streamState: StreamState.Skipping });
     await this.playerService.previous(roomId);
     this.gateway.broadcastSystem(
       roomId,
@@ -273,7 +273,7 @@ export class PlayerController {
     });
 
     if (r.skipped) {
-      this.gateway.broadcastSystem(roomId, WsEvent.PlaybackUpdated, '', { streamState: 'skipping' });
+      this.gateway.broadcastSystem(roomId, WsEvent.PlaybackUpdated, '', { streamState: StreamState.Skipping });
       this.gateway.broadcastSystem(roomId, WsEvent.VoteSkipPassed, '');
       this.eventEmitter.emit(
         PUSH_EVENT,
@@ -338,7 +338,7 @@ export class PlayerController {
       track?.lyricsData &&
       this.translationService.isEnabled &&
       track.lyricsLang !== 'ko' &&
-      (!track.lyricsTransStatus || track.lyricsTransStatus === 'failed')
+      (!track.lyricsTransStatus || track.lyricsTransStatus === LyricsTransStatus.Failed)
     ) {
       this.translationService.enqueue(status.track.id, roomId);
     }

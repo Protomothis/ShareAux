@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
+import { UserRole } from '@/api/model';
 import type { UserDetailResponse } from '@/api/model';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { Button } from '@/components/common/Button';
@@ -22,7 +23,7 @@ export function UserDeleteSection({ user }: UserDeleteSectionProps) {
   const deleteUser = useDeleteUser(user.id);
   const router = useRouter();
 
-  const isSuperAdmin = user.role === 'superAdmin';
+  const isSuperAdmin = user.role === UserRole.superAdmin;
 
   const handleDelete = useCallback(() => {
     deleteUser.mutate(

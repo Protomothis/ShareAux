@@ -4,7 +4,8 @@ import { useState } from 'react';
 
 import { TrackLyricsType } from '@/api/model';
 import { useAudioControl } from '@/hooks/useAudioControl';
-import type { AutoDjStatus, StreamState, TrackInfo, TrackVoteMap, VisualMode } from '@/types';
+import { StreamState } from '@/types';
+import type { AutoDjStatus, TrackInfo, TrackVoteMap, VisualMode } from '@/types';
 import { LyricsStatus } from '@/types';
 
 import type { CastState } from './CastButton';
@@ -97,7 +98,7 @@ export default function Player({
   const [visualMode, setVisualMode] = useState<VisualMode>('bars');
   const [showLyrics, setShowLyrics] = useState(true);
   const duration = track?.durationMs ?? 0;
-  const isStreaming = streamState === 'streaming';
+  const isStreaming = streamState === StreamState.streaming;
   const displayElapsed = isStreaming ? elapsed : 0;
   const progress = duration > 0 && isStreaming ? Math.min(elapsed / duration, 1) : 0;
 

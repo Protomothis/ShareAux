@@ -30,6 +30,7 @@ interface ProfileSettingsModalProps {
   onClose: () => void;
 }
 
+import { UserRole } from '@/api/model';
 import type { User } from '@/api/model';
 
 // ─── Menu Item ──────────────────────────────────────────
@@ -116,7 +117,7 @@ export default function ProfileSettingsModal({ open, onClose }: ProfileSettingsM
 function MenuPage({ setPage, me, role }: { setPage: (p: Page) => void; me: User | null; role?: string }) {
   const t = useTranslations('profile');
   const authConfig = useAuthConfig();
-  const isGuest = role === 'guest';
+  const isGuest = role === UserRole.guest;
   return (
     <>
       <Modal.Header>

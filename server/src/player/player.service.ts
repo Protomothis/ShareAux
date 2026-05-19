@@ -16,7 +16,7 @@ import { AudioService } from '../services/audio.service.js';
 import { PreloadService } from '../services/preload.service.js';
 import { YtdlpService } from '../services/ytdlp.service.js';
 import { ErrorCode } from '../types/error-code.enum.js';
-import type { StreamState } from '../types/index.js';
+import { StreamState } from '../types/index.js';
 
 @Injectable()
 export class PlayerService {
@@ -59,7 +59,7 @@ export class PlayerService {
 
     this.clearVotes(roomId);
     this.skippedRooms.delete(roomId);
-    this.streamState.set(roomId, 'preparing');
+    this.streamState.set(roomId, StreamState.Preparing);
 
     const pb = await this.playbackRepo.save(
       this.playbackRepo.create({ roomId, track, isPlaying: true, startedAt: new Date(), positionMs: 0 }),
@@ -82,7 +82,7 @@ export class PlayerService {
         // URL도 못 받으면 재생 불가 → 스킵
         this.logger.warn(`[${roomId}] Play failed: cannot get audio for ${track.sourceId}`);
         this.preload.release(trackId);
-        this.streamState.set(roomId, 'idle');
+        this.streamState.set(roomId, StreamState.Idle);
         this.eventEmitter.emit('player.playFail', roomId, track.name);
         // 자동으로 다음 곡 시도
         void this.onTrackEnd(roomId);
@@ -97,7 +97,7 @@ export class PlayerService {
       () => this.onTrackEnd(roomId),
       () => this.ytdlp.getAudioUrl(track.sourceId),
       async () => {
-        this.streamState.set(roomId, 'streaming');
+        this.streamState.set(roomId, StreamState.Streaming);
         await this.playbackRepo.update(roomId, { startedAt: new Date() });
         this.eventEmitter.emit('player.trackChanged', roomId);
       },
@@ -193,10 +193,12 @@ export class PlayerService {
   async getStatus(roomId: string) {
     const pb = await this.playbackRepo.findOne({ where: { roomId }, relations: ['track'] });
     if (!pb) return null;
-    const state = this.streamState.get(roomId) ?? 'idle';
-    const isIdle = state === 'idle' && !pb.isPlaying;
+    const state = this.streamState.get(roomId) ?? StreamState.Idle;
+    const isIdle = state === StreamState.Idle && !pb.isPlaying;
     const elapsedMs =
-      state === 'streaming' && pb.isPlaying && pb.startedAt ? Date.now() - new Date(pb.startedAt).getTime() : 0;
+      state === StreamState.Streaming && pb.isPlaying && pb.startedAt
+        ? Date.now() - new Date(pb.startedAt).getTime()
+        : 0;
     return Object.assign(pb, {
       track: isIdle ? null : pb.track,
       elapsedMs,
@@ -232,7 +234,7 @@ export class PlayerService {
     this.clearVotes(roomId);
     this.skippedRooms.add(roomId);
     this.audio.stopStream(roomId);
-    this.streamState.set(roomId, 'skipping');
+    this.streamState.set(roomId, StreamState.Skipping);
     void this.onTrackEnd(roomId);
   }
 
@@ -263,7 +265,7 @@ export class PlayerService {
     });
 
     if (next) {
-      this.streamState.set(roomId, 'preparing');
+      this.streamState.set(roomId, StreamState.Preparing);
       this.eventEmitter.emit('player.trackChanged', roomId);
       // 자연 종료 시에만 마지막 버퍼 재생 대기 (스킵은 즉시 전환)
       if (!wasSkipped) {
@@ -272,7 +274,7 @@ export class PlayerService {
       await this.queueRepo.update(next.id, { played: true });
       await this.play(roomId, next.track.id);
     } else {
-      this.streamState.set(roomId, 'idle');
+      this.streamState.set(roomId, StreamState.Idle);
       const pb = await this.playbackRepo.findOneBy({ roomId });
       if (pb) {
         pb.isPlaying = false;

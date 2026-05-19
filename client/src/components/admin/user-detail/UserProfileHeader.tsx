@@ -1,6 +1,7 @@
 import { User as UserIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { UserRole } from '@/api/model';
 import type { UserDetailResponse } from '@/api/model';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 
@@ -10,7 +11,7 @@ interface UserProfileHeaderProps {
 
 export function UserProfileHeader({ user }: UserProfileHeaderProps) {
   const t = useTranslations('admin.userDetail');
-  const isSuperAdmin = user.role === 'superAdmin';
+  const isSuperAdmin = user.role === UserRole.superAdmin;
 
   return (
     <div className="mb-6 flex items-center gap-4">
@@ -22,7 +23,7 @@ export function UserProfileHeader({ user }: UserProfileHeaderProps) {
         <div className="flex flex-wrap items-center gap-2 text-sm text-sa-text-muted">
           {user.username && <span>@{user.username}</span>}
           {user.email && <span>{user.email}</span>}
-          <StatusBadge variant={isSuperAdmin ? 'accent' : user.role === 'guest' ? 'muted' : 'success'}>
+          <StatusBadge variant={isSuperAdmin ? 'accent' : user.role === UserRole.guest ? 'muted' : 'success'}>
             {user.role}
           </StatusBadge>
           {user.bannedAt && <StatusBadge variant="danger">{t('banned')}</StatusBadge>}

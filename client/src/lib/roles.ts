@@ -1,3 +1,4 @@
+import { UserRole } from '@/api/model';
 /** 역할별 표시 설정 — 채팅, 멤버 목록 등에서 공통 사용 */
 
 export type DisplayRole = 'superAdmin' | 'admin' | 'host' | 'member' | 'guest';
@@ -25,9 +26,9 @@ export const ROLE_AVATAR_DECORATION: Partial<Record<DisplayRole, { emoji: string
 
 /** 유저의 표시 역할 결정 (우선순위: superAdmin > admin > host > guest > member) */
 export function getDisplayRole(role?: string, isHost?: boolean): DisplayRole {
-  if (role === 'superAdmin') return 'superAdmin';
-  if (role === 'admin') return 'admin';
+  if (role === UserRole.superAdmin) return 'superAdmin';
+  if (role === UserRole.admin) return 'admin';
   if (isHost) return 'host';
-  if (role === 'guest') return 'guest';
+  if (role === UserRole.guest) return 'guest';
   return 'member';
 }
