@@ -1,9 +1,6 @@
 {
   "name": "shareaux-client",
-<<<<<<< HEAD
-=======
   "version": "0.2.7",
->>>>>>> develop
   "description": "ShareAux 클라이언트 — 실시간 음악 공유 플랫폼 프론트엔드",
   "repository": {
     "type": "git",
