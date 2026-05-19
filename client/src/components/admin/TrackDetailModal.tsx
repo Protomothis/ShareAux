@@ -15,7 +15,7 @@ import type { TrackRankingItem } from '@/api/model';
 import { MetaStatus, LyricsStatus, LyricsType } from '@/api/model';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import Modal from '@/components/common/Modal';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 
 interface TrackDetailModalProps {
   track: TrackRankingItem | null;

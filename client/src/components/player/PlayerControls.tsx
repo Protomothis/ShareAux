@@ -6,9 +6,10 @@ import { useState } from 'react';
 
 import { playerControllerPrevious, playerControllerSkip } from '@/api/player/player';
 import { SKIP_COOLDOWN_MS } from '@/lib/constants';
-import type { StreamState, VisualMode } from '@/types';
+import { StreamState } from '@/types';
+import type { VisualMode } from '@/types';
 
-import { Button } from '../ui/button';
+import { Button } from '@/components/common/Button';
 import { VolumeSlider } from '../ui/volume-slider';
 import type { CastState } from './CastButton';
 import CastButton from './CastButton';
@@ -78,7 +79,7 @@ export default function PlayerControls({
   const t = useTranslations('player');
   const [skipping, setSkipping] = useState<'prev' | 'next' | false>(false);
   const cooldown = elapsedMs < SKIP_COOLDOWN_MS;
-  const transitioning = streamState === 'preparing' || streamState === 'skipping';
+  const transitioning = streamState === StreamState.preparing || streamState === StreamState.skipping;
 
   const handleSkip = async () => {
     if (skipping) return;

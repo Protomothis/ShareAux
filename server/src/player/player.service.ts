@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
 
@@ -15,15 +16,13 @@ import { AudioService } from '../services/audio.service.js';
 import { PreloadService } from '../services/preload.service.js';
 import { YtdlpService } from '../services/ytdlp.service.js';
 import { ErrorCode } from '../types/error-code.enum.js';
-import type { StreamState } from '../types/index.js';
+import { StreamState } from '../types/index.js';
 
 @Injectable()
 export class PlayerService {
   private readonly logger = new Logger(PlayerService.name);
   private skipVotes = new Map<string, Set<string>>();
   private streamState = new Map<string, StreamState>();
-  private onTrackChangeCallback?: (roomId: string) => void;
-  private onPlayFailCallback?: (roomId: string, trackTitle: string) => void;
   /** 현재 재생 중인 곡의 신청자 (completed 추적용) */
   private currentAddedBy = new Map<string, string>();
   /** skip으로 종료된 건지 구분 */
@@ -33,6 +32,7 @@ export class PlayerService {
     private readonly audio: AudioService,
     private readonly ytdlp: YtdlpService,
     private readonly preload: PreloadService,
+    private readonly eventEmitter: EventEmitter2,
     @InjectRepository(Track) private readonly trackRepo: Repository<Track>,
     @InjectRepository(RoomPlayback) private readonly playbackRepo: Repository<RoomPlayback>,
     @InjectRepository(RoomQueue) private readonly queueRepo: Repository<RoomQueue>,
@@ -59,14 +59,14 @@ export class PlayerService {
 
     this.clearVotes(roomId);
     this.skippedRooms.delete(roomId);
-    this.streamState.set(roomId, 'preparing');
+    this.streamState.set(roomId, StreamState.Preparing);
 
     const pb = await this.playbackRepo.save(
       this.playbackRepo.create({ roomId, track, isPlaying: true, startedAt: new Date(), positionMs: 0 }),
     );
 
     // preparing 상태 즉시 broadcast (클라이언트가 트랙 정보 + 준비 중 상태를 받음)
-    this.onTrackChangeCallback?.(roomId);
+    this.eventEmitter.emit('player.trackChanged', roomId);
 
     // 글로벌 stats/history UPSERT (fire-and-forget)
     this.recordPlay(roomId, track, addedByUserId).catch((e: unknown) =>
@@ -82,8 +82,8 @@ export class PlayerService {
         // URL도 못 받으면 재생 불가 → 스킵
         this.logger.warn(`[${roomId}] Play failed: cannot get audio for ${track.sourceId}`);
         this.preload.release(trackId);
-        this.streamState.set(roomId, 'idle');
-        this.onPlayFailCallback?.(roomId, track.name);
+        this.streamState.set(roomId, StreamState.Idle);
+        this.eventEmitter.emit('player.playFail', roomId, track.name);
         // 자동으로 다음 곡 시도
         void this.onTrackEnd(roomId);
         return pb;
@@ -97,9 +97,9 @@ export class PlayerService {
       () => this.onTrackEnd(roomId),
       () => this.ytdlp.getAudioUrl(track.sourceId),
       async () => {
-        this.streamState.set(roomId, 'streaming');
+        this.streamState.set(roomId, StreamState.Streaming);
         await this.playbackRepo.update(roomId, { startedAt: new Date() });
-        this.onTrackChangeCallback?.(roomId);
+        this.eventEmitter.emit('player.trackChanged', roomId);
       },
       audioBuffer ?? undefined,
       track.bitrateKbps || undefined,
@@ -161,7 +161,7 @@ export class PlayerService {
     await this.queueRepo.update(prev.id, { played: false });
     this.audio.stopStream(roomId);
     await this.play(roomId, prev.track.id);
-    this.onTrackChangeCallback?.(roomId);
+    this.eventEmitter.emit('player.trackChanged', roomId);
   }
 
   // --- Vote skip ---
@@ -193,10 +193,12 @@ export class PlayerService {
   async getStatus(roomId: string) {
     const pb = await this.playbackRepo.findOne({ where: { roomId }, relations: ['track'] });
     if (!pb) return null;
-    const state = this.streamState.get(roomId) ?? 'idle';
-    const isIdle = state === 'idle' && !pb.isPlaying;
+    const state = this.streamState.get(roomId) ?? StreamState.Idle;
+    const isIdle = state === StreamState.Idle && !pb.isPlaying;
     const elapsedMs =
-      state === 'streaming' && pb.isPlaying && pb.startedAt ? Date.now() - new Date(pb.startedAt).getTime() : 0;
+      state === StreamState.Streaming && pb.isPlaying && pb.startedAt
+        ? Date.now() - new Date(pb.startedAt).getTime()
+        : 0;
     return Object.assign(pb, {
       track: isIdle ? null : pb.track,
       elapsedMs,
@@ -205,16 +207,6 @@ export class PlayerService {
       streamState: state,
       transStatus: pb.track?.lyricsTransStatus ?? null,
     });
-  }
-
-  // --- Callbacks ---
-
-  onTrackChange(cb: (roomId: string) => void): void {
-    this.onTrackChangeCallback = cb;
-  }
-
-  onPlayFail(cb: (roomId: string, trackTitle: string) => void): void {
-    this.onPlayFailCallback = cb;
   }
 
   triggerPreload(roomId: string): void {
@@ -242,7 +234,7 @@ export class PlayerService {
     this.clearVotes(roomId);
     this.skippedRooms.add(roomId);
     this.audio.stopStream(roomId);
-    this.streamState.set(roomId, 'skipping');
+    this.streamState.set(roomId, StreamState.Skipping);
     void this.onTrackEnd(roomId);
   }
 
@@ -273,8 +265,8 @@ export class PlayerService {
     });
 
     if (next) {
-      this.streamState.set(roomId, 'preparing');
-      this.onTrackChangeCallback?.(roomId);
+      this.streamState.set(roomId, StreamState.Preparing);
+      this.eventEmitter.emit('player.trackChanged', roomId);
       // 자연 종료 시에만 마지막 버퍼 재생 대기 (스킵은 즉시 전환)
       if (!wasSkipped) {
         await new Promise((r) => setTimeout(r, TRACK_END_DELAY_MS));
@@ -282,14 +274,14 @@ export class PlayerService {
       await this.queueRepo.update(next.id, { played: true });
       await this.play(roomId, next.track.id);
     } else {
-      this.streamState.set(roomId, 'idle');
+      this.streamState.set(roomId, StreamState.Idle);
       const pb = await this.playbackRepo.findOneBy({ roomId });
       if (pb) {
         pb.isPlaying = false;
         pb.track = null;
         await this.playbackRepo.save(pb);
       }
-      this.onTrackChangeCallback?.(roomId);
+      this.eventEmitter.emit('player.trackChanged', roomId);
     }
   }
 

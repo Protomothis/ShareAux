@@ -14,7 +14,7 @@ import {
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AiDjSettings } from '@/components/admin/AiDjSettings';
 import { BoolField, NumField, SecretSection, SelectField, SettingSection } from '@/components/admin/settings';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { SkeletonCard } from '@/components/ui/skeleton';
 import { TranslationLang } from '@/api/model';
 import { useAdminSettings, useUpdateSettings } from '@/hooks/admin/useAdminSettings';

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
-import { LyricsStatus, LyricsType } from '../types/index.js';
+import { LyricsStatus, LyricsTransStatus, LyricsType } from '../types/index.js';
 import { MetaStatus } from '../types/meta-status.enum.js';
 import { Provider } from '../types/provider.enum.js';
 import type { TrackStats } from './track-stats.entity.js';
@@ -105,7 +105,7 @@ export class Track {
 
   /** 번역 처리 상태 */
   @Column({ type: 'varchar', nullable: true, name: 'lyrics_trans_status' })
-  lyricsTransStatus!: string | null;
+  lyricsTransStatus!: LyricsTransStatus | null;
 
   @ApiProperty()
   @Column({ name: 'fetched_at' })

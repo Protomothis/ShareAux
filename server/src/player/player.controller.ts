@@ -17,7 +17,7 @@ import { LyricsService } from '../services/lyrics.service.js';
 import { TranslationService } from '../services/translation.service.js';
 import { ErrorCode } from '../types/error-code.enum.js';
 import type { AuthenticatedRequest, AutoDjStatus } from '../types/index.js';
-import { LyricsStatus, Permission, PushEvent, WsEvent } from '../types/index.js';
+import { LyricsStatus, LyricsTransStatus, Permission, PushEvent, StreamState, WsEvent } from '../types/index.js';
 import { MetaStatus } from '../types/meta-status.enum.js';
 import { PUSH_EVENT, pushPayload } from '../types/push-event-payload.js';
 import { LyricsResponse } from './dto/lyrics-response.dto.js';
@@ -39,58 +39,61 @@ export class PlayerController {
     private readonly searchService: SearchService,
     private readonly eventEmitter: EventEmitter2,
     @InjectRepository(RoomQueue) private readonly queueRepo: Repository<RoomQueue>,
-  ) {
-    this.playerService.onTrackChange(async (roomId) => {
-      const status = await this.playerService.getStatus(roomId);
-      this.gateway.broadcastSystem(roomId, WsEvent.PlaybackUpdated, '', status);
-      const queue = await this.queueRepo.find({
-        where: { room: { id: roomId }, played: false },
-        order: { position: 'ASC' },
-        relations: ['track', 'addedBy'],
-      });
-      this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue });
+  ) {}
 
-      if (status?.track) {
-        if (status.track.metaStatus !== MetaStatus.Matched) {
-          this.searchService
-            .enrichTrackCredits(status.track.id, status.track.sourceId)
-            .catch((e: unknown) => this.logger.warn(`[enrich retry] ${(e as Error).message}`));
-        }
-        this.searchLyricsWhenReady(roomId, status.track, true);
-        if (status.streamState === 'streaming') {
-          this.eventEmitter.emit(
-            PUSH_EVENT,
-            pushPayload(PushEvent.TrackChanged, {
-              roomId,
-              userIds: this.gateway.getRoomUserIds(roomId),
-              icon: status.track.thumbnail ?? undefined,
-              image: status.track.thumbnail ?? undefined,
-              tag: `track:${roomId}`,
-              data: { trackName: status.track.name, artist: status.track.artist },
-            }),
-          );
-        }
-      }
-      for (const q of queue.slice(0, 3)) {
-        this.searchLyricsWhenReady(roomId, q.track);
-      }
+  @OnEvent('translation.updated')
+  handleTranslationUpdated(trackId: string, roomIds: string[]): void {
+    for (const roomId of roomIds) {
+      this.gateway.broadcastSystem(roomId, WsEvent.LyricsUpdated, '', { trackId });
+    }
+  }
 
-      this.autoDjService.resetFailCount(roomId);
-      this.autoDjService.trigger(roomId);
-      this.autoDjService
-        .onTrackChanged(roomId)
-        .catch((e: unknown) => this.logger.warn(`[onTrackChanged] ${(e as Error).message}`));
+  @OnEvent('player.trackChanged')
+  async handleTrackChanged(roomId: string): Promise<void> {
+    const status = await this.playerService.getStatus(roomId);
+    this.gateway.broadcastSystem(roomId, WsEvent.PlaybackUpdated, '', status);
+    const queue = await this.queueRepo.find({
+      where: { room: { id: roomId }, played: false },
+      order: { position: 'ASC' },
+      relations: ['track', 'addedBy'],
     });
+    this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue });
 
-    this.playerService.onPlayFail((roomId, trackTitle) => {
-      this.gateway.broadcastSystem(roomId, WsEvent.TrackUnavailable, '', { trackName: trackTitle });
-    });
-
-    this.translationService.onUpdated((trackId, roomIds) => {
-      for (const roomId of roomIds) {
-        this.gateway.broadcastSystem(roomId, WsEvent.LyricsUpdated, '', { trackId });
+    if (status?.track) {
+      if (status.track.metaStatus !== MetaStatus.Matched) {
+        this.searchService
+          .enrichTrackCredits(status.track.id, status.track.sourceId)
+          .catch((e: unknown) => this.logger.warn(`[enrich retry] ${(e as Error).message}`));
       }
-    });
+      this.searchLyricsWhenReady(roomId, status.track, true);
+      if (status.streamState === StreamState.Streaming) {
+        this.eventEmitter.emit(
+          PUSH_EVENT,
+          pushPayload(PushEvent.TrackChanged, {
+            roomId,
+            userIds: this.gateway.getRoomUserIds(roomId),
+            icon: status.track.thumbnail ?? undefined,
+            image: status.track.thumbnail ?? undefined,
+            tag: `track:${roomId}`,
+            data: { trackName: status.track.name, artist: status.track.artist },
+          }),
+        );
+      }
+    }
+    for (const q of queue.slice(0, 3)) {
+      this.searchLyricsWhenReady(roomId, q.track);
+    }
+
+    this.autoDjService.resetFailCount(roomId);
+    this.autoDjService.trigger(roomId);
+    this.autoDjService
+      .onTrackChanged(roomId)
+      .catch((e: unknown) => this.logger.warn(`[onTrackChanged] ${(e as Error).message}`));
+  }
+
+  @OnEvent('player.playFail')
+  handlePlayFail(roomId: string, trackTitle: string): void {
+    this.gateway.broadcastSystem(roomId, WsEvent.TrackUnavailable, '', { trackName: trackTitle });
   }
 
   // ─── AutoDJ Event Listeners ───
@@ -223,7 +226,7 @@ export class PlayerController {
   @ApiOperation({ summary: '다음 곡' })
   @ApiBearerAuth()
   async skip(@Param('roomId', ParseUUIDPipe) roomId: string, @Req() req: AuthenticatedRequest) {
-    this.gateway.broadcastSystem(roomId, WsEvent.PlaybackUpdated, '', { streamState: 'skipping' });
+    this.gateway.broadcastSystem(roomId, WsEvent.PlaybackUpdated, '', { streamState: StreamState.Skipping });
     const r = await this.playerService.skip(roomId);
     this.gateway.broadcastSystem(roomId, WsEvent.TrackSkipped, '', { nickname: req.user.nickname ?? '' });
     await this.broadcastPlayback(roomId);
@@ -235,7 +238,7 @@ export class PlayerController {
   @ApiOperation({ summary: '이전 곡' })
   @ApiBearerAuth()
   async previous(@Param('roomId', ParseUUIDPipe) roomId: string, @Req() req: AuthenticatedRequest) {
-    this.gateway.broadcastSystem(roomId, WsEvent.PlaybackUpdated, '', { streamState: 'skipping' });
+    this.gateway.broadcastSystem(roomId, WsEvent.PlaybackUpdated, '', { streamState: StreamState.Skipping });
     await this.playerService.previous(roomId);
     this.gateway.broadcastSystem(
       roomId,
@@ -270,7 +273,7 @@ export class PlayerController {
     });
 
     if (r.skipped) {
-      this.gateway.broadcastSystem(roomId, WsEvent.PlaybackUpdated, '', { streamState: 'skipping' });
+      this.gateway.broadcastSystem(roomId, WsEvent.PlaybackUpdated, '', { streamState: StreamState.Skipping });
       this.gateway.broadcastSystem(roomId, WsEvent.VoteSkipPassed, '');
       this.eventEmitter.emit(
         PUSH_EVENT,
@@ -335,7 +338,7 @@ export class PlayerController {
       track?.lyricsData &&
       this.translationService.isEnabled &&
       track.lyricsLang !== 'ko' &&
-      (!track.lyricsTransStatus || track.lyricsTransStatus === 'failed')
+      (!track.lyricsTransStatus || track.lyricsTransStatus === LyricsTransStatus.Failed)
     ) {
       this.translationService.enqueue(status.track.id, roomId);
     }

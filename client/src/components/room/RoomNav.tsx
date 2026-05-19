@@ -4,7 +4,7 @@ import { Bell, Settings, Share2, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { NotificationSettings } from '@/components/common/NotificationSettings';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';

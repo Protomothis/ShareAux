@@ -23,7 +23,7 @@ import {
   useFavoritesControllerListFolders,
 } from '@/api/favorites/favorites';
 import type { FavoriteItem, SearchResultItem } from '@/api/model';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';

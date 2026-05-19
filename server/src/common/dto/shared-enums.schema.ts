@@ -6,10 +6,13 @@ import {
   AuthProvider,
   Language,
   LyricsStatus,
+  LyricsTransStatus,
   LyricsType,
   MetaStatus,
   OptionKey,
   PushEvent,
+  ReportStatus,
+  StreamState,
   TranslationLang,
   WsEvent,
 } from '../../types/index.js';
@@ -48,4 +51,13 @@ export class SharedEnums {
 
   @ApiProperty({ enum: LyricsType, enumName: 'LyricsType' })
   lyricsType!: LyricsType;
+
+  @ApiProperty({ enum: StreamState, enumName: 'StreamState' })
+  streamState!: StreamState;
+
+  @ApiProperty({ enum: LyricsTransStatus, enumName: 'LyricsTransStatus' })
+  lyricsTransStatus!: LyricsTransStatus;
+
+  @ApiProperty({ enum: ReportStatus, enumName: 'ReportStatus' })
+  reportStatus!: ReportStatus;
 }

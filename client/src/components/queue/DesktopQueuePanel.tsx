@@ -51,7 +51,7 @@ export default function DesktopQueuePanel(props: DesktopQueuePanelProps) {
   const tabs = [
     { key: 'queue' as const, icon: <List size={14} />, label: t('tabQueue') },
     { key: 'history' as const, icon: <History size={14} />, label: t('tabHistory') },
-    ...(props.autoDjEnabled ? [{ key: 'autodj' as const, icon: <Brain size={14} />, label: 'AutoDJ' }] : []),
+    ...(props.autoDjEnabled ? [{ key: 'autodj' as const, icon: <Brain size={14} />, label: t('tabAutoDj') }] : []),
   ];
 
   return (

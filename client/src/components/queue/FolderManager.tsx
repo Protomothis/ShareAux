@@ -12,7 +12,7 @@ import {
   useFavoritesControllerListFolders,
 } from '@/api/favorites/favorites';
 import { FolderItemColor } from '@/api/model';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { Input } from '@/components/ui/input';
 import { FOLDER_COLOR_MAP, folderColorClass } from '@/lib/folder-colors';
 import { cn } from '@/lib/utils';

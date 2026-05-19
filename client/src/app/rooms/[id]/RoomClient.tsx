@@ -1,25 +1,16 @@
 'use client';
 
-import { useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { UserRole } from '@/api/model';
 import type { Track } from '@/api/model';
 import { usePlayerControllerGetStatus } from '@/api/player/player';
 import { useQueueControllerGetHistory, useQueueControllerGetQueue } from '@/api/queue/queue';
-import {
-  roomsControllerClearChat,
-  roomsControllerJoin,
-  roomsControllerKick,
-  roomsControllerLeave,
-  roomsControllerMuteUser,
-  roomsControllerUnban,
-  roomsControllerUnmuteUser,
-  useRoomsControllerFindOne,
-} from '@/api/rooms/rooms';
+import { useRoomsControllerFindOne } from '@/api/rooms/rooms';
 import Chat from '@/components/chat/Chat';
+import { Button } from '@/components/common/Button';
 import { MinLoading } from '@/components/common/MinLoading';
 import { SlotErrorBoundary } from '@/components/common/SlotErrorBoundary';
 import { WsDisconnectBanner } from '@/components/common/WsDisconnectBanner';
@@ -31,22 +22,23 @@ import { MobileAutoDjTab } from '@/components/queue/MobileAutoDjTab';
 import Queue from '@/components/queue/Queue';
 import LeaveConfirmModal from '@/components/room/LeaveConfirmModal';
 import MemberList from '@/components/room/MemberList';
-import { RoomLayout } from '@/components/room/RoomLayout';
 import PasswordModal from '@/components/room/PasswordModal';
+import { RoomLayout } from '@/components/room/RoomLayout';
 import RoomNav from '@/components/room/RoomNav';
 import RoomSettingsModal from '@/components/room/RoomSettingsModal';
 import RoomSkeleton from '@/components/room/RoomSkeleton';
-import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useIsTouch } from '@/hooks/useIsTouch';
 import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
 import { useMyPermissions } from '@/hooks/useMyPermissions';
 import { usePlaybackState } from '@/hooks/usePlaybackState';
 import { usePushSubscription } from '@/hooks/usePushSubscription';
-import { queryKeys, useInvalidate } from '@/hooks/useQueries';
+import { useInvalidate } from '@/hooks/useQueries';
 import { useReactions } from '@/hooks/useReactions';
 import { useRoomAudio } from '@/hooks/useRoomAudio';
+import { useRoomChat } from '@/hooks/useRoomChat';
 import { useRoomEvents } from '@/hooks/useRoomEvents';
+import { useRoomSetup } from '@/hooks/useRoomSetup';
 import { useRoomState } from '@/hooks/useRoomState';
 import { useRoomSync } from '@/hooks/useRoomSync';
 import { useWebSocket } from '@/hooks/useWebSocket';
@@ -54,17 +46,11 @@ import { useWsMessages } from '@/hooks/useWsMessages';
 import { WsCloseCode, WsOpCode } from '@/lib/constants';
 import { getWsUrl } from '@/lib/urls';
 import { useAuthStore } from '@/stores/auth';
-import type { StreamState } from '@/types';
-import { LyricsStatus } from '@/types';
+import { LyricsStatus, StreamState } from '@/types';
 
 export default function RoomClient({ id }: { id: string }) {
   const t = useTranslations('room');
-  const router = useRouter();
-  const queryClient = useQueryClient();
   const invalidate = useInvalidate();
-  const [needPassword, setNeedPassword] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
 
   // --- Data ---
   const {
@@ -85,13 +71,13 @@ export default function RoomClient({ id }: { id: string }) {
 
   const isHost = !!(room && userId && room.hostId === userId);
   const { can } = useMyPermissions(id);
-  const { favoriteIds, loadingIds: favLoadingIds, toggle: toggleFavorite } = useFavorites(role !== 'guest');
+  const { favoriteIds, loadingIds: favLoadingIds, toggle: toggleFavorite } = useFavorites(role !== UserRole.guest);
   const favorites = useMemo(
     () => ({ favoriteIds, favLoadingIds, toggleFavorite }),
     [favoriteIds, favLoadingIds, toggleFavorite],
   );
 
-  // --- Events ---
+  // --- Refs (훅 간 연결) ---
   usePushSubscription();
   const listeningRef = useRef(false);
   const trackRef = useRef<Track | null>(null);
@@ -99,7 +85,7 @@ export default function RoomClient({ id }: { id: string }) {
   const onResyncNeededRef = useRef<(action: 'prepare' | 'send') => void>(() => {});
   const stableOnResyncNeeded = useCallback((action: 'prepare' | 'send') => onResyncNeededRef.current(action), []);
 
-  // 재생 상태
+  // --- Playback & Room State ---
   const playback = usePlaybackState(listeningRef, trackRef, getOneWayRef, stableOnResyncNeeded);
   const {
     currentTrack,
@@ -125,11 +111,10 @@ export default function RoomClient({ id }: { id: string }) {
     setTransStatus,
   } = playback;
 
-  // 방 부가 상태
   const roomState = useRoomState();
   const { skipVotes, skipRequired, listenerCount, trackVotes, autoDjStatus, mutedUntil } = roomState;
 
-  // 이벤트 디스패처
+  // --- Events ---
   const events = useRoomEvents({ roomId: id, playback, roomState });
   const { messages, onChat, onSystem, goneRef } = events;
 
@@ -139,7 +124,7 @@ export default function RoomClient({ id }: { id: string }) {
     audioLoadingRef,
     setAudioLoading,
     (ms) => {
-      if (listeningRef.current && streamState === 'streaming') {
+      if (listeningRef.current && streamState === StreamState.streaming) {
         setTimeSync({ base: ms, at: Date.now() });
       }
     },
@@ -147,10 +132,7 @@ export default function RoomClient({ id }: { id: string }) {
   );
   const { audio, volume, onAudio, handleVolumeChange, buffering } = roomAudio;
 
-  // --- WebSocket (연결만) ---
-  const wsReady = !!userId && !roomError;
-
-  // --- Messages (opcode 라우팅) ---
+  // --- WebSocket ---
   const onResyncWaitRef = useRef<() => void>(() => {});
   const onReactionRef = useRef<(index: number) => void>(() => {});
   const { handleMessage, getOneWay, buildPing } = useWsMessages({
@@ -168,7 +150,7 @@ export default function RoomClient({ id }: { id: string }) {
 
   const { send, connected: wsConnected } = useWebSocket({
     url: `${getWsUrl()}?roomId=${id}`,
-    enabled: wsReady,
+    enabled: !!userId && !roomError,
     onMessage: handleMessage,
     onReconnect: useCallback(() => {
       invalidate.player(id);
@@ -177,7 +159,6 @@ export default function RoomClient({ id }: { id: string }) {
     }, [id, invalidate]),
     onClose: useCallback(
       (code: number) => {
-        // 의도적 종료 이벤트를 onSystem으로 전달
         const map: Record<number, string> = {
           [WsCloseCode.Kicked]: 'kicked',
           [WsCloseCode.RoomGone]: 'roomClosed',
@@ -190,20 +171,10 @@ export default function RoomClient({ id }: { id: string }) {
     ),
   });
 
-  // --- Sync (resync + listening 상태) ---
-  const roomSync = useRoomSync({
-    send,
-    prepareResync: audio.prepareResync,
-    connected: wsConnected,
-  });
+  // --- Sync ---
+  const roomSync = useRoomSync({ send, prepareResync: audio.prepareResync, connected: wsConnected });
   const { listening, setListeningState, sendResync, sendListening, onResyncWait, onResyncNeeded } = roomSync;
 
-  // onResyncWait를 useWsMessages에 연결
-  useEffect(() => {
-    // handleMessage 내부에서 onResyncWait 콜백을 참조하므로 ref로 연결
-  }, []);
-
-  // onResyncNeeded를 useRoomEvents에 연결
   useEffect(() => {
     onResyncNeededRef.current = onResyncNeeded;
     onResyncWaitRef.current = onResyncWait;
@@ -212,12 +183,11 @@ export default function RoomClient({ id }: { id: string }) {
 
   useEffect(() => {
     listeningRef.current = listening;
-  }, [listening, listeningRef]);
+  }, [listening]);
 
-  // RTT ping 전송 (연결 시 + heartbeat 시)
+  // RTT ping
   useEffect(() => {
     if (!wsConnected) return;
-    // 초기 캘리브레이션
     for (let i = 0; i < 3; i++) setTimeout(() => send(buildPing()), i * 100);
     const interval = setInterval(() => send(buildPing()), 30_000);
     return () => clearInterval(interval);
@@ -227,7 +197,7 @@ export default function RoomClient({ id }: { id: string }) {
     getOneWayRef.current = getOneWay;
   }, [getOneWay]);
 
-  // 듣는 중 실수로 페이지 이탈 방지
+  // beforeunload guard
   useEffect(() => {
     if (!listening) return;
     const handler = (e: BeforeUnloadEvent) => e.preventDefault();
@@ -237,8 +207,59 @@ export default function RoomClient({ id }: { id: string }) {
 
   useEffect(() => {
     trackRef.current = currentTrack;
-  }, [currentTrack, trackRef]);
+  }, [currentTrack]);
 
+  // --- Setup (join/leave/share) ---
+  const setup = useRoomSetup({ roomId: id, roomName: room?.name, goneRef });
+  const {
+    needPassword,
+    showSettings,
+    setShowSettings,
+    showLeaveConfirm,
+    setShowLeaveConfirm,
+    joinRoom,
+    handleLeave,
+    handleShare,
+  } = setup;
+
+  // --- Chat ---
+  const chat = useRoomChat({ roomId: id, userId, nickname, send });
+  const { handleSend, handleCommand } = chat;
+
+  // --- Reactions ---
+  const { floatingReactions, onReaction } = useReactions();
+  useEffect(() => {
+    onReactionRef.current = onReaction;
+  }, [onReaction]);
+  const sendReaction = useCallback((index: number) => send(new Uint8Array([WsOpCode.Reaction, index])), [send]);
+
+  // --- Initial player state ---
+  useEffect(() => {
+    if (!playerData?.isPlaying || !playerData.track) return;
+    setPlaying(true);
+    setTrack(playerData.track);
+    trackRef.current = playerData.track;
+    setTimeSync({ base: (playerData.elapsedMs ?? 0) + (getOneWayRef.current() ?? 0), at: Date.now() });
+    if (playerData.streamState) setStreamState(playerData.streamState);
+    if (playerData.streamCodec) setStreamCodec(playerData.streamCodec);
+    if (playerData.streamBitrate) setStreamBitrate(playerData.streamBitrate);
+    if (playerData.transStatus !== undefined) setTransStatus(playerData.transStatus ?? null);
+    const ls = playerData.track.lyricsStatus;
+    if (ls === 'found') setLyricsStatus(LyricsStatus.found);
+    else if (ls === LyricsStatus.notFound) setLyricsStatus(LyricsStatus.notFound);
+  }, [
+    playerData,
+    setPlaying,
+    setTrack,
+    setTimeSync,
+    setLyricsStatus,
+    setStreamState,
+    setStreamCodec,
+    setStreamBitrate,
+    setTransStatus,
+  ]);
+
+  // --- Media Session ---
   const track = useMemo(
     () =>
       currentTrack
@@ -257,74 +278,6 @@ export default function RoomClient({ id }: { id: string }) {
     [currentTrack],
   );
 
-  // --- Reactions ---
-  const { floatingReactions, onReaction } = useReactions();
-  useEffect(() => {
-    onReactionRef.current = onReaction;
-  }, [onReaction]);
-  const sendReaction = useCallback(
-    (index: number) => {
-      send(new Uint8Array([WsOpCode.Reaction, index]));
-    },
-    [send],
-  );
-
-  // --- (WebSocket/Sync/Messages는 위에서 설정 완료) ---
-
-  // --- Room join ---
-  const joinRoom = useCallback(
-    async (pw?: string) => {
-      try {
-        await roomsControllerJoin(id, { password: pw });
-        setNeedPassword(false);
-      } catch (e: unknown) {
-        const err = e as { response?: { status: number } };
-        if (err.response?.status === 403) setNeedPassword(true);
-      }
-    },
-    [id],
-  );
-
-  useEffect(() => {
-    goneRef.current = false;
-    const id = setTimeout(joinRoom, 0);
-    return () => clearTimeout(id);
-  }, [joinRoom, goneRef]);
-
-  // --- Leave beacon 제거 ---
-  // WS disconnect grace period (5s)가 퇴장 처리를 담당.
-  // sendBeacon leave는 grace를 우회하여 새로고침 시 방이 터지는 원인이었음.
-
-  // roomError는 렌더 단계에서 처리 (위 if문)
-
-  // --- Initial player state ---
-  useEffect(() => {
-    if (!playerData?.isPlaying || !playerData.track) return;
-    setPlaying(true);
-    setTrack(playerData.track);
-    trackRef.current = playerData.track;
-    setTimeSync({ base: (playerData.elapsedMs ?? 0) + (getOneWayRef.current() ?? 0), at: Date.now() });
-    if (playerData.streamState) setStreamState(playerData.streamState);
-    if (playerData.streamCodec) setStreamCodec(playerData.streamCodec);
-    if (playerData.streamBitrate) setStreamBitrate(playerData.streamBitrate);
-    if (playerData.transStatus !== undefined) setTransStatus(playerData.transStatus ?? null);
-    const ls = playerData.track.lyricsStatus;
-    if (ls === 'found') setLyricsStatus(LyricsStatus.found);
-    else if (ls === LyricsStatus.notFound) setLyricsStatus(LyricsStatus.notFound);
-  }, [
-    playerData,
-    id,
-    setPlaying,
-    setTrack,
-    setTimeSync,
-    setLyricsStatus,
-    setStreamState,
-    setStreamCodec,
-    setStreamBitrate,
-    setTransStatus,
-  ]);
-
-  // --- Media Session ---
   useEffect(() => {
     if (!('mediaSession' in navigator)) return;
     if (track) {
@@ -338,161 +291,146 @@ export default function RoomClient({ id }: { id: string }) {
     }
   }, [track]);
 
-  // --- Handlers ---
-  const handleSend = useCallback(
-    (message: string) => {
-      const payload = new TextEncoder().encode(
-        JSON.stringify({ userId: userId ?? '', nickname, message, timestamp: new Date().toISOString() }),
-      );
-      const frame = new Uint8Array(1 + payload.length);
-      frame[0] = WsOpCode.Chat;
-      frame.set(payload, 1);
-      send(frame);
-    },
-    [send, userId, nickname],
+  // --- Props ---
+  const playerProps = useMemo(
+    () => ({
+      roomId: id,
+      isHost,
+      track,
+      canVoteSkip: can('voteSkip'),
+      onVolumeChange: handleVolumeChange,
+      onListenToggle: async () => {
+        if (!listening) {
+          if (!audio.supported) {
+            toast.error(t('mseNotSupported'));
+            return;
+          }
+          setAudioLoading(true);
+          audioLoadingRef.current = true;
+          setListeningState(true);
+          await audio.init();
+          sendListening(true);
+          if (streamState === StreamState.streaming) sendResync();
+        } else {
+          audio.pause();
+          setListeningState(false);
+          sendListening(false);
+        }
+      },
+      listening,
+      audioLoading: audioLoading || buffering,
+      volume,
+      skipVotes,
+      skipRequired,
+      elapsedBase: timeSync.base,
+      syncTime: timeSync.at,
+      isPlaying,
+      hasNext: queue.length > 0,
+      hasPrev: history.length > 0,
+      getAnalyser: isTouch ? undefined : audio.getAnalyser,
+      getDelay: audio.getDelay,
+      streamCodec: streamCodec ?? undefined,
+      streamBitrate: streamBitrate ?? undefined,
+      transStatus,
+      lyricsStatus,
+      lyricsType,
+      lyricsVersion,
+      trackVotes,
+      autoDjEnabled: room?.autoDjEnabled,
+      autoDjStatus,
+      streamState,
+      onSkipError: () => invalidate.player(id),
+      isFavorite: track ? favorites.favoriteIds.has(track.sourceId) : false,
+      favoriteLoading: track ? favorites.favLoadingIds.has(track.sourceId) : false,
+      onToggleFavorite: track && role !== UserRole.guest ? () => favorites.toggleFavorite(track) : undefined,
+      onCastStateChange: (state: CastState) => audio.setMuted(state === 'connected'),
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      id,
+      isHost,
+      track,
+      listening,
+      audioLoading,
+      buffering,
+      volume,
+      skipVotes,
+      skipRequired,
+      timeSync,
+      isPlaying,
+      queue.length,
+      history.length,
+      isTouch,
+      streamCodec,
+      streamBitrate,
+      transStatus,
+      lyricsStatus,
+      lyricsType,
+      lyricsVersion,
+      trackVotes,
+      autoDjStatus,
+      streamState,
+      room?.autoDjEnabled,
+      favorites,
+      role,
+    ],
   );
 
-  const handleCommand = useCallback(
-    async (command: string, targetUserId?: string) => {
-      try {
-        switch (command) {
-          case 'ban':
-            if (targetUserId) await roomsControllerKick(id, targetUserId);
-            break;
-          case 'unban':
-            if (targetUserId) await roomsControllerUnban(id, targetUserId);
-            break;
-          case 'mute':
-            if (targetUserId) await roomsControllerMuteUser(id, targetUserId);
-            break;
-          case 'unmute':
-            if (targetUserId) await roomsControllerUnmuteUser(id, targetUserId);
-            break;
-          case 'clear':
-            await roomsControllerClearChat(id);
-            break;
-        }
-      } catch {
-        /* 에러는 global handler에서 처리 */
-      }
-    },
-    [id],
+  const chatProps = useMemo(
+    () => ({
+      messages,
+      onSend: handleSend,
+      onCommand: handleCommand,
+      onReaction: sendReaction,
+      floatingReactions,
+      canChat: can('chat'),
+      canReaction: can('reaction'),
+      hostId: room?.hostId ?? '',
+      mutedUntil,
+      isHost,
+      members,
+      currentUserId: userId ?? undefined,
+      roomId: id,
+    }),
+    [
+      messages,
+      handleSend,
+      handleCommand,
+      sendReaction,
+      floatingReactions,
+      can,
+      room?.hostId,
+      mutedUntil,
+      isHost,
+      members,
+      userId,
+      id,
+    ],
   );
 
-  const handleLeave = async () => {
-    goneRef.current = true;
-    try {
-      await roomsControllerLeave(id);
-    } catch {
-      /* ignore */
-    }
-    queryClient.removeQueries({ queryKey: queryKeys.room(id) });
-    queryClient.removeQueries({ queryKey: queryKeys.queue(id) });
-    queryClient.removeQueries({ queryKey: queryKeys.player(id) });
-    router.push('/rooms');
-  };
+  const memberListProps = useMemo(
+    () => ({
+      members,
+      hostId: room?.hostId ?? '',
+      roomId: id,
+      isHost,
+      userId: userId ?? undefined,
+    }),
+    [members, room?.hostId, id, isHost, userId],
+  );
 
-  const handleShare = async () => {
-    const url = `${window.location.origin}/rooms/${id}?invite=1`;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: room?.name ?? 'ShareAux', url });
-      } catch {
-        /* cancelled */
-      }
-    } else {
-      await navigator.clipboard?.writeText(url);
-      toast.success(t('linkCopied'));
-    }
-  };
-
-  const playerProps = {
-    roomId: id,
-    isHost,
-    track,
-    canVoteSkip: can('voteSkip'),
-    onVolumeChange: handleVolumeChange,
-    onListenToggle: async () => {
-      if (!listening) {
-        if (!audio.supported) {
-          toast.error(t('mseNotSupported'));
-          return;
-        }
-        setAudioLoading(true);
-        audioLoadingRef.current = true;
-        setListeningState(true);
-        await audio.init();
-        sendListening(true);
-        if (streamState === 'streaming') sendResync();
-      } else {
-        audio.pause();
-        setListeningState(false);
-        sendListening(false);
-      }
-    },
-    listening,
-    audioLoading: audioLoading || buffering,
-    volume,
-    skipVotes,
-    skipRequired,
-    elapsedBase: timeSync.base,
-    syncTime: timeSync.at,
-    isPlaying,
-    hasNext: queue.length > 0,
-    hasPrev: history.length > 0,
-    getAnalyser: isTouch ? undefined : audio.getAnalyser,
-    getDelay: audio.getDelay,
-    streamCodec: streamCodec ?? undefined,
-    streamBitrate: streamBitrate ?? undefined,
-    transStatus,
-    lyricsStatus,
-    lyricsType,
-    lyricsVersion,
-    trackVotes,
-    autoDjEnabled: room?.autoDjEnabled,
-    autoDjStatus,
-    streamState,
-    onSkipError: () => invalidate.player(id),
-    isFavorite: track ? favorites.favoriteIds.has(track.sourceId) : false,
-    favoriteLoading: track ? favorites.favLoadingIds.has(track.sourceId) : false,
-    onToggleFavorite: track && role !== 'guest' ? () => favorites.toggleFavorite(track) : undefined,
-    onCastStateChange: (state: CastState) => {
-      audio.setMuted(state === 'connected');
-    },
-  };
-
-  const chatProps = {
-    messages,
-    onSend: handleSend,
-    onCommand: handleCommand,
-    onReaction: sendReaction,
-    floatingReactions,
-    canChat: can('chat'),
-    canReaction: can('reaction'),
-    hostId: room?.hostId ?? '',
-    mutedUntil,
-    isHost,
-    members,
-    currentUserId: userId ?? undefined,
-    roomId: id,
-  };
-
-  const memberListProps = {
-    members,
-    hostId: room?.hostId ?? '',
-    roomId: id,
-    isHost,
-    userId: userId ?? undefined,
-  };
-
+  // --- Render ---
   if (!room) {
     if (roomError) {
       return (
-        <div className="fixed inset-0 flex flex-col items-center justify-center bg-room-gradient text-white">
+        <div
+          className="fixed inset-0 flex flex-col items-center justify-center bg-room-gradient text-white"
+          role="alert"
+        >
           <p className="mb-2 text-4xl">🎵</p>
           <p className="mb-1 text-lg font-semibold">{t('roomNotFound')}</p>
           <p className="mb-6 text-sm text-white/50">{t('roomNotFoundDesc')}</p>
-          <Button variant="accent" onClick={() => router.push('/rooms')}>
+          <Button variant="accent" onClick={() => setup.handleLeave()}>
             {t('backToRooms')}
           </Button>
         </div>
@@ -539,51 +477,61 @@ export default function RoomClient({ id }: { id: string }) {
           </SlotErrorBoundary>
         }
         queuePanel={
-          <DesktopQueuePanel
-            roomId={id}
-            canSearch={can('addQueue')}
-            canEnqueue={can('addQueue')}
-            canReorder={isHost || can('host')}
-            isHost={isHost}
-            isGuest={role === 'guest'}
-            maxSelectPerAdd={room.maxSelectPerAdd}
-            trackVotes={trackVotes}
-            autoDjStatus={autoDjStatus}
-            autoDjEnabled={room?.autoDjEnabled}
-            autoDjMode={room?.autoDjMode}
-            autoDjPaused={room?.autoDjPaused}
-            autoDjTags={room?.autoDjTags}
-            autoDjPrompt={room?.autoDjPrompt}
-            favorites={favorites}
-          />
+          <SlotErrorBoundary>
+            <DesktopQueuePanel
+              roomId={id}
+              canSearch={can('addQueue')}
+              canEnqueue={can('addQueue')}
+              canReorder={isHost || can('host')}
+              isHost={isHost}
+              isGuest={role === UserRole.guest}
+              maxSelectPerAdd={room.maxSelectPerAdd}
+              trackVotes={trackVotes}
+              autoDjStatus={autoDjStatus}
+              autoDjEnabled={room?.autoDjEnabled}
+              autoDjMode={room?.autoDjMode}
+              autoDjPaused={room?.autoDjPaused}
+              autoDjTags={room?.autoDjTags}
+              autoDjPrompt={room?.autoDjPrompt}
+              favorites={favorites}
+            />
+          </SlotErrorBoundary>
         }
         queue={
-          <Queue
-            roomId={id}
-            canSearch={can('addQueue')}
-            canEnqueue={can('addQueue')}
-            canReorder={isHost || can('host')}
-            isHost={isHost}
-            isGuest={role === 'guest'}
-            maxSelectPerAdd={room.maxSelectPerAdd}
-            trackVotes={trackVotes}
-            autoDjStatus={autoDjStatus}
-            favorites={favorites}
-          />
+          <SlotErrorBoundary>
+            <Queue
+              roomId={id}
+              canSearch={can('addQueue')}
+              canEnqueue={can('addQueue')}
+              canReorder={isHost || can('host')}
+              isHost={isHost}
+              isGuest={role === UserRole.guest}
+              maxSelectPerAdd={room.maxSelectPerAdd}
+              trackVotes={trackVotes}
+              autoDjStatus={autoDjStatus}
+              favorites={favorites}
+            />
+          </SlotErrorBoundary>
         }
-        history={<HistoryPanel roomId={id} isGuest={role === 'guest'} favorites={favorites} />}
+        history={
+          <SlotErrorBoundary>
+            <HistoryPanel roomId={id} isGuest={role === UserRole.guest} favorites={favorites} />
+          </SlotErrorBoundary>
+        }
         autodj={
           room?.autoDjEnabled ? (
-            <div className="h-full overflow-y-auto p-4">
-              <MobileAutoDjTab roomId={id} room={room} isHost={isHost} />
-            </div>
+            <SlotErrorBoundary>
+              <div className="h-full overflow-y-auto p-4">
+                <MobileAutoDjTab roomId={id} room={room} isHost={isHost} />
+              </div>
+            </SlotErrorBoundary>
           ) : undefined
         }
         autoDjEnabled={room?.autoDjEnabled}
         autoDjPaused={room?.autoDjPaused}
         modals={
           <>
-            <PasswordModal open={needPassword} onSubmit={joinRoom} onClose={() => router.push('/rooms')} />
+            <PasswordModal open={needPassword} onSubmit={joinRoom} onClose={() => setup.handleLeave()} />
             <RoomSettingsModal
               open={showSettings}
               onClose={() => setShowSettings(false)}

@@ -1,4 +1,5 @@
-'use client';
+import { LyricsTransStatus } from '@/api/model';
+('use client');
 
 import { useQuery } from '@tanstack/react-query';
 import { Clock, Loader2, Minus, Plus, X } from 'lucide-react';
@@ -10,7 +11,7 @@ import { playerControllerLyrics } from '@/api/player/player';
 import type { LyricLine, LyricWord } from '@/types';
 import { LyricsStatus } from '@/types';
 
-import { Button } from '../ui/button';
+import { Button } from '@/components/common/Button';
 
 interface LyricsProps {
   roomId: string;
@@ -393,7 +394,7 @@ export default function Lyrics({
           </motion.div>
 
           {/* pending 스피너 */}
-          {!hasTranslation && lyricsData?.transStatus === 'pending' && (
+          {!hasTranslation && lyricsData?.transStatus === LyricsTransStatus.pending && (
             <div className="flex h-4 items-center justify-center">
               <Loader2 size={10} className="animate-spin text-white/30" />
             </div>

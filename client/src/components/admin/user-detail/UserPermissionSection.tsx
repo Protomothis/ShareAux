@@ -5,11 +5,12 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { UserRole } from '@/api/model';
 import type { UpdatePermissionsBodyPermissionsItem, UserDetailResponse } from '@/api/model';
 import type { UpdateRoleDtoRole } from '@/api/model';
 import { CheckboxGroup } from '@/components/admin/CheckboxGroup';
 import { StatusBadge } from '@/components/admin/StatusBadge';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { FormField } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Surface } from '@/components/ui/surface';
@@ -38,8 +39,8 @@ export function UserPermissionSection({ user }: UserPermissionSectionProps) {
     disabled: m.key === 'listen',
   }));
 
-  const isSuperAdmin = role === 'superAdmin';
-  const isAdmin = role === 'admin' || isSuperAdmin;
+  const isSuperAdmin = role === UserRole.superAdmin;
+  const isAdmin = role === UserRole.admin || isSuperAdmin;
   const saving = updateRole.isPending || updatePermissions.isPending;
 
   const effectiveOptions = useMemo(
@@ -82,7 +83,7 @@ export function UserPermissionSection({ user }: UserPermissionSectionProps) {
       <FormField label={t('roleLabel')}>
         {isSuperAdmin ? (
           <StatusBadge variant="accent">{t('superAdminFixed')}</StatusBadge>
-        ) : (user.role as string) === 'guest' ? (
+        ) : user.role === UserRole.guest ? (
           <StatusBadge variant="muted">{t('guestFixed')}</StatusBadge>
         ) : (
           <Select value={role} onValueChange={(v) => v && setRole(v)}>

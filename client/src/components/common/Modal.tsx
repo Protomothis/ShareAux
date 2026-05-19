@@ -5,7 +5,7 @@ import { XIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { cn } from '@/lib/utils';
 
 // ─── Sub-components ──────────────────────────────────────

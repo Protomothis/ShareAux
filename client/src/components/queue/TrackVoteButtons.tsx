@@ -9,7 +9,7 @@ import {
   useTracksControllerGetStats,
   useTracksControllerVote,
 } from '@/api/tracks/tracks';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { cn } from '@/lib/utils';
 
 interface TrackVoteButtonsProps {

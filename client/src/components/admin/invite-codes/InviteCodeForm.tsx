@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 import type { CreateInviteCodeDtoPermissionsItem } from '@/api/model';
 import { CheckboxGroup } from '@/components/admin/CheckboxGroup';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { DatePicker } from '@/components/ui/date-picker';
 import { FormField } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';

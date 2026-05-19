@@ -1,4 +1,5 @@
-'use client';
+import { UserRole } from '@/api/model';
+('use client');
 
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -8,7 +9,7 @@ import { roomsControllerCreate } from '@/api/rooms/rooms';
 import Modal from '@/components/common/Modal';
 import type { RoomFormValues } from '@/components/common/RoomSettingsForm';
 import RoomSettingsForm, { DEFAULT_FORM_VALUES } from '@/components/common/RoomSettingsForm';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useAuthStore } from '@/stores/auth';
 
@@ -84,7 +85,7 @@ export default function CreateRoomModal({ open, onClose, onCreated }: CreateRoom
         <Modal.Body>
           <RoomSettingsForm
             mode="create"
-            isGuest={role === 'guest'}
+            isGuest={role === UserRole.guest}
             values={values}
             onChange={set}
             errors={errors}

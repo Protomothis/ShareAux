@@ -1,5 +1,5 @@
 export type { HttpStreamListener, ListenerState, ParsedInitSegment, RoomAudio, StreamInfo } from './audio.types.js';
-export type { StreamState } from './audio.types.js';
+export { StreamState } from './audio.types.js';
 export type { AuthenticatedRequest, AuthenticatedUser, JwtPayload, OAuthProfile } from './auth.types.js';
 export { AuthProvider } from './auth-provider.enum.js';
 export type { AutoDjStatus, AutoDjTags } from './auto-dj.types.js';
@@ -7,6 +7,7 @@ export { AutoDjMode } from './auto-dj.types.js';
 export { ErrorCode } from './error-code.enum.js';
 export { GuestPermission } from './guest-permission.enum.js';
 export { Language } from './language.enum.js';
+export { LyricsTransStatus } from './lyrics-trans-status.enum.js';
 export type { LyricsResult } from './lyrics.types.js';
 export { TranslationLang } from './translation-lang.enum.js';
 export { LyricsStatus, LyricsType } from './lyrics.types.js';
@@ -20,6 +21,7 @@ export {
 export type { PreloadEntry } from './preload.types.js';
 export { PlayFailReason, PreloadState } from './preload.types.js';
 export { PushEvent } from './push-event.enum.js';
+export { ReportStatus } from './report-status.enum.js';
 export type { LeaveResult, RoomPermissionsUpdate, TransferHostResult } from './room.types.js';
 export type { OptionMeta, OptionType } from './settings.types.js';
 export { OPTION_METAS, OptionKey } from './settings.types.js';

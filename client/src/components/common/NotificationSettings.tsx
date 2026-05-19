@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { usePushControllerGetSettings } from '@/api/push/push';
 import { pushControllerUpdateSettings } from '@/api/push/push';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { Surface } from '@/components/ui/surface';
 import { Switch } from '@/components/ui/switch';
 import { registerPushSubscription } from '@/hooks/usePushSubscription';

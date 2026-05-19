@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { RoomPlayback } from '../../entities/room-playback.entity.js';
-import type { StreamState } from '../../types/index.js';
+import { LyricsTransStatus, StreamState } from '../../types/index.js';
 
 export class PlaybackStatus extends RoomPlayback {
   @ApiProperty({ description: '경과 시간 (ms)' })
@@ -13,9 +13,9 @@ export class PlaybackStatus extends RoomPlayback {
   @ApiProperty({ description: '스트림 비트레이트 (kbps)', example: 160 })
   streamBitrate!: number;
 
-  @ApiProperty({ description: '스트림 상태', enum: ['idle', 'preparing', 'skipping', 'streaming'] })
+  @ApiProperty({ description: '스트림 상태', enum: StreamState, enumName: 'StreamState' })
   streamState!: StreamState;
 
-  @ApiProperty({ description: '번역 상태', nullable: true, example: 'done' })
-  transStatus!: string | null;
+  @ApiProperty({ description: '번역 상태', enum: LyricsTransStatus, enumName: 'LyricsTransStatus', nullable: true })
+  transStatus!: LyricsTransStatus | null;
 }

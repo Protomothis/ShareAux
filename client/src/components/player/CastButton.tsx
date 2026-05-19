@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { getStreamUrl } from '@/lib/urls';
 
 export type CastState = 'disconnected' | 'connecting' | 'connected';

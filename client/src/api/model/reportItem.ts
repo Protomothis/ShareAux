@@ -5,6 +5,7 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
+import type { ReportStatus } from './reportStatus';
 
 export interface ReportItem {
   id: string;
@@ -16,7 +17,7 @@ export interface ReportItem {
   reason: string;
   /** @nullable */
   details: string | null;
-  status: string;
+  status: ReportStatus;
   /** @nullable */
   resolvedBy: string | null;
   /** @nullable */

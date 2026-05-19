@@ -1,3 +1,4 @@
+import { UserRole } from '@/api/model';
 import { useTranslations } from 'next-intl';
 import { memo } from 'react';
 
@@ -39,7 +40,7 @@ export default memo(function MemberItem({ member: m, isHostUser, hasEnqueuePermi
       <span className="flex-1 truncate">
         <span className={cfg.color}>{m.user?.nickname ?? 'Unknown'}</span>
         <span className="ml-1 text-[10px] text-sa-text-muted">#{m.userId.slice(-4)}</span>
-        {dr === 'guest' && (
+        {dr === UserRole.guest && (
           <span className="ml-1.5 rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/40">{t('guest')}</span>
         )}
       </span>

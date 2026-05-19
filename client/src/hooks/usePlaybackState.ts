@@ -3,7 +3,7 @@ import { useCallback, useRef, useState } from 'react';
 
 import type { Track, TrackLyricsType } from '@/api/model';
 import { debug } from '@/lib/debug';
-import type { StreamState } from '@/types';
+import { StreamState } from '@/types';
 import { LyricsStatus } from '@/types';
 
 /**
@@ -34,16 +34,16 @@ export function usePlaybackState(
   // --- streamState만 변경 ---
   const handleStreamStateOnly = useCallback(
     (ss: string) => {
-      if ((ss === 'preparing' || ss === 'skipping') && listeningRef.current) {
+      if ((ss === StreamState.preparing || ss === StreamState.skipping) && listeningRef.current) {
         audioLoadingRef.current = true;
         setAudioLoading(true);
       }
-      if (ss === 'skipping' || ss === 'preparing') {
+      if (ss === StreamState.skipping || ss === StreamState.preparing) {
         setStreamState(ss as StreamState);
         setTimeSync({ base: 0, at: 0 });
         if (listeningRef.current) onResyncNeeded('prepare');
       }
-      if (ss === 'streaming') {
+      if (ss === StreamState.streaming) {
         setStreamState('streaming');
         if (listeningRef.current) onResyncNeeded('send');
       }
@@ -73,7 +73,7 @@ export function usePlaybackState(
   const handleTimeSync = useCallback(
     (d: { elapsedMs?: number; streamState?: string }, trackChanged: boolean) => {
       const ow = getOneWayRef.current();
-      if (trackChanged || d.streamState === 'streaming') {
+      if (trackChanged || d.streamState === StreamState.streaming) {
         setTimeSync({ base: (d.elapsedMs ?? 0) + ow, at: Date.now() });
       } else if (d.elapsedMs !== undefined) {
         setTimeSync((prev) => {
@@ -130,12 +130,12 @@ export function usePlaybackState(
       if (d.isPlaying) {
         setTrack(d.track ?? null);
         handleTimeSync(d, trackChanged);
-        if (listeningRef.current && d.streamState === 'preparing') {
+        if (listeningRef.current && d.streamState === StreamState.preparing) {
           audioLoadingRef.current = true;
           setAudioLoading(true);
         }
         if (d.streamState) setStreamState(d.streamState as StreamState);
-        if (d.streamState === 'streaming' && listeningRef.current) onResyncNeeded('send');
+        if (d.streamState === StreamState.streaming && listeningRef.current) onResyncNeeded('send');
       } else {
         handleStopped();
       }

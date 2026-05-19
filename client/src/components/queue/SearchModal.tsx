@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { favoritesControllerAdd } from '@/api/favorites/favorites';
 import type { SearchResultItem } from '@/api/model';
 import { queueControllerAddTracks } from '@/api/queue/queue';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { Input } from '@/components/ui/input';
 import { useSearch } from '@/hooks/useSearch';
 import { MAX_QUEUE_SIZE } from '@/lib/constants';

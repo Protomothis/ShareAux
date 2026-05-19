@@ -7,7 +7,8 @@
  */
 import type { Room } from './room';
 import type { PlaybackStatusTrack } from './playbackStatusTrack';
-import type { PlaybackStatusStreamState } from './playbackStatusStreamState';
+import type { StreamState } from './streamState';
+import type { PlaybackStatusTransStatus } from './playbackStatusTransStatus';
 
 export interface PlaybackStatus {
   roomId: string;
@@ -26,10 +27,10 @@ export interface PlaybackStatus {
   /** 스트림 비트레이트 (kbps) */
   streamBitrate: number;
   /** 스트림 상태 */
-  streamState: PlaybackStatusStreamState;
+  streamState: StreamState;
   /**
    * 번역 상태
    * @nullable
    */
-  transStatus: string | null;
+  transStatus: PlaybackStatusTransStatus;
 }

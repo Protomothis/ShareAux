@@ -32,6 +32,11 @@ export class QueueController {
     private autoDj: AutoDjService,
   ) {}
 
+  private async broadcastQueue(roomId: string): Promise<void> {
+    const queue = await this.queue.getQueue(roomId);
+    this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue });
+  }
+
   @Get(':roomId')
   @ApiOperation({ summary: '대기열 조회' })
   @ApiResponse({ status: 200, type: [RoomQueue] })
@@ -123,8 +128,7 @@ export class QueueController {
     @Req() req: AuthenticatedRequest,
   ) {
     const result = await this.queue.removeTrack(roomId, queueId, req.user.userId);
-    const updatedQueue = await this.queue.getQueue(roomId);
-    this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue: updatedQueue });
+    await this.broadcastQueue(roomId);
     this.autoDj.trigger(roomId);
     this.autoDj.syncPoolWithQueue(roomId).catch((e: unknown) => this.logger.warn(`[syncPool] ${(e as Error).message}`));
     return result;
@@ -137,8 +141,7 @@ export class QueueController {
   @ApiBearerAuth()
   async reorder(@Param('roomId', ParseUUIDPipe) roomId: string, @Body() body: ReorderBody) {
     await this.queue.reorder(roomId, body.queueId, body.newPosition, body.version);
-    const updatedQueue = await this.queue.getQueue(roomId);
-    this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue: updatedQueue });
+    await this.broadcastQueue(roomId);
     return { success: true };
   }
 
@@ -169,8 +172,7 @@ export class QueueController {
       ],
       userId,
     );
-    const updatedQueue = await this.queue.getQueue(roomId);
-    this.gateway.broadcastSystem(roomId, WsEvent.QueueUpdated, '', { queue: updatedQueue });
+    await this.broadcastQueue(roomId);
     this.autoDj.syncPoolWithQueue(roomId).catch((e: unknown) => this.logger.warn(`[syncPool] ${(e as Error).message}`));
   }
 }

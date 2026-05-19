@@ -16,6 +16,9 @@ import type { PushEvent } from './pushEvent';
 import type { TranslationLang } from './translationLang';
 import type { LyricsStatus } from './lyricsStatus';
 import type { LyricsType } from './lyricsType';
+import type { StreamState } from './streamState';
+import type { LyricsTransStatus } from './lyricsTransStatus';
+import type { ReportStatus } from './reportStatus';
 
 export interface SharedEnums {
   wsEvent: WsEvent;
@@ -29,4 +32,7 @@ export interface SharedEnums {
   translationLang: TranslationLang;
   lyricsStatus: LyricsStatus;
   lyricsType: LyricsType;
+  streamState: StreamState;
+  lyricsTransStatus: LyricsTransStatus;
+  reportStatus: ReportStatus;
 }

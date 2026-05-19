@@ -5,9 +5,10 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
+import { UserRole } from '@/api/model';
 import type { UserDetailResponse } from '@/api/model';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { Surface } from '@/components/ui/surface';
 import { useBanUser, useUnbanUser } from '@/hooks/admin/useAdminUserDetail';
 
@@ -21,7 +22,7 @@ export function UserBanSection({ user }: UserBanSectionProps) {
   const banUser = useBanUser(user.id);
   const unbanUser = useUnbanUser(user.id);
 
-  const isSuperAdmin = user.role === 'superAdmin';
+  const isSuperAdmin = user.role === UserRole.superAdmin;
 
   const handleBan = useCallback(() => {
     if (user.bannedAt) {

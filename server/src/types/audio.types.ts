@@ -1,7 +1,12 @@
 import type { ChildProcess } from 'child_process';
 import type { Response } from 'express';
 
-export type StreamState = 'idle' | 'preparing' | 'skipping' | 'streaming';
+export enum StreamState {
+  Idle = 'idle',
+  Preparing = 'preparing',
+  Skipping = 'skipping',
+  Streaming = 'streaming',
+}
 
 export interface StreamInfo {
   codec?: string;

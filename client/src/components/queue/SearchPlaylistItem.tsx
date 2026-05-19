@@ -7,7 +7,7 @@ import { useCallback, useState } from 'react';
 import type { PlaylistResult } from '@/api/model';
 import type { SearchResultItem } from '@/api/model';
 import { searchControllerGetPlaylistTracks } from '@/api/search/search';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { EmptyState } from '@/components/ui/empty-state';
 
 import { SearchTrackItem } from './SearchTrackItem';

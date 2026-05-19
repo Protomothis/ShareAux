@@ -6,7 +6,7 @@ import { useCallback, useState } from 'react';
 
 import type { SearchResultItem } from '@/api/model';
 import { searchControllerImportByUrl } from '@/api/search/search';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { Input } from '@/components/ui/input';
 import { isSupportedMediaUrl } from '@/lib/media-url';
 import { cn } from '@/lib/utils';

@@ -229,7 +229,8 @@
       "tagCountry_se": "Sweden",
       "tagCountry_cn": "China",
       "tagCountry_au": "Australia",
-      "tagCountry_in": "India"
+      "tagCountry_in": "India",
+      "title": "AutoDJ"
     }
   },
   "queue": {
@@ -249,7 +250,8 @@
     "addedExtra": " and {count} more",
     "tabQueue": "Queue",
     "tabHistory": "History",
-    "reorderFailed": "Failed to reorder"
+    "reorderFailed": "Failed to reorder",
+    "tabAutoDj": "AutoDJ"
   },
   "search": {
     "title": "Add tracks",

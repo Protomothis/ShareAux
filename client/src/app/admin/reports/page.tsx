@@ -1,4 +1,5 @@
-'use client';
+import { ReportStatus } from '@/api/model';
+('use client');
 
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
@@ -9,7 +10,7 @@ import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminPagination } from '@/components/admin/AdminPagination';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { StatusBadge } from '@/components/admin/StatusBadge';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SkeletonCard } from '@/components/ui/skeleton';
 import { useAdminReports, useResolveReport } from '@/hooks/admin/useAdminReports';
@@ -66,7 +67,7 @@ function ReportCard({
           {report.details && <p className="mt-1 text-xs text-sa-text-muted">{report.details}</p>}
           <p className="mt-2 text-xs text-sa-text-muted">{new Date(report.createdAt).toLocaleString('ko-KR')}</p>
         </div>
-        {report.status === 'pending' && (
+        {report.status === ReportStatus.pending && (
           <div className="flex shrink-0 gap-2">
             <Button variant="accent" size="sm" onClick={() => onResolve(report.id)}>
               {t('resolve')}
@@ -94,7 +95,7 @@ export default function AdminReportsPage() {
     if (!resolveTarget) return;
     resolveReport.mutate(resolveTarget, {
       onSuccess: () => {
-        toast.success(resolveTarget.status === 'resolved' ? t('resolvedToast') : t('dismissedToast'));
+        toast.success(resolveTarget.status === ReportStatus.resolved ? t('resolvedToast') : t('dismissedToast'));
         setResolveTarget(null);
       },
     });
@@ -146,10 +147,10 @@ export default function AdminReportsPage() {
       <ConfirmDialog
         open={!!resolveTarget}
         onOpenChange={(open) => !open && setResolveTarget(null)}
-        title={resolveTarget?.status === 'resolved' ? t('resolveTitle') : t('dismissTitle')}
-        description={resolveTarget?.status === 'resolved' ? t('resolveDesc') : t('dismissDesc')}
-        confirmLabel={resolveTarget?.status === 'resolved' ? t('resolve') : t('dismiss')}
-        variant={resolveTarget?.status === 'resolved' ? 'default' : 'destructive'}
+        title={resolveTarget?.status === ReportStatus.resolved ? t('resolveTitle') : t('dismissTitle')}
+        description={resolveTarget?.status === ReportStatus.resolved ? t('resolveDesc') : t('dismissDesc')}
+        confirmLabel={resolveTarget?.status === ReportStatus.resolved ? t('resolve') : t('dismiss')}
+        variant={resolveTarget?.status === ReportStatus.resolved ? 'default' : 'destructive'}
         onConfirm={handleResolve}
         loading={resolveReport.isPending}
       />

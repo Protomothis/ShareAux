@@ -15,6 +15,7 @@ import { RoomsService } from '../rooms/rooms.service.js';
 import { AuthProvider } from '../types/auth-provider.enum.js';
 import { Provider } from '../types/provider.enum.js';
 import { UserRole } from '../types/user-role.enum.js';
+import { TranslationService } from '../services/translation.service.js';
 
 const NCS_TRACKS = [
   {
@@ -75,6 +76,7 @@ export class TestController {
     private readonly player: PlayerService,
     private readonly queue: QueueService,
     private readonly gateway: RoomsGateway,
+    private readonly translation: TranslationService,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
     @InjectRepository(Room) private readonly roomRepo: Repository<Room>,
   ) {}
@@ -175,5 +177,109 @@ export class TestController {
     if (!admin) return { error: 'No superAdmin user found' };
     await this.pushService.sendTestPush(admin.id);
     return { ok: true, userId: admin.id };
+  }
+
+  /**
+   * 번역 프롬프트 테스트 — 샘플 가사로 Gemini 호출 후 결과 반환
+   * GET /api/test/translate?lang=ja&target=ko&lines=5
+   * GET /api/test/translate?lrc=<LRC 텍스트 URL-encoded>
+   */
+  @Get('translate')
+  async testTranslate(
+    @Query('lang') lang?: string,
+    @Query('target') target?: string,
+    @Query('lines') lines?: string,
+    @Query('lrc') lrc?: string,
+  ) {
+    if (!this.translation.isEnabled) return { error: 'Translation not enabled (no Gemini API key)' };
+
+    const sampleLrc = lrc ?? this.getSampleLrc(lang ?? 'ja', parseInt(lines ?? '8', 10));
+
+    // TranslationService의 private 메서드에 접근하기 위해 prototype 사용
+    const svc = this.translation as unknown as Record<string, (...args: unknown[]) => unknown>;
+    const parseLrc = svc.parseLrc.bind(this.translation) as (lrc: string) => Array<{ time: string; text: string }>;
+    const translateWithChunks = svc.translateWithChunks.bind(this.translation) as (
+      lines: Array<{ time: string; text: string }>,
+      lang: string,
+      targetLang: string,
+      includeReading: boolean,
+    ) => Promise<{ translations: Map<number, string>; readings: Map<number, string> } | null>;
+
+    const parsed = parseLrc(sampleLrc);
+    if (!parsed.length) return { error: 'No lyrics lines parsed', input: sampleLrc };
+
+    const sourceLang = lang ?? 'ja';
+    const targetLang = target ?? 'ko';
+    const includeReading = sourceLang === 'ja' && (targetLang === 'ko' || targetLang === 'en');
+
+    const start = Date.now();
+    const result = await translateWithChunks(parsed, sourceLang, targetLang, includeReading);
+    const elapsed = Date.now() - start;
+
+    if (!result) return { error: 'Translation failed', elapsed };
+
+    const output = parsed.map((l, i) => ({
+      line: i + 1,
+      original: l.text,
+      translated: result.translations.get(i + 1) ?? '(missing)',
+      ...(includeReading ? { reading: result.readings.get(i + 1) ?? '(missing)' } : {}),
+    }));
+
+    return {
+      ok: true,
+      elapsed,
+      sourceLang,
+      targetLang,
+      includeReading,
+      totalLines: parsed.length,
+      translatedLines: result.translations.size,
+      missingLines: parsed.length - result.translations.size,
+      output,
+    };
+  }
+
+  private getSampleLrc(lang: string, count: number): string {
+    const samples: Record<string, string[]> = {
+      ja: [
+        '[00:15.00] 夜に駆ける',
+        '[00:18.00] 沈むように溶けてゆくように',
+        '[00:22.00] 二人だけの空が広がる夜に',
+        '[00:26.00] さよならだけだった',
+        '[00:30.00] その一言で全てが分かった',
+        '[00:34.00] 日が沈み出した空と君の姿',
+        '[00:38.00] フェンス越しに重なっていた',
+        '[00:42.00] 初めて会った日から',
+        '[00:45.00] 僕の心の全てを奪った',
+        '[00:49.00] どこか儚い空気を纏う君は',
+        '[00:53.00] 寂しい目をしてたんだ',
+        '[00:57.00] いつだってチックタックと鳴る世界で何度だってさ',
+      ],
+      en: [
+        "[00:10.00] Is it me you're looking for?",
+        '[00:14.00] I can see it in your eyes',
+        '[00:18.00] I can see it in your smile',
+        "[00:22.00] You're all I've ever wanted",
+        '[00:26.00] And my arms are open wide',
+        "[00:30.00] 'Cause you know just what to say",
+        '[00:34.00] And you know just what to do',
+        '[00:38.00] And I want to tell you so much',
+        '[00:42.00] I love you',
+        '[00:45.00] Oh yeah',
+        "[00:48.00] I've been alone with you inside my mind",
+        "[00:52.00] And in my dreams I've kissed your lips a thousand times",
+      ],
+      zh: [
+        '[00:10.00] 我们一起学猫叫',
+        '[00:14.00] 一起喵喵喵喵喵',
+        '[00:18.00] 在你面前撒个娇',
+        '[00:22.00] 哎呦喵喵喵喵喵',
+        '[00:26.00] 我的心脏砰砰跳',
+        '[00:30.00] 迷恋上你的坏笑',
+        '[00:34.00] 你不说爱我我就喵喵喵',
+        '[00:38.00] 每天都需要你的拥抱',
+      ],
+    };
+    const lrcLines = samples[lang] ?? samples['ja'];
+    return lrcLines.slice(0, Math.min(count, lrcLines.length)).join('\n');
   }
 }

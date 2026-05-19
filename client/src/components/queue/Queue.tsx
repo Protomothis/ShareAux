@@ -12,7 +12,7 @@ import type { RoomQueue, SearchResultItem } from '@/api/model';
 import { getQueueControllerGetQueueQueryKey, queueControllerRemoveTrack } from '@/api/queue/queue';
 import { useQueueControllerGetMyQuota, useQueueControllerGetQueue } from '@/api/queue/queue';
 import EmptyState from '@/components/common/EmptyState';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useInvalidate } from '@/hooks/useQueries';
 import { useQueueDnd } from '@/hooks/useQueueDnd';

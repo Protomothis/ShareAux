@@ -4,7 +4,8 @@ import { Loader2 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
 
-import type { AutoDjStatus, StreamState, TrackInfo, TrackVoteMap } from '@/types';
+import { StreamState } from '@/types';
+import type { AutoDjStatus, TrackInfo, TrackVoteMap } from '@/types';
 import { LyricsStatus } from '@/types';
 
 import { FavoriteButton } from '../common/FavoriteButton';
@@ -51,7 +52,11 @@ export default function PlayerInfo({
 }: PlayerInfoProps) {
   const t = useTranslations('player');
   const statusText =
-    streamState === 'skipping' ? t('skipping') : streamState === 'preparing' && isPlaying ? t('preparing') : null;
+    streamState === StreamState.skipping
+      ? t('skipping')
+      : streamState === StreamState.preparing && isPlaying
+        ? t('preparing')
+        : null;
   return (
     <AnimatePresence mode="wait">
       <motion.div
@@ -83,7 +88,7 @@ export default function PlayerInfo({
               className="absolute -left-1 -top-1 z-10"
             />
           )}
-          {isPlaying && track && streamState === 'streaming' && (
+          {isPlaying && track && streamState === StreamState.streaming && (
             <span className="absolute -bottom-1 -right-1 z-10 flex size-3">
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-sa-accent opacity-40" />
               <span className="relative inline-flex size-3 rounded-full bg-sa-accent" />

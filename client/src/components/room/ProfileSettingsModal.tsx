@@ -15,7 +15,7 @@ import {
 import type { ApiError } from '@/api/mutator';
 import Modal from '@/components/common/Modal';
 import { NotificationSettings } from '@/components/common/NotificationSettings';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { FormField } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
@@ -30,6 +30,7 @@ interface ProfileSettingsModalProps {
   onClose: () => void;
 }
 
+import { UserRole } from '@/api/model';
 import type { User } from '@/api/model';
 
 // ─── Menu Item ──────────────────────────────────────────
@@ -116,7 +117,7 @@ export default function ProfileSettingsModal({ open, onClose }: ProfileSettingsM
 function MenuPage({ setPage, me, role }: { setPage: (p: Page) => void; me: User | null; role?: string }) {
   const t = useTranslations('profile');
   const authConfig = useAuthConfig();
-  const isGuest = role === 'guest';
+  const isGuest = role === UserRole.guest;
   return (
     <>
       <Modal.Header>

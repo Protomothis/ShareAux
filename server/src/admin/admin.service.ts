@@ -12,7 +12,7 @@ import { User } from '../entities/user.entity.js';
 import { UserTrackHistory } from '../entities/user-track-history.entity.js';
 import { AppException } from '../exceptions/app.exception.js';
 import { ErrorCode } from '../types/error-code.enum.js';
-import { Permission, UserRole } from '../types/index.js';
+import { Permission, ReportStatus, UserRole } from '../types/index.js';
 import type { CreateInviteCodeDto } from './dto/create-invite-code.dto.js';
 
 @Injectable()
@@ -230,7 +230,7 @@ export class AdminService {
     };
   }
 
-  async resolveReport(reportId: string, resolvedByUserId: string, status: string) {
+  async resolveReport(reportId: string, resolvedByUserId: string, status: ReportStatus) {
     const report = await this.reportRepo.findOneBy({ id: reportId });
     if (!report) throw new AppException(ErrorCode.ADMIN_004);
     report.status = status;

@@ -8,7 +8,7 @@ import { authControllerGuestLogin } from '@/api/auth/auth';
 import type { ErrorCode } from '@/api/model';
 import { ApiError } from '@/api/mutator';
 import { PCaptcha } from '@/components/common/PCaptcha';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { FormField } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Surface } from '@/components/ui/surface';

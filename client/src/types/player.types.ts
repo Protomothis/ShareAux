@@ -1,6 +1,6 @@
 import type { Track } from '@/api/model';
-import type { PlaybackStatusStreamState } from '@/api/model';
 import type { AutoDjStatus as AutoDjStatusType } from '@/api/model';
+import { StreamState as StreamStateConst } from '@/api/model';
 
 /** Track 정보 중 플레이어 UI에 필요한 필드만 추출 */
 export type TrackInfo = Pick<
@@ -10,8 +10,9 @@ export type TrackInfo = Pick<
 
 export type VisualMode = 'bars' | 'wave' | 'mirror' | 'dots';
 
-/** swagger 기반 StreamState (server PlaybackStatus.streamState) */
-export type StreamState = PlaybackStatusStreamState;
+/** swagger 기반 StreamState (server StreamState enum) */
+export type StreamState = (typeof StreamStateConst)[keyof typeof StreamStateConst];
+export const StreamState = StreamStateConst;
 
 /** AutoDjStatus (server SharedEnums.autoDjStatus) */
 export type AutoDjStatus = AutoDjStatusType;

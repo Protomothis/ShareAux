@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
 import AnimatedBackground from '@/components/common/AnimatedBackground';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { useAuthStore } from '@/stores/auth';
 
 export default function AuthCallbackPage() {

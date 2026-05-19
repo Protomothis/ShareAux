@@ -13,7 +13,7 @@ import { AdminTable } from '@/components/admin/AdminTable';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { RoomDetailModal } from '@/components/admin/RoomDetailModal';
 import { StatusBadge } from '@/components/admin/StatusBadge';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { useAdminLiveRooms, useAdminRooms, useDeleteRoom } from '@/hooks/admin/useAdminRooms';
 
 const LIMIT = 20;

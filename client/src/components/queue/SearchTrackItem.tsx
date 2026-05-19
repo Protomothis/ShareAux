@@ -5,7 +5,7 @@ import { memo } from 'react';
 import type { SearchResultItem } from '@/api/model';
 import { FavoriteButton } from '@/components/common/FavoriteButton';
 import Thumbnail from '@/components/common/Thumbnail';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { formatDuration } from '@/lib/format';
 import { cn } from '@/lib/utils';
 

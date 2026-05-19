@@ -8,12 +8,12 @@ export type {
   LyricLine,
   LyricWord,
   ShimmerVariant,
-  StreamState,
   TrackInfo,
   TrackVoteMap,
   VisualMode,
 } from './player.types';
-export { LyricsStatus } from './player.types';
+export { LyricsStatus, StreamState } from './player.types';
+export type { StreamState as StreamStateType } from './player.types';
 export type { MobileTab } from './room.types';
 /** swagger 기반 WsEvent (server WsEvent enum) */
 export type { PlaylistResult, PlaylistTrack } from './playlist.types';

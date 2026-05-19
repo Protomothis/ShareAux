@@ -12,7 +12,7 @@ import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { CreateInviteCodeModal } from '@/components/admin/invite-codes';
 import { InviteCodeUsersModal } from '@/components/admin/InviteCodeUsersModal';
 import { StatusBadge } from '@/components/admin/StatusBadge';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SkeletonCard } from '@/components/ui/skeleton';
 import { useAdminInviteCodes, useDeactivateInviteCode, useDeleteInviteCode } from '@/hooks/admin/useAdminInviteCodes';

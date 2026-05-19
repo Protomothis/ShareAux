@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import React from 'react';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 
 function ErrorFallback() {
   const t = useTranslations('common');

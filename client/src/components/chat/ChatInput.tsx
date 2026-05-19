@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { MemberWithPermission } from '@/api/model';
 import { roomsControllerGetBans } from '@/api/rooms/rooms';
 import { ChatCommandPalette, type PaletteItem } from '@/components/chat/ChatCommandPalette';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { Input } from '@/components/ui/input';
 import { parseSlashInput, SLASH_COMMANDS, type SlashCommand } from '@/lib/chat-commands';
 import { MAX_CHAT_LENGTH } from '@/lib/constants';
