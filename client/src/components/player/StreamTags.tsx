@@ -1,4 +1,5 @@
-'use client';
+import { LyricsTransStatus } from '@/api/model';
+('use client');
 
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -30,11 +31,11 @@ export function StreamTags({ codec, bitrate, lyricsStatus, transStatus }: Stream
           LRC
         </InfoTag>
       ) : null}
-      {lyricsStatus === LyricsStatus.found && transStatus === 'pending' ? (
+      {lyricsStatus === LyricsStatus.found && transStatus === LyricsTransStatus.pending ? (
         <InfoTag className="text-white/50" title={t('transSearching')}>
           <Loader2 size={8} className="shrink-0 animate-spin" /> TL
         </InfoTag>
-      ) : lyricsStatus === LyricsStatus.found && transStatus === 'done' ? (
+      ) : lyricsStatus === LyricsStatus.found && transStatus === LyricsTransStatus.done ? (
         <InfoTag className="text-white/50" title={t('transDone')}>
           TL
         </InfoTag>

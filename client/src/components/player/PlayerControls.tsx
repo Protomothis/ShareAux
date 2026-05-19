@@ -79,7 +79,7 @@ export default function PlayerControls({
   const t = useTranslations('player');
   const [skipping, setSkipping] = useState<'prev' | 'next' | false>(false);
   const cooldown = elapsedMs < SKIP_COOLDOWN_MS;
-  const transitioning = streamState === 'preparing' || streamState === 'skipping';
+  const transitioning = streamState === StreamState.preparing || streamState === StreamState.skipping;
 
   const handleSkip = async () => {
     if (skipping) return;

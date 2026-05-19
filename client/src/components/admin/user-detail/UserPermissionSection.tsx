@@ -83,7 +83,7 @@ export function UserPermissionSection({ user }: UserPermissionSectionProps) {
       <FormField label={t('roleLabel')}>
         {isSuperAdmin ? (
           <StatusBadge variant="accent">{t('superAdminFixed')}</StatusBadge>
-        ) : (user.role as string) === 'guest' ? (
+        ) : user.role === UserRole.guest ? (
           <StatusBadge variant="muted">{t('guestFixed')}</StatusBadge>
         ) : (
           <Select value={role} onValueChange={(v) => v && setRole(v)}>

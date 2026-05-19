@@ -52,7 +52,11 @@ export default function PlayerInfo({
 }: PlayerInfoProps) {
   const t = useTranslations('player');
   const statusText =
-    streamState === 'skipping' ? t('skipping') : streamState === 'preparing' && isPlaying ? t('preparing') : null;
+    streamState === StreamState.skipping
+      ? t('skipping')
+      : streamState === StreamState.preparing && isPlaying
+        ? t('preparing')
+        : null;
   return (
     <AnimatePresence mode="wait">
       <motion.div

@@ -34,16 +34,16 @@ export function usePlaybackState(
   // --- streamState만 변경 ---
   const handleStreamStateOnly = useCallback(
     (ss: string) => {
-      if ((ss === 'preparing' || ss === 'skipping') && listeningRef.current) {
+      if ((ss === StreamState.preparing || ss === StreamState.skipping) && listeningRef.current) {
         audioLoadingRef.current = true;
         setAudioLoading(true);
       }
-      if (ss === 'skipping' || ss === 'preparing') {
+      if (ss === StreamState.skipping || ss === StreamState.preparing) {
         setStreamState(ss as StreamState);
         setTimeSync({ base: 0, at: 0 });
         if (listeningRef.current) onResyncNeeded('prepare');
       }
-      if (ss === 'streaming') {
+      if (ss === StreamState.streaming) {
         setStreamState('streaming');
         if (listeningRef.current) onResyncNeeded('send');
       }
@@ -130,7 +130,7 @@ export function usePlaybackState(
       if (d.isPlaying) {
         setTrack(d.track ?? null);
         handleTimeSync(d, trackChanged);
-        if (listeningRef.current && d.streamState === 'preparing') {
+        if (listeningRef.current && d.streamState === StreamState.preparing) {
           audioLoadingRef.current = true;
           setAudioLoading(true);
         }
