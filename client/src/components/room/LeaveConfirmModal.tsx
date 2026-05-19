@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import Modal from '@/components/common/Modal';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 
 interface LeaveConfirmModalProps {
   open: boolean;

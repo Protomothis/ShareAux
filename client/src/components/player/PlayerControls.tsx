@@ -8,7 +8,7 @@ import { playerControllerPrevious, playerControllerSkip } from '@/api/player/pla
 import { SKIP_COOLDOWN_MS } from '@/lib/constants';
 import type { StreamState, VisualMode } from '@/types';
 
-import { Button } from '../ui/button';
+import { Button } from '@/components/common/Button';
 import { VolumeSlider } from '../ui/volume-slider';
 import type { CastState } from './CastButton';
 import CastButton from './CastButton';

@@ -11,7 +11,7 @@ import {
 } from '@/api/search/search';
 import { FavoriteButton } from '@/components/common/FavoriteButton';
 import Thumbnail from '@/components/common/Thumbnail';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { CollapsibleSection } from '@/components/ui/collapsible-section';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { formatDuration } from '@/lib/format';

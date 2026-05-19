@@ -9,7 +9,7 @@ import type { CleanupSummaryResponse } from '@/api/model';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { StatCard } from '@/components/admin/StatCard';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { useCleanup, useCleanupSummary } from '@/hooks/admin/useAdminCleanup';
 
 interface CleanupSection {

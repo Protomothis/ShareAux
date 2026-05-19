@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 
 interface CheckboxOption {
   key: string;

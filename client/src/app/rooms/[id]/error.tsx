@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 
 export default function RoomError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   const t = useTranslations('error');

@@ -9,7 +9,7 @@ import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminPagination } from '@/components/admin/AdminPagination';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { StatusBadge } from '@/components/admin/StatusBadge';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SkeletonCard } from '@/components/ui/skeleton';
 import { useAdminReports, useResolveReport } from '@/hooks/admin/useAdminReports';

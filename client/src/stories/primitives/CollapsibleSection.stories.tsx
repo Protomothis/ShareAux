@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { Music, Users } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { CollapsibleSection } from '@/components/ui/collapsible-section';
 
 const meta: Meta<typeof CollapsibleSection> = {

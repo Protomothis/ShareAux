@@ -12,7 +12,7 @@ import { AdminPagination } from '@/components/admin/AdminPagination';
 import type { Column } from '@/components/admin/AdminTable';
 import { AdminTable } from '@/components/admin/AdminTable';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { DatePicker } from '@/components/ui/date-picker';
 import {
   Dialog,

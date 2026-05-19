@@ -8,7 +8,7 @@ import { roomsControllerCreate } from '@/api/rooms/rooms';
 import Modal from '@/components/common/Modal';
 import type { RoomFormValues } from '@/components/common/RoomSettingsForm';
 import RoomSettingsForm, { DEFAULT_FORM_VALUES } from '@/components/common/RoomSettingsForm';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useAuthStore } from '@/stores/auth';
 

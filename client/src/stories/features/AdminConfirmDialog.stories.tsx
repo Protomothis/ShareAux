@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { fn } from 'storybook/test';
 
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 
 const meta: Meta<typeof ConfirmDialog> = {
   title: 'Features/Admin/ConfirmDialog',

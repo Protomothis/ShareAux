@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { Inbox, Music, Search } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { EmptyState } from '@/components/ui/empty-state';
 
 const meta: Meta<typeof EmptyState> = {

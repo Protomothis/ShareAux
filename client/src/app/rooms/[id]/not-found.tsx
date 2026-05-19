@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 
-import { buttonVariants } from '@/components/ui/button';
+import { buttonVariants } from '@/components/common/Button';
 
 export default async function RoomNotFound() {
   const t = await getTranslations('error');

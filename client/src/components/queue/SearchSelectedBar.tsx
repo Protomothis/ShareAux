@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 import type { SearchResultItem } from '@/api/model';
 import Thumbnail from '@/components/common/Thumbnail';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { cn } from '@/lib/utils';
 
 interface SearchSelectedBarProps {

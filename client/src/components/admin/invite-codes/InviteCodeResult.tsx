@@ -3,7 +3,7 @@
 import { Check, Copy, Link } from 'lucide-react';
 import { useState } from 'react';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 
 interface InviteCodeResultProps {
   code: string;

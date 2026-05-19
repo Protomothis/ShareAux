@@ -1,5 +1,8 @@
+'use client';
+
 import { Button as ButtonPrimitive } from '@base-ui/react/button';
 import { cva, type VariantProps } from 'class-variance-authority';
+import { Loader2 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
@@ -18,6 +21,10 @@ const buttonVariants = cva(
         destructive:
           'bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40',
         link: 'text-primary underline-offset-4 hover:underline',
+        // ShareAux 커스텀
+        accent: 'bg-sa-accent text-white hover:bg-sa-accent-hover shadow-lg shadow-sa-accent/20',
+        'accent-ghost': 'bg-sa-accent/15 text-sa-accent hover:bg-sa-accent/25',
+        'ghost-muted': 'text-sa-text-muted hover:text-white hover:bg-white/[0.08]',
       },
       size: {
         default: 'h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2',
@@ -29,6 +36,10 @@ const buttonVariants = cva(
           "size-6 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3",
         'icon-sm': 'size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg',
         'icon-lg': 'size-9',
+        // ShareAux 커스텀
+        circle: 'size-10 rounded-full',
+        'circle-lg': 'size-12 rounded-full',
+        'circle-sm': "size-7 rounded-full [&_svg:not([class*='size-'])]:size-3.5",
       },
     },
     defaultVariants: {
@@ -38,10 +49,30 @@ const buttonVariants = cva(
   },
 );
 
-interface ButtonProps extends ButtonPrimitive.Props, VariantProps<typeof buttonVariants> {}
+interface ButtonProps extends ButtonPrimitive.Props, VariantProps<typeof buttonVariants> {
+  loading?: boolean;
+}
 
-function Button({ className, variant = 'default', size = 'default', ...props }: ButtonProps) {
-  return <ButtonPrimitive data-slot="button" className={cn(buttonVariants({ variant, size, className }))} {...props} />;
+function Button({
+  className,
+  variant = 'default',
+  size = 'default',
+  loading,
+  disabled,
+  children,
+  ...props
+}: ButtonProps) {
+  return (
+    <ButtonPrimitive
+      data-slot="button"
+      disabled={disabled || loading}
+      className={cn(buttonVariants({ variant, size, className }))}
+      {...props}
+    >
+      {loading && <Loader2 className="animate-spin" />}
+      {children}
+    </ButtonPrimitive>
+  );
 }
 
 export { Button, buttonVariants };

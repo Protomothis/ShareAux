@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { useState } from 'react';
 
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 
 const meta: Meta<typeof AdminPageHeader> = {
   title: 'Features/Admin/PageHeader',

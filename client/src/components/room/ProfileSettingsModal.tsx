@@ -15,7 +15,7 @@ import {
 import type { ApiError } from '@/api/mutator';
 import Modal from '@/components/common/Modal';
 import { NotificationSettings } from '@/components/common/NotificationSettings';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { FormField } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';

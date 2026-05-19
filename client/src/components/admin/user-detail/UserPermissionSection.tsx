@@ -9,7 +9,7 @@ import type { UpdatePermissionsBodyPermissionsItem, UserDetailResponse } from '@
 import type { UpdateRoleDtoRole } from '@/api/model';
 import { CheckboxGroup } from '@/components/admin/CheckboxGroup';
 import { StatusBadge } from '@/components/admin/StatusBadge';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { FormField } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Surface } from '@/components/ui/surface';

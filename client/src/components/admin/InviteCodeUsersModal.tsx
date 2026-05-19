@@ -10,7 +10,7 @@ import { adminControllerDeleteInviteCodeGuests, useAdminControllerGetInviteCodeU
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import Modal from '@/components/common/Modal';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { EmptyState } from '@/components/ui/empty-state';
 
 interface InviteCodeUsersModalProps {

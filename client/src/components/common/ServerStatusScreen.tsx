@@ -2,7 +2,7 @@ import { RefreshCw, ServerOff } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { ShareAuxLogo } from '@/components/common/ShareAuxLogo';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import type { ConnState } from '@/hooks/useServerStatus';
 
 interface ServerStatusScreenProps {

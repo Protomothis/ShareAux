@@ -7,7 +7,7 @@ import { useCallback, useRef, useState } from 'react';
 
 import { HelpTip } from '@/components/common/HelpTip';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { cn } from '@/lib/utils';
 
 import type { CandidateTrack } from './AutoDjCandidates';

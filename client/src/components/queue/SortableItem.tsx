@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 
 import type { RoomQueue } from '@/api/model';
 import { FavoriteButton } from '@/components/common/FavoriteButton';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import type { ShimmerVariant, TrackVoteMap } from '@/types';
 
 import QueueTrackItem from './QueueTrackItem';

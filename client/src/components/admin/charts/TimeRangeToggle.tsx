@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import type { TimeRange } from '@/hooks/admin/useAdminMetrics';
 
 interface TimeRangeToggleProps {

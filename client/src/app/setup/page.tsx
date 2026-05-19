@@ -10,7 +10,7 @@ import { InviteCodeForm, InviteCodeResult } from '@/components/admin/invite-code
 import AnimatedBackground from '@/components/common/AnimatedBackground';
 import { RegisterForm } from '@/components/common/RegisterForm';
 import { StepIndicator } from '@/components/common/StepIndicator';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { Surface } from '@/components/ui/surface';
 import { useCreateInviteCode } from '@/hooks/admin/useAdminInviteCodes';
 import { getApiUrl } from '@/lib/urls';

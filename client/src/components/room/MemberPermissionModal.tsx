@@ -13,7 +13,7 @@ import {
   useRoomsControllerGetMyPermissions,
 } from '@/api/rooms/rooms';
 import Modal from '@/components/common/Modal';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { usePermissionMeta, usePermLookup } from '@/hooks/usePermissionMeta';

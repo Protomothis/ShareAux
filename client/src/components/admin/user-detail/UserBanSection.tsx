@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 import type { UserDetailResponse } from '@/api/model';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { Surface } from '@/components/ui/surface';
 import { useBanUser, useUnbanUser } from '@/hooks/admin/useAdminUserDetail';
 

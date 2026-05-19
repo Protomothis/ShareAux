@@ -7,7 +7,7 @@ import { useState } from 'react';
 import type { ErrorFileItem, ErrorLogItem } from '@/api/model';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminPagination } from '@/components/admin/AdminPagination';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { useAdminErrors, useErrorFile, useErrorFiles } from '@/hooks/admin/useAdminErrors';

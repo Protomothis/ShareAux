@@ -11,7 +11,7 @@ import { roomsControllerGetSanctions, roomsControllerMuteUser, roomsControllerRe
 import Modal from '@/components/common/Modal';
 import type { RoomFormValues } from '@/components/common/RoomSettingsForm';
 import RoomSettingsForm from '@/components/common/RoomSettingsForm';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { FormSection } from '@/components/ui/form';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import type { AutoDjMode } from '@/types';

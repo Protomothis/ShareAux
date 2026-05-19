@@ -17,7 +17,7 @@ import CreateRoomModal from '@/components/room/CreateRoomModal';
 import JoinPasswordModal from '@/components/room/JoinPasswordModal';
 import ProfileDropdown from '@/components/room/ProfileDropdown';
 import RoomCard from '@/components/room/RoomCard';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { Surface } from '@/components/ui/surface';
 import { useAuthStore } from '@/stores/auth';

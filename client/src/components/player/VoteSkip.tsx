@@ -4,7 +4,7 @@ import { SkipForward } from 'lucide-react';
 import { useState } from 'react';
 
 import { playerControllerVoteSkip } from '@/api/player/player';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import { SKIP_COOLDOWN_MS } from '@/lib/constants';
 
 interface VoteSkipProps {

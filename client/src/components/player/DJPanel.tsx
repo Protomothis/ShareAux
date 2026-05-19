@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { playerControllerSkip } from '@/api/player/player';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/common/Button';
 import type { TrackInfo } from '@/types';
 
 import MarqueeText from '../common/MarqueeText';

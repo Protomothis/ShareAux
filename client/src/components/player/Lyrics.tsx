@@ -10,7 +10,7 @@ import { playerControllerLyrics } from '@/api/player/player';
 import type { LyricLine, LyricWord } from '@/types';
 import { LyricsStatus } from '@/types';
 
-import { Button } from '../ui/button';
+import { Button } from '@/components/common/Button';
 
 interface LyricsProps {
   roomId: string;
