@@ -13,7 +13,7 @@ export function AdminPagination({ page, totalPages, onPageChange }: AdminPaginat
   if (totalPages <= 1) return null;
 
   return (
-    <div className="mt-5 flex items-center justify-center gap-3">
+    <nav aria-label="pagination" className="mt-5 flex items-center justify-center gap-3">
       <Button
         variant="ghost"
         disabled={page <= 1}
@@ -33,6 +33,6 @@ export function AdminPagination({ page, totalPages, onPageChange }: AdminPaginat
       >
         {t('next')}
       </Button>
-    </div>
+    </nav>
   );
 }

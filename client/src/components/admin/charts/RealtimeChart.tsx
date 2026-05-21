@@ -14,8 +14,8 @@ interface RealtimeChartProps {
 function formatTime(ts: number, timeRange: TimeRange) {
   const d = new Date(ts);
   return timeRange === '24h'
-    ? d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
-    : d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    ? d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+    : d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
 export function RealtimeChart({ data, timeRange }: RealtimeChartProps) {

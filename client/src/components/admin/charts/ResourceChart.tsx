@@ -9,7 +9,7 @@ interface ResourceChartProps {
 }
 
 function formatTime(ts: number) {
-  return new Date(ts).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+  return new Date(ts).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 }
 
 export function ResourceChart({ data }: ResourceChartProps) {

@@ -54,7 +54,9 @@ export function UserBanSection({ user }: UserBanSectionProps) {
         <p className="text-sm text-sa-text-muted">{t('cannotBanSuperAdmin')}</p>
       ) : user.bannedAt ? (
         <div className="flex items-center gap-3">
-          <p className="text-sm text-sa-text-muted">정지일: {new Date(user.bannedAt).toLocaleDateString('ko-KR')}</p>
+          <p className="text-sm text-sa-text-muted">
+            {t('bannedDate')}: {new Date(user.bannedAt).toLocaleDateString()}
+          </p>
           <Button variant="outline" className="gap-1.5" onClick={handleBan} disabled={unbanUser.isPending}>
             {unbanUser.isPending && <Loader2 size={14} className="animate-spin" />}
             {t('unban')}

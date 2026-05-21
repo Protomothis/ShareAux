@@ -31,18 +31,12 @@ export default function AdminSettingsPage() {
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [pendingSecrets, setPendingSecrets] = useState<Record<string, string>>({});
 
-  const values = useMemo(() => (settings ?? {}) as Record<string, string>, [settings]);
-  const geminiModels = useMemo(() => {
-    const d = geminiData as unknown as { models?: string[] } | undefined;
-    return d?.models ?? [];
-  }, [geminiData]);
+  const values = useMemo(() => settings ?? {}, [settings]);
+  const geminiModels = useMemo(() => geminiData?.models ?? [], [geminiData]);
 
   // 시크릿 상태 → 의존 옵션 비활성화
   const { data: secretsData } = useAdminControllerGetSecrets();
-  const secrets = useMemo(
-    () => (secretsData ?? {}) as Record<string, { masked: string; configured: boolean }>,
-    [secretsData],
-  );
+  const secrets = useMemo(() => secretsData ?? {}, [secretsData]);
   const hasGemini = secrets['secret.geminiApiKey']?.configured ?? false;
   const hasGoogle =
     (secrets['secret.googleClientId']?.configured ?? false) &&

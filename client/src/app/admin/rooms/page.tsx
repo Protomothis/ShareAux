@@ -104,9 +104,7 @@ export default function AdminRoomsPage() {
       key: 'createdAt',
       header: t('createdAt'),
       hideOnMobile: true,
-      render: (room) => (
-        <span className="text-sa-text-muted">{new Date(room.createdAt).toLocaleDateString('ko-KR')}</span>
-      ),
+      render: (room) => <span className="text-sa-text-muted">{new Date(room.createdAt).toLocaleDateString()}</span>,
     },
     {
       key: 'actions',

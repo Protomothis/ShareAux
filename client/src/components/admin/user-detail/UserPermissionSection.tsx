@@ -16,7 +16,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Surface } from '@/components/ui/surface';
 import { useUpdateUserDetailRole, useUpdateUserPermissions } from '@/hooks/admin/useAdminUserDetail';
 import { usePermissionMeta, usePermLookup } from '@/hooks/usePermissionMeta';
-import { ROLE_LABELS } from '@/lib/constants';
 
 interface UserPermissionSectionProps {
   user: UserDetailResponse;
@@ -69,7 +68,8 @@ export function UserPermissionSection({ user }: UserPermissionSectionProps) {
       }
       if (!isAdmin) {
         await updatePermissions.mutateAsync({
-          permissions: [...permissions] as UpdatePermissionsBodyPermissionsItem[],
+          id: user.id,
+          data: { permissions: [...permissions] as UpdatePermissionsBodyPermissionsItem[] },
         });
       }
       toast.success(t('saved'));
@@ -93,7 +93,7 @@ export function UserPermissionSection({ user }: UserPermissionSectionProps) {
             <SelectContent>
               {['user', 'admin'].map((r) => (
                 <SelectItem key={r} value={r}>
-                  {ROLE_LABELS[r] ?? r}
+                  {t(`roles.${r}`)}
                 </SelectItem>
               ))}
             </SelectContent>

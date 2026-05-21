@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0
  */
 
-export type AdminControllerGetSettings200 = { [key: string]: unknown };
+export type AdminControllerGetSettings200 = { [key: string]: string };
