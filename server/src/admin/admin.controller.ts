@@ -21,16 +21,13 @@ import { GoogleStrategy } from '../auth/strategies/google.strategy.js';
 import { THROTTLE_TTL_MS, WS_CLOSE_BANNED } from '../constants.js';
 import { InviteCode } from '../entities/invite-code.entity.js';
 import { User } from '../entities/user.entity.js';
-import { AppException } from '../exceptions/app.exception.js';
 import { AdminGuard } from '../guards/admin.guard.js';
 import { RoomsGateway } from '../rooms/rooms.gateway.js';
 import { AuditService } from '../services/audit.service.js';
 import { IpBanService } from '../services/ip-ban.service.js';
 import { SettingsService } from '../services/settings.service.js';
 import { TranslationService } from '../services/translation.service.js';
-import { ErrorCode } from '../types/error-code.enum.js';
 import type { AuthenticatedRequest } from '../types/index.js';
-import { Permission, ReportStatus } from '../types/index.js';
 import { OptionKey } from '../types/settings.types.js';
 import { AdminService } from './admin.service.js';
 import { AdminCleanupService } from './admin-cleanup.service.js';
@@ -50,11 +47,18 @@ import { PaginatedUsersResponse } from './dto/paginated-users-response.dto.js';
 import { DailyPlaysItem, PlaysMetricsResponse } from './dto/plays-metrics-response.dto.js';
 import { PaginatedReportsResponse, ReportItem } from './dto/report-response.dto.js';
 import { StreamingMetricsResponse } from './dto/streaming-metrics-response.dto.js';
-import { SystemSettingItem, UpdateSettingsDto } from './dto/system-setting.dto.js';
+import {
+  SystemSettingItem,
+  UpdateSettingsDto,
+  GeminiModelsResponse,
+  SecretStatusDto,
+} from './dto/system-setting.dto.js';
 import { SystemStatsResponse } from './dto/system-stats-response.dto.js';
 import { TrackLyricsResponse } from './dto/track-lyrics-response.dto.js';
 import { TrackRankingItem } from './dto/track-ranking-item.dto.js';
 import { UpdateRoleDto } from './dto/update-role.dto.js';
+import { UpdatePermissionsDto } from './dto/update-permissions.dto.js';
+import { ResolveReportDto } from './dto/resolve-report.dto.js';
 import { UserDetailResponse } from './dto/user-detail-response.dto.js';
 import { UsersBreakdownResponse } from './dto/users-breakdown-response.dto.js';
 
@@ -89,6 +93,8 @@ import { UsersBreakdownResponse } from './dto/users-breakdown-response.dto.js';
   PaginatedBannedIpsResponse,
   PaginatedTrackRankingResponse,
   TrackLyricsResponse,
+  SecretStatusDto,
+  GeminiModelsResponse,
 )
 @UseGuards(AdminGuard)
 @Throttle({ default: { ttl: THROTTLE_TTL_MS, limit: 300 } })
@@ -122,7 +128,7 @@ export class AdminController {
   @ApiOkResponse({ type: PaginatedUsersResponse })
   @ApiQuery({ name: 'role', required: false })
   @ApiQuery({ name: 'provider', required: false })
-  @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'status', required: false, enum: ['active', 'banned'] })
   getUsers(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
@@ -143,8 +149,8 @@ export class AdminController {
 
   @Patch('users/:id/permissions')
   @ApiOperation({ summary: '계정 권한 수정' })
-  async updatePermissions(@Param('id') id: string, @Body('permissions') permissions: Permission[]) {
-    await this.adminService.updateAccountPermissions(id, permissions);
+  async updatePermissions(@Param('id') id: string, @Body() dto: UpdatePermissionsDto) {
+    await this.adminService.updateAccountPermissions(id, dto.permissions);
     return { success: true };
   }
 
@@ -254,30 +260,23 @@ export class AdminController {
 
   @Get('settings')
   @ApiOperation({ summary: '시스템 설정 조회 (시크릿 제외)' })
+  @ApiOkResponse({ schema: { type: 'object', additionalProperties: { type: 'string' } } })
   getSettings() {
     return this.settingsService.getAll();
   }
 
   @Get('settings/secrets')
   @ApiOperation({ summary: '시크릿 설정 조회 (마스킹)' })
+  @ApiOkResponse({ schema: { type: 'object', additionalProperties: { $ref: '#/components/schemas/SecretStatusDto' } } })
   getSecrets() {
     return this.settingsService.getSecrets();
   }
 
   @Get('settings/gemini-models')
   @ApiOperation({ summary: 'Gemini 사용 가능 모델 목록' })
+  @ApiOkResponse({ type: GeminiModelsResponse })
   async getGeminiModels() {
-    const apiKey = this.settingsService.getSecret(OptionKey.GeminiApiKey);
-    if (!apiKey) return { models: [] };
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-    if (!res.ok) return { models: [] };
-    const data = (await res.json()) as { models?: { name: string; supportedGenerationMethods?: string[] }[] };
-    return {
-      models: (data.models ?? [])
-        .filter((m) => m.supportedGenerationMethods?.includes('generateContent'))
-        .map((m) => m.name.replace('models/', ''))
-        .filter((n) => n.startsWith('gemini-') && !n.includes('exp')),
-    };
+    return { models: await this.settingsService.getGeminiModels() };
   }
 
   @Patch('settings')
@@ -369,7 +368,7 @@ export class AdminController {
   @Get('reports')
   @ApiOperation({ summary: '신고 목록 조회' })
   @ApiOkResponse({ type: PaginatedReportsResponse })
-  @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'status', required: false, enum: ['pending', 'resolved', 'dismissed'] })
   getReports(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
@@ -380,12 +379,9 @@ export class AdminController {
 
   @Patch('reports/:id/resolve')
   @ApiOperation({ summary: '신고 처리' })
-  async resolveReport(@Param('id') id: string, @Body('status') status: string, @Req() req: AuthenticatedRequest) {
-    if (status !== ReportStatus.Resolved && status !== ReportStatus.Dismissed) {
-      throw new AppException(ErrorCode.ADMIN_008);
-    }
-    const report = await this.adminService.resolveReport(id, req.user.userId, status as ReportStatus);
-    await this.auditService.log(req.user.userId, 'report_resolve', 'report', id, { status }, req.ip);
+  async resolveReport(@Param('id') id: string, @Body() dto: ResolveReportDto, @Req() req: AuthenticatedRequest) {
+    const report = await this.adminService.resolveReport(id, req.user.userId, dto.status);
+    await this.auditService.log(req.user.userId, 'report_resolve', 'report', id, { status: dto.status }, req.ip);
     return report;
   }
 }

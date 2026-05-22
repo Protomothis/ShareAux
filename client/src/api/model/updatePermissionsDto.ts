@@ -5,6 +5,8 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
-import type { SecretStatusDto } from './secretStatusDto';
+import type { Permission } from './permission';
 
-export type AdminControllerGetSecrets200 = { [key: string]: SecretStatusDto };
+export interface UpdatePermissionsDto {
+  permissions: Permission[];
+}

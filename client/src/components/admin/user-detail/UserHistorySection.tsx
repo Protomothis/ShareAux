@@ -31,9 +31,7 @@ export function UserHistorySection({ user }: UserHistorySectionProps) {
             >
               <div>
                 <div className="text-sm font-medium text-white">{tr.name}</div>
-                <div className="text-xs text-sa-text-muted">
-                  {new Date(tr.lastPlayedAt).toLocaleDateString('ko-KR')}
-                </div>
+                <div className="text-xs text-sa-text-muted">{new Date(tr.lastPlayedAt).toLocaleDateString()}</div>
               </div>
               <span className="rounded-lg bg-white/5 px-2 py-1 text-xs text-sa-text-muted">
                 {t('playCount', { count: tr.playCount })}

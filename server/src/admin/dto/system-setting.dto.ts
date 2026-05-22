@@ -13,3 +13,12 @@ export class UpdateSettingsDto {
   @IsObject()
   settings!: Record<string, string>;
 }
+
+export class SecretStatusDto {
+  @ApiProperty() masked!: string;
+  @ApiProperty() configured!: boolean;
+}
+
+export class GeminiModelsResponse {
+  @ApiProperty({ type: [String] }) models!: string[];
+}

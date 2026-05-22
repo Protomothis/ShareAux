@@ -37,7 +37,9 @@ export function UserProfileHeader({ user }: UserProfileHeaderProps) {
             {t('googleLinked')}: {user.googleId ? '✅' : '❌'}
           </span>
           <span>·</span>
-          <span>가입: {new Date(user.createdAt).toLocaleDateString('ko-KR')}</span>
+          <span>
+            {t('joinDate')}: {new Date(user.createdAt).toLocaleDateString()}
+          </span>
         </div>
       </div>
     </div>

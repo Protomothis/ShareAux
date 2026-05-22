@@ -37,20 +37,20 @@ export class AdminTracksController {
   @ApiOperation({ summary: '트랙 가사 초기화' })
   async resetTrackLyrics(@Param('id') id: string) {
     await this.tracksService.resetTrackLyrics(id);
-    return { ok: true };
+    return { success: true };
   }
 
   @Delete('tracks/:id/meta')
   @ApiOperation({ summary: '트랙 Content ID 메타 초기화' })
   async resetTrackMeta(@Param('id') id: string) {
     await this.tracksService.resetTrackMeta(id);
-    return { ok: true };
+    return { success: true };
   }
 
   @Delete('tracks/:id')
   @ApiOperation({ summary: '트랙 삭제' })
   async deleteTrack(@Param('id') id: string) {
     await this.tracksService.deleteTrack(id);
-    return { ok: true };
+    return { success: true };
   }
 }

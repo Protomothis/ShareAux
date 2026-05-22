@@ -15,7 +15,7 @@ interface CheckboxGroupProps {
 
 export function CheckboxGroup({ label, options, selected, onChange }: CheckboxGroupProps) {
   return (
-    <div>
+    <div role="group" aria-label={label}>
       {label && <label className="mb-2 block text-xs text-sa-text-muted">{label}</label>}
       <div className="flex flex-wrap gap-2">
         {options.map(({ key, label: optLabel, disabled }) => {
@@ -26,6 +26,7 @@ export function CheckboxGroup({ label, options, selected, onChange }: CheckboxGr
               variant="ghost"
               size="sm"
               disabled={disabled}
+              aria-pressed={active}
               onClick={() => !disabled && onChange(key)}
               className={`${
                 active

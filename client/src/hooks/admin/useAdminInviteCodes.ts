@@ -4,7 +4,7 @@ import {
   getAdminControllerGetInviteCodesQueryKey,
   useAdminControllerCreateInviteCode,
   useAdminControllerDeactivateInviteCode,
-  useAdminControllerDeleteExpiredGuests,
+  useAdminControllerDeleteInviteCode,
   useAdminControllerGetInviteCodes,
 } from '@/api/admin/admin';
 import type { AdminControllerGetInviteCodesParams } from '@/api/model';
@@ -35,18 +35,13 @@ export function useDeactivateInviteCode() {
   });
 }
 
-export function useDeleteExpiredGuests() {
-  return useAdminControllerDeleteExpiredGuests();
-}
-
 export function useDeleteInviteCode() {
   const qc = useQueryClient();
-  return {
-    mutate: async (id: string, opts?: { onSuccess?: () => void }) => {
-      const { adminControllerDeleteInviteCode } = await import('@/api/admin/admin');
-      await adminControllerDeleteInviteCode(id);
-      await qc.invalidateQueries({ queryKey: getAdminControllerGetInviteCodesQueryKey() });
-      opts?.onSuccess?.();
+  return useAdminControllerDeleteInviteCode({
+    mutation: {
+      onSuccess: () => {
+        void qc.invalidateQueries({ queryKey: getAdminControllerGetInviteCodesQueryKey() });
+      },
     },
-  };
+  });
 }

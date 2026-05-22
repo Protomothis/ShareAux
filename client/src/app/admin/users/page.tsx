@@ -181,9 +181,7 @@ export default function AdminUsersPage() {
       key: 'createdAt',
       header: t('createdAt'),
       hideOnMobile: true,
-      render: (user) => (
-        <span className="text-sa-text-muted">{new Date(user.createdAt).toLocaleDateString('ko-KR')}</span>
-      ),
+      render: (user) => <span className="text-sa-text-muted">{new Date(user.createdAt).toLocaleDateString()}</span>,
     },
     {
       key: 'status',
