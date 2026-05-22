@@ -12,7 +12,8 @@ import type { Column } from '@/components/admin/AdminTable';
 import { AdminTable } from '@/components/admin/AdminTable';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAdminUsers, useUpdateUserRole } from '@/hooks/admin/useAdminUsers';
+import { useAdminUsers } from '@/hooks/admin/useAdminUsers';
+import { useUpdateUserRole } from '@/hooks/admin/useAdminUserDetail';
 import { PROVIDER_VARIANT } from '@/lib/constants';
 
 const LIMIT = 20;

@@ -23,9 +23,17 @@ function useInvalidateUserDetail(id: string) {
   };
 }
 
-export function useUpdateUserDetailRole(id: string) {
-  const invalidate = useInvalidateUserDetail(id);
-  return useAdminControllerUpdateUserRole({ mutation: { onSuccess: invalidate } });
+/** 역할 변경 — 유저 목록 + 상세 모두 invalidate */
+export function useUpdateUserRole(id?: string) {
+  const qc = useQueryClient();
+  return useAdminControllerUpdateUserRole({
+    mutation: {
+      onSuccess: () => {
+        void qc.invalidateQueries({ queryKey: getAdminControllerGetUsersQueryKey() });
+        if (id) void qc.invalidateQueries({ queryKey: getAdminControllerGetUserDetailQueryKey(id) });
+      },
+    },
+  });
 }
 
 export function useUpdateUserPermissions(id: string) {

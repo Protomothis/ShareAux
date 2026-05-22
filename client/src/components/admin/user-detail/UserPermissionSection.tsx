@@ -14,7 +14,7 @@ import { Button } from '@/components/common/Button';
 import { FormField } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Surface } from '@/components/ui/surface';
-import { useUpdateUserDetailRole, useUpdateUserPermissions } from '@/hooks/admin/useAdminUserDetail';
+import { useUpdateUserRole, useUpdateUserPermissions } from '@/hooks/admin/useAdminUserDetail';
 import { usePermissionMeta, usePermLookup } from '@/hooks/usePermissionMeta';
 
 interface UserPermissionSectionProps {
@@ -28,7 +28,7 @@ export function UserPermissionSection({ user }: UserPermissionSectionProps) {
     () => new Set(user.accountPermissions.length > 0 ? user.accountPermissions : ['listen']),
   );
 
-  const updateRole = useUpdateUserDetailRole(user.id);
+  const updateRole = useUpdateUserRole(user.id);
   const updatePermissions = useUpdateUserPermissions(user.id);
   const { data: permMeta } = usePermissionMeta();
   const pl = usePermLookup();
