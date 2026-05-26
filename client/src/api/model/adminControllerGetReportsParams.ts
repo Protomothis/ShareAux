@@ -5,9 +5,10 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
+import type { AdminControllerGetReportsStatus } from './adminControllerGetReportsStatus';
 
 export type AdminControllerGetReportsParams = {
   page: number;
   limit: number;
-  status?: string;
+  status?: AdminControllerGetReportsStatus;
 };

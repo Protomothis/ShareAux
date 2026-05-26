@@ -5,14 +5,14 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
-import type { UserProvider } from './userProvider';
-import type { UserRoleProperty } from './userRoleProperty';
+import type { AuthProvider } from './authProvider';
+import type { UserRole } from './userRole';
 import type { UserInviteCode } from './userInviteCode';
-import type { UserAccountPermissionsItem } from './userAccountPermissionsItem';
+import type { Permission } from './permission';
 
 export interface User {
   id: string;
-  provider: UserProvider;
+  provider: AuthProvider;
   /** @nullable */
   username?: string | null;
   /** @nullable */
@@ -22,10 +22,10 @@ export interface User {
   nickname: string;
   /** @nullable */
   avatarUrl?: string | null;
-  role: UserRoleProperty;
+  role: UserRole;
   /** @nullable */
   inviteCode?: UserInviteCode;
-  accountPermissions: UserAccountPermissionsItem[];
+  accountPermissions: Permission[];
   /** @nullable */
   bannedAt?: string | null;
   createdAt: string;

@@ -655,6 +655,7 @@
       "crossfadeLabel": "Crossfade",
       "defaultEnqueue": "Default Enqueue",
       "defaultVoteSkip": "Default Vote Skip",
+      "autoDj": "Auto DJ",
       "delete": "Delete"
     },
     "tracks": {

@@ -75,7 +75,7 @@ export function AdminTable<T>({
       style={maxHeight ? { maxHeight, overflowY: 'auto' } : undefined}
     >
       {/* 데스크톱: 테이블 */}
-      <table className="hidden w-full table-auto text-left text-sm md:table">
+      <table className="hidden w-full table-auto text-left text-sm md:table" aria-label="admin data table">
         <thead className="sticky top-0 z-10 bg-sa-bg-primary/95 backdrop-blur-sm">
           <tr className="border-b border-white/5">
             {columns.map((col) => (
@@ -110,7 +110,7 @@ export function AdminTable<T>({
       </table>
 
       {/* 모바일: 컴팩트 리스트 */}
-      <div className="divide-y divide-white/5 md:hidden">
+      <div className="divide-y divide-white/5 md:hidden" role="list">
         {data.map((item, idx) => (
           <div
             key={rowKey(item)}

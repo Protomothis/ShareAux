@@ -34,11 +34,16 @@ const LIMIT = 20;
 function LogEntry({ log }: { log: AuditLogItem }) {
   const [expanded, setExpanded] = useState(false);
   const icon = ACTION_ICONS[log.action] ?? '📋';
-  const time = new Date(log.createdAt).toLocaleString('ko-KR');
+  const time = new Date(log.createdAt).toLocaleString();
 
   return (
     <div className="rounded-xl border border-white/5 bg-white/[0.03] p-3">
-      <button type="button" className="flex w-full items-start gap-3 text-left" onClick={() => setExpanded((p) => !p)}>
+      <button
+        type="button"
+        className="flex w-full items-start gap-3 text-left"
+        onClick={() => setExpanded((p) => !p)}
+        aria-expanded={expanded}
+      >
         <span className="mt-0.5 text-base leading-none">{icon}</span>
         <div className="min-w-0 flex-1">
           <p className="text-sm text-white">

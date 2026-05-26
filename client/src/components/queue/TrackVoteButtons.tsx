@@ -3,7 +3,8 @@
 import { ThumbsDown, ThumbsUp } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { TrackStats, VoteDtoVote } from '@/api/model';
+import type { TrackStats } from '@/api/model';
+import { VoteDtoVote } from '@/api/model';
 import {
   useTracksControllerGetMyVote,
   useTracksControllerGetStats,
@@ -110,7 +111,7 @@ export default function TrackVoteButtons({ trackId, roomId, votes }: TrackVoteBu
       <Button
         variant="ghost"
         size="icon-xs"
-        onClick={() => handleVote(1 as VoteDtoVote)}
+        onClick={() => handleVote(VoteDtoVote.NUMBER_1)}
         className={cn('gap-0.5 transition', current === 1 ? 'text-sa-accent' : 'text-sa-text-muted hover:text-white')}
       >
         <ThumbsUp size={12} className={cn(popped === 1 && 'animate-vote-pop')} />
@@ -119,7 +120,7 @@ export default function TrackVoteButtons({ trackId, roomId, votes }: TrackVoteBu
       <Button
         variant="ghost"
         size="icon-xs"
-        onClick={() => handleVote(-1 as VoteDtoVote)}
+        onClick={() => handleVote(VoteDtoVote.NUMBER_MINUS_1)}
         className={cn('gap-0.5 transition', current === -1 ? 'text-red-400' : 'text-sa-text-muted hover:text-white')}
       >
         <ThumbsDown size={12} className={cn(popped === -1 && 'animate-vote-pop')} />

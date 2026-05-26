@@ -44,8 +44,7 @@ export default function SetupPage() {
         { data },
         {
           onSuccess: (res) => {
-            const code = (res as unknown as { code: string }).code;
-            setCreatedCode(code);
+            setCreatedCode(res.code);
             setStep('complete');
             toast.success(t('completeTitle'));
           },

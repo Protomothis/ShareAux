@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0
  */
 
-export type UserDetailResponseProvider = (typeof UserDetailResponseProvider)[keyof typeof UserDetailResponseProvider];
+export type AdminControllerGetUsersStatus =
+  (typeof AdminControllerGetUsersStatus)[keyof typeof AdminControllerGetUsersStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const UserDetailResponseProvider = {
-  google: 'google',
-  local: 'local',
-  invite: 'invite',
+export const AdminControllerGetUsersStatus = {
+  active: 'active',
+  banned: 'banned',
 } as const;

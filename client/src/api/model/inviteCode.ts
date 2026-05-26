@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 import type { User } from './user';
-import type { InviteCodePermissionsItem } from './inviteCodePermissionsItem';
+import type { Permission } from './permission';
 
 export interface InviteCode {
   id: string;
@@ -14,7 +14,7 @@ export interface InviteCode {
   createdBy: User;
   maxUses: number;
   usedCount: number;
-  permissions: InviteCodePermissionsItem[];
+  permissions: Permission[];
   /** @nullable */
   expiresAt?: string | null;
   isActive: boolean;

@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
 import type { SearchResultItem } from '@/api/model';
+import { Provider } from '@/api/model';
 import { searchControllerImportByUrl } from '@/api/search/search';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/ui/input';
@@ -26,7 +27,7 @@ interface ImportUrlTabProps {
 /** PlaylistTrack → SearchResultItem 변환 */
 function toSearchItem(track: PlaylistTrack): SearchResultItem {
   return {
-    provider: 'yt' as SearchResultItem['provider'],
+    provider: Provider.yt,
     sourceId: track.sourceId,
     name: track.name,
     artist: track.artist ?? null,

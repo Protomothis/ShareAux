@@ -14,7 +14,7 @@ interface SecretSectionProps {
 export function SecretSection({ onSecretChange }: SecretSectionProps) {
   const t = useTranslations('admin.settings');
   const { data: secretsData } = useAdminControllerGetSecrets();
-  const secrets = (secretsData ?? {}) as Record<string, { masked: string; configured: boolean }>;
+  const secrets = secretsData ?? {};
 
   const common = { configuredLabel: t('configured'), notConfiguredLabel: t('notConfigured') };
 

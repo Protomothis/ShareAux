@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   adminMetricsControllerGetRealtimeMetrics,
@@ -22,12 +22,14 @@ export function useRealtimeMetrics(timeRange: TimeRange) {
   const lastTsRef = useRef(0);
   const prevRangeRef = useRef(timeRange);
 
-  // timeRange 변경 시 캐시 리셋
-  if (timeRange !== prevRangeRef.current) {
-    pointsRef.current = [];
-    lastTsRef.current = 0;
-    prevRangeRef.current = timeRange;
-  }
+  // timeRange 변경 시 캐시 리셋 — useEffect에서 처리
+  useEffect(() => {
+    if (timeRange !== prevRangeRef.current) {
+      pointsRef.current = [];
+      lastTsRef.current = 0;
+      prevRangeRef.current = timeRange;
+    }
+  }, [timeRange]);
 
   const [points, setPoints] = useState<MetricsPointDto[]>([]);
 

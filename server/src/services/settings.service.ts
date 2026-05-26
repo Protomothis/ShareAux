@@ -146,4 +146,21 @@ export class SettingsService implements OnModuleInit {
     }
     return '';
   }
+
+  /** Gemini API에서 사용 가능한 모델 목록 조회 */
+  async getGeminiModels(): Promise<string[]> {
+    const apiKey = this.getSecret(OptionKey.GeminiApiKey);
+    if (!apiKey) return [];
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+      if (!res.ok) return [];
+      const data = (await res.json()) as { models?: { name: string; supportedGenerationMethods?: string[] }[] };
+      return (data.models ?? [])
+        .filter((m) => m.supportedGenerationMethods?.includes('generateContent'))
+        .map((m) => m.name.replace('models/', ''))
+        .filter((n) => n.startsWith('gemini-') && !n.includes('exp'));
+    } catch {
+      return [];
+    }
+  }
 }

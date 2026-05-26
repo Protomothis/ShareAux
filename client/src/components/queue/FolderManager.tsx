@@ -11,7 +11,7 @@ import {
   favoritesControllerUpdateFolder,
   useFavoritesControllerListFolders,
 } from '@/api/favorites/favorites';
-import { FolderItemColor } from '@/api/model';
+import { FolderColor } from '@/api/model';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/ui/input';
 import { FOLDER_COLOR_MAP, folderColorClass } from '@/lib/folder-colors';
@@ -23,7 +23,7 @@ interface FolderManagerProps {
   onClose: () => void;
 }
 
-const COLOR_OPTIONS = Object.keys(FOLDER_COLOR_MAP) as string[];
+const COLOR_OPTIONS = Object.values(FolderColor);
 
 export function FolderManager({ onClose }: FolderManagerProps) {
   const t = useTranslations('folders');
@@ -31,16 +31,16 @@ export function FolderManager({ onClose }: FolderManagerProps) {
   const [creating, setCreating] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [newName, setNewName] = useState('');
-  const [newColor, setNewColor] = useState<string>(FolderItemColor.blue);
+  const [newColor, setNewColor] = useState<FolderColor>(FolderColor.blue);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
-  const [editColor, setEditColor] = useState<string>(FolderItemColor.blue);
+  const [editColor, setEditColor] = useState<FolderColor>(FolderColor.blue);
 
   const handleCreate = async () => {
     if (submitting || newName.length < 2 || newName.length > 20) return;
     setSubmitting(true);
     try {
-      await favoritesControllerCreateFolder({ name: newName, color: newColor as unknown as undefined });
+      await favoritesControllerCreateFolder({ name: newName, color: newColor });
       setNewName('');
       setCreating(false);
       refetch();
@@ -52,7 +52,7 @@ export function FolderManager({ onClose }: FolderManagerProps) {
 
   const handleUpdate = async (id: string) => {
     if (editName.length < 2 || editName.length > 20) return;
-    await favoritesControllerUpdateFolder(id, { name: editName, color: editColor as unknown as undefined });
+    await favoritesControllerUpdateFolder(id, { name: editName, color: editColor });
     setEditingId(null);
     refetch();
     toast.success(t('updated'));
@@ -135,7 +135,7 @@ export function FolderManager({ onClose }: FolderManagerProps) {
                   setCreating(true);
                   setEditingId(null);
                   setNewName('');
-                  setNewColor(FolderItemColor.blue);
+                  setNewColor(FolderColor.blue);
                 }}
                 className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-white/10 py-2 text-xs text-sa-text-muted hover:border-white/20 hover:text-white"
               >
@@ -160,9 +160,9 @@ function FolderForm({
   submitLabel,
 }: {
   name: string;
-  color: string;
+  color: FolderColor;
   onNameChange: (v: string) => void;
-  onColorChange: (v: string) => void;
+  onColorChange: (v: FolderColor) => void;
   onSubmit: () => void;
   onCancel: () => void;
   submitLabel: string;

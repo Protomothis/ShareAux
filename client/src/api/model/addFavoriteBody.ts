@@ -5,10 +5,10 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
-import type { AddFavoriteBodyProvider } from './addFavoriteBodyProvider';
+import type { Provider } from './provider';
 
 export interface AddFavoriteBody {
-  provider: AddFavoriteBodyProvider;
+  provider: Provider;
   sourceId: string;
   name: string;
   artist?: string;

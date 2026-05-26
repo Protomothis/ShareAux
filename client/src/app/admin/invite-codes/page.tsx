@@ -54,13 +54,17 @@ export default function AdminInviteCodesPage() {
     } else {
       setDeleting(true);
       try {
-        await deleteCode.mutate(actionTarget.id, {
-          onSuccess: () => {
-            toast.success(t('deleted'));
-            setActionTarget(null);
+        deleteCode.mutate(
+          { id: actionTarget.id },
+          {
+            onSuccess: () => {
+              toast.success(t('deleted'));
+              setActionTarget(null);
+            },
+            onSettled: () => setDeleting(false),
           },
-        });
-      } finally {
+        );
+      } catch {
         setDeleting(false);
       }
     }
@@ -142,7 +146,7 @@ function InviteCodeCard({ item, permLabel, onCopy, onDeactivate, onDelete, onSho
   const expiresLabel = item.expiresAt
     ? new Date(item.expiresAt) < new Date()
       ? t('expired')
-      : new Date(item.expiresAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }) + ' ' + t('until')
+      : new Date(item.expiresAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + t('until')
     : t('noExpiry');
 
   return (
@@ -191,7 +195,7 @@ function InviteCodeCard({ item, permLabel, onCopy, onDeactivate, onDelete, onSho
       {/* 메타 정보 */}
       <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-sa-text-muted">
         <span>
-          사용 <span className="font-medium text-white">{item.usedCount}</span>/{item.maxUses}
+          {t('used')} <span className="font-medium text-white">{item.usedCount}</span>/{item.maxUses}
         </span>
         <span>
           {t('registration')} {item.allowRegistration ? '✓' : '✕'}

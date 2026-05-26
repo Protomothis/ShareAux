@@ -45,19 +45,6 @@ export const WS_MAX_DELAY = 30_000;
 
 // ─── Enum Labels (admin 등에서 공통 사용) ─────────────
 
-export const ROLE_LABELS: Record<string, string> = {
-  user: '일반 유저',
-  admin: '관리자',
-  superAdmin: '최고 관리자',
-  guest: '게스트',
-};
-
-export const PROVIDER_LABELS: Record<string, { label: string; variant: 'accent' | 'success' | 'muted' }> = {
-  google: { label: 'Google', variant: 'accent' },
-  local: { label: 'Local', variant: 'success' },
-  invite: { label: '초대', variant: 'muted' },
-};
-
 export const PROVIDER_VARIANT: Record<string, 'accent' | 'success' | 'muted'> = {
   google: 'accent',
   local: 'success',

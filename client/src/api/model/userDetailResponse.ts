@@ -5,9 +5,9 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
-import type { UserDetailResponseRole } from './userDetailResponseRole';
-import type { UserDetailResponseProvider } from './userDetailResponseProvider';
-import type { UserDetailResponseAccountPermissionsItem } from './userDetailResponseAccountPermissionsItem';
+import type { UserRole } from './userRole';
+import type { AuthProvider } from './authProvider';
+import type { Permission } from './permission';
 import type { RecentTrackItem } from './recentTrackItem';
 
 export interface UserDetailResponse {
@@ -17,13 +17,13 @@ export interface UserDetailResponse {
   username?: string | null;
   /** @nullable */
   email?: string | null;
-  role: UserDetailResponseRole;
-  provider: UserDetailResponseProvider;
+  role: UserRole;
+  provider: AuthProvider;
   /** @nullable */
   googleId?: string | null;
   /** @nullable */
   bannedAt?: string | null;
-  accountPermissions: UserDetailResponseAccountPermissionsItem[];
+  accountPermissions: Permission[];
   createdAt: string;
   roomCount: number;
   totalPlays: number;

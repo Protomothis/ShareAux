@@ -5,5 +5,8 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
+import type { ReportStatus } from './reportStatus';
 
-export type WsChatHistoryPayloadMessagesItem = { [key: string]: unknown };
+export interface ResolveReportDto {
+  status: ReportStatus;
+}

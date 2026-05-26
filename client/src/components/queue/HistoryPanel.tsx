@@ -40,7 +40,7 @@ export default function HistoryPanel({ roomId, isGuest, favorites }: HistoryPane
                 loading={favLoadingIds.has(item.track.sourceId)}
                 onClick={() =>
                   toggleFavorite({
-                    provider: item.track.provider as unknown as SearchResultItem['provider'],
+                    provider: item.track.provider,
                     sourceId: item.track.sourceId,
                     name: item.track.name,
                     artist: item.track.artist ?? null,

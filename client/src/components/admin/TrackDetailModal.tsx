@@ -2,7 +2,7 @@
 
 import { ExternalLink, Music, ThumbsDown, ThumbsUp, Trash2, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import {
@@ -13,15 +13,18 @@ import {
 } from '@/api/admin/admin';
 import type { TrackRankingItem } from '@/api/model';
 import { MetaStatus, LyricsStatus, LyricsType } from '@/api/model';
+import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { StatusBadge } from '@/components/admin/StatusBadge';
-import Modal from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
+import Modal from '@/components/common/Modal';
 
 interface TrackDetailModalProps {
   track: TrackRankingItem | null;
   onOpenChange: (open: boolean) => void;
   onDeleted?: () => void;
 }
+
+type ConfirmAction = 'lyrics' | 'contentId' | 'track';
 
 export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: TrackDetailModalProps) {
   const t = useTranslations('admin.tracks');
@@ -30,12 +33,47 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
   const [translated, setTranslated] = useState<string | null>(null);
   const [lyricsLoading, setLyricsLoading] = useState(false);
   const [lyricsTab, setLyricsTab] = useState<'original' | 'translated'>('original');
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
 
   useEffect(() => {
     setLocalTrack(trackProp);
   }, [trackProp]);
 
   const track = localTrack;
+
+  const handleConfirm = useCallback(async () => {
+    if (!track || !confirmAction) return;
+    setConfirmAction(null);
+    if (confirmAction === 'lyrics') {
+      await adminTracksControllerResetTrackLyrics(track.trackId);
+      toast.success(t('lyricsDeleted'));
+      setLyrics(null);
+      setTranslated(null);
+      setLocalTrack((prev) =>
+        prev
+          ? {
+              ...prev,
+              track: {
+                ...prev.track,
+                lyricsStatus: LyricsStatus.searching,
+                lyricsLang: null,
+                lyricsType: null,
+                hasTranslation: false,
+              },
+            }
+          : prev,
+      );
+    } else if (confirmAction === 'contentId') {
+      await adminTracksControllerResetTrackMeta(track.trackId);
+      toast.success(t('contentIdDeleted'));
+      setLocalTrack((prev) => (prev ? { ...prev, track: { ...prev.track, metaStatus: MetaStatus.pending } } : prev));
+    } else if (confirmAction === 'track') {
+      await adminTracksControllerDeleteTrack(track.trackId);
+      toast.success(t('trackDeleted'));
+      onOpenChange(false);
+      onDeleted?.();
+    }
+  }, [track, confirmAction, t, onOpenChange, onDeleted]);
 
   useEffect(() => {
     setLyrics(null);
@@ -128,27 +166,7 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
                 <Button
                   variant="ghost"
                   size="icon-xs"
-                  onClick={async () => {
-                    if (!confirm(t('lyricsDeleteConfirm'))) return;
-                    await adminTracksControllerResetTrackLyrics(track.trackId);
-                    toast.success(t('lyricsDeleted'));
-                    setLyrics(null);
-                    setTranslated(null);
-                    setLocalTrack((prev) =>
-                      prev
-                        ? {
-                            ...prev,
-                            track: {
-                              ...prev.track,
-                              lyricsStatus: LyricsStatus.searching,
-                              lyricsLang: null,
-                              lyricsType: null,
-                              hasTranslation: false,
-                            },
-                          }
-                        : prev,
-                    );
-                  }}
+                  onClick={() => setConfirmAction('lyrics')}
                   className="text-red-400/60 hover:text-red-400"
                   title={t('lyricsDelete')}
                 >
@@ -170,14 +188,7 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
                 <Button
                   variant="ghost"
                   size="icon-xs"
-                  onClick={async () => {
-                    if (!confirm(t('contentIdDeleteConfirm'))) return;
-                    await adminTracksControllerResetTrackMeta(track.trackId);
-                    toast.success(t('contentIdDeleted'));
-                    setLocalTrack((prev) =>
-                      prev ? { ...prev, track: { ...prev.track, metaStatus: MetaStatus.pending } } : prev,
-                    );
-                  }}
+                  onClick={() => setConfirmAction('contentId')}
                   className="text-red-400/60 hover:text-red-400"
                   title={t('contentIdDelete')}
                 >
@@ -225,18 +236,33 @@ export function TrackDetailModal({ track: trackProp, onOpenChange, onDeleted }: 
         <Button
           variant="ghost"
           size="sm"
-          onClick={async () => {
-            if (!confirm(t('trackDeleteConfirm'))) return;
-            await adminTracksControllerDeleteTrack(track.trackId);
-            toast.success(t('trackDeleted'));
-            onOpenChange(false);
-            onDeleted?.();
-          }}
+          onClick={() => setConfirmAction('track')}
           className="text-xs text-red-400 hover:text-red-300"
         >
           {t('trackDelete')}
         </Button>
       </Modal.Footer>
+
+      <ConfirmDialog
+        open={!!confirmAction}
+        onOpenChange={(open) => !open && setConfirmAction(null)}
+        title={
+          confirmAction === 'lyrics'
+            ? t('lyricsDelete')
+            : confirmAction === 'contentId'
+              ? t('contentIdDelete')
+              : t('trackDelete')
+        }
+        description={
+          confirmAction === 'lyrics'
+            ? t('lyricsDeleteConfirm')
+            : confirmAction === 'contentId'
+              ? t('contentIdDeleteConfirm')
+              : t('trackDeleteConfirm')
+        }
+        variant="destructive"
+        onConfirm={handleConfirm}
+      />
     </Modal>
   );
 }

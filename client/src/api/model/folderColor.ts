@@ -6,10 +6,10 @@
  * OpenAPI spec version: 1.0
  */
 
-export type CreateFolderBodyColor = (typeof CreateFolderBodyColor)[keyof typeof CreateFolderBodyColor];
+export type FolderColor = (typeof FolderColor)[keyof typeof FolderColor];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const CreateFolderBodyColor = {
+export const FolderColor = {
   red: 'red',
   orange: 'orange',
   amber: 'amber',

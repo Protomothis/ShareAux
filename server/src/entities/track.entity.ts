@@ -91,7 +91,7 @@ export class Track {
   lyricsLang!: string | null;
 
   /** 가사 유형: synced(라인 싱크) / karaoke(워드 레벨) */
-  @ApiProperty({ enum: LyricsType, nullable: true })
+  @ApiProperty({ enum: LyricsType, enumName: 'LyricsType', nullable: true })
   @Column({ type: 'varchar', nullable: true, name: 'lyrics_type' })
   lyricsType!: LyricsType | null;
 

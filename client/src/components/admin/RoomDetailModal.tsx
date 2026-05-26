@@ -12,8 +12,7 @@ interface RoomDetailModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function RoomDetailModal({
-  room, live, onOpenChange }: RoomDetailModalProps) {
+export function RoomDetailModal({ room, live, onOpenChange }: RoomDetailModalProps) {
   const t = useTranslations('admin.rooms');
   if (!room) return null;
 
@@ -41,14 +40,14 @@ export function RoomDetailModal({
           </Row>
           <Row label={t('members')} value={`${room.memberCount} / ${room.maxMembers}`} />
           {live?.codec && <Row label={t('stream')} value={`${live.codec.toUpperCase()} ${live.bitrate}kbps`} />}
-          <Row label={t('createdAt')} value={new Date(room.createdAt).toLocaleDateString('ko-KR')} />
+          <Row label={t('createdAt')} value={new Date(room.createdAt).toLocaleDateString()} />
 
           <div className="border-t border-white/5 pt-3">
             <p className="mb-2 text-xs font-medium uppercase tracking-wider text-sa-text-muted">{t('settingsLabel')}</p>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <SettingItem label={t('private')} value={room.isPrivate} />
               <SettingItem label={t('crossfadeLabel')} value={room.crossfade} />
-              <SettingItem label="Auto DJ" value={room.autoDjEnabled} />
+              <SettingItem label={t('autoDj')} value={room.autoDjEnabled} />
               <SettingItem label={t('defaultEnqueue')} value={room.defaultEnqueueEnabled} />
               <SettingItem label={t('defaultVoteSkip')} value={room.defaultVoteSkipEnabled} />
             </div>

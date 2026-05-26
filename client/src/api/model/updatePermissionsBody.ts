@@ -5,8 +5,8 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
-import type { UpdatePermissionsBodyPermissionsItem } from './updatePermissionsBodyPermissionsItem';
+import type { Permission } from './permission';
 
 export interface UpdatePermissionsBody {
-  permissions: UpdatePermissionsBodyPermissionsItem[];
+  permissions: Permission[];
 }

@@ -31,10 +31,10 @@ export class UserDetailResponse {
   @ApiPropertyOptional({ nullable: true })
   email!: string | null;
 
-  @ApiProperty({ enum: UserRole })
+  @ApiProperty({ enum: UserRole, enumName: 'UserRole' })
   role!: UserRole;
 
-  @ApiProperty({ enum: AuthProvider })
+  @ApiProperty({ enum: AuthProvider, enumName: 'AuthProvider' })
   provider!: AuthProvider;
 
   @ApiPropertyOptional({ nullable: true })
@@ -43,7 +43,7 @@ export class UserDetailResponse {
   @ApiPropertyOptional({ nullable: true })
   bannedAt!: Date | null;
 
-  @ApiProperty({ enum: Permission, isArray: true })
+  @ApiProperty({ enum: Permission, enumName: 'Permission', isArray: true })
   accountPermissions!: Permission[];
 
   @ApiProperty()

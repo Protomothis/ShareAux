@@ -1,5 +1,5 @@
 'use client';
-import { ReportStatus } from '@/api/model';
+import { AdminControllerGetReportsStatus, ReportStatus } from '@/api/model';
 
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
@@ -37,7 +37,7 @@ const LIMIT = 20;
 
 interface ResolveTarget {
   id: string;
-  status: 'resolved' | 'dismissed';
+  status: ReportStatus;
 }
 
 function ReportCard({
@@ -65,7 +65,7 @@ function ReportCard({
           </div>
           <p className="mt-1 text-sm text-white">{report.reason}</p>
           {report.details && <p className="mt-1 text-xs text-sa-text-muted">{report.details}</p>}
-          <p className="mt-2 text-xs text-sa-text-muted">{new Date(report.createdAt).toLocaleString('ko-KR')}</p>
+          <p className="mt-2 text-xs text-sa-text-muted">{new Date(report.createdAt).toLocaleString()}</p>
         </div>
         {report.status === ReportStatus.pending && (
           <div className="flex shrink-0 gap-2">
@@ -84,7 +84,7 @@ function ReportCard({
 
 export default function AdminReportsPage() {
   const t = useTranslations('admin.reports');
-  const [status, setStatus] = useState<string>('pending');
+  const [status, setStatus] = useState<AdminControllerGetReportsStatus>(AdminControllerGetReportsStatus.pending);
   const [page, setPage] = useState(1);
   const [resolveTarget, setResolveTarget] = useState<ResolveTarget | null>(null);
 
@@ -93,12 +93,15 @@ export default function AdminReportsPage() {
 
   const handleResolve = useCallback(() => {
     if (!resolveTarget) return;
-    resolveReport.mutate(resolveTarget, {
-      onSuccess: () => {
-        toast.success(resolveTarget.status === ReportStatus.resolved ? t('resolvedToast') : t('dismissedToast'));
-        setResolveTarget(null);
+    resolveReport.mutate(
+      { id: resolveTarget.id, data: { status: resolveTarget.status } },
+      {
+        onSuccess: () => {
+          toast.success(resolveTarget.status === ReportStatus.resolved ? t('resolvedToast') : t('dismissedToast'));
+          setResolveTarget(null);
+        },
       },
-    });
+    );
   }, [resolveTarget, resolveReport]);
 
   return (
@@ -135,8 +138,8 @@ export default function AdminReportsPage() {
               <ReportCard
                 key={report.id}
                 report={report}
-                onResolve={(id) => setResolveTarget({ id, status: 'resolved' })}
-                onDismiss={(id) => setResolveTarget({ id, status: 'dismissed' })}
+                onResolve={(id) => setResolveTarget({ id, status: ReportStatus.resolved })}
+                onDismiss={(id) => setResolveTarget({ id, status: ReportStatus.dismissed })}
               />
             ))}
         {!isLoading && data?.items.length === 0 && <EmptyState title={t('empty')} />}

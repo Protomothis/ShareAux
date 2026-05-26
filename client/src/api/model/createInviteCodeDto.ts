@@ -5,7 +5,7 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
-import type { CreateInviteCodeDtoPermissionsItem } from './createInviteCodeDtoPermissionsItem';
+import type { Permission } from './permission';
 
 export interface CreateInviteCodeDto {
   /**
@@ -18,7 +18,7 @@ export interface CreateInviteCodeDto {
    * @maximum 100
    */
   maxUses: number;
-  permissions: CreateInviteCodeDtoPermissionsItem[];
+  permissions: Permission[];
   expiresAt?: string;
   allowRegistration?: boolean;
 }

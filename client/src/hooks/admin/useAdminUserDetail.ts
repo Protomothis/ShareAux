@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 
 import {
   getAdminControllerGetUserDetailQueryKey,
@@ -7,10 +7,9 @@ import {
   useAdminControllerDeleteUser,
   useAdminControllerGetUserDetail,
   useAdminControllerUnbanUser,
+  useAdminControllerUpdatePermissions,
   useAdminControllerUpdateUserRole,
 } from '@/api/admin/admin';
-import type { UpdatePermissionsBody } from '@/api/model';
-import { customFetch } from '@/api/mutator';
 
 export function useAdminUserDetail(id: string) {
   return useAdminControllerGetUserDetail(id);
@@ -24,21 +23,22 @@ function useInvalidateUserDetail(id: string) {
   };
 }
 
-export function useUpdateUserDetailRole(id: string) {
-  const invalidate = useInvalidateUserDetail(id);
-  return useAdminControllerUpdateUserRole({ mutation: { onSuccess: invalidate } });
+/** 역할 변경 — 유저 목록 + 상세 모두 invalidate */
+export function useUpdateUserRole(id?: string) {
+  const qc = useQueryClient();
+  return useAdminControllerUpdateUserRole({
+    mutation: {
+      onSuccess: () => {
+        void qc.invalidateQueries({ queryKey: getAdminControllerGetUsersQueryKey() });
+        if (id) void qc.invalidateQueries({ queryKey: getAdminControllerGetUserDetailQueryKey(id) });
+      },
+    },
+  });
 }
 
 export function useUpdateUserPermissions(id: string) {
   const invalidate = useInvalidateUserDetail(id);
-  return useMutation({
-    mutationFn: (body: UpdatePermissionsBody) =>
-      customFetch<void>(`/api/admin/users/${id}/permissions`, {
-        method: 'PATCH',
-        body: JSON.stringify(body),
-      }),
-    onSuccess: invalidate,
-  });
+  return useAdminControllerUpdatePermissions({ mutation: { onSuccess: invalidate } });
 }
 
 export function useBanUser(id: string) {

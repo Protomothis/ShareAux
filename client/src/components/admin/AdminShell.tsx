@@ -52,7 +52,6 @@ function NavLink({
 }) {
   return (
     <Link
-      key={href}
       href={href}
       title={collapsed ? label : undefined}
       className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition ${
@@ -94,22 +93,19 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         </div>
         <nav className="flex flex-1 flex-col gap-1">
           {navItems.map((item) => (
-            <span key={item.href}>
-              {/* md: icon-only */}
-              <span className="block lg:hidden">
-                <NavLink
-                  href={item.href}
-                  label={tn(item.labelKey)}
-                  icon={item.icon}
-                  active={pathname === item.href}
-                  collapsed
-                />
-              </span>
-              {/* lg: full */}
-              <span className="hidden lg:block">
-                <NavLink href={item.href} label={tn(item.labelKey)} icon={item.icon} active={pathname === item.href} />
-              </span>
-            </span>
+            <Link
+              key={item.href}
+              href={item.href}
+              title={tn(item.labelKey)}
+              className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition lg:justify-start justify-center ${
+                pathname === item.href
+                  ? 'bg-sa-accent/10 font-medium text-sa-accent'
+                  : 'text-sa-text-muted hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <item.icon size={18} />
+              <span className="hidden lg:inline">{tn(item.labelKey)}</span>
+            </Link>
           ))}
         </nav>
       </aside>

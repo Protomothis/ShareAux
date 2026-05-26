@@ -20,7 +20,7 @@ export class UserFavoriteFolder {
   @Column({ length: 20 })
   name!: string;
 
-  @ApiProperty({ enum: FolderColor })
+  @ApiProperty({ enum: FolderColor, enumName: 'FolderColor' })
   @Column({ type: 'varchar', default: FolderColor.BLUE })
   color!: FolderColor;
 

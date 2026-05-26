@@ -5,14 +5,15 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import type { AdminControllerGetUsersParams, User } from '@/api/model';
-import { UpdateRoleDtoRole, UserRole } from '@/api/model';
+import { AdminControllerGetUsersStatus, UpdateRoleDtoRole, UserRole } from '@/api/model';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminPagination } from '@/components/admin/AdminPagination';
 import type { Column } from '@/components/admin/AdminTable';
 import { AdminTable } from '@/components/admin/AdminTable';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAdminUsers, useUpdateUserRole } from '@/hooks/admin/useAdminUsers';
+import { useAdminUsers } from '@/hooks/admin/useAdminUsers';
+import { useUpdateUserRole } from '@/hooks/admin/useAdminUserDetail';
 import { PROVIDER_VARIANT } from '@/lib/constants';
 
 const LIMIT = 20;
@@ -98,7 +99,7 @@ export default function AdminUsersPage() {
       search: debouncedSearch,
       ...(roleFilter !== 'all' && { role: roleFilter }),
       ...(providerFilter !== 'all' && { provider: providerFilter }),
-      ...(statusFilter !== 'all' && { status: statusFilter }),
+      ...(statusFilter !== 'all' && { status: statusFilter as AdminControllerGetUsersStatus }),
     }),
     [page, debouncedSearch, roleFilter, providerFilter, statusFilter],
   );
@@ -157,10 +158,7 @@ export default function AdminUsersPage() {
       render: (user) => {
         if (user.role === UserRole.superAdmin)
           return <StatusBadge variant="accent">{t('roles.superAdmin')}</StatusBadge>;
-        if (user.role === UserRole.guest) return <StatusBadge variant="muted">{t('guest')}</StatusBadge>;
-        if ((user.role as string) === UserRole.guest) {
-          return <StatusBadge variant="muted">{t('roles.guest')}</StatusBadge>;
-        }
+        if (user.role === UserRole.guest) return <StatusBadge variant="muted">{t('roles.guest')}</StatusBadge>;
         return (
           <Select value={user.role} onValueChange={(v) => handleRoleChange(user.id, v as UpdateRoleDtoRole)}>
             <SelectTrigger className="h-8 w-28 border-white/10 bg-white/5 text-sm">
@@ -181,9 +179,7 @@ export default function AdminUsersPage() {
       key: 'createdAt',
       header: t('createdAt'),
       hideOnMobile: true,
-      render: (user) => (
-        <span className="text-sa-text-muted">{new Date(user.createdAt).toLocaleDateString('ko-KR')}</span>
-      ),
+      render: (user) => <span className="text-sa-text-muted">{new Date(user.createdAt).toLocaleDateString()}</span>,
     },
     {
       key: 'status',

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { TrackLyricsType } from '@/api/model';
+import { LyricsType } from '@/api/model';
 import { useAudioControl } from '@/hooks/useAudioControl';
 import { StreamState } from '@/types';
 import type { AutoDjStatus, TrackInfo, TrackVoteMap, VisualMode } from '@/types';
@@ -38,7 +38,7 @@ interface PlayerProps {
   streamBitrate?: number;
   transStatus?: string | null;
   lyricsStatus?: LyricsStatus;
-  lyricsType?: TrackLyricsType;
+  lyricsType?: LyricsType | null;
   lyricsVersion?: number;
   trackVotes?: TrackVoteMap;
   autoDjEnabled?: boolean;
@@ -146,7 +146,7 @@ export default function Player({
           lyricsStatus={lyricsStatus ?? LyricsStatus.searching}
           trackId={track?.id}
           lyricsVersion={lyricsVersion}
-          karaoke={lyricsType === TrackLyricsType.synced}
+          karaoke={lyricsType === LyricsType.synced}
         />
       </div>
 

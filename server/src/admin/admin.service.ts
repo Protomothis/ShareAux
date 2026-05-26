@@ -15,6 +15,8 @@ import { ErrorCode } from '../types/error-code.enum.js';
 import { Permission, ReportStatus, UserRole } from '../types/index.js';
 import type { CreateInviteCodeDto } from './dto/create-invite-code.dto.js';
 
+const UserStatusFilter = { Active: 'active', Banned: 'banned' } as const;
+
 @Injectable()
 export class AdminService {
   constructor(
@@ -46,8 +48,8 @@ export class AdminService {
     if (search) qb.andWhere('(u.username ILIKE :s OR u.nickname ILIKE :s)', { s: `%${search}%` });
     if (role) qb.andWhere('u.role = :role', { role });
     if (provider) qb.andWhere('u.provider = :provider', { provider });
-    if (status === 'banned') qb.andWhere('u.banned_at IS NOT NULL');
-    else if (status === 'active') qb.andWhere('u.banned_at IS NULL');
+    if (status === UserStatusFilter.Banned) qb.andWhere('u.banned_at IS NOT NULL');
+    else if (status === UserStatusFilter.Active) qb.andWhere('u.banned_at IS NULL');
 
     const [items, total] = await qb
       .skip((page - 1) * limit)
@@ -147,7 +149,7 @@ export class AdminService {
     const room = await this.roomRepo.findOneBy({ id: roomId });
     if (!room) throw new AppException(ErrorCode.ROOM_001);
     await this.roomRepo.remove(room);
-    return { deleted: true };
+    return { success: true };
   }
 
   // --- Invite Codes ---
@@ -163,7 +165,7 @@ export class AdminService {
         maxUses: dto.maxUses,
         permissions,
         expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
-        createdBy: { id: userId } as User,
+        createdBy: { id: userId },
       }),
     );
   }

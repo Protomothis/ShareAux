@@ -5,6 +5,7 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
+import type { AdminControllerGetUsersStatus } from './adminControllerGetUsersStatus';
 
 export type AdminControllerGetUsersParams = {
   page: number;
@@ -12,5 +13,5 @@ export type AdminControllerGetUsersParams = {
   search?: string;
   role?: string;
   provider?: string;
-  status?: string;
+  status?: AdminControllerGetUsersStatus;
 };

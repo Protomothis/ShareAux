@@ -5,8 +5,8 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import { UserRole } from '@/api/model';
-import type { UpdatePermissionsBodyPermissionsItem, UserDetailResponse } from '@/api/model';
+import { Permission, UserRole } from '@/api/model';
+import type { UserDetailResponse } from '@/api/model';
 import type { UpdateRoleDtoRole } from '@/api/model';
 import { CheckboxGroup } from '@/components/admin/CheckboxGroup';
 import { StatusBadge } from '@/components/admin/StatusBadge';
@@ -14,9 +14,8 @@ import { Button } from '@/components/common/Button';
 import { FormField } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Surface } from '@/components/ui/surface';
-import { useUpdateUserDetailRole, useUpdateUserPermissions } from '@/hooks/admin/useAdminUserDetail';
+import { useUpdateUserRole, useUpdateUserPermissions } from '@/hooks/admin/useAdminUserDetail';
 import { usePermissionMeta, usePermLookup } from '@/hooks/usePermissionMeta';
-import { ROLE_LABELS } from '@/lib/constants';
 
 interface UserPermissionSectionProps {
   user: UserDetailResponse;
@@ -25,11 +24,11 @@ interface UserPermissionSectionProps {
 export function UserPermissionSection({ user }: UserPermissionSectionProps) {
   const t = useTranslations('admin.userDetail');
   const [role, setRole] = useState(user.role);
-  const [permissions, setPermissions] = useState<Set<string>>(
-    () => new Set(user.accountPermissions.length > 0 ? user.accountPermissions : ['listen']),
+  const [permissions, setPermissions] = useState<Set<Permission>>(
+    () => new Set(user.accountPermissions.length > 0 ? user.accountPermissions : [Permission.listen]),
   );
 
-  const updateRole = useUpdateUserDetailRole(user.id);
+  const updateRole = useUpdateUserRole(user.id);
   const updatePermissions = useUpdateUserPermissions(user.id);
   const { data: permMeta } = usePermissionMeta();
   const pl = usePermLookup();
@@ -56,8 +55,9 @@ export function UserPermissionSection({ user }: UserPermissionSectionProps) {
   const togglePerm = useCallback((key: string) => {
     setPermissions((prev) => {
       const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
+      const k = key as Permission;
+      if (next.has(k)) next.delete(k);
+      else next.add(k);
       return next;
     });
   }, []);
@@ -69,7 +69,8 @@ export function UserPermissionSection({ user }: UserPermissionSectionProps) {
       }
       if (!isAdmin) {
         await updatePermissions.mutateAsync({
-          permissions: [...permissions] as UpdatePermissionsBodyPermissionsItem[],
+          id: user.id,
+          data: { permissions: [...permissions] },
         });
       }
       toast.success(t('saved'));
@@ -93,7 +94,7 @@ export function UserPermissionSection({ user }: UserPermissionSectionProps) {
             <SelectContent>
               {['user', 'admin'].map((r) => (
                 <SelectItem key={r} value={r}>
-                  {ROLE_LABELS[r] ?? r}
+                  {t(`roles.${r}`)}
                 </SelectItem>
               ))}
             </SelectContent>

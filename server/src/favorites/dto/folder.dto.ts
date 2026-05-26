@@ -10,7 +10,7 @@ export class CreateFolderBody {
   @MaxLength(20)
   name!: string;
 
-  @ApiPropertyOptional({ enum: FolderColor })
+  @ApiPropertyOptional({ enum: FolderColor, enumName: 'FolderColor' })
   @IsOptional()
   @IsEnum(FolderColor)
   color?: FolderColor;
@@ -24,7 +24,7 @@ export class UpdateFolderBody {
   @MaxLength(20)
   name?: string;
 
-  @ApiPropertyOptional({ enum: FolderColor })
+  @ApiPropertyOptional({ enum: FolderColor, enumName: 'FolderColor' })
   @IsOptional()
   @IsEnum(FolderColor)
   color?: FolderColor;
@@ -37,7 +37,7 @@ export class FolderItem {
   @ApiProperty()
   name!: string;
 
-  @ApiProperty({ enum: FolderColor })
+  @ApiProperty({ enum: FolderColor, enumName: 'FolderColor' })
   color!: FolderColor;
 
   @ApiProperty()

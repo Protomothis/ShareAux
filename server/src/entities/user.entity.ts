@@ -12,7 +12,7 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ApiProperty({ enum: AuthProvider })
+  @ApiProperty({ enum: AuthProvider, enumName: 'AuthProvider' })
   @Column({ default: AuthProvider.Google })
   provider!: AuthProvider;
 
@@ -39,7 +39,7 @@ export class User {
   @Column({ nullable: true, name: 'avatar_url' })
   avatarUrl!: string;
 
-  @ApiProperty({ enum: UserRole, default: UserRole.User })
+  @ApiProperty({ enum: UserRole, enumName: 'UserRole', default: UserRole.User })
   @Column({ default: UserRole.User })
   role!: UserRole;
 
@@ -48,7 +48,7 @@ export class User {
   @JoinColumn({ name: 'invite_code_id' })
   inviteCode!: InviteCode | null;
 
-  @ApiProperty({ enum: Permission, isArray: true })
+  @ApiProperty({ enum: Permission, enumName: 'Permission', isArray: true })
   @Column({ type: 'jsonb', name: 'account_permissions', default: [] })
   accountPermissions!: Permission[];
 

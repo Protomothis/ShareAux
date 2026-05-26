@@ -20,7 +20,7 @@ function statusColor(status: number) {
 }
 
 function formatTs(ts: number) {
-  return new Date(ts).toLocaleString('ko-KR', {
+  return new Date(ts).toLocaleString(undefined, {
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
@@ -45,6 +45,7 @@ function ErrorRow({ item }: { item: ErrorLogItem }) {
       <tr
         className="cursor-pointer border-b border-white/5 transition hover:bg-white/[0.03]"
         onClick={() => setOpen(!open)}
+        aria-expanded={open}
       >
         <td className="px-3 py-2.5 text-xs text-sa-text-muted">{formatTs(item.timestamp)}</td>
         <td className="px-3 py-2.5 text-xs font-mono text-white/70">

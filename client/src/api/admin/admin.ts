@@ -41,6 +41,7 @@ import type {
   CreateIpBanDto,
   DashboardResponse,
   ErrorFileItem,
+  GeminiModelsResponse,
   InviteCode,
   LiveRoomItem,
   PaginatedAuditLogsResponse,
@@ -54,9 +55,11 @@ import type {
   PlaysMetricsResponse,
   RealtimeMetricsResponse,
   Report,
+  ResolveReportDto,
   StreamingMetricsResponse,
   SystemStatsResponse,
   TrackLyricsResponse,
+  UpdatePermissionsDto,
   UpdateRoleDto,
   UpdateSettingsDto,
   User,
@@ -406,10 +409,16 @@ export const getAdminControllerUpdatePermissionsUrl = (id: string) => {
   return `/api/admin/users/${id}/permissions`;
 };
 
-export const adminControllerUpdatePermissions = async (id: string, options?: RequestInit): Promise<void> => {
+export const adminControllerUpdatePermissions = async (
+  id: string,
+  updatePermissionsDto: UpdatePermissionsDto,
+  options?: RequestInit,
+): Promise<void> => {
   return customFetch<void>(getAdminControllerUpdatePermissionsUrl(id), {
     ...options,
     method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(updatePermissionsDto),
   });
 };
 
@@ -417,14 +426,14 @@ export const getAdminControllerUpdatePermissionsMutationOptions = <TError = unkn
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof adminControllerUpdatePermissions>>,
     TError,
-    { id: string },
+    { id: string; data: UpdatePermissionsDto },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof adminControllerUpdatePermissions>>,
   TError,
-  { id: string },
+  { id: string; data: UpdatePermissionsDto },
   TContext
 > => {
   const mutationKey = ['adminControllerUpdatePermissions'];
@@ -434,12 +443,13 @@ export const getAdminControllerUpdatePermissionsMutationOptions = <TError = unkn
       : { ...options, mutation: { ...options.mutation, mutationKey } }
     : { mutation: { mutationKey }, request: undefined };
 
-  const mutationFn: MutationFunction<Awaited<ReturnType<typeof adminControllerUpdatePermissions>>, { id: string }> = (
-    props,
-  ) => {
-    const { id } = props ?? {};
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminControllerUpdatePermissions>>,
+    { id: string; data: UpdatePermissionsDto }
+  > = (props) => {
+    const { id, data } = props ?? {};
 
-    return adminControllerUpdatePermissions(id, requestOptions);
+    return adminControllerUpdatePermissions(id, data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -448,7 +458,7 @@ export const getAdminControllerUpdatePermissionsMutationOptions = <TError = unkn
 export type AdminControllerUpdatePermissionsMutationResult = NonNullable<
   Awaited<ReturnType<typeof adminControllerUpdatePermissions>>
 >;
-
+export type AdminControllerUpdatePermissionsMutationBody = UpdatePermissionsDto;
 export type AdminControllerUpdatePermissionsMutationError = unknown;
 
 /**
@@ -459,7 +469,7 @@ export const useAdminControllerUpdatePermissions = <TError = unknown, TContext =
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof adminControllerUpdatePermissions>>,
       TError,
-      { id: string },
+      { id: string; data: UpdatePermissionsDto },
       TContext
     >;
     request?: SecondParameter<typeof customFetch>;
@@ -468,7 +478,7 @@ export const useAdminControllerUpdatePermissions = <TError = unknown, TContext =
 ): UseMutationResult<
   Awaited<ReturnType<typeof adminControllerUpdatePermissions>>,
   TError,
-  { id: string },
+  { id: string; data: UpdatePermissionsDto },
   TContext
 > => {
   const mutationOptions = getAdminControllerUpdatePermissionsMutationOptions(options);
@@ -1912,8 +1922,8 @@ export const getAdminControllerGetGeminiModelsUrl = () => {
   return `/api/admin/settings/gemini-models`;
 };
 
-export const adminControllerGetGeminiModels = async (options?: RequestInit): Promise<void> => {
-  return customFetch<void>(getAdminControllerGetGeminiModelsUrl(), {
+export const adminControllerGetGeminiModels = async (options?: RequestInit): Promise<GeminiModelsResponse> => {
+  return customFetch<GeminiModelsResponse>(getAdminControllerGetGeminiModelsUrl(), {
     ...options,
     method: 'GET',
   });
@@ -2576,10 +2586,16 @@ export const getAdminControllerResolveReportUrl = (id: string) => {
   return `/api/admin/reports/${id}/resolve`;
 };
 
-export const adminControllerResolveReport = async (id: string, options?: RequestInit): Promise<Report> => {
+export const adminControllerResolveReport = async (
+  id: string,
+  resolveReportDto: ResolveReportDto,
+  options?: RequestInit,
+): Promise<Report> => {
   return customFetch<Report>(getAdminControllerResolveReportUrl(id), {
     ...options,
     method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(resolveReportDto),
   });
 };
 
@@ -2587,11 +2603,16 @@ export const getAdminControllerResolveReportMutationOptions = <TError = unknown,
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof adminControllerResolveReport>>,
     TError,
-    { id: string },
+    { id: string; data: ResolveReportDto },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
-}): UseMutationOptions<Awaited<ReturnType<typeof adminControllerResolveReport>>, TError, { id: string }, TContext> => {
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminControllerResolveReport>>,
+  TError,
+  { id: string; data: ResolveReportDto },
+  TContext
+> => {
   const mutationKey = ['adminControllerResolveReport'];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
@@ -2599,12 +2620,13 @@ export const getAdminControllerResolveReportMutationOptions = <TError = unknown,
       : { ...options, mutation: { ...options.mutation, mutationKey } }
     : { mutation: { mutationKey }, request: undefined };
 
-  const mutationFn: MutationFunction<Awaited<ReturnType<typeof adminControllerResolveReport>>, { id: string }> = (
-    props,
-  ) => {
-    const { id } = props ?? {};
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminControllerResolveReport>>,
+    { id: string; data: ResolveReportDto }
+  > = (props) => {
+    const { id, data } = props ?? {};
 
-    return adminControllerResolveReport(id, requestOptions);
+    return adminControllerResolveReport(id, data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -2613,7 +2635,7 @@ export const getAdminControllerResolveReportMutationOptions = <TError = unknown,
 export type AdminControllerResolveReportMutationResult = NonNullable<
   Awaited<ReturnType<typeof adminControllerResolveReport>>
 >;
-
+export type AdminControllerResolveReportMutationBody = ResolveReportDto;
 export type AdminControllerResolveReportMutationError = unknown;
 
 /**
@@ -2624,13 +2646,18 @@ export const useAdminControllerResolveReport = <TError = unknown, TContext = unk
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof adminControllerResolveReport>>,
       TError,
-      { id: string },
+      { id: string; data: ResolveReportDto },
       TContext
     >;
     request?: SecondParameter<typeof customFetch>;
   },
   queryClient?: QueryClient,
-): UseMutationResult<Awaited<ReturnType<typeof adminControllerResolveReport>>, TError, { id: string }, TContext> => {
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminControllerResolveReport>>,
+  TError,
+  { id: string; data: ResolveReportDto },
+  TContext
+> => {
   const mutationOptions = getAdminControllerResolveReportMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);

@@ -5,11 +5,11 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
-import type { FavoriteItemProvider } from './favoriteItemProvider';
+import type { Provider } from './provider';
 
 export interface FavoriteItem {
   id: string;
-  provider: FavoriteItemProvider;
+  provider: Provider;
   sourceId: string;
   name: string;
   /** @nullable */
