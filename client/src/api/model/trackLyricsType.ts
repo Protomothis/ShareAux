@@ -5,14 +5,9 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
+import type { LyricsType } from './lyricsType';
 
 /**
  * @nullable
  */
-export type TrackLyricsType = (typeof TrackLyricsType)[keyof typeof TrackLyricsType] | null;
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const TrackLyricsType = {
-  plain: 'plain',
-  synced: 'synced',
-} as const;
+export type TrackLyricsType = LyricsType | null;

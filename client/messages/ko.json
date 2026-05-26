@@ -655,6 +655,7 @@
       "crossfadeLabel": "크로스페이드",
       "defaultEnqueue": "기본 큐 추가",
       "defaultVoteSkip": "기본 투표 스킵",
+      "autoDj": "Auto DJ",
       "delete": "삭제"
     },
     "tracks": {

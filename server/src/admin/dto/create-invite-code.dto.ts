@@ -28,7 +28,7 @@ export class CreateInviteCodeDto {
   @Max(100)
   maxUses!: number;
 
-  @ApiProperty({ enum: Permission, isArray: true })
+  @ApiProperty({ enum: Permission, enumName: 'Permission', isArray: true })
   @IsArray()
   @IsEnum(Permission, { each: true })
   permissions!: Permission[];

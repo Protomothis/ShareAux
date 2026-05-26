@@ -4,7 +4,7 @@ import { IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 import { Provider } from '../../types/provider.enum.js';
 
 export class AddFavoriteBody {
-  @ApiProperty({ enum: Provider })
+  @ApiProperty({ enum: Provider, enumName: 'Provider' })
   @IsEnum(Provider)
   provider!: Provider;
 

@@ -4,7 +4,7 @@ import { IsEnum } from 'class-validator';
 import { Permission } from '../../types/permission.enum.js';
 
 export class UpdatePermissionsBody {
-  @ApiProperty({ enum: Permission, isArray: true })
+  @ApiProperty({ enum: Permission, enumName: 'Permission', isArray: true })
   @IsEnum(Permission, { each: true })
   permissions!: Permission[];
 }

@@ -25,7 +25,7 @@ export class RoomPermission {
   @JoinColumn({ name: 'user_id' })
   user!: User;
 
-  @ApiProperty({ enum: Permission, isArray: true })
+  @ApiProperty({ enum: Permission, enumName: 'Permission', isArray: true })
   @Column({ type: 'jsonb', default: DEFAULT_ROOM_PERMISSIONS })
   permissions!: Permission[];
 }

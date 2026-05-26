@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
-import type { CreateInviteCodeDtoPermissionsItem } from '@/api/model';
+import { Permission } from '@/api/model';
 import { CheckboxGroup } from '@/components/admin/CheckboxGroup';
 import { Button } from '@/components/common/Button';
 import { DatePicker } from '@/components/ui/date-picker';
@@ -16,7 +16,7 @@ import { usePermissionMeta, usePermLookup } from '@/hooks/usePermissionMeta';
 export interface InviteCodeFormData {
   code?: string;
   maxUses: number;
-  permissions: CreateInviteCodeDtoPermissionsItem[];
+  permissions: Permission[];
   expiresAt?: string;
   allowRegistration: boolean;
 }
@@ -32,7 +32,7 @@ export function InviteCodeForm({ onSubmit, isPending, submitLabel }: InviteCodeF
   const [code, setCode] = useState('');
   const [maxUses, setMaxUses] = useState(10);
   const [expiresAt, setExpiresAt] = useState<Date | undefined>();
-  const [permissions, setPermissions] = useState<Set<string> | null>(null);
+  const [permissions, setPermissions] = useState<Set<Permission> | null>(null);
   const [allowRegistration, setAllowRegistration] = useState(true);
 
   const { data: permMeta } = usePermissionMeta();
@@ -40,7 +40,7 @@ export function InviteCodeForm({ onSubmit, isPending, submitLabel }: InviteCodeF
   const permOptions = (permMeta ?? []).map((m) => ({
     key: m.key,
     label: pl.full(m.key),
-    disabled: m.key === 'listen',
+    disabled: m.key === Permission.listen,
   }));
 
   const activePerms = permissions ?? new Set((permMeta ?? []).map((m) => m.key));
@@ -48,8 +48,9 @@ export function InviteCodeForm({ onSubmit, isPending, submitLabel }: InviteCodeF
   const togglePerm = (key: string) => {
     setPermissions((prev) => {
       const next = new Set(prev ?? activePerms);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
+      const k = key as Permission;
+      if (next.has(k)) next.delete(k);
+      else next.add(k);
       return next;
     });
   };
@@ -59,7 +60,7 @@ export function InviteCodeForm({ onSubmit, isPending, submitLabel }: InviteCodeF
     onSubmit({
       ...(code && { code }),
       maxUses,
-      permissions: [...activePerms] as CreateInviteCodeDtoPermissionsItem[],
+      permissions: [...activePerms],
       ...(expiresAt && { expiresAt: expiresAt.toISOString() }),
       allowRegistration,
     });

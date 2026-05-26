@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import type { MemberWithPermission } from '@/api/model';
-import { RoomPermissionPermissionsItem as PermItem, type RoomPermissionPermissionsItem, UserRole } from '@/api/model';
+import { Permission as PermItem, UserRole } from '@/api/model';
 import {
   roomsControllerKick,
   roomsControllerTransferHost,
@@ -55,7 +55,7 @@ export default function MemberPermissionModal({
   const perm = usePermLookup();
   const visiblePerms = (permMeta ?? []).filter((m) => ROOM_VISIBLE_KEYS.has(m.key));
 
-  const togglePermission = async (perm: RoomPermissionPermissionsItem) => {
+  const togglePermission = async (perm: PermItem) => {
     if (!canEdit) return;
     setSaving(true);
     try {
@@ -95,19 +95,21 @@ export default function MemberPermissionModal({
   };
 
   /** 권한 상태 판별 */
-  const getPermStatus = (key: RoomPermissionPermissionsItem) => {
+  const getPermStatus = (key: string) => {
     if (isHostUser) return 'granted'; // DJ는 전부 허용
 
     if (isSelf && myPermsData) {
-      const hasAccount = (myPermsData.accountPermissions as string[]).includes(key);
-      const hasRoom = (myPermsData.roomPermissions as string[]).includes(key);
+      const accountPerms = new Set<string>(myPermsData.accountPermissions);
+      const roomPermsSet = new Set<string>(myPermsData.roomPermissions);
+      const hasAccount = accountPerms.has(key);
+      const hasRoom = roomPermsSet.has(key);
       if (hasAccount && hasRoom) return 'granted';
       if (!hasAccount) return 'blocked-account'; // 계정 레벨에서 제한
       return 'blocked-room'; // 방에서 제한
     }
 
     // 호스트가 다른 멤버를 볼 때
-    return roomPerms.includes(key) ? 'granted' : 'blocked-room';
+    return new Set<string>(roomPerms).has(key) ? 'granted' : 'blocked-room';
   };
 
   return (
@@ -127,7 +129,7 @@ export default function MemberPermissionModal({
       <Modal.Body>
         <div className="space-y-0.5">
           {visiblePerms.map((meta) => {
-            const key = meta.key as RoomPermissionPermissionsItem;
+            const key = meta.key;
             const status = getPermStatus(key);
             const effective = status === 'granted';
             return (

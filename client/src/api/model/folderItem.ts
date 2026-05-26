@@ -5,12 +5,12 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
-import type { FolderItemColor } from './folderItemColor';
+import type { FolderColor } from './folderColor';
 
 export interface FolderItem {
   id: string;
   name: string;
-  color: FolderItemColor;
+  color: FolderColor;
   position: number;
   trackCount: number;
 }

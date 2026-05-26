@@ -5,7 +5,7 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
-import type { CreateFolderBodyColor } from './createFolderBodyColor';
+import type { FolderColor } from './folderColor';
 
 export interface CreateFolderBody {
   /**
@@ -13,5 +13,5 @@ export interface CreateFolderBody {
    * @maxLength 20
    */
   name: string;
-  color?: CreateFolderBodyColor;
+  color?: FolderColor;
 }

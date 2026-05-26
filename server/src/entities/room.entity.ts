@@ -78,7 +78,7 @@ export class Room {
   @Column({ default: false, name: 'auto_dj_enabled' })
   autoDjEnabled!: boolean;
 
-  @ApiProperty({ enum: AutoDjMode, default: AutoDjMode.Related })
+  @ApiProperty({ enum: AutoDjMode, enumName: 'AutoDjMode', default: AutoDjMode.Related })
   @Column({ default: AutoDjMode.Related, name: 'auto_dj_mode' })
   autoDjMode!: AutoDjMode;
 

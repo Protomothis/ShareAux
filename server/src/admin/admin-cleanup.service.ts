@@ -185,10 +185,10 @@ export class AdminCleanupService {
   private async deleteTracks(trackIds: string[]): Promise<number> {
     await this.voteRepo.createQueryBuilder().delete().where('track_id IN (:...trackIds)', { trackIds }).execute();
     await this.trackStatsRepo.createQueryBuilder().delete().where('track_id IN (:...trackIds)', { trackIds }).execute();
-    await this.queueRepo
+    await this.queueRepo.manager
       .createQueryBuilder()
-      .update()
-      .set({ track: null as unknown as Track })
+      .update('room_queues')
+      .set({ track_id: null })
       .where('track_id IN (:...trackIds)', { trackIds })
       .execute();
     const { affected } = await this.trackRepo

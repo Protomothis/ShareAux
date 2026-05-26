@@ -1,4 +1,4 @@
-import type { FolderItemColor } from '@/api/model';
+import type { FolderColor } from '@/api/model';
 
 /** FolderColor → Tailwind bg 클래스 매핑 */
 export const FOLDER_COLOR_MAP: Record<string, string> = {
@@ -19,6 +19,6 @@ export const FOLDER_COLOR_MAP: Record<string, string> = {
   pink: 'bg-pink-400',
 };
 
-export function folderColorClass(color: FolderItemColor | string): string {
+export function folderColorClass(color: FolderColor | string): string {
   return FOLDER_COLOR_MAP[color] ?? 'bg-blue-400';
 }

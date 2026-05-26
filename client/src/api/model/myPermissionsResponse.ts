@@ -5,15 +5,13 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
-import type { MyPermissionsResponsePermissionsItem } from './myPermissionsResponsePermissionsItem';
-import type { MyPermissionsResponseAccountPermissionsItem } from './myPermissionsResponseAccountPermissionsItem';
-import type { MyPermissionsResponseRoomPermissionsItem } from './myPermissionsResponseRoomPermissionsItem';
+import type { Permission } from './permission';
 
 export interface MyPermissionsResponse {
   /** 최종 유효 권한 (account ∩ room) */
-  permissions: MyPermissionsResponsePermissionsItem[];
+  permissions: Permission[];
   /** 계정 레벨 권한 */
-  accountPermissions: MyPermissionsResponseAccountPermissionsItem[];
+  accountPermissions: Permission[];
   /** 방 레벨 권한 */
-  roomPermissions: MyPermissionsResponseRoomPermissionsItem[];
+  roomPermissions: Permission[];
 }

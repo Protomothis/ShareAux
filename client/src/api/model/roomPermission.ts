@@ -7,12 +7,12 @@
  */
 import type { Room } from './room';
 import type { User } from './user';
-import type { RoomPermissionPermissionsItem } from './roomPermissionPermissionsItem';
+import type { Permission } from './permission';
 
 export interface RoomPermission {
   roomId: string;
   userId: string;
   room: Room;
   user: User;
-  permissions: RoomPermissionPermissionsItem[];
+  permissions: Permission[];
 }

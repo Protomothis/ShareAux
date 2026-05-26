@@ -5,7 +5,7 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
-import type { UpdateFolderBodyColor } from './updateFolderBodyColor';
+import type { FolderColor } from './folderColor';
 
 export interface UpdateFolderBody {
   /**
@@ -13,5 +13,5 @@ export interface UpdateFolderBody {
    * @maxLength 20
    */
   name?: string;
-  color?: UpdateFolderBodyColor;
+  color?: FolderColor;
 }

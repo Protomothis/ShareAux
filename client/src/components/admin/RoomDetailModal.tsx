@@ -47,7 +47,7 @@ export function RoomDetailModal({ room, live, onOpenChange }: RoomDetailModalPro
             <div className="grid grid-cols-2 gap-2 text-xs">
               <SettingItem label={t('private')} value={room.isPrivate} />
               <SettingItem label={t('crossfadeLabel')} value={room.crossfade} />
-              <SettingItem label="Auto DJ" value={room.autoDjEnabled} />
+              <SettingItem label={t('autoDj')} value={room.autoDjEnabled} />
               <SettingItem label={t('defaultEnqueue')} value={room.defaultEnqueueEnabled} />
               <SettingItem label={t('defaultVoteSkip')} value={room.defaultVoteSkipEnabled} />
             </div>

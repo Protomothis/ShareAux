@@ -167,7 +167,7 @@ export default function AdminSettingsPage() {
           />
         </SettingSection>
 
-        <AiDjSettings draft={draft} set={set} hasGemini={hasGemini} />
+        <AiDjSettings draft={draft} set={set} hasGemini={hasGemini} geminiModels={geminiModels} />
 
         <SettingSection icon="📋" title={t('queueSection')}>
           <NumField

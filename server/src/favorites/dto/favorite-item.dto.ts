@@ -6,7 +6,7 @@ export class FavoriteItem {
   @ApiProperty()
   id!: string;
 
-  @ApiProperty({ enum: Provider })
+  @ApiProperty({ enum: Provider, enumName: 'Provider' })
   provider!: Provider;
 
   @ApiProperty()

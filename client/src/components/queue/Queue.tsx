@@ -181,7 +181,7 @@ export default function Queue({
                       favLoading={favLoadingIds.has(item.track.sourceId)}
                       onToggleFavorite={() =>
                         toggleFavorite({
-                          provider: item.track.provider as unknown as SearchResultItem['provider'],
+                          provider: item.track.provider,
                           sourceId: item.track.sourceId,
                           name: item.track.name,
                           artist: item.track.artist ?? null,

@@ -23,7 +23,7 @@ export class PlayHistory {
   playedBy!: User | null;
 
   /** 트랙 provider (트랙 삭제와 독립) */
-  @ApiProperty({ enum: Provider, default: Provider.YT })
+  @ApiProperty({ enum: Provider, enumName: 'Provider', default: Provider.YT })
   @Column({ type: 'varchar', default: Provider.YT })
   provider!: string;
 

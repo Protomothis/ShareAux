@@ -8,14 +8,16 @@ interface AiDjSettingsProps {
   draft: Record<string, string>;
   set: (key: string, value: string) => void;
   hasGemini: boolean;
+  geminiModels?: string[];
 }
 
-const modelOptions = ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+const FALLBACK_MODELS = ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.0-flash'];
 
-export function AiDjSettings({ draft, set, hasGemini }: AiDjSettingsProps) {
+export function AiDjSettings({ draft, set, hasGemini, geminiModels }: AiDjSettingsProps) {
   const t = useTranslations('admin.settings');
   const aiDjOn = draft['autodj.aiEnabled'] === 'true';
   const disabled = !hasGemini || !aiDjOn;
+  const modelOptions = geminiModels?.length ? geminiModels : FALLBACK_MODELS;
 
   return (
     <SettingSection icon="🤖" title={t('aiDjSection')}>

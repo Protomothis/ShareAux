@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 
 import { favoritesControllerAdd } from '@/api/favorites/favorites';
 import type { SearchResultItem } from '@/api/model';
+import { Provider } from '@/api/model';
 import { queueControllerAddTracks } from '@/api/queue/queue';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/ui/input';
@@ -151,7 +152,7 @@ export default function SearchModal({
     for (const t of importTracks) {
       try {
         await favoritesControllerAdd({
-          provider: 'yt' as never,
+          provider: Provider.yt,
           sourceId: t.sourceId,
           name: t.name,
           artist: t.artist ?? undefined,

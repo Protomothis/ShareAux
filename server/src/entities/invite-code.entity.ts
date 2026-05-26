@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
-import type { Permission } from '../types/index.js';
+import { Permission } from '../types/index.js';
 import { User } from './user.entity.js';
 
 @Entity('invite_codes')
@@ -27,7 +27,7 @@ export class InviteCode {
   @Column({ name: 'used_count', default: 0 })
   usedCount!: number;
 
-  @ApiProperty({ enum: ['listen', 'chat', 'reaction', 'search', 'addQueue', 'voteSkip', 'host'], isArray: true })
+  @ApiProperty({ enum: Permission, enumName: 'Permission', isArray: true })
   @Column({ type: 'jsonb', default: ['listen'] })
   permissions!: Permission[];
 

@@ -1,7 +1,7 @@
-import type { MyPermissionsResponsePermissionsItem } from '@/api/model';
+import type { Permission } from '@/api/model';
 import { useRoomsControllerGetMyPermissions } from '@/api/rooms/rooms';
 
-type P = MyPermissionsResponsePermissionsItem;
+type P = Permission;
 
 export function useMyPermissions(roomId: string) {
   const { data } = useRoomsControllerGetMyPermissions(roomId);

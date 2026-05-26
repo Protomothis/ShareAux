@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 import type { User } from './user';
-import type { RoomDetailAutoDjMode } from './roomDetailAutoDjMode';
+import type { AutoDjMode } from './autoDjMode';
 import type { RoomDetailAutoDjTags } from './roomDetailAutoDjTags';
 import type { MemberWithPermission } from './memberWithPermission';
 import type { RoomDetailPlayback } from './roomDetailPlayback';
@@ -32,7 +32,7 @@ export interface RoomDetail {
   defaultEnqueueEnabled: boolean;
   defaultVoteSkipEnabled: boolean;
   autoDjEnabled: boolean;
-  autoDjMode: RoomDetailAutoDjMode;
+  autoDjMode: AutoDjMode;
   autoDjThreshold: number;
   /**
    * AutoDJ 즐겨찾기 모드 폴더 필터 (null=전체)

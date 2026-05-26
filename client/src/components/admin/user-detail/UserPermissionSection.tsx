@@ -5,8 +5,8 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import { UserRole } from '@/api/model';
-import type { UpdatePermissionsBodyPermissionsItem, UserDetailResponse } from '@/api/model';
+import { Permission, UserRole } from '@/api/model';
+import type { UserDetailResponse } from '@/api/model';
 import type { UpdateRoleDtoRole } from '@/api/model';
 import { CheckboxGroup } from '@/components/admin/CheckboxGroup';
 import { StatusBadge } from '@/components/admin/StatusBadge';
@@ -24,8 +24,8 @@ interface UserPermissionSectionProps {
 export function UserPermissionSection({ user }: UserPermissionSectionProps) {
   const t = useTranslations('admin.userDetail');
   const [role, setRole] = useState(user.role);
-  const [permissions, setPermissions] = useState<Set<string>>(
-    () => new Set(user.accountPermissions.length > 0 ? user.accountPermissions : ['listen']),
+  const [permissions, setPermissions] = useState<Set<Permission>>(
+    () => new Set(user.accountPermissions.length > 0 ? user.accountPermissions : [Permission.listen]),
   );
 
   const updateRole = useUpdateUserRole(user.id);
@@ -55,8 +55,9 @@ export function UserPermissionSection({ user }: UserPermissionSectionProps) {
   const togglePerm = useCallback((key: string) => {
     setPermissions((prev) => {
       const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
+      const k = key as Permission;
+      if (next.has(k)) next.delete(k);
+      else next.add(k);
       return next;
     });
   }, []);
@@ -69,7 +70,7 @@ export function UserPermissionSection({ user }: UserPermissionSectionProps) {
       if (!isAdmin) {
         await updatePermissions.mutateAsync({
           id: user.id,
-          data: { permissions: [...permissions] as UpdatePermissionsBodyPermissionsItem[] },
+          data: { permissions: [...permissions] },
         });
       }
       toast.success(t('saved'));

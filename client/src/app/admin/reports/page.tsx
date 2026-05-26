@@ -1,5 +1,5 @@
 'use client';
-import { ReportStatus } from '@/api/model';
+import { AdminControllerGetReportsStatus, ReportStatus } from '@/api/model';
 
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
@@ -84,7 +84,7 @@ function ReportCard({
 
 export default function AdminReportsPage() {
   const t = useTranslations('admin.reports');
-  const [status, setStatus] = useState<string>('pending');
+  const [status, setStatus] = useState<AdminControllerGetReportsStatus>(AdminControllerGetReportsStatus.pending);
   const [page, setPage] = useState(1);
   const [resolveTarget, setResolveTarget] = useState<ResolveTarget | null>(null);
 
