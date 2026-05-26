@@ -52,10 +52,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSIONS=$(gh api \
-            "/orgs/${{ env.OWNER }}/packages/container/${{ matrix.image }}/versions" \
+            "/users/${{ env.OWNER }}/packages/container/${{ matrix.image }}/versions" \
             --paginate --jq '.[] | select(.metadata.container.tags | length == 0) | .id')
           for id in $VERSIONS; do
             gh api --method DELETE \
-              "/orgs/${{ env.OWNER }}/packages/container/${{ matrix.image }}/versions/$id" \
+              "/users/${{ env.OWNER }}/packages/container/${{ matrix.image }}/versions/$id" \
               2>/dev/null || true
           done
