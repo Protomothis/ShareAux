@@ -1,5 +1,12 @@
 #!/bin/sh
 
+# main 브랜치 직접 커밋 방지 (merge만 허용)
+branch=$(git rev-parse --abbrev-ref HEAD)
+if [ "$branch" = "main" ] && [ "$GIT_MERGE_HEAD" = "" ]; then
+  echo "❌ main 브랜치에 직접 커밋 금지 — develop에서 머지하세요"
+  exit 1
+fi
+
 echo "🔍 Type checking server..."
 cd server && npx tsc --noEmit || exit 1
 
