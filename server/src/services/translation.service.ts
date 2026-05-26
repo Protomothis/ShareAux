@@ -248,8 +248,8 @@ export class TranslationService implements OnApplicationBootstrap {
       const translatedLrc = lines.map((l, i) => `${l.time} ${result.translations.get(i + 1) ?? ''}`).join('\n');
       const update: Partial<Track> = { lyricsTranslated: translatedLrc, lyricsTransStatus: LyricsTransStatus.Done };
 
-      if (includeReading && result.readings.size > 0) {
-        update.lyricsRuby = lines.map((l, i) => `${l.time} ${result.readings.get(i + 1) ?? l.text}`).join('\n');
+      if (includeReading && result.readings.size >= lines.length * 0.5) {
+        update.lyricsRuby = lines.map((l, i) => `${l.time} ${result.readings.get(i + 1) ?? ''}`).join('\n');
       }
 
       await this.trackRepo.update(track.id, update);
@@ -311,8 +311,14 @@ export class TranslationService implements OnApplicationBootstrap {
 
     const readingDesc =
       targetLang === TranslationLang.Ko
-        ? '- reading = 원문의 한글 발음 표기 (예: 夜に駆ける → 요루니 카케루)'
-        : '- reading = romanized pronunciation of the ORIGINAL text (e.g. 夜に駆ける → yoru ni kakeru)';
+        ? `- reading column is MANDATORY — never leave it empty or omit it.
+- reading = 원문의 한글 발음 표기 (예: 夜に駆ける → 요루니 카케루)
+- Every single line MUST have all 3 columns: N│translation│reading
+- If unsure, write your best phonetic approximation in Korean`
+        : `- reading column is MANDATORY — never leave it empty or omit it.
+- reading = romanized pronunciation of the ORIGINAL text (e.g. 夜に駆ける → yoru ni kakeru)
+- Every single line MUST have all 3 columns: N│translation│reading
+- If unsure, write your best phonetic approximation`;
 
     return `You are a professional song lyrics translator.
 
