@@ -22,7 +22,6 @@ import { ImportUrlTab } from './ImportUrlTab';
 import SearchResults from './SearchResults';
 import { SearchSelectedBar } from './SearchSelectedBar';
 import SearchShowcase from './SearchShowcase';
-import { ViewModeToggle } from './ViewModeToggle';
 
 type Tab = 'showcase' | 'search' | 'playlist' | 'favorites';
 
@@ -295,16 +294,15 @@ export default function SearchModal({
         )}
       </Modal.Header>
 
-      <Modal.Body className="px-5 py-0">
-        {tab === 'showcase' && (
-          <div className="flex justify-end py-1">
-            <ViewModeToggle />
-          </div>
-        )}
+      <Modal.Body className="flex flex-col overflow-hidden px-5 py-0">
         <div
           ref={listRef}
           onScroll={tab === 'search' ? handleScroll : undefined}
-          className={`min-h-0 flex-1 ${adding ? 'pointer-events-none opacity-50' : ''}`}
+          className={cn(
+            'min-h-0 flex-1',
+            adding && 'pointer-events-none opacity-50',
+            tab === 'showcase' ? 'flex flex-col overflow-hidden' : 'overflow-y-auto',
+          )}
         >
           {tab === 'showcase' && (
             <SearchShowcase

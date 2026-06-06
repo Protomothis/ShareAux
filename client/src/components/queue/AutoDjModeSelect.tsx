@@ -1,11 +1,11 @@
 'use client';
 
-import { Brain, Heart, History, Radio, Shuffle, Sparkles, TrendingUp } from 'lucide-react';
+import { BarChart3, Brain, Heart, History, Radio, Shuffle, Sparkles, TrendingUp } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
 
-export type AutoDjMode = 'related' | 'radio' | 'history' | 'popular' | 'mixed' | 'favorites' | 'ai';
+export type AutoDjMode = 'related' | 'radio' | 'history' | 'popular' | 'mixed' | 'favorites' | 'ai' | 'chart';
 
 interface ModeOption {
   value: AutoDjMode;
@@ -21,6 +21,7 @@ const modes: ModeOption[] = [
   { value: 'mixed', label: 'Mixed', icon: <Shuffle size={12} /> },
   { value: 'favorites', label: 'Favorites', icon: <Heart size={12} /> },
   { value: 'ai', label: 'AI', icon: <Brain size={12} /> },
+  { value: 'chart', label: 'Chart', icon: <BarChart3 size={12} /> },
 ];
 
 interface AutoDjModeSelectProps {

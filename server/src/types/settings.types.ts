@@ -41,6 +41,19 @@ export enum OptionKey {
   VapidPublicKey = 'secret.vapidPublicKey',
   VapidPrivateKey = 'secret.vapidPrivateKey',
   VapidMailto = 'push.vapidMailto',
+
+  // 차트
+  ChartEnabled = 'chart.enabled',
+  ChartPlaylists = 'chart.playlists',
+  ChartFetchHour = 'chart.fetchHour',
+}
+
+export interface ChartPlaylistEntry {
+  id: string;
+  genre: string;
+  country: string | null;
+  label: string;
+  emoji: string;
 }
 
 export type OptionType = 'boolean' | 'number' | 'string' | 'select';
@@ -96,4 +109,9 @@ export const OPTION_METAS: Record<OptionKey, OptionMeta> = {
   [OptionKey.VapidPublicKey]: { type: 'string', defaultValue: '', secret: true },
   [OptionKey.VapidPrivateKey]: { type: 'string', defaultValue: '', secret: true },
   [OptionKey.VapidMailto]: { type: 'string', defaultValue: 'mailto:admin@example.com' },
+
+  // 차트
+  [OptionKey.ChartEnabled]: { type: 'boolean', defaultValue: 'true' },
+  [OptionKey.ChartPlaylists]: { type: 'string', defaultValue: '' },
+  [OptionKey.ChartFetchHour]: { type: 'number', defaultValue: '4', min: 0, max: 23 },
 };

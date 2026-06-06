@@ -73,7 +73,8 @@ export const SearchTrackItem = memo(function SearchTrackItem({
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-white">{track.name}</p>
         <p className="truncate text-xs text-sa-text-secondary">
-          {track.artist} · {formatDuration(track.durationMs)}
+          {track.artist}
+          {track.durationMs ? ` · ${formatDuration(track.durationMs)}` : ''}
         </p>
       </div>
       {disabled && !inQueue && !unavailable && <Check size={14} className="shrink-0 text-green-400" />}

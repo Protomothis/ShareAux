@@ -8,6 +8,7 @@ import { Track } from '../entities/track.entity.js';
 import { TrackStats } from '../entities/track-stats.entity.js';
 import { UserTrackHistory } from '../entities/user-track-history.entity.js';
 import { AppException } from '../exceptions/app.exception.js';
+import { ChartService } from '../services/chart.service.js';
 import { fetchMusicCredits, fetchYtMusicMeta, fetchYtMusicRelated } from '../services/innertube-parser.js';
 import { MusicBrainzService } from '../services/musicbrainz.service.js';
 import { parseMediaUrl } from '../services/parse-media-url.js';
@@ -27,6 +28,7 @@ export class SearchService {
   constructor(
     private readonly ytdlp: YtdlpService,
     private readonly musicBrainz: MusicBrainzService,
+    private readonly chartService: ChartService,
     @InjectRepository(Track) private readonly trackRepo: Repository<Track>,
     @InjectRepository(RoomPlayback) private readonly playbackRepo: Repository<RoomPlayback>,
     @InjectRepository(TrackStats) private readonly statsRepo: Repository<TrackStats>,
@@ -145,12 +147,13 @@ export class SearchService {
   }
 
   async getShowcase(roomId: string, userId: string) {
-    const [popular, recent, myHistory] = await Promise.all([
+    const [categories, popular, recent, myHistory] = await Promise.all([
+      this.chartService.getCategories(),
       this.getPopularTracks(),
       this.getRecentTracks(),
       this.getMyTracks(userId),
     ]);
-    return { popular, recent, myHistory };
+    return { categories, popular, recent, myHistory };
   }
 
   async getRecommendedTracks(roomId: string) {
