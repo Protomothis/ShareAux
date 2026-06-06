@@ -1,9 +1,10 @@
 'use client';
 
 import { Flame, History, Link2, Loader2, Music, Radio, RefreshCw } from 'lucide-react';
+import { useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
-import type { SearchResultItem, Track } from '@/api/model';
+import type { ChartTrack, SearchResultItem, ShowcaseCategory, Track } from '@/api/model';
 import {
   useSearchControllerGetRadio,
   useSearchControllerGetRecommended,
@@ -112,6 +113,147 @@ function GridSkeleton({ count = 6 }: { count?: number }) {
   );
 }
 
+// ─── 차트 카테고리 섹션 ─────────────────────────
+
+interface ChartSectionProps {
+  categories: ShowcaseCategory[];
+  onSelectTrack: (track: SearchResultItem) => void;
+  selectedIds: Set<string>;
+  selectedOrder: string[];
+  disabledIds: Set<string>;
+  maxReached: boolean;
+  favoriteIds?: Set<string>;
+  favLoadingIds?: Set<string>;
+  onToggleFavorite?: (track: SearchResultItem) => void;
+  isGuest?: boolean;
+  viewMode: string;
+}
+
+function chartTrackToSearchItem(ct: ChartTrack): SearchResultItem {
+  return {
+    provider: 'yt',
+    sourceId: ct.sourceId,
+    name: ct.title,
+    artist: ct.artist,
+    thumbnail: ct.thumbnail,
+    durationMs: 0,
+  };
+}
+
+function ChartSection({
+  categories,
+  onSelectTrack,
+  selectedIds,
+  selectedOrder,
+  disabledIds,
+  maxReached,
+  favoriteIds,
+  favLoadingIds,
+  onToggleFavorite,
+  isGuest,
+  viewMode,
+}: ChartSectionProps) {
+  const [activeIdx, setActiveIdx] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const active = categories[activeIdx];
+  if (!active) return null;
+
+  const topTracks = active.tracks.slice(0, 5);
+  const restTracks = active.tracks.slice(5);
+
+  return (
+    <div className="space-y-3">
+      {/* 카테고리 칩 바 (가로 스크롤) */}
+      <div className="-mx-4 overflow-x-auto px-4 scrollbar-hide">
+        <div className="flex gap-1.5">
+          {categories.map((cat, idx) => (
+            <button
+              key={cat.genre + idx}
+              type="button"
+              onClick={() => setActiveIdx(idx)}
+              className={cn(
+                'inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors touch-manipulation',
+                idx === activeIdx
+                  ? 'bg-sa-accent/20 text-sa-accent ring-1 ring-sa-accent/40'
+                  : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80',
+              )}
+            >
+              <span>{cat.emoji}</span>
+              {cat.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 상위 5곡 카드 캐러셀 */}
+      {topTracks.length > 0 && (
+        <div ref={scrollRef} className="-mx-4 overflow-x-auto px-4 scrollbar-hide">
+          <div className="flex gap-2" style={{ width: 'max-content' }}>
+            {topTracks.map((ct, idx) => {
+              const item = chartTrackToSearchItem(ct);
+              const selected = selectedIds.has(item.sourceId);
+              const disabled = disabledIds.has(item.sourceId) || (maxReached && !selected);
+              return (
+                <button
+                  key={ct.sourceId}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => onSelectTrack(item)}
+                  className={cn(
+                    'flex w-[120px] shrink-0 flex-col gap-1.5 rounded-xl border p-1.5 text-left transition-colors touch-manipulation',
+                    selected ? 'border-sa-accent/50 bg-sa-accent/10' : 'border-white/5 bg-white/[0.03]',
+                    disabled && 'opacity-40',
+                  )}
+                >
+                  <div className="relative aspect-video w-full overflow-hidden rounded-lg">
+                    <Thumbnail src={ct.thumbnail} size="md" className="h-full w-full rounded-lg" />
+                    <span className="absolute left-1 top-1 flex size-5 items-center justify-center rounded-full bg-black/70 text-[10px] font-bold text-white/80">
+                      {idx + 1}
+                    </span>
+                    {selected && (
+                      <span className="absolute right-1 top-1 flex size-5 items-center justify-center rounded-full bg-sa-accent text-[10px] font-bold text-white shadow">
+                        {selectedOrder.indexOf(item.sourceId) + 1}
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0 px-0.5">
+                    <p className="line-clamp-1 text-[11px] font-medium text-white">{ct.title}</p>
+                    <p className="truncate text-[10px] text-sa-text-muted">{ct.artist}</p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 나머지 컴팩트 리스트 */}
+      {restTracks.length > 0 && (
+        <div className="space-y-1">
+          {restTracks.map((ct) => {
+            const item = chartTrackToSearchItem(ct);
+            return (
+              <SearchTrackItem
+                key={ct.sourceId}
+                track={item}
+                order={selectedOrder.indexOf(item.sourceId) + 1}
+                disabled={disabledIds.has(item.sourceId) || (maxReached && !selectedIds.has(item.sourceId))}
+                full={maxReached && !selectedIds.has(item.sourceId)}
+                inQueue={disabledIds.has(item.sourceId)}
+                onClick={() => onSelectTrack(item)}
+                isFavorite={favoriteIds?.has(item.sourceId)}
+                favLoading={favLoadingIds?.has(item.sourceId)}
+                onToggleFavorite={() => onToggleFavorite?.(item)}
+                isGuest={isGuest}
+              />
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function SearchShowcase({
   roomId,
   onSelectTrack,
@@ -202,6 +344,7 @@ export default function SearchShowcase({
     );
 
   const { popular = [], recent = [], myHistory = [] } = showcaseData ?? {};
+  const categories: ShowcaseCategory[] = showcaseData?.categories ?? [];
   const recommended = recData?.recommended ?? [];
   const radio = radioData?.radio ?? [];
   const allEmpty =
@@ -212,7 +355,8 @@ export default function SearchShowcase({
     !recent.length &&
     !myHistory.length &&
     !recommended.length &&
-    !radio.length;
+    !radio.length &&
+    !categories.length;
 
   if (allEmpty) {
     return (
@@ -226,6 +370,23 @@ export default function SearchShowcase({
 
   return (
     <div className="space-y-6">
+      {/* 차트 카테고리 탭 + 캐러셀 */}
+      {categories.length > 0 && (
+        <ChartSection
+          categories={categories}
+          onSelectTrack={handleClick}
+          selectedIds={selectedIds}
+          selectedOrder={selectedOrder}
+          disabledIds={disabledIds}
+          maxReached={maxReached}
+          favoriteIds={favoriteIds}
+          favLoadingIds={favLoadingIds}
+          onToggleFavorite={onToggleFavorite}
+          isGuest={isGuest}
+          viewMode={viewMode}
+        />
+      )}
+
       {/* 인기/내기록/최근 — showcase 쿼리 (빠름) */}
       {showcaseLoading ? (
         <div>
