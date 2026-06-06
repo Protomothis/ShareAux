@@ -69,9 +69,11 @@ function GridCard({
     >
       <div className="relative aspect-video w-full overflow-hidden rounded-lg">
         <Thumbnail src={track.thumbnail} size="md" className="h-full w-full rounded-lg" />
-        <span className="absolute bottom-1 right-1 rounded bg-black/70 px-1.5 py-0.5 text-[10px] tabular-nums text-white/80">
-          {formatDuration(track.durationMs)}
-        </span>
+        {track.durationMs > 0 && (
+          <span className="absolute bottom-1 right-1 rounded bg-black/70 px-1.5 py-0.5 text-[10px] tabular-nums text-white/80">
+            {formatDuration(track.durationMs)}
+          </span>
+        )}
         {selected && (
           <div className="absolute left-1 top-1">
             <span className="flex size-5 items-center justify-center rounded-full bg-sa-accent text-[10px] font-bold text-white shadow">
