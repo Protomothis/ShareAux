@@ -262,7 +262,9 @@
       "myHistory": "My Requests",
       "recentPlays": "Recent Plays",
       "recommended": "Recommended",
-      "radio": "Radio"
+      "radio": "Radio",
+      "loadMore": "Load more",
+      "loading": "Loading..."
     },
     "searchTab": "Search",
     "favorites": "Favorites",
