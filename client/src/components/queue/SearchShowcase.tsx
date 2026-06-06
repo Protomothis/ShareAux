@@ -141,14 +141,10 @@ interface UnifiedShowcaseProps {
   myHistory: SearchResultItem[];
   recent: SearchResultItem[];
   recommended: SearchResultItem[];
-  radio: SearchResultItem[];
   recFetching: boolean;
-  radioFetching: boolean;
   recRefetch: () => void;
-  radioRefetch: () => void;
   showcaseLoading: boolean;
   recLoading: boolean;
-  radioLoading: boolean;
   onSelectTrack: (track: SearchResultItem) => void;
   selectedIds: Set<string>;
   selectedOrder: string[];
@@ -169,14 +165,10 @@ function UnifiedShowcase({
   myHistory,
   recent,
   recommended,
-  radio,
   recFetching,
-  radioFetching,
   recRefetch,
-  radioRefetch,
   showcaseLoading,
   recLoading,
-  radioLoading,
   onSelectTrack,
   selectedIds,
   selectedOrder,
@@ -196,7 +188,6 @@ function UnifiedShowcase({
   const handleTabClick = (key: string) => {
     if (key === currentTab) {
       if (key === '_recommended') recRefetch();
-      if (key === '_radio') radioRefetch();
       return;
     }
     setActiveTab(key);
@@ -204,11 +195,10 @@ function UnifiedShowcase({
 
   const renderContent = () => {
     // 로딩 상태
-    if (showcaseLoading && currentTab.startsWith('_') && !['_recommended', '_radio'].includes(currentTab)) {
+    if (showcaseLoading && currentTab.startsWith('_') && currentTab !== '_recommended') {
       return <GridSkeleton />;
     }
     if (recLoading && currentTab === '_recommended') return <GridSkeleton />;
-    if (radioLoading && currentTab === '_radio') return <GridSkeleton />;
 
     // 차트 카테고리
     if (currentTab.startsWith('chart_')) {
@@ -295,8 +285,6 @@ function UnifiedShowcase({
         return grid(recent);
       case '_recommended':
         return grid(recommended);
-      case '_radio':
-        return grid(radio);
       default:
         return null;
     }
@@ -310,8 +298,7 @@ function UnifiedShowcase({
           {tabs.map((tab) => {
             const loading =
               ((tab.key === '_popular' || tab.key === '_myHistory' || tab.key === '_recent') && showcaseLoading) ||
-              (tab.key === '_recommended' && recLoading) ||
-              (tab.key === '_radio' && radioLoading);
+              (tab.key === '_recommended' && recLoading);
             return (
               <button
                 key={tab.key}
@@ -432,6 +419,8 @@ export default function SearchShowcase({
   const categories: ShowcaseCategory[] = showcaseData?.categories ?? [];
   const recommended = recData?.recommended ?? [];
   const radio = radioData?.radio ?? [];
+  // 추천 + 라디오를 하나로 통합 (중복 sourceId 제거)
+  const combined = [...recommended, ...radio.filter((r) => !recommended.some((rec) => rec.sourceId === r.sourceId))];
   const allEmpty =
     !showcaseLoading &&
     !recLoading &&
@@ -439,8 +428,7 @@ export default function SearchShowcase({
     !popular.length &&
     !recent.length &&
     !myHistory.length &&
-    !recommended.length &&
-    !radio.length &&
+    !combined.length &&
     !categories.length;
 
   if (allEmpty) {
@@ -464,8 +452,7 @@ export default function SearchShowcase({
   if (popular.length) fixedTabs.push({ key: '_popular', label: t('showcase.popular'), emoji: '🔥' });
   if (myHistory.length) fixedTabs.push({ key: '_myHistory', label: t('showcase.myHistory'), emoji: '🎵' });
   if (recent.length) fixedTabs.push({ key: '_recent', label: t('showcase.recentPlays'), emoji: '⏱' });
-  if (recommended.length) fixedTabs.push({ key: '_recommended', label: t('showcase.recommended'), emoji: '💡' });
-  if (radio.length) fixedTabs.push({ key: '_radio', label: t('showcase.radio'), emoji: '📻' });
+  if (combined.length) fixedTabs.push({ key: '_recommended', label: t('showcase.recommended'), emoji: '💡' });
 
   const chartTabs: TabItem[] = categories.map((cat, idx) => ({
     key: `chart_${idx}`,
@@ -484,15 +471,14 @@ export default function SearchShowcase({
       popular={popular.map(toSearchItem)}
       myHistory={myHistory.map(toSearchItem)}
       recent={recent.map(toSearchItem)}
-      recommended={recommended}
-      radio={radio}
-      recFetching={recFetching}
-      radioFetching={radioFetching}
-      recRefetch={recRefetch}
-      radioRefetch={radioRefetch}
+      recommended={combined}
+      recFetching={recFetching || radioFetching}
+      recRefetch={() => {
+        recRefetch();
+        radioRefetch();
+      }}
       showcaseLoading={showcaseLoading}
-      recLoading={recLoading}
-      radioLoading={radioLoading}
+      recLoading={recLoading || radioLoading}
       onSelectTrack={handleClick}
       selectedIds={selectedIds}
       selectedOrder={selectedOrder}

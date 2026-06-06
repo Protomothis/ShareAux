@@ -1,3 +1,4 @@
+import type { OnModuleInit } from '@nestjs/common';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,7 +19,7 @@ export interface ChartCategory {
 }
 
 @Injectable()
-export class ChartService {
+export class ChartService implements OnModuleInit {
   private readonly logger = new Logger(ChartService.name);
   private lastFetchDate: string | null = null;
 
@@ -27,6 +28,16 @@ export class ChartService {
     private readonly ytdlp: YtdlpService,
     private readonly settings: SettingsService,
   ) {}
+
+  /** 서버 시작 시 차트 데이터가 비어있으면 즉시 수집 */
+  async onModuleInit(): Promise<void> {
+    if (!this.settings.getBoolean(OptionKey.ChartEnabled, true)) return;
+    const count = await this.chartRepo.count();
+    if (count === 0) {
+      this.logger.log('[Chart] 데이터 없음 — 초기 수집 시작');
+      void this.fetchAll();
+    }
+  }
 
   /** 매 시간 체크 — 설정된 시각이면 수집 */
   @Cron(CronExpression.EVERY_HOUR)
