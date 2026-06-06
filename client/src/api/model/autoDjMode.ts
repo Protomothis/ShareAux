@@ -20,4 +20,5 @@ export const AutoDjMode = {
   mixed: 'mixed',
   favorites: 'favorites',
   ai: 'ai',
+  chart: 'chart',
 } as const;

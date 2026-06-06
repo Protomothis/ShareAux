@@ -36,4 +36,7 @@ export const OptionKey = {
   secretvapidPublicKey: 'secret.vapidPublicKey',
   secretvapidPrivateKey: 'secret.vapidPrivateKey',
   pushvapidMailto: 'push.vapidMailto',
+  chartenabled: 'chart.enabled',
+  chartplaylists: 'chart.playlists',
+  chartfetchHour: 'chart.fetchHour',
 } as const;

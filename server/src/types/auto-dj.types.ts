@@ -6,6 +6,7 @@ export enum AutoDjMode {
   Mixed = 'mixed',
   Favorites = 'favorites',
   AI = 'ai',
+  Chart = 'chart',
 }
 
 export type AutoDjStatus = 'idle' | 'thinking' | 'adding' | 'disabled';

@@ -10,6 +10,7 @@ import {
   AUTODJ_FRESHNESS_HARD_EXCLUDE,
   AUTODJ_FRESHNESS_HISTORY_DEPTH,
   AUTODJ_MAX_FAIL_COUNT,
+  AUTODJ_MIN_DURATION_SEC,
   AUTODJ_SAME_ARTIST_HARD_LIMIT,
   AUTODJ_SAME_ARTIST_SOFT_LIMIT,
   AUTODJ_SCAN_INTERVAL_MS,
@@ -26,6 +27,7 @@ import { OptionKey } from '../types/settings.types.js';
 import { Provider } from '../types/provider.enum.js';
 import { fetchYtMusicRelated } from './innertube-parser.js';
 import { AiDjGeminiService } from './ai-dj-gemini.service.js';
+import { ChartService } from './chart.service.js';
 import { SettingsService } from './settings.service.js';
 import { type YtdlpSearchResult, YtdlpService } from './ytdlp.service.js';
 
@@ -66,6 +68,7 @@ export class AutoDjService {
     private readonly ytdlp: YtdlpService,
     private readonly settings: SettingsService,
     private readonly aiGemini: AiDjGeminiService,
+    private readonly chartService: ChartService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -247,6 +250,8 @@ export class AutoDjService {
         return this.getFavoritesCandidates(room);
       case AutoDjMode.AI:
         return this.getAiCandidates(roomId, room);
+      case AutoDjMode.Chart:
+        return this.getChartCandidates(room);
     }
   }
 
@@ -333,6 +338,29 @@ export class AutoDjService {
       return room.autoDjFavFallbackMixed ? this.getMixedCandidates(room.id) : this.getPopularCandidates();
     }
     return favs.filter((f) => f.track).map((f) => ({ track: f.track, weight: 1.0 }));
+  }
+
+  private async getChartCandidates(room: Room): Promise<WeightedCandidate[]> {
+    const tags = room.autoDjTags ?? { mood: [], genre: [], era: [], country: [] };
+    const genres = tags.genre.length ? tags.genre : ['kpop', 'pop'];
+    const chartTracks = await this.chartService.getByGenres(genres, AUTODJ_CANDIDATE_FETCH_LIMIT);
+    if (!chartTracks.length) return this.getPopularCandidates();
+
+    // ChartTrack → Track로 upsert
+    const tracks: Track[] = [];
+    for (const ct of chartTracks) {
+      const track = await this.upsertTrack({
+        id: ct.sourceId,
+        title: ct.title,
+        artist: ct.artist,
+        thumbnail: ct.thumbnail,
+        duration: AUTODJ_MIN_DURATION_SEC, // 차트 트랙은 실제 duration 불명 — 최소값으로 대체
+      });
+      tracks.push(track);
+    }
+
+    // 순위 기반 가중치 (상위일수록 높음)
+    return tracks.map((track, idx) => ({ track, weight: 1.0 - idx * 0.01 }));
   }
 
   // ─── 신선도 필터 ─────────────────────────────────────────

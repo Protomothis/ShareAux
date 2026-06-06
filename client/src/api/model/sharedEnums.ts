@@ -7,6 +7,7 @@
  */
 import type { WsEvent } from './wsEvent';
 import type { AutoDjStatus } from './autoDjStatus';
+import type { AutoDjMode } from './autoDjMode';
 import type { Language } from './language';
 import type { AuthProvider } from './authProvider';
 import type { SystemChatEvent } from './systemChatEvent';
@@ -23,6 +24,7 @@ import type { ReportStatus } from './reportStatus';
 export interface SharedEnums {
   wsEvent: WsEvent;
   autoDjStatus: AutoDjStatus;
+  autoDjMode: AutoDjMode;
   language: Language;
   authProvider: AuthProvider;
   systemChatEvent: SystemChatEvent;

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+import { ChartTrack } from '../../entities/chart-track.entity.js';
 import { Track } from '../../entities/track.entity.js';
 import { SearchResultItem } from './search-result-item.dto.js';
 
@@ -24,7 +25,15 @@ export class PlaylistTracksResponse {
   @ApiProperty() limit!: number;
 }
 
+export class ShowcaseCategory {
+  @ApiProperty() genre!: string;
+  @ApiProperty() label!: string;
+  @ApiProperty() emoji!: string;
+  @ApiProperty({ type: () => [ChartTrack] }) tracks!: ChartTrack[];
+}
+
 export class ShowcaseResponse {
+  @ApiProperty({ type: () => [ShowcaseCategory] }) categories!: ShowcaseCategory[];
   @ApiProperty({ type: () => [Track] }) popular!: Track[];
   @ApiProperty({ type: () => [Track] }) recent!: Track[];
   @ApiProperty({ type: () => [Track] }) myHistory!: Track[];

@@ -205,6 +205,23 @@ export default function AdminSettingsPage() {
           />
         </SettingSection>
 
+        <SettingSection icon="📊" title={t('chartSection')}>
+          <BoolField
+            label={t('chartEnabled')}
+            description={t('chartEnabledDesc')}
+            value={draft['chart.enabled'] ?? ''}
+            onChange={(v) => set('chart.enabled', v)}
+          />
+          <NumField
+            label={t('chartFetchHour')}
+            description={t('chartFetchHourDesc')}
+            value={draft['chart.fetchHour'] ?? ''}
+            onChange={(v) => set('chart.fetchHour', v)}
+            min={0}
+            max={23}
+          />
+        </SettingSection>
+
         <SettingSection icon="🌐" title={t('translationSection')}>
           <BoolField
             label={t('translationEnabled')}

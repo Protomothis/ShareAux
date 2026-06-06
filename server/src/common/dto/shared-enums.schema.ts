@@ -4,6 +4,7 @@ import { SystemChatEvent } from '../../rooms/dto/system-chat-message.dto.js';
 import type { AutoDjStatus } from '../../types/index.js';
 import {
   AuthProvider,
+  AutoDjMode,
   Language,
   LyricsStatus,
   LyricsTransStatus,
@@ -24,6 +25,9 @@ export class SharedEnums {
 
   @ApiProperty({ enum: ['idle', 'thinking', 'adding'], enumName: 'AutoDjStatus' })
   autoDjStatus!: AutoDjStatus;
+
+  @ApiProperty({ enum: AutoDjMode, enumName: 'AutoDjMode' })
+  autoDjMode!: AutoDjMode;
 
   @ApiProperty({ enum: Language, enumName: 'Language' })
   language!: Language;

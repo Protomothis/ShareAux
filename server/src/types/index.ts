@@ -23,7 +23,7 @@ export { PlayFailReason, PreloadState } from './preload.types.js';
 export { PushEvent } from './push-event.enum.js';
 export { ReportStatus } from './report-status.enum.js';
 export type { LeaveResult, RoomPermissionsUpdate, TransferHostResult } from './room.types.js';
-export type { OptionMeta, OptionType } from './settings.types.js';
+export type { ChartPlaylistEntry, OptionMeta, OptionType } from './settings.types.js';
 export { OPTION_METAS, OptionKey } from './settings.types.js';
 export { UserRole } from './user-role.enum.js';
 export type { ChatHistoryEntry, WsClient } from './ws.types.js';

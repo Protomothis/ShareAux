@@ -1,9 +1,11 @@
 'use client';
 
-import { Flame, History, Link2, Loader2, Music, Radio, RefreshCw } from 'lucide-react';
+import { Loader2, Music } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
-import type { SearchResultItem, Track } from '@/api/model';
+import type { ChartTrack, SearchResultItem, ShowcaseCategory, Track } from '@/api/model';
 import {
   useSearchControllerGetRadio,
   useSearchControllerGetRecommended,
@@ -12,13 +14,13 @@ import {
 import { FavoriteButton } from '@/components/common/FavoriteButton';
 import Thumbnail from '@/components/common/Thumbnail';
 import { Button } from '@/components/common/Button';
-import { CollapsibleSection } from '@/components/ui/collapsible-section';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { formatDuration } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { usePreferencesStore } from '@/stores/preferences';
 
 import { SearchTrackItem } from './SearchTrackItem';
+import { ViewModeToggle } from './ViewModeToggle';
 
 interface SearchShowcaseProps {
   roomId: string;
@@ -67,9 +69,11 @@ function GridCard({
     >
       <div className="relative aspect-video w-full overflow-hidden rounded-lg">
         <Thumbnail src={track.thumbnail} size="md" className="h-full w-full rounded-lg" />
-        <span className="absolute bottom-1 right-1 rounded bg-black/70 px-1.5 py-0.5 text-[10px] tabular-nums text-white/80">
-          {formatDuration(track.durationMs)}
-        </span>
+        {track.durationMs > 0 && (
+          <span className="absolute bottom-1 right-1 rounded bg-black/70 px-1.5 py-0.5 text-[10px] tabular-nums text-white/80">
+            {formatDuration(track.durationMs)}
+          </span>
+        )}
         {selected && (
           <div className="absolute left-1 top-1">
             <span className="flex size-5 items-center justify-center rounded-full bg-sa-accent text-[10px] font-bold text-white shadow">
@@ -108,6 +112,226 @@ function GridSkeleton({ count = 6 }: { count?: number }) {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+// ─── 통합 쇼케이스 (칩 탭 + 콘텐츠) ─────────────────────
+
+function chartTrackToSearchItem(ct: ChartTrack): SearchResultItem {
+  return {
+    provider: 'yt',
+    sourceId: ct.sourceId,
+    name: ct.title,
+    artist: ct.artist,
+    thumbnail: ct.thumbnail,
+    durationMs: 0,
+  };
+}
+
+interface TabItem {
+  key: string;
+  label: string;
+  emoji: string;
+  disabled?: boolean;
+}
+
+interface UnifiedShowcaseProps {
+  tabs: TabItem[];
+  defaultTab: string;
+  categories: ShowcaseCategory[];
+  popular: SearchResultItem[];
+  myHistory: SearchResultItem[];
+  recent: SearchResultItem[];
+  recommended: SearchResultItem[];
+  recFetching: boolean;
+  recRefetch: () => void;
+  showcaseLoading: boolean;
+  recLoading: boolean;
+  onSelectTrack: (track: SearchResultItem) => void;
+  selectedIds: Set<string>;
+  selectedOrder: string[];
+  disabledIds: Set<string>;
+  maxReached: boolean;
+  favoriteIds?: Set<string>;
+  favLoadingIds?: Set<string>;
+  onToggleFavorite?: (track: SearchResultItem) => void;
+  isGuest?: boolean;
+  grid: (tracks: SearchResultItem[]) => ReactNode;
+}
+
+function UnifiedShowcase({
+  tabs,
+  defaultTab,
+  categories,
+  popular,
+  myHistory,
+  recent,
+  recommended,
+  recFetching,
+  recRefetch,
+  showcaseLoading,
+  recLoading,
+  onSelectTrack,
+  selectedIds,
+  selectedOrder,
+  disabledIds,
+  maxReached,
+  favoriteIds,
+  favLoadingIds,
+  onToggleFavorite,
+  isGuest,
+  grid,
+}: UnifiedShowcaseProps) {
+  const [activeTab, setActiveTab] = useState(defaultTab);
+
+  // 탭이 변경되면 유효한 탭으로 보정
+  const currentTab = tabs.find((t) => t.key === activeTab) ? activeTab : (tabs[0]?.key ?? '');
+
+  const handleTabClick = (key: string) => {
+    if (key === currentTab) {
+      if (key === '_recommended') recRefetch();
+      return;
+    }
+    setActiveTab(key);
+  };
+
+  const renderContent = () => {
+    // 로딩 상태
+    if (
+      showcaseLoading &&
+      ((currentTab.startsWith('_') && currentTab !== '_recommended') || currentTab.startsWith('chart_'))
+    ) {
+      return <GridSkeleton />;
+    }
+    if (recLoading && currentTab === '_recommended') return <GridSkeleton />;
+
+    // 차트 카테고리
+    if (currentTab.startsWith('chart_')) {
+      const idx = parseInt(currentTab.split('_')[1]);
+      const cat = categories[idx];
+      if (!cat) return null;
+      const topTracks = cat.tracks.slice(0, 5);
+      const restTracks = cat.tracks.slice(5);
+      return (
+        <div className="space-y-3">
+          {topTracks.length > 0 && (
+            <div className="-mx-4 overflow-x-auto px-4 scrollbar-hide">
+              <div className="flex gap-2" style={{ width: 'max-content' }}>
+                {topTracks.map((ct, rank) => {
+                  const item = chartTrackToSearchItem(ct);
+                  const selected = selectedIds.has(item.sourceId);
+                  const disabled = disabledIds.has(item.sourceId) || (maxReached && !selected);
+                  return (
+                    <button
+                      key={ct.sourceId}
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => onSelectTrack(item)}
+                      className={cn(
+                        'flex w-[120px] shrink-0 flex-col gap-1.5 rounded-xl border p-1.5 text-left transition-colors touch-manipulation',
+                        selected ? 'border-sa-accent/50 bg-sa-accent/10' : 'border-white/5 bg-white/[0.03]',
+                        disabled && 'opacity-40',
+                      )}
+                    >
+                      <div className="relative aspect-video w-full overflow-hidden rounded-lg">
+                        <Thumbnail src={ct.thumbnail} size="md" className="h-full w-full rounded-lg" />
+                        <span className="absolute left-1 top-1 flex size-5 items-center justify-center rounded-full bg-black/70 text-[10px] font-bold text-white/80">
+                          {rank + 1}
+                        </span>
+                        {selected && (
+                          <span className="absolute right-1 top-1 flex size-5 items-center justify-center rounded-full bg-sa-accent text-[10px] font-bold text-white shadow">
+                            {selectedOrder.indexOf(item.sourceId) + 1}
+                          </span>
+                        )}
+                      </div>
+                      <div className="min-w-0 px-0.5">
+                        <p className="line-clamp-1 text-[11px] font-medium text-white">{ct.title}</p>
+                        <p className="truncate text-[10px] text-sa-text-muted">{ct.artist}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          {restTracks.length > 0 && (
+            <div className="space-y-1">
+              {restTracks.map((ct) => {
+                const item = chartTrackToSearchItem(ct);
+                return (
+                  <SearchTrackItem
+                    key={ct.sourceId}
+                    track={item}
+                    order={selectedOrder.indexOf(item.sourceId) + 1}
+                    disabled={disabledIds.has(item.sourceId) || (maxReached && !selectedIds.has(item.sourceId))}
+                    full={maxReached && !selectedIds.has(item.sourceId)}
+                    inQueue={disabledIds.has(item.sourceId)}
+                    onClick={() => onSelectTrack(item)}
+                    isFavorite={favoriteIds?.has(item.sourceId)}
+                    favLoading={favLoadingIds?.has(item.sourceId)}
+                    onToggleFavorite={() => onToggleFavorite?.(item)}
+                    isGuest={isGuest}
+                  />
+                );
+              })}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // 고정 탭
+    switch (currentTab) {
+      case '_popular':
+        return grid(popular);
+      case '_myHistory':
+        return grid(myHistory);
+      case '_recent':
+        return grid(recent);
+      case '_recommended':
+        return grid(recommended);
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="flex h-full flex-col">
+      {/* 통합 칩 바 + 보기방식 */}
+      <div className="flex shrink-0 items-center gap-2 border-b border-white/5 pt-1 pb-2">
+        <div className="flex flex-1 flex-wrap items-center gap-1.5">
+          {tabs.map((tab) => {
+            const loading =
+              ((tab.key === '_popular' || tab.key === '_myHistory' || tab.key === '_recent') && showcaseLoading) ||
+              (tab.key === '_recommended' && recLoading) ||
+              (tab.key.startsWith('chart_') && showcaseLoading);
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                disabled={tab.disabled}
+                onClick={() => handleTabClick(tab.key)}
+                className={cn(
+                  'inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors touch-manipulation',
+                  tab.disabled
+                    ? 'cursor-default bg-white/[0.02] text-white/25'
+                    : currentTab === tab.key
+                      ? 'bg-sa-accent/20 text-sa-accent ring-1 ring-sa-accent/40'
+                      : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80',
+                )}
+              >
+                {loading ? <Loader2 size={10} className="animate-spin" /> : <span>{tab.emoji}</span>}
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+        <ViewModeToggle />
+      </div>
+
+      {/* 콘텐츠 — 스크롤 */}
+      <div className="min-h-0 flex-1 overflow-y-auto">{renderContent()}</div>
     </div>
   );
 }
@@ -202,8 +426,11 @@ export default function SearchShowcase({
     );
 
   const { popular = [], recent = [], myHistory = [] } = showcaseData ?? {};
+  const categories: ShowcaseCategory[] = showcaseData?.categories ?? [];
   const recommended = recData?.recommended ?? [];
   const radio = radioData?.radio ?? [];
+  // 추천 + 라디오를 하나로 통합 (중복 sourceId 제거)
+  const combined = [...recommended, ...radio.filter((r) => !recommended.some((rec) => rec.sourceId === r.sourceId))];
   const allEmpty =
     !showcaseLoading &&
     !recLoading &&
@@ -211,8 +438,8 @@ export default function SearchShowcase({
     !popular.length &&
     !recent.length &&
     !myHistory.length &&
-    !recommended.length &&
-    !radio.length;
+    !combined.length &&
+    !categories.length;
 
   if (allEmpty) {
     return (
@@ -224,95 +451,55 @@ export default function SearchShowcase({
     );
   }
 
+  // 통합 탭 구성: 차트 카테고리 + 기존 고정 탭
+  const fixedTabs: TabItem[] = [
+    { key: '_popular', label: t('showcase.popular'), emoji: '🔥', disabled: !popular.length },
+    { key: '_myHistory', label: t('showcase.myHistory'), emoji: '🎵', disabled: !myHistory.length },
+    { key: '_recent', label: t('showcase.recentPlays'), emoji: '⏱', disabled: !recent.length },
+    { key: '_recommended', label: t('showcase.recommended'), emoji: '💡', disabled: !combined.length },
+  ];
+
+  const chartTabs: TabItem[] = categories.map((cat, idx) => ({
+    key: `chart_${idx}`,
+    label: cat.label,
+    emoji: cat.emoji,
+    disabled: !cat.tracks.length,
+  }));
+
+  // 활성 탭 먼저, 비활성 탭 뒤로
+  const enabledChart = chartTabs.filter((t) => !t.disabled);
+  const disabledChart = chartTabs.filter((t) => t.disabled);
+  const enabledFixed = fixedTabs.filter((t) => !t.disabled);
+  const disabledFixed = fixedTabs.filter((t) => t.disabled);
+  const allTabs = [...enabledChart, ...enabledFixed, ...disabledChart, ...disabledFixed];
+  const defaultTab = allTabs.find((t) => !t.disabled)?.key ?? '';
+
   return (
-    <div className="space-y-6">
-      {/* 인기/내기록/최근 — showcase 쿼리 (빠름) */}
-      {showcaseLoading ? (
-        <div>
-          <div className="mb-3 flex items-center gap-2 px-1">
-            <SkeletonLine className="size-3.5" />
-            <SkeletonLine className="h-3 w-16" />
-          </div>
-          <GridSkeleton />
-        </div>
-      ) : (
-        <>
-          {popular.length > 0 && (
-            <CollapsibleSection icon={<Flame size={14} className="text-orange-400" />} title={t('showcase.popular')}>
-              {grid(popular.map(toSearchItem))}
-            </CollapsibleSection>
-          )}
-          {myHistory.length > 0 && (
-            <CollapsibleSection icon={<Music size={14} className="text-sa-accent" />} title={t('showcase.myHistory')}>
-              {grid(myHistory.map(toSearchItem))}
-            </CollapsibleSection>
-          )}
-          {recent.length > 0 && (
-            <CollapsibleSection
-              icon={<History size={14} className="text-sa-text-muted" />}
-              title={t('showcase.recentPlays')}
-            >
-              {grid(recent.map(toSearchItem))}
-            </CollapsibleSection>
-          )}
-        </>
-      )}
-
-      {/* 관련곡 — 별도 쿼리, 독립 로딩 */}
-      {recLoading ? (
-        <div>
-          <div className="mb-3 flex items-center gap-2 px-1">
-            <SkeletonLine className="size-3.5" />
-            <SkeletonLine className="h-3 w-16" />
-          </div>
-          <GridSkeleton />
-        </div>
-      ) : recommended.length > 0 ? (
-        <CollapsibleSection
-          icon={<Link2 size={14} className="text-blue-400" />}
-          title={t('showcase.recommended')}
-          action={
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              onClick={() => recRefetch()}
-              className="text-sa-text-muted hover:text-white"
-            >
-              {recFetching ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
-            </Button>
-          }
-        >
-          {grid(recommended)}
-        </CollapsibleSection>
-      ) : null}
-
-      {/* 라디오 — YT Music 비슷한 아티스트 기반 (느림) */}
-      {radioLoading ? (
-        <div>
-          <div className="mb-3 flex items-center gap-2 px-1">
-            <SkeletonLine className="size-3.5" />
-            <SkeletonLine className="h-3 w-16" />
-          </div>
-          <GridSkeleton />
-        </div>
-      ) : radio.length > 0 ? (
-        <CollapsibleSection
-          icon={<Radio size={14} className="text-green-400" />}
-          title={t('showcase.radio')}
-          action={
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              onClick={() => radioRefetch()}
-              className="text-sa-text-muted hover:text-white"
-            >
-              {radioFetching ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
-            </Button>
-          }
-        >
-          {grid(radio)}
-        </CollapsibleSection>
-      ) : null}
-    </div>
+    <UnifiedShowcase
+      tabs={allTabs}
+      defaultTab={defaultTab}
+      categories={categories}
+      popular={popular.map(toSearchItem)}
+      myHistory={myHistory.map(toSearchItem)}
+      recent={recent.map(toSearchItem)}
+      recommended={combined}
+      recFetching={recFetching || radioFetching}
+      recRefetch={() => {
+        recRefetch();
+        radioRefetch();
+      }}
+      showcaseLoading={showcaseLoading}
+      recLoading={recLoading || radioLoading}
+      onSelectTrack={handleClick}
+      selectedIds={selectedIds}
+      selectedOrder={selectedOrder}
+      disabledIds={disabledIds}
+      maxReached={maxReached}
+      favoriteIds={favoriteIds}
+      favLoadingIds={favLoadingIds}
+      onToggleFavorite={onToggleFavorite}
+      isGuest={isGuest}
+      grid={grid}
+    />
   );
 }

@@ -10,6 +10,7 @@ import { Track } from '../entities/track.entity.js';
 import type { AutoDjTags } from '../types/index.js';
 import { Provider } from '../types/provider.enum.js';
 import { OptionKey } from '../types/settings.types.js';
+import { ChartService } from './chart.service.js';
 import { SettingsService } from './settings.service.js';
 import { type YtdlpSearchResult, YtdlpService } from './ytdlp.service.js';
 
@@ -81,6 +82,7 @@ export class AiDjGeminiService {
     @InjectRepository(Track) private readonly trackRepo: Repository<Track>,
     private readonly ytdlp: YtdlpService,
     private readonly settings: SettingsService,
+    private readonly chartService: ChartService,
   ) {}
 
   async generate(roomId: string, room: Room, batchSize: number, usedSourceIds: Set<string>): Promise<AiPoolResult> {
@@ -118,6 +120,13 @@ export class AiDjGeminiService {
     if (tags.taste && tags.taste !== 'neutral') tagLines.push(`- Taste: ${TASTE_PROMPT[tags.taste] ?? ''}`);
     const userPrompt = room.autoDjPrompt ?? '';
 
+    // 차트 few-shot: 태그 장르와 매칭되는 인기곡 예시
+    const matchingGenres = tags.genre.length ? tags.genre : ['pop', 'kpop'];
+    const chartExamples = await this.chartService.getByGenres(matchingGenres, 5);
+    const chartSection = chartExamples.length
+      ? `\nPopular songs matching your criteria (for reference, style guide):\n${chartExamples.map((t) => `${t.artist} - ${t.title}`).join('\n')}`
+      : '';
+
     return [
       'You are an expert music curator. Recommend songs that STRICTLY match ALL conditions below.',
       '',
@@ -130,6 +139,7 @@ export class AiDjGeminiService {
       '- Pick from diverse artists, eras, and regions',
       '',
       recentTracks.length ? `Recently played (for context, do NOT repeat):\n${context}` : '',
+      chartSection,
       tagLines.length ? `\nRequired conditions (every song must match):\n${tagLines.join('\n')}` : '',
       userPrompt ? `\nAdditional request: ${userPrompt}` : '',
       '',
