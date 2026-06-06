@@ -294,7 +294,7 @@ export default function SearchModal({
         )}
       </Modal.Header>
 
-      <Modal.Body className="px-5 py-0">
+      <Modal.Body className="flex flex-col overflow-hidden px-5 py-0">
         <div
           ref={listRef}
           onScroll={tab === 'search' ? handleScroll : undefined}

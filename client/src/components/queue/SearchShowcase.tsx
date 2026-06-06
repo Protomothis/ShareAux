@@ -1,6 +1,6 @@
 'use client';
 
-import { Loader2, Music, RefreshCw } from 'lucide-react';
+import { Loader2, Music } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
@@ -193,6 +193,15 @@ function UnifiedShowcase({
   // 탭이 변경되면 유효한 탭으로 보정
   const currentTab = tabs.find((t) => t.key === activeTab) ? activeTab : (tabs[0]?.key ?? '');
 
+  const handleTabClick = (key: string) => {
+    if (key === currentTab) {
+      if (key === '_recommended') recRefetch();
+      if (key === '_radio') radioRefetch();
+      return;
+    }
+    setActiveTab(key);
+  };
+
   const renderContent = () => {
     // 로딩 상태
     if (showcaseLoading && currentTab.startsWith('_') && !['_recommended', '_radio'].includes(currentTab)) {
@@ -285,37 +294,9 @@ function UnifiedShowcase({
       case '_recent':
         return grid(recent);
       case '_recommended':
-        return (
-          <div className="space-y-2">
-            <div className="flex justify-end px-1">
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                onClick={() => recRefetch()}
-                className="text-sa-text-muted hover:text-white"
-              >
-                {recFetching ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
-              </Button>
-            </div>
-            {grid(recommended)}
-          </div>
-        );
+        return grid(recommended);
       case '_radio':
-        return (
-          <div className="space-y-2">
-            <div className="flex justify-end px-1">
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                onClick={() => radioRefetch()}
-                className="text-sa-text-muted hover:text-white"
-              >
-                {radioFetching ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
-              </Button>
-            </div>
-            {grid(radio)}
-          </div>
-        );
+        return grid(radio);
       default:
         return null;
     }
@@ -336,7 +317,7 @@ function UnifiedShowcase({
                 <button
                   key={tab.key}
                   type="button"
-                  onClick={() => setActiveTab(tab.key)}
+                  onClick={() => handleTabClick(tab.key)}
                   className={cn(
                     'inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors touch-manipulation',
                     currentTab === tab.key
