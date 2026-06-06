@@ -327,22 +327,28 @@ function UnifiedShowcase({
       <div className="flex items-center gap-2">
         <div className="-ml-4 flex-1 overflow-x-auto pl-4 py-0.5 scrollbar-hide">
           <div className="flex gap-1.5">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setActiveTab(tab.key)}
-                className={cn(
-                  'inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors touch-manipulation',
-                  currentTab === tab.key
-                    ? 'bg-sa-accent/20 text-sa-accent ring-1 ring-sa-accent/40'
-                    : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80',
-                )}
-              >
-                <span>{tab.emoji}</span>
-                {tab.label}
-              </button>
-            ))}
+            {tabs.map((tab) => {
+              const loading =
+                ((tab.key === '_popular' || tab.key === '_myHistory' || tab.key === '_recent') && showcaseLoading) ||
+                (tab.key === '_recommended' && recLoading) ||
+                (tab.key === '_radio' && radioLoading);
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setActiveTab(tab.key)}
+                  className={cn(
+                    'inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors touch-manipulation',
+                    currentTab === tab.key
+                      ? 'bg-sa-accent/20 text-sa-accent ring-1 ring-sa-accent/40'
+                      : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80',
+                  )}
+                >
+                  {loading ? <Loader2 size={10} className="animate-spin" /> : <span>{tab.emoji}</span>}
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
         </div>
         <ViewModeToggle />
