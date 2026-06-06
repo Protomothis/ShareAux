@@ -322,9 +322,9 @@ function UnifiedShowcase({
   };
 
   return (
-    <div className="flex h-full flex-col">
-      {/* 통합 칩 바 + 보기방식 — 고정 */}
-      <div className="flex shrink-0 items-center gap-2 pb-2">
+    <div>
+      {/* 통합 칩 바 + 보기방식 — sticky */}
+      <div className="sticky top-0 z-10 flex items-center gap-2 bg-sa-bg pt-1 pb-2">
         <div className="-ml-4 flex-1 overflow-x-auto pl-4 py-0.5 scrollbar-hide">
           <div className="flex gap-1.5">
             {tabs.map((tab) => {
@@ -355,7 +355,7 @@ function UnifiedShowcase({
       </div>
 
       {/* 콘텐츠 — 스크롤 */}
-      <div className="min-h-0 flex-1 overflow-y-auto">{renderContent()}</div>
+      {renderContent()}
     </div>
   );
 }
