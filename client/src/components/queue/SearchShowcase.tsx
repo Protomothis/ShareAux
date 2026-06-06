@@ -324,7 +324,7 @@ function UnifiedShowcase({
   return (
     <div className="space-y-3">
       {/* 통합 칩 바 + 보기방식 */}
-      <div className="flex items-center gap-2">
+      <div className="sticky top-0 z-10 flex items-center gap-2 bg-sa-bg pb-2">
         <div className="-ml-4 flex-1 overflow-x-auto pl-4 py-0.5 scrollbar-hide">
           <div className="flex gap-1.5">
             {tabs.map((tab) => {
