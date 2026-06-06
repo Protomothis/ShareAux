@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import { usePreferencesStore } from '@/stores/preferences';
 
 import { SearchTrackItem } from './SearchTrackItem';
+import { ViewModeToggle } from './ViewModeToggle';
 
 interface SearchShowcaseProps {
   roomId: string;
@@ -322,26 +323,29 @@ function UnifiedShowcase({
 
   return (
     <div className="space-y-3">
-      {/* 통합 칩 바 */}
-      <div className="-mx-4 overflow-x-auto px-4 py-0.5 scrollbar-hide">
-        <div className="flex gap-1.5">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => setActiveTab(tab.key)}
-              className={cn(
-                'inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors touch-manipulation',
-                currentTab === tab.key
-                  ? 'bg-sa-accent/20 text-sa-accent ring-1 ring-sa-accent/40'
-                  : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80',
-              )}
-            >
-              <span>{tab.emoji}</span>
-              {tab.label}
-            </button>
-          ))}
+      {/* 통합 칩 바 + 보기방식 */}
+      <div className="flex items-center gap-2">
+        <div className="-ml-4 flex-1 overflow-x-auto pl-4 py-0.5 scrollbar-hide">
+          <div className="flex gap-1.5">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setActiveTab(tab.key)}
+                className={cn(
+                  'inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors touch-manipulation',
+                  currentTab === tab.key
+                    ? 'bg-sa-accent/20 text-sa-accent ring-1 ring-sa-accent/40'
+                    : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80',
+                )}
+              >
+                <span>{tab.emoji}</span>
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
+        <ViewModeToggle />
       </div>
 
       {/* 콘텐츠 */}
