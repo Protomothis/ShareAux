@@ -131,6 +131,7 @@ interface TabItem {
   key: string;
   label: string;
   emoji: string;
+  disabled?: boolean;
 }
 
 interface UnifiedShowcaseProps {
@@ -307,12 +308,15 @@ function UnifiedShowcase({
               <button
                 key={tab.key}
                 type="button"
+                disabled={tab.disabled}
                 onClick={() => handleTabClick(tab.key)}
                 className={cn(
                   'inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors touch-manipulation',
-                  currentTab === tab.key
-                    ? 'bg-sa-accent/20 text-sa-accent ring-1 ring-sa-accent/40'
-                    : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80',
+                  tab.disabled
+                    ? 'cursor-default bg-white/[0.02] text-white/25'
+                    : currentTab === tab.key
+                      ? 'bg-sa-accent/20 text-sa-accent ring-1 ring-sa-accent/40'
+                      : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80',
                 )}
               >
                 {loading ? <Loader2 size={10} className="animate-spin" /> : <span>{tab.emoji}</span>}
@@ -446,17 +450,12 @@ export default function SearchShowcase({
   }
 
   // 통합 탭 구성: 차트 카테고리 + 기존 고정 탭
-  interface TabItem {
-    key: string;
-    label: string;
-    emoji: string;
-  }
-
-  const fixedTabs: TabItem[] = [];
-  if (popular.length) fixedTabs.push({ key: '_popular', label: t('showcase.popular'), emoji: '🔥' });
-  if (myHistory.length) fixedTabs.push({ key: '_myHistory', label: t('showcase.myHistory'), emoji: '🎵' });
-  if (recent.length) fixedTabs.push({ key: '_recent', label: t('showcase.recentPlays'), emoji: '⏱' });
-  if (combined.length) fixedTabs.push({ key: '_recommended', label: t('showcase.recommended'), emoji: '💡' });
+  const fixedTabs: TabItem[] = [
+    { key: '_popular', label: t('showcase.popular'), emoji: '🔥', disabled: !popular.length },
+    { key: '_myHistory', label: t('showcase.myHistory'), emoji: '🎵', disabled: !myHistory.length },
+    { key: '_recent', label: t('showcase.recentPlays'), emoji: '⏱', disabled: !recent.length },
+    { key: '_recommended', label: t('showcase.recommended'), emoji: '💡', disabled: !combined.length },
+  ];
 
   const chartTabs: TabItem[] = categories.map((cat, idx) => ({
     key: `chart_${idx}`,
@@ -464,8 +463,11 @@ export default function SearchShowcase({
     emoji: cat.emoji,
   }));
 
-  const allTabs = [...chartTabs, ...fixedTabs];
-  const defaultTab = allTabs[0]?.key ?? '';
+  // 활성 탭 먼저, 비활성 탭 뒤로
+  const enabledFixed = fixedTabs.filter((t) => !t.disabled);
+  const disabledFixed = fixedTabs.filter((t) => t.disabled);
+  const allTabs = [...chartTabs, ...enabledFixed, ...disabledFixed];
+  const defaultTab = allTabs.find((t) => !t.disabled)?.key ?? '';
 
   return (
     <UnifiedShowcase
