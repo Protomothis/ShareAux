@@ -5,9 +5,11 @@
  * 실시간 음악 공유 플랫폼 API
  * OpenAPI spec version: 1.0
  */
+import type { ShowcaseCategory } from './showcaseCategory';
 import type { Track } from './track';
 
 export interface ShowcaseResponse {
+  categories: ShowcaseCategory[];
   popular: Track[];
   recent: Track[];
   myHistory: Track[];
