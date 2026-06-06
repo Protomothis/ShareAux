@@ -216,52 +216,50 @@ function UnifiedShowcase({
       return (
         <div className="space-y-3">
           {topTracks.length > 0 && (
-            <div className="-mx-4 overflow-x-auto px-4 scrollbar-hide">
-              <div className="flex gap-2" style={{ width: 'max-content' }}>
-                {topTracks.map((ct, rank) => {
-                  const item = chartTrackToSearchItem(ct);
-                  const selected = selectedIds.has(item.sourceId);
-                  const disabled = disabledIds.has(item.sourceId) || (maxReached && !selected);
-                  return (
-                    <button
-                      key={ct.sourceId}
-                      type="button"
-                      disabled={disabled}
-                      onClick={() => onSelectTrack(item)}
-                      className={cn(
-                        'flex w-[120px] shrink-0 flex-col gap-1.5 rounded-xl border p-1.5 text-left transition-colors touch-manipulation',
-                        selected ? 'border-sa-accent/50 bg-sa-accent/10' : 'border-white/5 bg-white/[0.03]',
-                        disabled && 'opacity-40',
-                      )}
-                    >
-                      <div className="relative aspect-video w-full overflow-hidden rounded-lg">
-                        <Thumbnail src={ct.thumbnail} size="md" className="h-full w-full rounded-lg" />
-                        <span className="absolute left-1 top-1 flex size-5 items-center justify-center rounded-full bg-black/70 text-[10px] font-bold text-white/80">
-                          {rank + 1}
+            <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-5">
+              {topTracks.map((ct, rank) => {
+                const item = chartTrackToSearchItem(ct);
+                const selected = selectedIds.has(item.sourceId);
+                const disabled = disabledIds.has(item.sourceId) || (maxReached && !selected);
+                return (
+                  <button
+                    key={`${ct.sourceId}_${rank}`}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => onSelectTrack(item)}
+                    className={cn(
+                      'flex flex-col gap-1.5 rounded-xl border p-1.5 text-left transition-colors touch-manipulation',
+                      selected ? 'border-sa-accent/50 bg-sa-accent/10' : 'border-white/5 bg-white/[0.03]',
+                      disabled && 'opacity-40',
+                    )}
+                  >
+                    <div className="relative aspect-video w-full overflow-hidden rounded-lg">
+                      <Thumbnail src={ct.thumbnail} size="md" className="h-full w-full rounded-lg" />
+                      <span className="absolute left-1 top-1 flex size-5 items-center justify-center rounded-full bg-black/70 text-[10px] font-bold text-white/80">
+                        {rank + 1}
+                      </span>
+                      {selected && (
+                        <span className="absolute right-1 top-1 flex size-5 items-center justify-center rounded-full bg-sa-accent text-[10px] font-bold text-white shadow">
+                          {selectedOrder.indexOf(item.sourceId) + 1}
                         </span>
-                        {selected && (
-                          <span className="absolute right-1 top-1 flex size-5 items-center justify-center rounded-full bg-sa-accent text-[10px] font-bold text-white shadow">
-                            {selectedOrder.indexOf(item.sourceId) + 1}
-                          </span>
-                        )}
-                      </div>
-                      <div className="min-w-0 px-0.5">
-                        <p className="line-clamp-1 text-[11px] font-medium text-white">{ct.title}</p>
-                        <p className="truncate text-[10px] text-sa-text-muted">{ct.artist}</p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 px-0.5">
+                      <p className="line-clamp-1 text-[11px] font-medium text-white">{ct.title}</p>
+                      <p className="truncate text-[10px] text-sa-text-muted">{ct.artist}</p>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           )}
           {restTracks.length > 0 && (
             <div className="space-y-1">
-              {restTracks.map((ct) => {
+              {restTracks.map((ct, idx) => {
                 const item = chartTrackToSearchItem(ct);
                 return (
                   <SearchTrackItem
-                    key={ct.sourceId}
+                    key={`${ct.sourceId}_${idx}`}
                     track={item}
                     order={selectedOrder.indexOf(item.sourceId) + 1}
                     disabled={disabledIds.has(item.sourceId) || (maxReached && !selectedIds.has(item.sourceId))}
