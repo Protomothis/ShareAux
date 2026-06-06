@@ -131,6 +131,7 @@ export * from './roomsControllerLeave201';
 export * from './sanctionItem';
 export * from './sanctionItemType';
 export * from './sanctionsResponse';
+export * from './searchControllerGetChartTracksParams';
 export * from './searchControllerGetPlaylistTracksParams';
 export * from './searchControllerImportByUrlParams';
 export * from './searchControllerSearchParams';

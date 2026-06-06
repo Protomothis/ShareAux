@@ -23,6 +23,7 @@ import type {
   PlaylistTracksResponse,
   RadioResponse,
   RecommendedResponse,
+  SearchControllerGetChartTracksParams,
   SearchControllerGetPlaylistTracksParams,
   SearchControllerImportByUrlParams,
   SearchControllerSearchParams,
@@ -931,6 +932,155 @@ export function useSearchControllerGetPlaylistTracks<
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
   const queryOptions = getSearchControllerGetPlaylistTracksQueryOptions(id, params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 차트 트랙 목록 (페이지네이션)
+ */
+export const getSearchControllerGetChartTracksUrl = (
+  playlistId: string,
+  params: SearchControllerGetChartTracksParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/search/chart/${playlistId}?${stringifiedParams}`
+    : `/api/search/chart/${playlistId}`;
+};
+
+export const searchControllerGetChartTracks = async (
+  playlistId: string,
+  params: SearchControllerGetChartTracksParams,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getSearchControllerGetChartTracksUrl(playlistId, params), {
+    ...options,
+    method: 'GET',
+  });
+};
+
+export const getSearchControllerGetChartTracksQueryKey = (
+  playlistId?: string,
+  params?: SearchControllerGetChartTracksParams,
+) => {
+  return [`/api/search/chart/${playlistId}`, ...(params ? [params] : [])] as const;
+};
+
+export const getSearchControllerGetChartTracksQueryOptions = <
+  TData = Awaited<ReturnType<typeof searchControllerGetChartTracks>>,
+  TError = unknown,
+>(
+  playlistId: string,
+  params: SearchControllerGetChartTracksParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchControllerGetChartTracks>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getSearchControllerGetChartTracksQueryKey(playlistId, params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof searchControllerGetChartTracks>>> = ({ signal }) =>
+    searchControllerGetChartTracks(playlistId, params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, enabled: !!playlistId, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof searchControllerGetChartTracks>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type SearchControllerGetChartTracksQueryResult = NonNullable<
+  Awaited<ReturnType<typeof searchControllerGetChartTracks>>
+>;
+export type SearchControllerGetChartTracksQueryError = unknown;
+
+export function useSearchControllerGetChartTracks<
+  TData = Awaited<ReturnType<typeof searchControllerGetChartTracks>>,
+  TError = unknown,
+>(
+  playlistId: string,
+  params: SearchControllerGetChartTracksParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchControllerGetChartTracks>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchControllerGetChartTracks>>,
+          TError,
+          Awaited<ReturnType<typeof searchControllerGetChartTracks>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useSearchControllerGetChartTracks<
+  TData = Awaited<ReturnType<typeof searchControllerGetChartTracks>>,
+  TError = unknown,
+>(
+  playlistId: string,
+  params: SearchControllerGetChartTracksParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchControllerGetChartTracks>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchControllerGetChartTracks>>,
+          TError,
+          Awaited<ReturnType<typeof searchControllerGetChartTracks>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useSearchControllerGetChartTracks<
+  TData = Awaited<ReturnType<typeof searchControllerGetChartTracks>>,
+  TError = unknown,
+>(
+  playlistId: string,
+  params: SearchControllerGetChartTracksParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchControllerGetChartTracks>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 차트 트랙 목록 (페이지네이션)
+ */
+
+export function useSearchControllerGetChartTracks<
+  TData = Awaited<ReturnType<typeof searchControllerGetChartTracks>>,
+  TError = unknown,
+>(
+  playlistId: string,
+  params: SearchControllerGetChartTracksParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchControllerGetChartTracks>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getSearchControllerGetChartTracksQueryOptions(playlistId, params, options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>;
