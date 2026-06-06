@@ -126,7 +126,6 @@ interface ChartSectionProps {
   favLoadingIds?: Set<string>;
   onToggleFavorite?: (track: SearchResultItem) => void;
   isGuest?: boolean;
-  viewMode: string;
 }
 
 function chartTrackToSearchItem(ct: ChartTrack): SearchResultItem {
@@ -151,7 +150,6 @@ function ChartSection({
   favLoadingIds,
   onToggleFavorite,
   isGuest,
-  viewMode,
 }: ChartSectionProps) {
   const [activeIdx, setActiveIdx] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -383,7 +381,6 @@ export default function SearchShowcase({
           favLoadingIds={favLoadingIds}
           onToggleFavorite={onToggleFavorite}
           isGuest={isGuest}
-          viewMode={viewMode}
         />
       )}
 

@@ -10,6 +10,7 @@ import {
   AUTODJ_FRESHNESS_HARD_EXCLUDE,
   AUTODJ_FRESHNESS_HISTORY_DEPTH,
   AUTODJ_MAX_FAIL_COUNT,
+  AUTODJ_MIN_DURATION_SEC,
   AUTODJ_SAME_ARTIST_HARD_LIMIT,
   AUTODJ_SAME_ARTIST_SOFT_LIMIT,
   AUTODJ_SCAN_INTERVAL_MS,
@@ -353,7 +354,7 @@ export class AutoDjService {
         title: ct.title,
         artist: ct.artist,
         thumbnail: ct.thumbnail,
-        duration: 200, // 기본값 — 실제 재생 시 갱신됨
+        duration: AUTODJ_MIN_DURATION_SEC, // 차트 트랙은 실제 duration 불명 — 최소값으로 대체
       });
       tracks.push(track);
     }

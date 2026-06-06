@@ -3,11 +3,19 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { DEFAULT_CHART_PLAYLISTS } from '../constants.js';
 import { ChartTrack } from '../entities/chart-track.entity.js';
 import type { ChartPlaylistEntry } from '../types/index.js';
 import { OptionKey } from '../types/index.js';
 import { YtdlpService } from './ytdlp.service.js';
 import { SettingsService } from './settings.service.js';
+
+export interface ChartCategory {
+  genre: string;
+  label: string;
+  emoji: string;
+  tracks: ChartTrack[];
+}
 
 @Injectable()
 export class ChartService {
@@ -106,9 +114,9 @@ export class ChartService {
   }
 
   /** 전체 카테고리별 요약 (쇼케이스용) */
-  async getCategories(): Promise<{ genre: string; label: string; emoji: string; tracks: ChartTrack[] }[]> {
+  async getCategories(): Promise<ChartCategory[]> {
     const playlists = this.getPlaylists();
-    const categories: { genre: string; label: string; emoji: string; tracks: ChartTrack[] }[] = [];
+    const categories: ChartCategory[] = [];
 
     for (const entry of playlists) {
       const tracks = await this.chartRepo.find({
@@ -128,10 +136,21 @@ export class ChartService {
   private getPlaylists(): ChartPlaylistEntry[] {
     try {
       const raw = this.settings.get(OptionKey.ChartPlaylists, '');
-      return raw ? (JSON.parse(raw) as ChartPlaylistEntry[]) : [];
+      if (!raw) return DEFAULT_CHART_PLAYLISTS;
+      const parsed: unknown = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return DEFAULT_CHART_PLAYLISTS;
+      return parsed.filter(
+        (item): item is ChartPlaylistEntry =>
+          typeof item === 'object' &&
+          item !== null &&
+          typeof (item as Record<string, unknown>).id === 'string' &&
+          typeof (item as Record<string, unknown>).genre === 'string' &&
+          typeof (item as Record<string, unknown>).label === 'string' &&
+          typeof (item as Record<string, unknown>).emoji === 'string',
+      );
     } catch {
       this.logger.warn('[Chart] chart.playlists 설정 파싱 실패');
-      return [];
+      return DEFAULT_CHART_PLAYLISTS;
     }
   }
 }
