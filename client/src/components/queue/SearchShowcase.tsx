@@ -195,7 +195,10 @@ function UnifiedShowcase({
 
   const renderContent = () => {
     // 로딩 상태
-    if (showcaseLoading && currentTab.startsWith('_') && currentTab !== '_recommended') {
+    if (
+      showcaseLoading &&
+      ((currentTab.startsWith('_') && currentTab !== '_recommended') || currentTab.startsWith('chart_'))
+    ) {
       return <GridSkeleton />;
     }
     if (recLoading && currentTab === '_recommended') return <GridSkeleton />;
@@ -298,7 +301,8 @@ function UnifiedShowcase({
           {tabs.map((tab) => {
             const loading =
               ((tab.key === '_popular' || tab.key === '_myHistory' || tab.key === '_recent') && showcaseLoading) ||
-              (tab.key === '_recommended' && recLoading);
+              (tab.key === '_recommended' && recLoading) ||
+              (tab.key.startsWith('chart_') && showcaseLoading);
             return (
               <button
                 key={tab.key}
