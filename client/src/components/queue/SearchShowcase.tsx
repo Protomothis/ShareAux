@@ -461,12 +461,15 @@ export default function SearchShowcase({
     key: `chart_${idx}`,
     label: cat.label,
     emoji: cat.emoji,
+    disabled: !cat.tracks.length,
   }));
 
   // 활성 탭 먼저, 비활성 탭 뒤로
+  const enabledChart = chartTabs.filter((t) => !t.disabled);
+  const disabledChart = chartTabs.filter((t) => t.disabled);
   const enabledFixed = fixedTabs.filter((t) => !t.disabled);
   const disabledFixed = fixedTabs.filter((t) => t.disabled);
-  const allTabs = [...chartTabs, ...enabledFixed, ...disabledFixed];
+  const allTabs = [...enabledChart, ...enabledFixed, ...disabledChart, ...disabledFixed];
   const defaultTab = allTabs.find((t) => !t.disabled)?.key ?? '';
 
   return (

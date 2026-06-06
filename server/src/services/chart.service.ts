@@ -135,9 +135,7 @@ export class ChartService implements OnModuleInit {
         order: { rank: 'ASC' },
         take: 20,
       });
-      if (tracks.length) {
-        categories.push({ genre: entry.genre, label: entry.label, emoji: entry.emoji, tracks });
-      }
+      categories.push({ genre: entry.genre, label: entry.label, emoji: entry.emoji, tracks });
     }
 
     return categories;
