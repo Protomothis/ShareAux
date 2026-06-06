@@ -323,7 +323,7 @@ function UnifiedShowcase({
   return (
     <div className="space-y-3">
       {/* 통합 칩 바 */}
-      <div className="-mx-4 overflow-x-auto px-4 scrollbar-hide">
+      <div className="-mx-4 overflow-x-auto px-4 py-0.5 scrollbar-hide">
         <div className="flex gap-1.5">
           {tabs.map((tab) => (
             <button
