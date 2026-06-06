@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuditLog } from '../entities/audit-log.entity.js';
 import { BannedIp } from '../entities/banned-ip.entity.js';
+import { ChartTrack } from '../entities/chart-track.entity.js';
 import { PlayHistory } from '../entities/play-history.entity.js';
 import { Room } from '../entities/room.entity.js';
 import { RoomPlayback } from '../entities/room-playback.entity.js';
@@ -15,6 +16,7 @@ import { AiDjGeminiService } from './ai-dj-gemini.service.js';
 import { AudioService } from './audio.service.js';
 import { AuditService } from './audit.service.js';
 import { AutoDjService } from './auto-dj.service.js';
+import { ChartService } from './chart.service.js';
 import { ChatMuteService } from './chat-mute.service.js';
 import { ErrorLogService } from './error-log.service.js';
 import { IpBanService } from './ip-ban.service.js';
@@ -39,6 +41,7 @@ import { YtdlpService } from './ytdlp.service.js';
       SystemSetting,
       AuditLog,
       BannedIp,
+      ChartTrack,
     ]),
   ],
   providers: [
@@ -47,6 +50,7 @@ import { YtdlpService } from './ytdlp.service.js';
     YtdlpService,
     PreloadService,
     AutoDjService,
+    ChartService,
     ChatMuteService,
     SettingsService,
     AuditService,
@@ -62,6 +66,7 @@ import { YtdlpService } from './ytdlp.service.js';
     YtdlpService,
     PreloadService,
     AutoDjService,
+    ChartService,
     ChatMuteService,
     SettingsService,
     AuditService,
