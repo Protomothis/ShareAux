@@ -305,32 +305,30 @@ function UnifiedShowcase({
   return (
     <div className="flex h-full flex-col">
       {/* 통합 칩 바 + 보기방식 */}
-      <div className="flex shrink-0 items-center gap-2 pt-1 pb-2">
-        <div className="-ml-4 flex-1 overflow-x-auto pl-4 py-0.5 scrollbar-hide">
-          <div className="flex gap-1.5">
-            {tabs.map((tab) => {
-              const loading =
-                ((tab.key === '_popular' || tab.key === '_myHistory' || tab.key === '_recent') && showcaseLoading) ||
-                (tab.key === '_recommended' && recLoading) ||
-                (tab.key === '_radio' && radioLoading);
-              return (
-                <button
-                  key={tab.key}
-                  type="button"
-                  onClick={() => handleTabClick(tab.key)}
-                  className={cn(
-                    'inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors touch-manipulation',
-                    currentTab === tab.key
-                      ? 'bg-sa-accent/20 text-sa-accent ring-1 ring-sa-accent/40'
-                      : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80',
-                  )}
-                >
-                  {loading ? <Loader2 size={10} className="animate-spin" /> : <span>{tab.emoji}</span>}
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
+      <div className="flex shrink-0 items-center gap-2 border-b border-white/5 pt-1 pb-2">
+        <div className="flex flex-1 flex-wrap items-center gap-1.5">
+          {tabs.map((tab) => {
+            const loading =
+              ((tab.key === '_popular' || tab.key === '_myHistory' || tab.key === '_recent') && showcaseLoading) ||
+              (tab.key === '_recommended' && recLoading) ||
+              (tab.key === '_radio' && radioLoading);
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => handleTabClick(tab.key)}
+                className={cn(
+                  'inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors touch-manipulation',
+                  currentTab === tab.key
+                    ? 'bg-sa-accent/20 text-sa-accent ring-1 ring-sa-accent/40'
+                    : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80',
+                )}
+              >
+                {loading ? <Loader2 size={10} className="animate-spin" /> : <span>{tab.emoji}</span>}
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
         <ViewModeToggle />
       </div>
