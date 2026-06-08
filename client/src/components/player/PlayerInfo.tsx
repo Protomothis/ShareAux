@@ -12,6 +12,7 @@ import { FavoriteButton } from '../common/FavoriteButton';
 import { InfoTag } from '../common/InfoTag';
 import MarqueeText from '../common/MarqueeText';
 import Thumbnail from '../common/Thumbnail';
+import { cn } from '@/lib/utils';
 import { StreamTags } from './StreamTags';
 import TrackVoteButtons from '../queue/TrackVoteButtons';
 
@@ -72,7 +73,11 @@ export default function PlayerInfo({
             <Thumbnail
               src={track.thumbnail}
               size="md"
-              className={`size-14 rounded-xl shadow-lg shadow-black/40 ${isPlaying ? 'ring-2 ring-sa-accent/40' : ''} ${track && streamState !== 'streaming' ? 'animate-thumbnail-shimmer' : ''}`}
+              className={cn(
+                'size-14 rounded-xl shadow-lg shadow-black/40',
+                isPlaying && 'ring-2 ring-sa-accent/40',
+                track && streamState !== 'streaming' && 'animate-thumbnail-shimmer',
+              )}
             />
           ) : (
             <div className="flex size-14 items-center justify-center rounded-xl bg-white/5 text-xl shadow-lg shadow-black/40">
@@ -100,7 +105,10 @@ export default function PlayerInfo({
           {track?.name ? (
             <MarqueeText
               text={statusText ?? track.songTitle ?? track.name}
-              className={`text-[15px] font-semibold leading-tight ${statusText ? 'animate-text-shimmer' : 'text-white'}`}
+              className={cn(
+                'text-[15px] font-semibold leading-tight',
+                statusText ? 'animate-text-shimmer' : 'text-white',
+              )}
             />
           ) : (
             <p className="text-[13px] text-white/30">{t('idleHint')}</p>

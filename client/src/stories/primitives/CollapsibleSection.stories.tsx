@@ -7,7 +7,13 @@ import { CollapsibleSection } from '@/components/ui/collapsible-section';
 const meta: Meta<typeof CollapsibleSection> = {
   title: 'Primitives/CollapsibleSection',
   component: CollapsibleSection,
-  decorators: [(Story) => <div className="max-w-sm"><Story /></div>],
+  decorators: [
+    (Story) => (
+      <div className="max-w-sm">
+        <Story />
+      </div>
+    ),
+  ],
 };
 export default meta;
 type Story = StoryObj<typeof CollapsibleSection>;
@@ -21,7 +27,9 @@ export const Open: Story = {
     children: (
       <div className="space-y-1 px-1">
         {['곡 A', '곡 B', '곡 C'].map((s) => (
-          <div key={s} className="rounded-lg bg-white/5 px-3 py-2 text-xs text-white">{s}</div>
+          <div key={s} className="rounded-lg bg-white/5 px-3 py-2 text-xs text-white">
+            {s}
+          </div>
         ))}
       </div>
     ),
@@ -37,7 +45,11 @@ export const WithAction: Story = {
     title: '멤버',
     icon: <Users size={14} />,
     count: 3,
-    action: <Button variant="ghost" size="xs">초대</Button>,
+    action: (
+      <Button variant="ghost" size="xs">
+        초대
+      </Button>
+    ),
     children: <div className="px-1 py-2 text-xs text-sa-text-muted">멤버 목록...</div>,
   },
 };

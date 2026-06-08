@@ -5,6 +5,7 @@ import { Strategy, type VerifyCallback } from 'passport-google-oauth20';
 
 import { SettingsService } from '../../services/settings.service.js';
 import { AuthProvider } from '../../types/index.js';
+import type { GoogleCallbackRequest } from '../../types/index.js';
 import { OptionKey } from '../../types/settings.types.js';
 import { AuthService } from '../auth.service.js';
 
@@ -58,7 +59,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') impleme
       const userId = state.slice(5);
       await this.authService.linkGoogle(userId, googleId, email);
       const user = await this.authService.findUserById(userId);
-      (req as unknown as Record<string, unknown>).googleLinked = true;
+      (req as GoogleCallbackRequest).googleLinked = true;
       done(null, user ?? false);
       return;
     }

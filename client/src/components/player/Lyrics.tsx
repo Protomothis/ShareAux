@@ -12,6 +12,7 @@ import type { LyricLine, LyricWord } from '@/types';
 import { LyricsStatus } from '@/types';
 
 import { Button } from '@/components/common/Button';
+import { cn } from '@/lib/utils';
 
 interface LyricsProps {
   roomId: string;
@@ -297,7 +298,7 @@ export default function Lyrics({
   const shell = (text: string, cls = 'text-white/15') => (
     <div className="mx-4 mb-3 select-none lg:mb-1">
       <div className="flex items-center justify-center text-center" style={{ height: CONTAINER_H }}>
-        <span className={`text-[13px] ${cls}`}>{text}</span>
+        <span className={cn('text-[13px]', cls)}>{text}</span>
       </div>
     </div>
   );
@@ -358,13 +359,14 @@ export default function Lyrics({
 
                   {/* 원문 */}
                   <div
-                    className={`truncate leading-[${LINE_H}px] ${
+                    className={cn(
+                      'truncate',
                       hasTranslation
                         ? 'text-xs text-white/60'
                         : isActive
                           ? 'text-sm font-bold text-white'
-                          : 'text-xs text-white/50'
-                    }`}
+                          : 'text-xs text-white/50',
+                    )}
                     style={{ lineHeight: `${LINE_H}px` }}
                   >
                     {isActive && karaoke && line.words ? (
@@ -382,7 +384,10 @@ export default function Lyrics({
                   {/* 번역 (메인) */}
                   {hasTranslation && (
                     <div
-                      className={`truncate ${isActive ? 'text-sm font-semibold text-white' : 'text-xs text-white/40'}`}
+                      className={cn(
+                        'truncate',
+                        isActive ? 'text-sm font-semibold text-white' : 'text-xs text-white/40',
+                      )}
                       style={{ lineHeight: `${MAIN_H}px` }}
                     >
                       {transText || '\u00A0'}

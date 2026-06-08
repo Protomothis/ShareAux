@@ -4,10 +4,34 @@ import type { RoomQueue } from '@/api/model';
 import QueueTrackItem from '@/components/queue/QueueTrackItem';
 
 const tracks = [
-  { sourceId: 'TW9d8vYrVFQ', name: 'Elektronomia — Sky High', artist: 'Elektronomia', thumbnail: 'https://i.ytimg.com/vi/TW9d8vYrVFQ/mqdefault.jpg', durationMs: 283000 },
-  { sourceId: 'J2X5mJ3HDYE', name: 'DEAF KEV — Invincible', artist: 'DEAF KEV', thumbnail: 'https://i.ytimg.com/vi/J2X5mJ3HDYE/mqdefault.jpg', durationMs: 253000 },
-  { sourceId: 'K4DyBUG242c', name: 'Cartoon — On & On', artist: 'Cartoon ft. Daniel Levi', thumbnail: 'https://i.ytimg.com/vi/K4DyBUG242c/mqdefault.jpg', durationMs: 208000 },
-  { sourceId: '__CRWE-L45k', name: 'Tobu — Candyland', artist: 'Tobu', thumbnail: 'https://i.ytimg.com/vi/__CRWE-L45k/mqdefault.jpg', durationMs: 219000 },
+  {
+    sourceId: 'TW9d8vYrVFQ',
+    name: 'Elektronomia — Sky High',
+    artist: 'Elektronomia',
+    thumbnail: 'https://i.ytimg.com/vi/TW9d8vYrVFQ/mqdefault.jpg',
+    durationMs: 283000,
+  },
+  {
+    sourceId: 'J2X5mJ3HDYE',
+    name: 'DEAF KEV — Invincible',
+    artist: 'DEAF KEV',
+    thumbnail: 'https://i.ytimg.com/vi/J2X5mJ3HDYE/mqdefault.jpg',
+    durationMs: 253000,
+  },
+  {
+    sourceId: 'K4DyBUG242c',
+    name: 'Cartoon — On & On',
+    artist: 'Cartoon ft. Daniel Levi',
+    thumbnail: 'https://i.ytimg.com/vi/K4DyBUG242c/mqdefault.jpg',
+    durationMs: 208000,
+  },
+  {
+    sourceId: '__CRWE-L45k',
+    name: 'Tobu — Candyland',
+    artist: 'Tobu',
+    thumbnail: 'https://i.ytimg.com/vi/__CRWE-L45k/mqdefault.jpg',
+    durationMs: 219000,
+  },
 ];
 
 const mockItems: RoomQueue[] = tracks.map((t, i) => ({

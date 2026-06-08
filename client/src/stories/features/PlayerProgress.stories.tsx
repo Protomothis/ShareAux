@@ -5,7 +5,13 @@ import PlayerProgress from '@/components/player/PlayerProgress';
 const meta: Meta<typeof PlayerProgress> = {
   title: 'Features/Player/PlayerProgress',
   component: PlayerProgress,
-  decorators: [(Story) => <div className="max-w-md"><Story /></div>],
+  decorators: [
+    (Story) => (
+      <div className="max-w-md">
+        <Story />
+      </div>
+    ),
+  ],
 };
 export default meta;
 type Story = StoryObj<typeof PlayerProgress>;

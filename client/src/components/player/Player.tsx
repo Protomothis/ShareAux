@@ -9,6 +9,7 @@ import type { AutoDjStatus, TrackInfo, TrackVoteMap, VisualMode } from '@/types'
 import { LyricsStatus } from '@/types';
 
 import type { CastState } from './CastButton';
+import { cn } from '@/lib/utils';
 import Lyrics from './Lyrics';
 import PlayerControls from './PlayerControls';
 import PlayerInfo from './PlayerInfo';
@@ -136,7 +137,10 @@ export default function Player({
       )}
 
       <div
-        className={`overflow-hidden transition-all duration-300 ease-in-out ${showLyrics && isStreaming ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0'}`}
+        className={cn(
+          'overflow-hidden transition-all duration-300 ease-in-out',
+          showLyrics && isStreaming ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0',
+        )}
       >
         <Lyrics
           roomId={roomId}

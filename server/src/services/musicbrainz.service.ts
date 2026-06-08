@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { APP_VERSION } from '../constants.js';
 
+const MUSICBRAINZ_API_URL = 'https://musicbrainz.org/ws/2/recording';
+const MUSICBRAINZ_RATE_LIMIT_MS = 1100;
 const UA = `ShareAux/${APP_VERSION} (https://github.com/Protomothis/ShareAux)`;
 
 export interface MusicBrainzResult {
@@ -30,7 +32,7 @@ export class MusicBrainzService {
     while (this.queue.length > 0) {
       const resolve = this.queue.shift()!;
       resolve();
-      await new Promise((r) => setTimeout(r, 1100));
+      await new Promise((r) => setTimeout(r, MUSICBRAINZ_RATE_LIMIT_MS));
     }
     this.processing = false;
   }
@@ -84,13 +86,10 @@ export class MusicBrainzService {
 
     const query = artist ? `recording:"${title}" AND artist:"${artist}"` : `recording:"${title}"`;
     try {
-      const res = await fetch(
-        `https://musicbrainz.org/ws/2/recording?query=${encodeURIComponent(query)}&limit=25&fmt=json`,
-        {
-          headers: { 'User-Agent': UA },
-          signal: AbortSignal.timeout(10_000),
-        },
-      );
+      const res = await fetch(`${MUSICBRAINZ_API_URL}?query=${encodeURIComponent(query)}&limit=25&fmt=json`, {
+        headers: { 'User-Agent': UA },
+        signal: AbortSignal.timeout(10_000),
+      });
       if (!res.ok) return null;
 
       const data = (await res.json()) as { recordings?: MbRecording[] };

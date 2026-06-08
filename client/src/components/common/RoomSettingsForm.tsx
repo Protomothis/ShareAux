@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { FormField, FormSection } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import NumberStepper from '@/components/ui/number-stepper';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SettingCard } from '@/components/ui/setting-card';
 import type { AutoDjMode } from '@/types';
 
@@ -185,17 +186,21 @@ export default function RoomSettingsForm({
         </p>
         <div className="mt-3 border-t border-white/5 pt-3">
           <FormField label={t('replayCooldown')}>
-            <select
-              className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-white"
-              value={v.replayCooldownMin}
-              onChange={(e) => change('replayCooldownMin', Number(e.target.value))}
+            <Select
+              value={String(v.replayCooldownMin)}
+              onValueChange={(val) => change('replayCooldownMin', Number(val))}
             >
-              <option value={0}>{t('replayNone')}</option>
-              <option value={30}>{t('replay30')}</option>
-              <option value={60}>{t('replay60')}</option>
-              <option value={90}>{t('replay90')}</option>
-              <option value={-1}>{t('replayForever')}</option>
-            </select>
+              <SelectTrigger size="sm" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">{t('replayNone')}</SelectItem>
+                <SelectItem value="30">{t('replay30')}</SelectItem>
+                <SelectItem value="60">{t('replay60')}</SelectItem>
+                <SelectItem value="90">{t('replay90')}</SelectItem>
+                <SelectItem value="-1">{t('replayForever')}</SelectItem>
+              </SelectContent>
+            </Select>
           </FormField>
           {v.replayCooldownMin !== 0 && (
             <p className="mt-1 text-[11px] text-muted-foreground">

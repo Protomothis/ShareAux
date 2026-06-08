@@ -150,8 +150,8 @@ export class AutoDjService {
 
         await this.queueRepo.save(
           this.queueRepo.create({
-            room: { id: roomId } as Room,
-            track: { id: track.id } as Track,
+            room: { id: roomId },
+            track: { id: track.id },
             addedBy: null,
             isAutoDj: true,
             position: nextPos++,
@@ -396,11 +396,13 @@ export class AutoDjService {
       : [];
     const deepTrackMap = new Map(deepTracks.map((t) => [t.sourceId, t]));
     const historyIndex = new Map(
-      deepHistory.map((h, i) => [deepTrackMap.get(h.sourceId)?.id, i]).filter(([id]) => id) as [string, number][],
+      deepHistory
+        .map((h, i) => [deepTrackMap.get(h.sourceId)?.id, i] as const)
+        .filter((entry): entry is [string, number] => entry[0] !== undefined),
     );
 
     // 아티스트 페널티: 직전 큐 + 재생 이력에서 최근 아티스트
-    const recentArtists = recentHistory.map((h) => h.artist).filter(Boolean) as string[];
+    const recentArtists = recentHistory.map((h) => h.artist).filter((x): x is string => typeof x === 'string');
 
     filtered = filtered.map((c) => {
       let { weight } = c;

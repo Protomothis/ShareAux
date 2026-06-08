@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { Surface } from '@/components/ui/surface';
+import { cn } from '@/lib/utils';
 
 export interface Column<T> {
   key: string;
@@ -82,7 +83,10 @@ export function AdminTable<T>({
               <th
                 key={col.key}
                 style={col.width ? { width: col.width } : undefined}
-                className={`whitespace-nowrap px-5 py-3 text-xs font-medium uppercase tracking-wider text-sa-text-muted ${col.className ?? ''}`}
+                className={cn(
+                  'whitespace-nowrap px-5 py-3 text-xs font-medium uppercase tracking-wider text-sa-text-muted',
+                  col.className,
+                )}
               >
                 {col.header}
               </th>
@@ -93,13 +97,13 @@ export function AdminTable<T>({
           {data.map((item, idx) => (
             <tr
               key={rowKey(item)}
-              className={`transition hover:bg-white/[0.02] ${onRowClick ? 'cursor-pointer' : ''}`}
+              className={cn('transition hover:bg-white/[0.02]', onRowClick && 'cursor-pointer')}
               onClick={() => onRowClick?.(item)}
             >
               {columns.map((col) => (
                 <td
                   key={col.key}
-                  className={`px-5 py-3 ${col.primary ? 'overflow-hidden' : 'whitespace-nowrap'} ${col.className ?? ''}`}
+                  className={cn('px-5 py-3', col.primary ? 'overflow-hidden' : 'whitespace-nowrap', col.className)}
                 >
                   {col.render(item, idx + indexOffset)}
                 </td>
@@ -114,7 +118,7 @@ export function AdminTable<T>({
         {data.map((item, idx) => (
           <div
             key={rowKey(item)}
-            className={`px-4 py-3 ${onRowClick ? 'cursor-pointer' : ''}`}
+            className={cn('px-4 py-3', onRowClick && 'cursor-pointer')}
             onClick={() => onRowClick?.(item)}
           >
             {/* primary 행: 메인 정보 한 줄 */}
@@ -130,7 +134,10 @@ export function AdminTable<T>({
             {/* secondary 행: 라벨-값 쌍 */}
             {secondaryCols.length > 0 && (
               <div
-                className={`flex flex-wrap items-center gap-x-4 gap-y-1 text-xs ${primaryCols.length > 0 ? 'mt-1.5' : ''}`}
+                className={cn(
+                  'flex flex-wrap items-center gap-x-4 gap-y-1 text-xs',
+                  primaryCols.length > 0 && 'mt-1.5',
+                )}
               >
                 {secondaryCols.map((col) => (
                   <div key={col.key} className="flex items-center gap-1">

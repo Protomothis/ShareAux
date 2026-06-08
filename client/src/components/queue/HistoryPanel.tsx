@@ -2,7 +2,6 @@
 
 import { useTranslations } from 'next-intl';
 
-import type { SearchResultItem } from '@/api/model';
 import { useQueueControllerGetHistory } from '@/api/queue/queue';
 import EmptyState from '@/components/common/EmptyState';
 import { FavoriteButton } from '@/components/common/FavoriteButton';

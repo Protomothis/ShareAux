@@ -22,6 +22,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/common/Button';
+import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/admin', labelKey: 'dashboard', icon: LayoutDashboard },
@@ -54,11 +55,11 @@ function NavLink({
     <Link
       href={href}
       title={collapsed ? label : undefined}
-      className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition ${
-        collapsed ? 'justify-center' : ''
-      } ${
-        active ? 'bg-sa-accent/10 font-medium text-sa-accent' : 'text-sa-text-muted hover:bg-white/5 hover:text-white'
-      }`}
+      className={cn(
+        'flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition',
+        collapsed && 'justify-center',
+        active ? 'bg-sa-accent/10 font-medium text-sa-accent' : 'text-sa-text-muted hover:bg-white/5 hover:text-white',
+      )}
     >
       <Icon size={18} />
       {!collapsed && label}
@@ -79,7 +80,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   return (
     <div className="fixed inset-0 flex bg-sa-bg-primary">
       {/* 데스크톱 사이드바 — md: icon-only (w-14), lg: full (w-56) */}
-      <aside className="fixed hidden h-screen w-14 flex-col overflow-y-auto border-r border-white/5 bg-sa-bg-primary p-2 md:flex lg:w-56 lg:p-5">
+      <aside className="fixed hidden h-full w-14 flex-col overflow-y-auto border-r border-white/5 bg-sa-bg-primary p-2 md:flex lg:w-56 lg:p-5">
         <div className="mb-6">
           <h1 className="hidden text-lg font-bold text-white lg:block">🎧 Admin</h1>
           <h1 className="text-center text-lg font-bold text-white lg:hidden">🎧</h1>
@@ -97,11 +98,12 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               key={item.href}
               href={item.href}
               title={tn(item.labelKey)}
-              className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition lg:justify-start justify-center ${
+              className={cn(
+                'flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition lg:justify-start justify-center',
                 pathname === item.href
                   ? 'bg-sa-accent/10 font-medium text-sa-accent'
-                  : 'text-sa-text-muted hover:bg-white/5 hover:text-white'
-              }`}
+                  : 'text-sa-text-muted hover:bg-white/5 hover:text-white',
+              )}
             >
               <item.icon size={18} />
               <span className="hidden lg:inline">{tn(item.labelKey)}</span>

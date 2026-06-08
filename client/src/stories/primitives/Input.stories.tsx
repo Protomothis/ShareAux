@@ -6,7 +6,13 @@ import { PasswordInput } from '@/components/ui/password-input';
 const meta: Meta<typeof Input> = {
   title: 'Primitives/Input',
   component: Input,
-  decorators: [(Story) => <div className="max-w-xs"><Story /></div>],
+  decorators: [
+    (Story) => (
+      <div className="max-w-xs">
+        <Story />
+      </div>
+    ),
+  ],
 };
 export default meta;
 type Story = StoryObj<typeof Input>;

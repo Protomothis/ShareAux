@@ -7,7 +7,6 @@ import { Room } from '../entities/room.entity.js';
 import { RoomPermission } from '../entities/room-permission.entity.js';
 import { RoomQueue } from '../entities/room-queue.entity.js';
 import { Track } from '../entities/track.entity.js';
-import type { User } from '../entities/user.entity.js';
 import { AppException } from '../exceptions/app.exception.js';
 import { ErrorCode } from '../types/error-code.enum.js';
 import { Permission } from '../types/permission.enum.js';
@@ -150,9 +149,9 @@ export class QueueService {
 
     return this.queueRepo.save(
       this.queueRepo.create({
-        room: { id: roomId } as Room,
-        track: { id: trackId } as Track,
-        addedBy: { id: userId } as unknown as User,
+        room: { id: roomId },
+        track: { id: trackId },
+        addedBy: { id: userId },
         position: (max?.max ?? 0) + 1,
       }),
     );
@@ -249,9 +248,9 @@ export class QueueService {
 
     const entries = unique.map((track) =>
       this.queueRepo.create({
-        room: { id: roomId } as Room,
+        room: { id: roomId },
         track,
-        addedBy: { id: userId } as unknown as User,
+        addedBy: { id: userId },
         position: pos++,
       }),
     );
