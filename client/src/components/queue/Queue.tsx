@@ -8,7 +8,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useRef, useState } from 'react';
 
-import type { RoomQueue, SearchResultItem } from '@/api/model';
+import type { RoomQueue } from '@/api/model';
 import { getQueueControllerGetQueueQueryKey, queueControllerRemoveTrack } from '@/api/queue/queue';
 import { useQueueControllerGetMyQuota, useQueueControllerGetQueue } from '@/api/queue/queue';
 import EmptyState from '@/components/common/EmptyState';
