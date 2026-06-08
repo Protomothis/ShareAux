@@ -3,6 +3,8 @@ import { join } from 'node:path';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { appendFile, mkdir, readdir, readFile, stat, unlink } from 'fs/promises';
 
+import type { PaginatedResult } from '../types/index.js';
+
 export interface ErrorLogEntry {
   timestamp: number;
   method: string;
@@ -42,7 +44,7 @@ export class ErrorLogService implements OnModuleInit {
     }
   }
 
-  getRecentErrors(page: number, limit: number): { items: ErrorLogEntry[]; total: number } {
+  getRecentErrors(page: number, limit: number): PaginatedResult<ErrorLogEntry> {
     const total = this.buffer.length;
     // 최신순 — 뒤에서부터
     const start = Math.max(0, total - page * limit);
@@ -64,11 +66,7 @@ export class ErrorLogService implements OnModuleInit {
     return result;
   }
 
-  async getErrorFile(
-    filename: string,
-    page: number,
-    limit: number,
-  ): Promise<{ items: ErrorLogEntry[]; total: number }> {
+  async getErrorFile(filename: string, page: number, limit: number): Promise<PaginatedResult<ErrorLogEntry>> {
     // 보안: 경로 탈출 방지
     if (filename.includes('/') || filename.includes('..')) return { items: [], total: 0 };
     const content = await readFile(join(LOG_DIR, filename), 'utf-8').catch(() => '');

@@ -26,6 +26,7 @@ import type { FavoriteItem, SearchResultItem } from '@/api/model';
 import { Button } from '@/components/common/Button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 
 import Thumbnail from '../common/Thumbnail';
@@ -200,16 +201,17 @@ export default function FavoritesList({
               className="h-8 rounded-lg border-white/10 bg-white/5 pl-8 text-xs"
             />
           </div>
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value as SortKey)}
-            className="h-8 rounded-lg border border-white/10 bg-white/5 px-2 text-xs text-white"
-          >
-            <option value="recent">{t('sortRecent')}</option>
-            <option value="oldest">{t('sortOldest')}</option>
-            <option value="name">{t('sortName')}</option>
-            <option value="artist">{t('sortArtist')}</option>
-          </select>
+          <Select value={sort} onValueChange={(val) => setSort(val as SortKey)}>
+            <SelectTrigger size="sm" className="h-8 w-auto min-w-24 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="recent">{t('sortRecent')}</SelectItem>
+              <SelectItem value="oldest">{t('sortOldest')}</SelectItem>
+              <SelectItem value="name">{t('sortName')}</SelectItem>
+              <SelectItem value="artist">{t('sortArtist')}</SelectItem>
+            </SelectContent>
+          </Select>
           <Button variant="ghost" size="sm" onClick={() => setShowFolderManager(true)} className="h-8 px-2 text-xs">
             <FolderOpen size={12} />
           </Button>
@@ -232,9 +234,10 @@ export default function FavoritesList({
             <span className="text-xs text-sa-text-secondary">{t('selected', { count: removeSet.size })}</span>
             <div className="flex items-center gap-1.5">
               {folders.length > 0 && (
-                <select
-                  onChange={async (e) => {
-                    const target = e.target.value === '__none__' ? null : e.target.value;
+                <Select
+                  onValueChange={async (val) => {
+                    const v = val as string;
+                    const target = v === '__none__' ? null : v;
                     for (const sid of removeSet) await favoritesControllerMoveFavorite(sid, { folderId: target });
                     const count = removeSet.size;
                     setRemoveSet(new Set());
@@ -242,21 +245,20 @@ export default function FavoritesList({
                     refetch();
                     refetchFolders();
                     toast.success(t('movedCount', { count }));
-                    e.target.value = '';
                   }}
-                  defaultValue=""
-                  className="h-7 rounded-lg border border-white/10 bg-white/5 px-2 text-xs text-white"
                 >
-                  <option value="" disabled>
-                    {t('moveTo')}
-                  </option>
-                  <option value="__none__">{t('uncategorized')}</option>
-                  {folders.map((f) => (
-                    <option key={f.id} value={f.id}>
-                      {f.name}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger size="sm" className="h-7 w-auto min-w-20 text-xs">
+                    <SelectValue placeholder={t('moveTo')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">{t('uncategorized')}</SelectItem>
+                    {folders.map((f) => (
+                      <SelectItem key={f.id} value={f.id}>
+                        {f.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
               <Button
                 variant="ghost"

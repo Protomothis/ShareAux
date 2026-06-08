@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { BannedIp } from '../entities/banned-ip.entity.js';
+import type { PaginatedResult } from '../types/index.js';
 
 @Injectable()
 export class IpBanService implements OnModuleInit {
@@ -43,7 +44,7 @@ export class IpBanService implements OnModuleInit {
     }
   }
 
-  async getAll(page: number, limit: number): Promise<{ items: BannedIp[]; total: number }> {
+  async getAll(page: number, limit: number): Promise<PaginatedResult<BannedIp>> {
     const [items, total] = await this.repo.findAndCount({
       relations: ['banner'],
       order: { createdAt: 'DESC' },
