@@ -5,7 +5,13 @@ import Thumbnail from '@/components/common/Thumbnail';
 const meta: Meta<typeof Thumbnail> = {
   title: 'Primitives/Thumbnail',
   component: Thumbnail,
-  decorators: [(Story) => <div className="flex gap-4 items-end"><Story /></div>],
+  decorators: [
+    (Story) => (
+      <div className="flex gap-4 items-end">
+        <Story />
+      </div>
+    ),
+  ],
 };
 export default meta;
 type Story = StoryObj<typeof Thumbnail>;

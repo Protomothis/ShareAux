@@ -14,9 +14,7 @@ export default function EmptyState({ icon, title, description, action }: EmptySt
         </div>
         <div className="space-y-1.5">
           <p className="text-sm font-medium text-white/70">{title}</p>
-          {description && (
-            <p className="whitespace-pre-line text-xs leading-relaxed text-white/30">{description}</p>
-          )}
+          {description && <p className="whitespace-pre-line text-xs leading-relaxed text-white/30">{description}</p>}
         </div>
         {action}
       </div>
