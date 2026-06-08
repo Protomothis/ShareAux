@@ -4,6 +4,7 @@ import { WebSocket } from 'ws';
 
 import { AudioService } from '../services/audio.service.js';
 import { ChatMuteService } from '../services/chat-mute.service.js';
+import { CHAT_HISTORY_MAX_SIZE, CHAT_MAX_MESSAGE_LENGTH, CHAT_RATE_LIMIT_MS } from '../constants.js';
 import type { ChatHistoryEntry, WsClient } from '../types/index.js';
 import { Permission, UserRole, WsEvent, WsOpCode } from '../types/index.js';
 import { PushEvent } from '../types/push-event.enum.js';
@@ -62,7 +63,8 @@ export class WsMessageRouter {
     if (!client.data!.permissions.includes(Permission.Chat)) return;
     try {
       const parsed = JSON.parse(data.subarray(1).toString());
-      if (!parsed.message || typeof parsed.message !== 'string' || parsed.message.length > 300) return;
+      if (!parsed.message || typeof parsed.message !== 'string' || parsed.message.length > CHAT_MAX_MESSAGE_LENGTH)
+        return;
       const trimmed = parsed.message.trim().replace(/[<>]/g, '');
       if (!trimmed) return;
 
@@ -78,7 +80,7 @@ export class WsMessageRouter {
       // 레이트 리밋 (1초에 1개)
       const rateKey = `chat:${userId}`;
       const last = this.lastChat.get(rateKey) ?? 0;
-      if (Date.now() - last < 1000) return;
+      if (Date.now() - last < CHAT_RATE_LIMIT_MS) return;
       this.lastChat.set(rateKey, Date.now());
 
       // admin/superAdmin은 자동 mute 면제
@@ -108,7 +110,7 @@ export class WsMessageRouter {
       // chatHistory 저장
       const hist = this.chatHistory.get(roomId) ?? [];
       hist.push(enriched);
-      if (hist.length > 50) hist.shift();
+      if (hist.length > CHAT_HISTORY_MAX_SIZE) hist.shift();
       this.chatHistory.set(roomId, hist);
 
       // 멘션 감지 → 푸시 알림
@@ -188,7 +190,7 @@ export class WsMessageRouter {
     };
     const hist = this.chatHistory.get(roomId) ?? [];
     hist.push(enriched);
-    if (hist.length > 50) hist.shift();
+    if (hist.length > CHAT_HISTORY_MAX_SIZE) hist.shift();
     this.chatHistory.set(roomId, hist);
 
     const json = JSON.stringify(enriched);

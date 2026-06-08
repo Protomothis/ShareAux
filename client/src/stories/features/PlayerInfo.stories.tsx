@@ -18,7 +18,13 @@ const meta: Meta<typeof PlayerInfo> = {
   title: 'Features/Player/PlayerInfo',
   component: PlayerInfo,
   args: { roomId: 'r1', isHost: false },
-  decorators: [(Story) => <div className="max-w-md"><Story /></div>],
+  decorators: [
+    (Story) => (
+      <div className="max-w-md">
+        <Story />
+      </div>
+    ),
+  ],
 };
 export default meta;
 type Story = StoryObj<typeof PlayerInfo>;

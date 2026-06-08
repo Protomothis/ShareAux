@@ -24,7 +24,11 @@ export const WithAction: Story = {
     icon: <Music size={32} className="text-white/10" />,
     title: '재생목록이 비어있습니다',
     description: '곡을 검색해서 추가해보세요',
-    action: <Button size="sm"><Search size={14} /> 검색</Button>,
+    action: (
+      <Button size="sm">
+        <Search size={14} /> 검색
+      </Button>
+    ),
   },
 };
 

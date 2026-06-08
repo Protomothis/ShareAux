@@ -83,7 +83,6 @@ export function useQueueDnd(roomId: string, queue: RoomQueue[]) {
         version: fromItem.version,
       });
     } catch (e) {
-       
       console.warn('[DND] reorder failed', e);
       toast.error(t('reorderFailed'));
     }

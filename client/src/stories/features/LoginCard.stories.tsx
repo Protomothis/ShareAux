@@ -8,7 +8,13 @@ const meta: Meta<typeof LoginCard> = {
   title: 'Features/Auth/LoginCard',
   component: LoginCard,
   args: { onClick: fn() },
-  decorators: [(Story) => <div className="max-w-xs"><Story /></div>],
+  decorators: [
+    (Story) => (
+      <div className="max-w-xs">
+        <Story />
+      </div>
+    ),
+  ],
 };
 export default meta;
 type Story = StoryObj<typeof LoginCard>;

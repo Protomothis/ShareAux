@@ -4,6 +4,7 @@ import type { FindOptionsWhere } from 'typeorm';
 import { Repository } from 'typeorm';
 
 import { AuditLog } from '../entities/audit-log.entity.js';
+import type { PaginatedResult } from '../types/index.js';
 
 @Injectable()
 export class AuditService {
@@ -33,7 +34,7 @@ export class AuditService {
     page: number,
     limit: number,
     filters?: { action?: string; targetType?: string },
-  ): Promise<{ items: AuditLog[]; total: number }> {
+  ): Promise<PaginatedResult<AuditLog>> {
     const where: FindOptionsWhere<AuditLog> = {};
     if (filters?.action) where.action = filters.action;
     if (filters?.targetType) where.targetType = filters.targetType;

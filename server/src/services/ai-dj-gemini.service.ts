@@ -4,6 +4,8 @@ import { AUTODJ_MAX_DURATION_SEC, AUTODJ_MIN_DURATION_SEC } from '../constants.j
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+const AI_DJ_HISTORY_DEPTH = 10;
+
 import { PlayHistory } from '../entities/play-history.entity.js';
 import { Room } from '../entities/room.entity.js';
 import { Track } from '../entities/track.entity.js';
@@ -101,7 +103,7 @@ export class AiDjGeminiService {
     const recentHistory = await this.historyRepo.find({
       where: { room: { id: roomId } },
       order: { playedAt: 'DESC' },
-      take: 10,
+      take: AI_DJ_HISTORY_DEPTH,
     });
     const recentTracks = recentHistory.length
       ? await this.trackRepo.find({ where: recentHistory.map((h) => ({ sourceId: h.sourceId })) })

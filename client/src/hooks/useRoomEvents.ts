@@ -4,11 +4,10 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import type { RoomQueue, Track, TrackLyricsType } from '@/api/model';
+import type { RoomQueue, Track } from '@/api/model';
 import {
   SystemChatEvent,
   type WsAutoDjStatusPayload,
-  type WsChatHistoryPayload,
   type WsListenerCountPayload,
   type WsLyricsResultPayload,
   type WsMetadataUpdatedPayload,
@@ -19,7 +18,7 @@ import {
 } from '@/api/model';
 import { roomsControllerFindOne } from '@/api/rooms/rooms';
 import { useInvalidate } from '@/hooks/useQueries';
-import type { AutoDjStatus, ChatMessage, LyricsStatus } from '@/types';
+import type { ChatMessage } from '@/types';
 import { WsEvent } from '@/types';
 
 import type { usePlaybackState } from './usePlaybackState';
