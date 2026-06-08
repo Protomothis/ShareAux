@@ -276,3 +276,14 @@ export interface InnertubeYtMusicCarouselItem {
     }[];
   };
 }
+
+// ─── Request Body ────────────────────────────────────────
+
+export interface InnertubeRequestBody {
+  query?: string;
+  params?: string;
+  continuation?: string;
+  videoId?: string;
+  browseId?: string;
+  isAudioOnly?: boolean;
+}
