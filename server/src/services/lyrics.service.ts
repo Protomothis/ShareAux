@@ -11,6 +11,8 @@ import { LyricsStatus, LyricsType } from '../types/index.js';
 
 const execFileAsync = promisify(execFile);
 
+const LYRICS_FETCH_TIMEOUT_MS = 10_000;
+
 import { detectLang } from './detect-lang.js';
 import { cleanArtist, extractTitle, smartClean } from './title-cleaner.js';
 
@@ -173,7 +175,7 @@ export class LyricsService {
       const { stdout } = await execFileAsync(
         'python3',
         ['-c', `import syncedlyrics; r=syncedlyrics.search(${q}, ${opts}); print(r or '')`],
-        { timeout: 10_000, env: { ...process.env, PYTHONIOENCODING: 'utf-8' } },
+        { timeout: LYRICS_FETCH_TIMEOUT_MS, env: { ...process.env, PYTHONIOENCODING: 'utf-8' } },
       );
       const lrc = stdout.trim();
       return lrc || null;

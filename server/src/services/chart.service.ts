@@ -11,6 +11,8 @@ import { OptionKey } from '../types/index.js';
 import { YtdlpService } from './ytdlp.service.js';
 import { SettingsService } from './settings.service.js';
 
+const CHART_SHOWCASE_LIMIT = 20;
+
 export interface ChartCategory {
   genre: string;
   label: string;
@@ -133,7 +135,7 @@ export class ChartService implements OnModuleInit {
       const tracks = await this.chartRepo.find({
         where: { playlistId: entry.id },
         order: { rank: 'ASC' },
-        take: 20,
+        take: CHART_SHOWCASE_LIMIT,
       });
       categories.push({ genre: entry.genre, label: entry.label, emoji: entry.emoji, tracks });
     }
