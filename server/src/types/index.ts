@@ -1,6 +1,13 @@
 export type { HttpStreamListener, ListenerState, ParsedInitSegment, RoomAudio, StreamInfo } from './audio.types.js';
+export type { PaginatedResult } from './pagination.types.js';
 export { StreamState } from './audio.types.js';
-export type { AuthenticatedRequest, AuthenticatedUser, JwtPayload, OAuthProfile } from './auth.types.js';
+export type {
+  AuthenticatedRequest,
+  AuthenticatedUser,
+  GoogleCallbackRequest,
+  JwtPayload,
+  OAuthProfile,
+} from './auth.types.js';
 export { AuthProvider } from './auth-provider.enum.js';
 export type { AutoDjStatus, AutoDjTags } from './auto-dj.types.js';
 export { AutoDjMode } from './auto-dj.types.js';

@@ -5,7 +5,6 @@ import { LessThan, Repository } from 'typeorm';
 
 import { SKIP_MIN_PLAY_MS, TRACK_END_DELAY_MS, VOTE_SKIP_DIVISOR, VOTE_SKIP_MIN_REQUIRED } from '../constants.js';
 import { PlayHistory } from '../entities/play-history.entity.js';
-import { Room } from '../entities/room.entity.js';
 import { RoomPlayback } from '../entities/room-playback.entity.js';
 import { RoomQueue } from '../entities/room-queue.entity.js';
 import { Track } from '../entities/track.entity.js';
@@ -325,7 +324,7 @@ export class PlayerService {
     // PlayHistory 기록 (메타 스냅샷 포함)
     await this.playHistoryRepo.save(
       this.playHistoryRepo.create({
-        room: { id: roomId } as Room,
+        room: { id: roomId },
         playedBy: userId ? { id: userId } : null,
         provider: track.provider,
         sourceId: track.sourceId,
