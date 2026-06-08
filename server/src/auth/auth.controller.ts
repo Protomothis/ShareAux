@@ -26,7 +26,7 @@ import { JwtAuthGuard } from '../guards/jwt-auth.guard.js';
 import { RoomsGateway } from '../rooms/rooms.gateway.js';
 import { SettingsService } from '../services/settings.service.js';
 import { TranslationService } from '../services/translation.service.js';
-import type { AuthenticatedRequest } from '../types/index.js';
+import type { AuthenticatedRequest, GoogleCallbackRequest } from '../types/index.js';
 import { ErrorCode } from '../types/index.js';
 import { OptionKey } from '../types/settings.types.js';
 import { TranslationLang } from '../types/translation-lang.enum.js';
@@ -110,17 +110,17 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  @UseFilters(new OAuthExceptionFilter())
+  @UseFilters(OAuthExceptionFilter)
   @ApiOperation({ summary: 'Google OAuth 콜백' })
-  async googleCallback(@Req() req: Request, @Res() res: Response) {
+  async googleCallback(@Req() req: GoogleCallbackRequest, @Res() res: Response) {
     const clientUrl = this.config.get<string>('CLIENT_URL', 'http://localhost:3001');
 
     // 연동 완료 시 별도 redirect
-    if ((req as unknown as Record<string, unknown>).googleLinked) {
+    if (req.googleLinked) {
       res.redirect(`${clientUrl}/auth/callback?linked=true`);
       return;
     }
-    const tokens = await this.authService.generateTokenPair(req.user as User);
+    const tokens = await this.authService.generateTokenPair(req.user);
     // 쿠키는 cross-origin에서 안 붙으므로 일회용 코드로 전달 → 클라이언트가 exchange 호출
     res.redirect(`${clientUrl}/auth/callback?code=${encodeURIComponent(tokens.accessToken)}`);
   }
@@ -150,8 +150,8 @@ export class AuthController {
   @Post('refresh')
   @ApiOperation({ summary: '토큰 갱신 (쿠키 기반)' })
   async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const token = (req.cookies as Record<string, string> | undefined)?.[AUTH_COOKIE_REFRESH];
-    if (!token) {
+    const token: unknown = req.cookies?.[AUTH_COOKIE_REFRESH];
+    if (!token || typeof token !== 'string') {
       res.status(401).json({ message: 'No refresh token' });
       return;
     }
@@ -165,8 +165,8 @@ export class AuthController {
   @ApiOperation({ summary: '로그아웃 (쿠키 삭제 + refresh token 무효화)' })
   @ApiBearerAuth()
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const refreshToken = (req.cookies as Record<string, string> | undefined)?.[AUTH_COOKIE_REFRESH];
-    if (refreshToken) await this.authService.revokeRefreshToken(refreshToken);
+    const refreshToken: unknown = req.cookies?.[AUTH_COOKIE_REFRESH];
+    if (typeof refreshToken === 'string') await this.authService.revokeRefreshToken(refreshToken);
     clearAuthCookies(res, this.isProd);
     return { ok: true };
   }
@@ -183,7 +183,7 @@ export class AuthController {
   }
 
   @Post('register')
-  @Throttle({ default: { ttl: 60_000, limit: 5 } })
+  @Throttle({ default: { ttl: THROTTLE_TTL_MS, limit: AUTH_LOGIN_RATE_LIMIT } })
   @ApiOperation({ summary: '회원가입 (초대코드 필요)' })
   async register(@Body() dto: RegisterDto, @Res({ passthrough: true }) res: Response) {
     this.verifyCaptcha(dto);
@@ -193,7 +193,7 @@ export class AuthController {
   }
 
   @Post('login')
-  @Throttle({ default: { ttl: 60_000, limit: 10 } })
+  @Throttle({ default: { ttl: THROTTLE_TTL_MS, limit: AUTH_LOGIN_RATE_LIMIT } })
   @ApiOperation({ summary: '로그인' })
   async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
     this.verifyCaptcha(dto);

@@ -125,6 +125,12 @@ export const PERMISSION_META: PermissionMeta[] = [
   { key: Permission.Host },
 ];
 
+// ─── Chat / Reaction ────────────────────────────────────
+export const CHAT_MAX_MESSAGE_LENGTH = 300;
+export const CHAT_RATE_LIMIT_MS = 1000;
+export const CHAT_HISTORY_MAX_SIZE = 50;
+export const REACTION_COOLDOWN_MS = 1000;
+
 // ─── Chat Mute ──────────────────────────────────────────
 export const CHAT_SPAM_WINDOW_MS = 30_000; // 스팸 감지 윈도우
 export const CHAT_SPAM_MAX_COUNT = 15; // 윈도우 내 최대 메시지 수
