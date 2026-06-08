@@ -23,47 +23,26 @@ interface FilterSelectProps {
   value: string;
   onValueChange: (v: string) => void;
   placeholder: string;
-  options: { value: string; label: string }[];
+  options: { value: string; translated: string }[];
 }
 
 function FilterSelect({ value, onValueChange, placeholder, options }: FilterSelectProps) {
-  const t = useTranslations('admin.users');
-  const selectedLabel = options.find((o) => o.value === value)?.label ?? placeholder;
+  const selectedLabel = options.find((o) => o.value === value)?.translated ?? placeholder;
   return (
     <Select value={value} onValueChange={(v) => v && onValueChange(v)}>
       <SelectTrigger className="h-8 w-28 border-white/10 bg-white/5 text-xs">
-        <SelectValue placeholder={placeholder}>{t(selectedLabel as 'allRoles')}</SelectValue>
+        <SelectValue placeholder={placeholder}>{selectedLabel}</SelectValue>
       </SelectTrigger>
       <SelectContent>
         {options.map((o) => (
           <SelectItem key={o.value} value={o.value}>
-            {t(o.label as 'allRoles')}
+            {o.translated}
           </SelectItem>
         ))}
       </SelectContent>
     </Select>
   );
 }
-
-const ROLE_FILTER_OPTIONS = [
-  { value: 'all', label: 'allRoles' },
-  { value: 'user', label: 'roles.user' },
-  { value: 'admin', label: 'roles.admin' },
-  { value: 'guest', label: 'roles.guest' },
-];
-
-const PROVIDER_FILTER_OPTIONS = [
-  { value: 'all', label: 'allProviders' },
-  { value: 'local', label: 'providers.local' },
-  { value: 'google', label: 'providers.google' },
-  { value: 'invite', label: 'providers.invite' },
-];
-
-const STATUS_FILTER_OPTIONS = [
-  { value: 'all', label: 'allStatus' },
-  { value: 'active', label: 'active' },
-  { value: 'banned', label: 'banned' },
-];
 
 export default function AdminUsersPage() {
   const t = useTranslations('admin.users');
@@ -74,6 +53,37 @@ export default function AdminUsersPage() {
   const [providerFilter, setProviderFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const roleFilterOptions = [
+    { value: 'all', translated: t('allRoles') },
+    { value: 'user', translated: t('roles.user') },
+    { value: 'admin', translated: t('roles.admin') },
+    { value: 'guest', translated: t('roles.guest') },
+  ];
+
+  const providerFilterOptions = [
+    { value: 'all', translated: t('allProviders') },
+    { value: 'local', translated: t('providers.local') },
+    { value: 'google', translated: t('providers.google') },
+    { value: 'invite', translated: t('providers.invite') },
+  ];
+
+  const statusFilterOptions = [
+    { value: 'all', translated: t('allStatus') },
+    { value: 'active', translated: t('active') },
+    { value: 'banned', translated: t('banned') },
+  ];
+
+  const providerLabels: Record<string, string> = {
+    local: t('providers.local'),
+    google: t('providers.google'),
+    invite: t('providers.invite'),
+  };
+
+  const roleLabels: Record<string, string> = {
+    user: t('roles.user'),
+    admin: t('roles.admin'),
+  };
 
   const handleSearch = useCallback((value: string) => {
     setSearch(value);
@@ -141,7 +151,7 @@ export default function AdminUsersPage() {
       header: t('provider'),
       render: (user) => {
         const variant = PROVIDER_VARIANT[user.provider] ?? ('muted' as const);
-        const label = t(`providers.${user.provider}` as 'providers.google');
+        const label = providerLabels[user.provider] ?? user.provider;
         return (
           <div className="flex flex-wrap gap-1">
             <StatusBadge variant={variant}>{label}</StatusBadge>
@@ -167,7 +177,7 @@ export default function AdminUsersPage() {
             <SelectContent>
               {Object.values(UpdateRoleDtoRole).map((r) => (
                 <SelectItem key={r} value={r}>
-                  {t(`roles.${r}` as 'roles.user')}
+                  {roleLabels[r] ?? r}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -206,19 +216,19 @@ export default function AdminUsersPage() {
           value={roleFilter}
           onValueChange={handleFilterChange(setRoleFilter)}
           placeholder={t('role')}
-          options={ROLE_FILTER_OPTIONS}
+          options={roleFilterOptions}
         />
         <FilterSelect
           value={providerFilter}
           onValueChange={handleFilterChange(setProviderFilter)}
           placeholder={t('allProviders')}
-          options={PROVIDER_FILTER_OPTIONS}
+          options={providerFilterOptions}
         />
         <FilterSelect
           value={statusFilter}
           onValueChange={handleFilterChange(setStatusFilter)}
           placeholder={t('status')}
-          options={STATUS_FILTER_OPTIONS}
+          options={statusFilterOptions}
         />
       </div>
 

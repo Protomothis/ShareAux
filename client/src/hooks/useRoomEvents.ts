@@ -95,8 +95,7 @@ export function useRoomEvents({ roomId, playback, roomState }: UseRoomEventsOpti
 
       // 권한 변경
       if (msg.event === WsEvent.permissionChanged) {
-        const key = msg.detail === 'djTransferred' ? 'djTransferred' : 'permissionChanged';
-        toast.info(t(`nav.${key}` as 'nav.djTransferred' | 'nav.permissionChanged'));
+        toast.info(msg.detail === 'djTransferred' ? t('nav.djTransferred') : t('nav.permissionChanged'));
         invalidate.permissions(roomId);
         return;
       }
