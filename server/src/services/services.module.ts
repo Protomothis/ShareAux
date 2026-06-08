@@ -15,6 +15,7 @@ import { UserFavorite } from '../entities/user-favorite.entity.js';
 import { AiDjGeminiService } from './ai-dj-gemini.service.js';
 import { AudioService } from './audio.service.js';
 import { AuditService } from './audit.service.js';
+import { AutoDjCandidateService } from './auto-dj-candidates.service.js';
 import { AutoDjService } from './auto-dj.service.js';
 import { ChartService } from './chart.service.js';
 import { ChatMuteService } from './chat-mute.service.js';
@@ -49,6 +50,7 @@ import { YtdlpService } from './ytdlp.service.js';
     AudioService,
     YtdlpService,
     PreloadService,
+    AutoDjCandidateService,
     AutoDjService,
     ChartService,
     ChatMuteService,
@@ -65,6 +67,7 @@ import { YtdlpService } from './ytdlp.service.js';
     AudioService,
     YtdlpService,
     PreloadService,
+    AutoDjCandidateService,
     AutoDjService,
     ChartService,
     ChatMuteService,
