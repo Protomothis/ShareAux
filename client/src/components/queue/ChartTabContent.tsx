@@ -103,67 +103,77 @@ export function ChartTabContent({
   const topItems = page === 1 ? tracks.slice(0, 5) : [];
   const listItems = page === 1 ? tracks.slice(5) : tracks;
 
-  if (loading) return <GridSkeleton />;
-
   return (
-    <div className="space-y-3">
-      {topItems.length > 0 && (
-        <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-5">
-          {topItems.map((item, rank) => {
-            const selected = selectedIds.has(item.sourceId);
-            const disabled = disabledIds.has(item.sourceId) || (maxReached && !selected);
-            return (
-              <button
-                key={`${item.sourceId}_${rank}`}
-                type="button"
-                disabled={disabled}
-                onClick={() => onSelectTrack(item)}
-                className={cn(
-                  'flex flex-col gap-1.5 rounded-xl border p-1.5 text-left transition-colors touch-manipulation',
-                  selected ? 'border-sa-accent/50 bg-sa-accent/10' : 'border-white/5 bg-white/[0.03]',
-                  disabled && 'opacity-40',
-                )}
-              >
-                <div className="relative aspect-video w-full overflow-hidden rounded-lg">
-                  <Thumbnail src={item.thumbnail} size="md" className="h-full w-full rounded-lg" />
-                  <span className="absolute left-1 top-1 flex size-5 items-center justify-center rounded-full bg-black/70 text-[10px] font-bold text-white/80">
-                    {rank + 1}
-                  </span>
-                  {selected && (
-                    <span className="absolute right-1 top-1 flex size-5 items-center justify-center rounded-full bg-sa-accent text-[10px] font-bold text-white shadow">
-                      {selectedOrder.indexOf(item.sourceId) + 1}
-                    </span>
-                  )}
-                </div>
-                <div className="min-w-0 px-0.5">
-                  <p className="line-clamp-1 text-[11px] font-medium text-white">{item.name}</p>
-                  <p className="truncate text-[10px] text-sa-text-muted">{item.artist}</p>
-                </div>
-              </button>
-            );
-          })}
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex-1 space-y-3">
+        {loading ? (
+          <GridSkeleton />
+        ) : (
+          <>
+            {topItems.length > 0 && (
+              <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-5">
+                {topItems.map((item, rank) => {
+                  const selected = selectedIds.has(item.sourceId);
+                  const disabled = disabledIds.has(item.sourceId) || (maxReached && !selected);
+                  return (
+                    <button
+                      key={`${item.sourceId}_${rank}`}
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => onSelectTrack(item)}
+                      className={cn(
+                        'flex flex-col gap-1.5 rounded-xl border p-1.5 text-left transition-colors touch-manipulation',
+                        selected ? 'border-sa-accent/50 bg-sa-accent/10' : 'border-white/5 bg-white/[0.03]',
+                        disabled && 'opacity-40',
+                      )}
+                    >
+                      <div className="relative aspect-video w-full overflow-hidden rounded-lg">
+                        <Thumbnail src={item.thumbnail} size="md" className="h-full w-full rounded-lg" />
+                        <span className="absolute left-1 top-1 flex size-5 items-center justify-center rounded-full bg-black/70 text-[10px] font-bold text-white/80">
+                          {rank + 1}
+                        </span>
+                        {selected && (
+                          <span className="absolute right-1 top-1 flex size-5 items-center justify-center rounded-full bg-sa-accent text-[10px] font-bold text-white shadow">
+                            {selectedOrder.indexOf(item.sourceId) + 1}
+                          </span>
+                        )}
+                      </div>
+                      <div className="min-w-0 px-0.5">
+                        <p className="line-clamp-1 text-[11px] font-medium text-white">{item.name}</p>
+                        <p className="truncate text-[10px] text-sa-text-muted">{item.artist}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {listItems.length > 0 && (
+              <div className="space-y-1">
+                {listItems.map((item, idx) => (
+                  <SearchTrackItem
+                    key={`${item.sourceId}_${idx}`}
+                    track={item}
+                    order={selectedOrder.indexOf(item.sourceId) + 1}
+                    disabled={disabledIds.has(item.sourceId) || (maxReached && !selectedIds.has(item.sourceId))}
+                    full={maxReached && !selectedIds.has(item.sourceId)}
+                    inQueue={disabledIds.has(item.sourceId)}
+                    onClick={() => onSelectTrack(item)}
+                    isFavorite={favoriteIds?.has(item.sourceId)}
+                    favLoading={favLoadingIds?.has(item.sourceId)}
+                    onToggleFavorite={() => onToggleFavorite?.(item)}
+                    isGuest={isGuest}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+      {totalPages > 1 && (
+        <div className="sticky bottom-0 border-t border-white/5 bg-sa-bg pt-2">
+          <PaginationBar page={page} totalPages={totalPages} onPageChange={setPage} />
         </div>
       )}
-      {listItems.length > 0 && (
-        <div className="space-y-1">
-          {listItems.map((item, idx) => (
-            <SearchTrackItem
-              key={`${item.sourceId}_${idx}`}
-              track={item}
-              order={selectedOrder.indexOf(item.sourceId) + 1}
-              disabled={disabledIds.has(item.sourceId) || (maxReached && !selectedIds.has(item.sourceId))}
-              full={maxReached && !selectedIds.has(item.sourceId)}
-              inQueue={disabledIds.has(item.sourceId)}
-              onClick={() => onSelectTrack(item)}
-              isFavorite={favoriteIds?.has(item.sourceId)}
-              favLoading={favLoadingIds?.has(item.sourceId)}
-              onToggleFavorite={() => onToggleFavorite?.(item)}
-              isGuest={isGuest}
-            />
-          ))}
-        </div>
-      )}
-      <PaginationBar page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );
 }
