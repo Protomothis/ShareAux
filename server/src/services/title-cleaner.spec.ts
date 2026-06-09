@@ -25,6 +25,33 @@ describe('title-cleaner', () => {
     it('빈 문자열 처리', () => {
       expect(smartClean('')).toBe('');
     });
+
+    it('일본어 제목 — 【MV】 제거', () => {
+      expect(smartClean('米津玄師 - Lemon【MV】')).toBe('米津玄師 - Lemon');
+    });
+
+    it('중국어 제목 — (官方MV) 제거', () => {
+      const result = smartClean('周杰伦 Jay Chou (官方MV)');
+      expect(result).not.toContain('官方');
+      expect(result).not.toContain('MV');
+      expect(result).toContain('周杰伦');
+    });
+
+    it('MV/PV 접미사 제거', () => {
+      expect(smartClean('YOASOBI - アイドル MV')).toBe('YOASOBI - アイドル');
+    });
+
+    it('복합 노이즈 — 괄호 + 대괄호 + feat', () => {
+      const result = smartClean('Artist - Title (Official MV) [4K] feat. Someone');
+      expect(result).toBe('Artist - Title');
+    });
+
+    it('특수문자 — 《》 괄호 제거', () => {
+      const result = smartClean('Title《Something》');
+      expect(result).not.toContain('《');
+      expect(result).not.toContain('》');
+      expect(result).toBe('Title');
+    });
   });
 
   describe('extractTitle', () => {

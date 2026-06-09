@@ -90,6 +90,148 @@ describe('innertube-parser', () => {
     it('contentId 없으면 null', () => {
       expect(parseRelatedFromLockup({})).toBeNull();
     });
+
+    it('정상 lockupViewModel 파싱', () => {
+      const result = parseRelatedFromLockup({
+        contentId: 'dQw4w9WgXcQ',
+        contentImage: {
+          thumbnailViewModel: {
+            overlays: [
+              {
+                thumbnailBottomOverlayViewModel: {
+                  badges: [
+                    {
+                      thumbnailBadgeViewModel: {
+                        icon: { sources: [{ clientResource: { imageName: 'MUSIC' } }] },
+                        text: '3:33',
+                      },
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+        metadata: {
+          lockupMetadataViewModel: {
+            title: { content: 'Never Gonna Give You Up' },
+            metadata: {
+              contentMetadataViewModel: {
+                metadataRows: [{ metadataParts: [{ text: { content: 'Rick Astley' } }] }],
+              },
+            },
+          },
+        },
+      });
+      expect(result).toMatchObject({
+        id: 'dQw4w9WgXcQ',
+        title: 'Never Gonna Give You Up',
+        artist: 'Rick Astley',
+        duration: 213,
+      });
+    });
+
+    it('MUSIC 배지 없으면 null', () => {
+      expect(
+        parseRelatedFromLockup({
+          contentId: 'dQw4w9WgXcQ',
+          contentImage: {
+            thumbnailViewModel: {
+              overlays: [
+                {
+                  thumbnailBottomOverlayViewModel: {
+                    badges: [
+                      {
+                        thumbnailBadgeViewModel: {
+                          icon: { sources: [{ clientResource: { imageName: 'OTHER' } }] },
+                          text: '3:33',
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        }),
+      ).toBeNull();
+    });
+
+    it('duration 텍스트 없으면 null', () => {
+      expect(
+        parseRelatedFromLockup({
+          contentId: 'dQw4w9WgXcQ',
+          contentImage: {
+            thumbnailViewModel: {
+              overlays: [
+                {
+                  thumbnailBottomOverlayViewModel: {
+                    badges: [
+                      {
+                        thumbnailBadgeViewModel: {
+                          icon: { sources: [{ clientResource: { imageName: 'MUSIC' } }] },
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        }),
+      ).toBeNull();
+    });
+
+    it('duration 범위 밖이면 null (30초 미만)', () => {
+      expect(
+        parseRelatedFromLockup({
+          contentId: 'dQw4w9WgXcQ',
+          contentImage: {
+            thumbnailViewModel: {
+              overlays: [
+                {
+                  thumbnailBottomOverlayViewModel: {
+                    badges: [
+                      {
+                        thumbnailBadgeViewModel: {
+                          icon: { sources: [{ clientResource: { imageName: 'MUSIC' } }] },
+                          text: '0:15',
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        }),
+      ).toBeNull();
+    });
+
+    it('metadata 없어도 빈 문자열로 파싱', () => {
+      const result = parseRelatedFromLockup({
+        contentId: 'dQw4w9WgXcQ',
+        contentImage: {
+          thumbnailViewModel: {
+            overlays: [
+              {
+                thumbnailBottomOverlayViewModel: {
+                  badges: [
+                    {
+                      thumbnailBadgeViewModel: {
+                        icon: { sources: [{ clientResource: { imageName: 'MUSIC' } }] },
+                        text: '3:33',
+                      },
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      });
+      expect(result).toMatchObject({ id: 'dQw4w9WgXcQ', title: '', artist: '', duration: 213 });
+    });
   });
 
   describe('parsePlaylistFromLockup', () => {
@@ -104,6 +246,62 @@ describe('innertube-parser', () => {
           metadata: { lockupMetadataViewModel: { title: { content: '' } } },
         }),
       ).toBeNull();
+    });
+
+    it('정상 lockup 재생목록 파싱', () => {
+      const result = parsePlaylistFromLockup({
+        contentId: 'PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf',
+        metadata: {
+          lockupMetadataViewModel: {
+            title: { content: 'K-Pop Hits 2024' },
+            metadata: {
+              contentMetadataViewModel: {
+                metadataRows: [{ metadataParts: [{ text: { content: 'Music Channel' } }] }],
+              },
+            },
+          },
+        },
+        contentImage: {
+          collectionThumbnailViewModel: {
+            primaryThumbnail: {
+              thumbnailViewModel: {
+                image: { sources: [{ url: 'https://example.com/thumb.jpg' }] },
+                overlays: [
+                  {
+                    thumbnailOverlayBadgeViewModel: {
+                      thumbnailBadges: [{ thumbnailBadgeViewModel: { text: '50 videos' } }],
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      });
+      expect(result).toMatchObject({
+        playlistId: 'PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf',
+        title: 'K-Pop Hits 2024',
+        videoCount: 50,
+        channelName: 'Music Channel',
+        thumbnail: 'https://example.com/thumb.jpg',
+      });
+    });
+
+    it('contentImage 없어도 파싱 (videoCount 0, thumbnail 빈 문자열)', () => {
+      const result = parsePlaylistFromLockup({
+        contentId: 'PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf',
+        metadata: { lockupMetadataViewModel: { title: { content: 'Test Playlist' } } },
+      });
+      expect(result).toMatchObject({
+        playlistId: 'PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf',
+        title: 'Test Playlist',
+        videoCount: 0,
+        thumbnail: '',
+      });
+    });
+
+    it('contentId 없으면 null', () => {
+      expect(parsePlaylistFromLockup({})).toBeNull();
     });
   });
 });
