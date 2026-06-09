@@ -73,11 +73,64 @@ const COUNTRY_ICONS: Record<string, string> = {
 export function AutoDjTagFilter({ value, onChange, className }: AutoDjTagFilterProps) {
   const t = useTranslations('player.autoDj');
 
-  const moodOptions: ChipOption[] = MOOD_VALUES.map((v) => ({ label: t(`tagMood_${v}`), value: v }));
-  const genreOptions: ChipOption[] = GENRE_VALUES.map((v) => ({ label: t(`tagGenre_${v}`), value: v }));
-  const eraOptions: ChipOption[] = ERA_VALUES.map((v) => ({ label: t(`tagEra_${v}`), value: v }));
+  const moodLabels: Record<string, string> = {
+    calm: t('tagMood_calm'),
+    upbeat: t('tagMood_upbeat'),
+    emotional: t('tagMood_emotional'),
+    dreamy: t('tagMood_dreamy'),
+    energetic: t('tagMood_energetic'),
+    dark: t('tagMood_dark'),
+    chill: t('tagMood_chill'),
+    melancholy: t('tagMood_melancholy'),
+    epic: t('tagMood_epic'),
+    romantic: t('tagMood_romantic'),
+    nostalgic: t('tagMood_nostalgic'),
+  };
+  const genreLabels: Record<string, string> = {
+    indie: t('tagGenre_indie'),
+    pop: t('tagGenre_pop'),
+    hiphop: t('tagGenre_hiphop'),
+    rnb: t('tagGenre_rnb'),
+    rock: t('tagGenre_rock'),
+    electronic: t('tagGenre_electronic'),
+    jazz: t('tagGenre_jazz'),
+    classical: t('tagGenre_classical'),
+    anime: t('tagGenre_anime'),
+    game: t('tagGenre_game'),
+    lofi: t('tagGenre_lofi'),
+    metal: t('tagGenre_metal'),
+    soul: t('tagGenre_soul'),
+    reggae: t('tagGenre_reggae'),
+    folk: t('tagGenre_folk'),
+  };
+  const eraLabels: Record<string, string> = {
+    latest: t('tagEra_latest'),
+    '2010s': t('tagEra_2010s'),
+    '2000s': t('tagEra_2000s'),
+    '90s': t('tagEra_90s'),
+    '80s': t('tagEra_80s'),
+    '70s': t('tagEra_70s'),
+    oldschool: t('tagEra_oldschool'),
+  };
+  const countryLabels: Record<string, string> = {
+    kr: t('tagCountry_kr'),
+    jp: t('tagCountry_jp'),
+    us: t('tagCountry_us'),
+    gb: t('tagCountry_gb'),
+    fr: t('tagCountry_fr'),
+    br: t('tagCountry_br'),
+    es: t('tagCountry_es'),
+    se: t('tagCountry_se'),
+    cn: t('tagCountry_cn'),
+    au: t('tagCountry_au'),
+    in: t('tagCountry_in'),
+  };
+
+  const moodOptions: ChipOption[] = MOOD_VALUES.map((v) => ({ label: moodLabels[v], value: v }));
+  const genreOptions: ChipOption[] = GENRE_VALUES.map((v) => ({ label: genreLabels[v], value: v }));
+  const eraOptions: ChipOption[] = ERA_VALUES.map((v) => ({ label: eraLabels[v], value: v }));
   const countryOptions: ChipOption[] = COUNTRY_VALUES.map((v) => ({
-    label: t(`tagCountry_${v}`),
+    label: countryLabels[v],
     value: v,
     icon: COUNTRY_ICONS[v],
   }));

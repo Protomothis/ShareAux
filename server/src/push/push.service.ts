@@ -8,7 +8,7 @@ import { PushSettings } from '../entities/push-settings.entity.js';
 import { PushSubscription } from '../entities/push-subscription.entity.js';
 import { SettingsService } from '../services/settings.service.js';
 import { Language } from '../types/language.enum.js';
-import type { PushEvent } from '../types/push-event.enum.js';
+import { PushEvent } from '../types/push-event.enum.js';
 import { PUSH_EVENT, type PushEventPayload } from '../types/push-event-payload.js';
 import { OptionKey } from '../types/settings.types.js';
 import type { UpdatePushSettingsDto } from './dto/update-push-settings.dto.js';
@@ -115,7 +115,7 @@ export class PushService implements OnApplicationBootstrap {
     if (!this.initialized) return;
     const subs = await this.subRepo.findBy({ userId });
     for (const sub of subs) {
-      await this.send(sub, { event: 'test' as PushEvent, tag: 'test', roomId: '' });
+      await this.send(sub, { event: PushEvent.Test, tag: 'test', roomId: '' });
     }
   }
 
@@ -155,14 +155,13 @@ export class PushService implements OnApplicationBootstrap {
   }
 
   private isEventEnabled(settings: PushSettings, event: PushEvent): boolean {
-    const map: Record<PushEvent, keyof PushSettings> = {
-      trackChanged: 'trackChanged',
-      voteSkipPassed: 'voteSkip',
-      hostChanged: 'hostChanged',
-      kicked: 'trackChanged', // kicked는 항상 발송 — 여기서 체크 안 함
-      mention: 'mention',
+    const map: Partial<Record<PushEvent, 'trackChanged' | 'voteSkip' | 'hostChanged' | 'mention'>> = {
+      [PushEvent.TrackChanged]: 'trackChanged',
+      [PushEvent.VoteSkipPassed]: 'voteSkip',
+      [PushEvent.HostChanged]: 'hostChanged',
+      [PushEvent.Mention]: 'mention',
     };
     const key = map[event];
-    return key ? (settings[key] as boolean) : true;
+    return key ? settings[key] : true;
   }
 }

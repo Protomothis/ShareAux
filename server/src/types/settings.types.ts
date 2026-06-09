@@ -115,3 +115,7 @@ export const OPTION_METAS: Record<OptionKey, OptionMeta> = {
   [OptionKey.ChartPlaylists]: { type: 'string', defaultValue: '' },
   [OptionKey.ChartFetchHour]: { type: 'number', defaultValue: '4', min: 0, max: 23 },
 };
+
+export function isOptionKey(key: string): key is OptionKey {
+  return key in OPTION_METAS;
+}

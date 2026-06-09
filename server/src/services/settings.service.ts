@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 
 import { decrypt, encrypt, mask } from '../common/crypto.util.js';
 import { SystemSetting } from '../entities/system-setting.entity.js';
-import { OPTION_METAS, OptionKey } from '../types/settings.types.js';
+import { isOptionKey, OPTION_METAS, OptionKey } from '../types/settings.types.js';
 
 @Injectable()
 export class SettingsService implements OnModuleInit {
@@ -33,7 +33,7 @@ export class SettingsService implements OnModuleInit {
     // DB에서 로드
     const rows = await this.repo.find();
     for (const r of rows) {
-      const meta = OPTION_METAS[r.key as OptionKey];
+      const meta = isOptionKey(r.key) ? OPTION_METAS[r.key] : undefined;
       // 시크릿은 복호화해서 캐시
       if (meta?.secret) {
         try {
@@ -73,25 +73,25 @@ export class SettingsService implements OnModuleInit {
   // ─── Getters ───────────────────────────────────────
 
   get(key: OptionKey | string, fallback?: string): string {
-    return this.cache.get(key) ?? fallback ?? OPTION_METAS[key as OptionKey]?.defaultValue ?? '';
+    return this.cache.get(key) ?? fallback ?? (isOptionKey(key) ? OPTION_METAS[key].defaultValue : '') ?? '';
   }
 
   getNumber(key: OptionKey | string, fallback?: number): number {
     const v = this.cache.get(key);
     if (v !== undefined) return Number(v);
-    return (fallback ?? Number(OPTION_METAS[key as OptionKey]?.defaultValue)) || 0;
+    return (fallback ?? Number(isOptionKey(key) ? OPTION_METAS[key].defaultValue : '0')) || 0;
   }
 
   getBoolean(key: OptionKey | string, fallback?: boolean): boolean {
     const v = this.cache.get(key);
     if (v !== undefined) return v === 'true';
-    return fallback ?? OPTION_METAS[key as OptionKey]?.defaultValue === 'true';
+    return fallback ?? (isOptionKey(key) ? OPTION_METAS[key].defaultValue === 'true' : false);
   }
 
   // ─── Write ─────────────────────────────────────────
 
   async set(key: string, value: string): Promise<void> {
-    const meta = OPTION_METAS[key as OptionKey];
+    const meta = isOptionKey(key) ? OPTION_METAS[key] : undefined;
     const dbValue = meta?.secret ? encrypt(value, this.jwtSecret) : value;
     await this.repo.upsert({ key, value: dbValue, description: null }, ['key']);
     this.cache.set(key, value); // 캐시에는 평문
@@ -100,8 +100,8 @@ export class SettingsService implements OnModuleInit {
   // ─── Validation ────────────────────────────────────
 
   validate(key: string, value: string): string | null {
-    const meta = OPTION_METAS[key as OptionKey];
-    if (!meta) return `Unknown option key: ${key}`;
+    if (!isOptionKey(key)) return `Unknown option key: ${key}`;
+    const meta = OPTION_METAS[key];
     if (meta.secret) return null; // 시크릿은 문자열이면 OK
     if (meta.type === 'boolean' && value !== 'true' && value !== 'false') return `${key}: must be "true" or "false"`;
     if (meta.type === 'number') {

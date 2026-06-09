@@ -30,7 +30,12 @@ export function UserProfileHeader({ user }: UserProfileHeaderProps) {
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-sa-text-muted">
           <span>
-            {t('providerLabel')}: {t(`providers.${user.provider}` as 'providers.google')}
+            {t('providerLabel')}:{' '}
+            {
+              { google: t('providers.google'), local: t('providers.local'), invite: t('providers.invite') }[
+                user.provider
+              ]
+            }
           </span>
           <span>·</span>
           <span>
