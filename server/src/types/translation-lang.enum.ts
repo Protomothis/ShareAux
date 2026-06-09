@@ -12,3 +12,9 @@ export enum TranslationLang {
   Vi = 'vi',
   Id = 'id',
 }
+
+const TRANSLATION_LANG_VALUES: ReadonlySet<string> = new Set(Object.values(TranslationLang));
+
+export function isTranslationLang(value: string): value is TranslationLang {
+  return TRANSLATION_LANG_VALUES.has(value);
+}

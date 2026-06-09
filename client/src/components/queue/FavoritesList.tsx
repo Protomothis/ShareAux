@@ -10,14 +10,13 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { FolderOpen, Heart, Search, Trash2 } from 'lucide-react';
+import { FolderOpen, Heart } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { toast } from 'sonner';
 
 import {
-  favoritesControllerBulkRemove,
   favoritesControllerMoveFavorite,
   useFavoritesControllerList,
   useFavoritesControllerListFolders,
@@ -25,11 +24,11 @@ import {
 import type { FavoriteItem, SearchResultItem } from '@/api/model';
 import { Button } from '@/components/common/Button';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 
 import Thumbnail from '../common/Thumbnail';
+import { FavoritesEditBar } from './FavoritesEditBar';
+import { FavoritesToolbar } from './FavoritesToolbar';
 import { FolderManager } from './FolderManager';
 import { FolderSection } from './FolderSection';
 
@@ -190,95 +189,31 @@ export default function FavoritesList({
       onDragEnd={handleDragEnd}
     >
       <div className="flex h-full flex-col space-y-3">
-        {/* 상단 바 */}
-        <div className="flex shrink-0 items-center gap-2">
-          <div className="relative flex-1">
-            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sa-text-muted" />
-            <Input
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              placeholder={t('searchPlaceholder')}
-              className="h-8 rounded-lg border-white/10 bg-white/5 pl-8 text-xs"
-            />
-          </div>
-          <Select value={sort} onValueChange={(val) => setSort(val as SortKey)}>
-            <SelectTrigger size="sm" className="h-8 w-auto min-w-24 text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="recent">{t('sortRecent')}</SelectItem>
-              <SelectItem value="oldest">{t('sortOldest')}</SelectItem>
-              <SelectItem value="name">{t('sortName')}</SelectItem>
-              <SelectItem value="artist">{t('sortArtist')}</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button variant="ghost" size="sm" onClick={() => setShowFolderManager(true)} className="h-8 px-2 text-xs">
-            <FolderOpen size={12} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setEditMode(!editMode);
-              setRemoveSet(new Set());
-            }}
-            className="h-8 px-2 text-xs"
-          >
-            {editMode ? t('done') : t('edit')}
-          </Button>
-        </div>
+        <FavoritesToolbar
+          filter={filter}
+          setFilter={setFilter}
+          sort={sort}
+          setSort={setSort}
+          editMode={editMode}
+          setEditMode={setEditMode}
+          onOpenFolderManager={() => setShowFolderManager(true)}
+          onExitEdit={() => {
+            setEditMode(false);
+            setRemoveSet(new Set());
+          }}
+        />
 
-        {/* 편집 모드 액션 바 */}
         {editMode && removeSet.size > 0 && (
-          <div className="flex shrink-0 items-center justify-between rounded-lg bg-white/5 px-3 py-2">
-            <span className="text-xs text-sa-text-secondary">{t('selected', { count: removeSet.size })}</span>
-            <div className="flex items-center gap-1.5">
-              {folders.length > 0 && (
-                <Select
-                  onValueChange={async (val) => {
-                    const v = val as string;
-                    const target = v === '__none__' ? null : v;
-                    for (const sid of removeSet) await favoritesControllerMoveFavorite(sid, { folderId: target });
-                    const count = removeSet.size;
-                    setRemoveSet(new Set());
-                    setEditMode(false);
-                    refetch();
-                    refetchFolders();
-                    toast.success(t('movedCount', { count }));
-                  }}
-                >
-                  <SelectTrigger size="sm" className="h-7 w-auto min-w-20 text-xs">
-                    <SelectValue placeholder={t('moveTo')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">{t('uncategorized')}</SelectItem>
-                    {folders.map((f) => (
-                      <SelectItem key={f.id} value={f.id}>
-                        {f.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={async () => {
-                  await favoritesControllerBulkRemove({ sourceIds: [...removeSet] });
-                  const count = removeSet.size;
-                  setRemoveSet(new Set());
-                  setEditMode(false);
-                  toast.success(t('removedCount', { count }));
-                  refetch();
-                  refetchFolders();
-                }}
-                className="h-7 gap-1 px-2 text-xs text-red-400 hover:text-red-300"
-              >
-                <Trash2 size={12} />
-                {t('removeFavorite')}
-              </Button>
-            </div>
-          </div>
+          <FavoritesEditBar
+            removeSet={removeSet}
+            folders={folders}
+            onDone={() => {
+              setRemoveSet(new Set());
+              setEditMode(false);
+            }}
+            refetch={refetch}
+            refetchFolders={refetchFolders}
+          />
         )}
 
         {/* 스크롤 영역 */}

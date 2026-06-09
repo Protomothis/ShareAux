@@ -1,10 +1,10 @@
 'use client';
-import { LyricsTransStatus } from '@/api/model';
 
+import { LyricsTransStatus } from '@/api/model';
 import { useQuery } from '@tanstack/react-query';
 import { Clock, Loader2, Minus, Plus, X } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import type { LyricsResponse } from '@/api/model';
 import { playerControllerLyrics } from '@/api/player/player';
@@ -12,6 +12,7 @@ import type { LyricLine, LyricWord } from '@/types';
 import { LyricsStatus } from '@/types';
 
 import { Button } from '@/components/common/Button';
+import { CONTAINER_H, LINE_H, MAIN_H, useLyricsScroll } from '@/hooks/useLyricsScroll';
 import { cn } from '@/lib/utils';
 
 interface LyricsProps {
@@ -199,7 +200,6 @@ function SyncControls({
 
 // ─── 거리 기반 스타일 ───────────────────────────────────
 
-/** 현재 그룹(0)으로부터의 거리에 따른 스타일 */
 function getDistanceStyle(dist: number): { opacity: number; scale: number } {
   const absDist = Math.abs(dist);
   if (absDist === 0) return { opacity: 1, scale: 1 };
@@ -208,21 +208,7 @@ function getDistanceStyle(dist: number): { opacity: number; scale: number } {
   return { opacity: 0.08, scale: 0.9 };
 }
 
-// ─── 그룹 높이 계산 ────────────────────────────────────
-
-const LINE_H = 22; // 기본 줄 높이
-const MAIN_H = 26; // 메인(번역) 줄 높이
-
-function getGroupHeight(hasRuby: boolean, hasTranslation: boolean, isRubyLine: boolean): number {
-  let h = LINE_H; // 원문
-  if (hasTranslation) h += MAIN_H; // 번역
-  if (hasRuby && isRubyLine) h += 16; // 발음
-  return h;
-}
-
 // ─── Main Lyrics Component ──────────────────────────────
-
-const CONTAINER_H = 100; // px
 
 export default function Lyrics({
   roomId,
@@ -234,11 +220,6 @@ export default function Lyrics({
   lyricsVersion = 0,
   karaoke = false,
 }: LyricsProps) {
-  const [offset, setOffset] = useState(0);
-  const [showSync, setShowSync] = useState(false);
-
-  const prevTrackIdRef = useRef(trackId);
-
   const { data: lyricsData } = useQuery({
     queryKey: ['lyrics', roomId, trackId, lyricsVersion],
     queryFn: async (): Promise<LyricsData | null> => {
@@ -257,15 +238,6 @@ export default function Lyrics({
     retry: 1,
   });
 
-  // trackId 변경 시 offset/sync 리셋
-  useEffect(() => {
-    if (trackId !== prevTrackIdRef.current) {
-      prevTrackIdRef.current = trackId;
-      setOffset(0);
-      setShowSync(false);
-    }
-  }, [trackId]);
-
   const lines = useMemo(() => (lyricsData?.synced ? parseLRC(lyricsData.synced) : []), [lyricsData?.synced]);
 
   const rubyTexts = useMemo(
@@ -280,18 +252,14 @@ export default function Lyrics({
   const hasTranslation = translatedTexts.length > 0;
   const hasRuby = rubyTexts.length > 0;
 
-  // ─── 각 그룹의 Y 오프셋 사전 계산 ─────────────────
-
-  const groupOffsets = useMemo(() => {
-    const offsets: number[] = [];
-    let y = 0;
-    for (let i = 0; i < lines.length; i++) {
-      offsets.push(y);
-      const isRubyLine = hasRuby && !!(rubyTexts[i] ?? '').trim();
-      y += getGroupHeight(hasRuby, hasTranslation, isRubyLine);
-    }
-    return offsets;
-  }, [lines.length, hasRuby, hasTranslation, rubyTexts]);
+  const { idx, targetY, offset, setOffset, showSync, setShowSync } = useLyricsScroll({
+    lines,
+    elapsed,
+    trackId,
+    hasRuby,
+    hasTranslation,
+    rubyTexts,
+  });
 
   // ─── Empty states ─────────────────────────────────
 
@@ -309,16 +277,6 @@ export default function Lyrics({
   if (!lines.length) {
     return shell(lyricsStatus === LyricsStatus.notFound ? '가사 없음' : '♪');
   }
-
-  // ─── Current index ─────────────────────────────────
-
-  const adjusted = elapsed + offset;
-  const idx = lines.findLastIndex((l) => l.time <= adjusted);
-
-  // 현재 그룹이 컨테이너 중앙에 오도록 translateY 계산
-  const currentGroupH =
-    idx >= 0 ? getGroupHeight(hasRuby, hasTranslation, hasRuby && !!(rubyTexts[idx] ?? '').trim()) : LINE_H;
-  const targetY = idx >= 0 ? -(groupOffsets[idx] ?? 0) + (CONTAINER_H - currentGroupH) / 2 : 0;
 
   return (
     <motion.div

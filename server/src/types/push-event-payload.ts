@@ -7,6 +7,7 @@ export interface PushDataMap {
   [PushEvent.HostChanged]: Record<string, never>;
   [PushEvent.Kicked]: Record<string, never>;
   [PushEvent.Mention]: { nickname: string; message: string };
+  [PushEvent.Test]: Record<string, never>;
 }
 
 /** Push 알림용 내부 이벤트 페이로드 (타입 안전) */

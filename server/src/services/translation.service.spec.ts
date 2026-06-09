@@ -1,7 +1,7 @@
-import { TranslationService } from './translation.service.js';
+import { TranslationGeminiService } from './translation-gemini.service.js';
 
 // parseResponse는 private이므로 prototype에서 직접 접근
-const parseResponse = (TranslationService.prototype as unknown as Record<string, unknown>).parseResponse as (
+const parseResponse = (TranslationGeminiService.prototype as unknown as Record<string, unknown>).parseResponse as (
   text: string,
   includeReading: boolean,
 ) => { translations: Map<number, string>; readings: Map<number, string> };

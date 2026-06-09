@@ -1,15 +1,11 @@
 import type { OnModuleDestroy } from '@nestjs/common';
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
 import type { IncomingMessage, Server as HttpServer } from 'http';
 import type { Duplex } from 'stream';
 import { WebSocket, WebSocketServer } from 'ws';
 
 import { AuthService } from '../auth/auth.service.js';
 import {
-  AUTH_COOKIE_ACCESS,
-  IS_DEV,
   WS_CLOSE_BANNED,
   WS_CLOSE_DUPLICATE_SESSION,
   WS_CLOSE_JOINED_OTHER_ROOM,
@@ -20,10 +16,10 @@ import {
 } from '../constants.js';
 import { AudioService } from '../services/audio.service.js';
 import { ChatMuteService } from '../services/chat-mute.service.js';
-import { IpBanService } from '../services/ip-ban.service.js';
-import type { JwtPayload, WsClient, WsPayloadMap } from '../types/index.js';
+import type { WsClient, WsPayloadMap } from '../types/index.js';
 import { UserRole, WsEvent, WsOpCode } from '../types/index.js';
 import { RoomsService } from './rooms.service.js';
+import { WsAuthService } from './ws-auth.service.js';
 import { WsBroadcaster } from './ws-broadcaster.service.js';
 import { WsMessageRouter } from './ws-message-router.service.js';
 
@@ -36,17 +32,14 @@ import { WsMessageRouter } from './ws-message-router.service.js';
 export class RoomsGateway implements OnModuleDestroy {
   private readonly logger = new Logger(RoomsGateway.name);
   private pendingDisconnects = new Map<string, ReturnType<typeof setTimeout>>();
-  private connectAttempts = new Map<string, { count: number; resetAt: number; violations: number }>();
   private heartbeatInterval?: ReturnType<typeof setInterval>;
   private wss?: WebSocketServer;
 
   constructor(
-    private jwt: JwtService,
     private audio: AudioService,
     private chatMute: ChatMuteService,
     private rooms: RoomsService,
-    private config: ConfigService,
-    private ipBan: IpBanService,
+    private wsAuth: WsAuthService,
     private broadcaster: WsBroadcaster,
     private router: WsMessageRouter,
     @Inject(forwardRef(() => AuthService)) private auth: AuthService,
@@ -59,9 +52,6 @@ export class RoomsGateway implements OnModuleDestroy {
 
   attachToServer(httpServer: HttpServer): void {
     this.wss = new WebSocketServer({ noServer: true });
-    const allowedOrigin = this.config.get<string>('CLIENT_URL');
-    const WS_RATE_WINDOW_MS = 10_000;
-    const WS_RATE_LIMIT = 10;
 
     httpServer.on('upgrade', (req: IncomingMessage, socket: Duplex, head: Buffer) => {
       if (req.url?.split('?')[0] !== '/ws') {
@@ -69,41 +59,10 @@ export class RoomsGateway implements OnModuleDestroy {
         return;
       }
 
-      const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ?? req.socket.remoteAddress ?? '';
-      if (this.ipBan.isIpBanned(ip)) {
+      const { allowed } = this.wsAuth.checkUpgrade(req);
+      if (!allowed) {
         socket.destroy();
         return;
-      }
-
-      // CSWSH 방지
-      const origin = req.headers.origin;
-      const skipOriginCheck = IS_DEV && this.config.get<string>('DEV_WS_ORIGIN_CHECK') !== 'true';
-      if (!skipOriginCheck && allowedOrigin && origin && !origin.startsWith(allowedOrigin)) {
-        this.logger.warn(`WS upgrade rejected: origin=${origin}`);
-        socket.destroy();
-        return;
-      }
-
-      // Rate limit (미인증)
-      const hasCookie = !!req.headers.cookie?.includes('sat=');
-      if (!hasCookie) {
-        const now = Date.now();
-        let entry = this.connectAttempts.get(ip);
-        if (!entry || now > entry.resetAt) {
-          entry = { count: 0, resetAt: now + WS_RATE_WINDOW_MS, violations: entry?.violations ?? 0 };
-          this.connectAttempts.set(ip, entry);
-        }
-        entry.count++;
-        if (entry.count > WS_RATE_LIMIT) {
-          entry.violations++;
-          if (entry.violations >= 10) {
-            void this.ipBan.banIp(ip, 'WS flood (auto)', 'system', new Date(now + 24 * 60 * 60_000));
-          } else if (entry.violations >= 3) {
-            void this.ipBan.banIp(ip, 'WS flood (auto)', 'system', new Date(now + 30 * 60_000));
-          }
-          socket.destroy();
-          return;
-        }
       }
 
       this.wss!.handleUpgrade(req, socket, head, (client) => {
@@ -119,9 +78,7 @@ export class RoomsGateway implements OnModuleDestroy {
 
   private async checkHeartbeats(): Promise<void> {
     const now = Date.now();
-    for (const [ip, entry] of this.connectAttempts) {
-      if (now > entry.resetAt) this.connectAttempts.delete(ip);
-    }
+    this.wsAuth.cleanupExpiredEntries();
 
     const heartbeats = this.router.getHeartbeats();
     for (const [roomId, clients] of this.broadcaster.getRoomClients()) {
@@ -152,28 +109,13 @@ export class RoomsGateway implements OnModuleDestroy {
 
   private async handleConnection(client: WsClient, req: IncomingMessage): Promise<void> {
     try {
-      const params = new URLSearchParams(req.url?.split('?')[1] ?? '');
-      const roomId = params.get('roomId');
-      const cookieToken = req.headers.cookie
-        ?.split(';')
-        .map((c) => c.trim())
-        .find((c) => c.startsWith(`${AUTH_COOKIE_ACCESS}=`))
-        ?.split('=')[1];
-      const token = cookieToken ?? params.get('token');
-
-      if (!token || !roomId) {
-        client.close(4001, 'Missing token or roomId');
+      const authResult = this.wsAuth.authenticate(req);
+      if (!authResult.ok) {
+        client.close(4001, authResult.reason);
         return;
       }
 
-      let payload: JwtPayload;
-      try {
-        payload = this.jwt.verify<JwtPayload>(token);
-      } catch {
-        client.close(4001, 'Invalid token');
-        return;
-      }
-
+      const { payload, roomId } = authResult;
       const userId = payload.sub;
       const nickname = payload.nickname || userId.slice(0, 8);
 

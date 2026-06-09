@@ -25,6 +25,7 @@ import { MetricsService } from './metrics.service.js';
 import { MusicBrainzService } from './musicbrainz.service.js';
 import { PreloadService } from './preload.service.js';
 import { SettingsService } from './settings.service.js';
+import { TranslationGeminiService } from './translation-gemini.service.js';
 import { TranslationService } from './translation.service.js';
 import { YtdlpService } from './ytdlp.service.js';
 
@@ -59,6 +60,7 @@ import { YtdlpService } from './ytdlp.service.js';
     MetricsService,
     ErrorLogService,
     IpBanService,
+    TranslationGeminiService,
     TranslationService,
     MusicBrainzService,
   ],
@@ -76,6 +78,7 @@ import { YtdlpService } from './ytdlp.service.js';
     MetricsService,
     ErrorLogService,
     IpBanService,
+    TranslationGeminiService,
     TranslationService,
     MusicBrainzService,
   ],
