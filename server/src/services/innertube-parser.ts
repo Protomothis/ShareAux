@@ -6,6 +6,7 @@ import type {
   InnertubeNextData,
   InnertubeNextItem,
   InnertubePlaylistRenderer,
+  InnertubeRequestBody,
   InnertubeSearchData,
   InnertubeVideoRenderer,
   InnertubeYtMusicBrowseData,
@@ -33,10 +34,7 @@ export interface MusicCredits {
   songAlbum: string | null;
 }
 
-async function fetchInnertube<T = Record<string, unknown>>(
-  endpoint: string,
-  body: Record<string, unknown>,
-): Promise<T> {
+async function fetchInnertube<T = unknown>(endpoint: string, body: InnertubeRequestBody): Promise<T> {
   const res = await fetch(`${YT_INNERTUBE_URL}/${endpoint}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -150,7 +148,7 @@ export function parsePlaylistFromRenderer(pl: InnertubePlaylistRenderer): YtdlpP
 }
 
 export async function searchVideos(query: string, continuation?: string): Promise<InnertubeSearchResponse> {
-  const body: Record<string, unknown> = continuation ? { continuation } : { query, params: 'EgIQAQ==' };
+  const body: InnertubeRequestBody = continuation ? { continuation } : { query, params: 'EgIQAQ==' };
   const data = await fetchInnertube<InnertubeSearchData>('search', body);
 
   const results: YtdlpSearchResult[] = [];
@@ -311,10 +309,7 @@ export async function fetchYtMusicMeta(videoId: string): Promise<MusicCredits> {
 
 // ─── YouTube Music 관련 항목 ─────────────────────────────
 
-async function fetchInnertubeMusic<T = Record<string, unknown>>(
-  endpoint: string,
-  body: Record<string, unknown>,
-): Promise<T> {
+async function fetchInnertubeMusic<T = unknown>(endpoint: string, body: InnertubeRequestBody): Promise<T> {
   const res = await fetch(`${YTM_INNERTUBE_URL}/${endpoint}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

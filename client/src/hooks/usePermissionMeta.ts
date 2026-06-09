@@ -15,11 +15,40 @@ export function usePermissionMeta() {
 /** 권한 key → 번역 기반 메타 매핑 */
 export function usePermLookup() {
   const t = useTranslations('permissions');
+
+  const labels: Record<string, string> = {
+    listen: t('listen.label'),
+    chat: t('chat.label'),
+    reaction: t('reaction.label'),
+    search: t('search.label'),
+    addQueue: t('addQueue.label'),
+    voteSkip: t('voteSkip.label'),
+    host: t('host.label'),
+  };
+  const emojis: Record<string, string> = {
+    listen: t('listen.emoji'),
+    chat: t('chat.emoji'),
+    reaction: t('reaction.emoji'),
+    search: t('search.emoji'),
+    addQueue: t('addQueue.emoji'),
+    voteSkip: t('voteSkip.emoji'),
+    host: t('host.emoji'),
+  };
+  const descriptions: Record<string, string> = {
+    listen: t('listen.description'),
+    chat: t('chat.description'),
+    reaction: t('reaction.description'),
+    search: t('search.description'),
+    addQueue: t('addQueue.description'),
+    voteSkip: t('voteSkip.description'),
+    host: t('host.description'),
+  };
+
   return {
-    label: (k: string) => t(`${k}.label` as 'listen.label'),
-    emoji: (k: string) => t(`${k}.emoji` as 'listen.emoji'),
-    full: (k: string) => `${t(`${k}.emoji` as 'listen.emoji')} ${t(`${k}.label` as 'listen.label')}`,
-    description: (k: string) => t(`${k}.description` as 'listen.description'),
+    label: (k: string) => labels[k] ?? k,
+    emoji: (k: string) => emojis[k] ?? '🔑',
+    full: (k: string) => `${emojis[k] ?? '🔑'} ${labels[k] ?? k}`,
+    description: (k: string) => descriptions[k] ?? k,
   };
 }
 

@@ -14,8 +14,22 @@ import { useCleanup, useCleanupSummary } from '@/hooks/admin/useAdminCleanup';
 
 interface CleanupSection {
   type: string;
-  label: string;
-  description: string;
+  labelKey:
+    | 'unplayedTracks'
+    | 'oldTracks'
+    | 'oldHistory'
+    | 'inactiveRoomsClean'
+    | 'emptyRooms'
+    | 'expiredGuests'
+    | 'inactiveGuests';
+  descriptionKey:
+    | 'unplayedTracksDesc'
+    | 'oldTracksDesc'
+    | 'oldHistoryDesc'
+    | 'inactiveRoomsCleanDesc'
+    | 'emptyRoomsDesc'
+    | 'expiredGuestsDesc'
+    | 'inactiveGuestsDesc';
   countKey: keyof CleanupSummaryResponse;
   icon: string;
 }
@@ -23,50 +37,50 @@ interface CleanupSection {
 const CLEANUP_SECTIONS: CleanupSection[] = [
   {
     type: 'unplayed-tracks',
-    label: 'unplayedTracks',
-    description: 'unplayedTracksDesc',
+    labelKey: 'unplayedTracks',
+    descriptionKey: 'unplayedTracksDesc',
     countKey: 'unplayedTracks',
     icon: '🎵',
   },
   {
     type: 'stale-tracks',
-    label: 'oldTracks',
-    description: 'oldTracksDesc',
+    labelKey: 'oldTracks',
+    descriptionKey: 'oldTracksDesc',
     countKey: 'staleTracksCount',
     icon: '📀',
   },
   {
     type: 'old-histories-30d',
-    label: 'oldHistory',
-    description: 'oldHistoryDesc',
+    labelKey: 'oldHistory',
+    descriptionKey: 'oldHistoryDesc',
     countKey: 'oldHistories30d',
     icon: '📜',
   },
   {
     type: 'inactive-rooms-7d',
-    label: 'inactiveRoomsClean',
-    description: 'inactiveRoomsCleanDesc',
+    labelKey: 'inactiveRoomsClean',
+    descriptionKey: 'inactiveRoomsCleanDesc',
     countKey: 'inactiveRooms7d',
     icon: '🚪',
   },
   {
     type: 'empty-inactive-rooms',
-    label: 'emptyRooms',
-    description: 'emptyRoomsDesc',
+    labelKey: 'emptyRooms',
+    descriptionKey: 'emptyRoomsDesc',
     countKey: 'emptyInactiveRooms',
     icon: '🏚️',
   },
   {
     type: 'expired-guests',
-    label: 'expiredGuests',
-    description: 'expiredGuestsDesc',
+    labelKey: 'expiredGuests',
+    descriptionKey: 'expiredGuestsDesc',
     countKey: 'expiredGuests',
     icon: '👤',
   },
   {
     type: 'inactive-guests-30d',
-    label: 'inactiveGuests',
-    description: 'inactiveGuestsDesc',
+    labelKey: 'inactiveGuests',
+    descriptionKey: 'inactiveGuestsDesc',
     countKey: 'inactiveGuests30d',
     icon: '👻',
   },
@@ -147,8 +161,8 @@ export default function AdminCleanupPage() {
               <div className="flex items-center gap-3">
                 <span className="text-lg">{section.icon}</span>
                 <div>
-                  <p className="text-sm font-medium text-white">{t(section.label)}</p>
-                  <p className="text-xs text-sa-text-muted">{t(section.description)}</p>
+                  <p className="text-sm font-medium text-white">{t(section.labelKey)}</p>
+                  <p className="text-xs text-sa-text-muted">{t(section.descriptionKey)}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -174,7 +188,7 @@ export default function AdminCleanupPage() {
         open={!!confirmType}
         onOpenChange={(open) => !open && setConfirmType(null)}
         title={t('cleanTitle')}
-        description={t('cleanDesc', { label: activeSection?.label ? t(activeSection.label) : '' })}
+        description={t('cleanDesc', { label: activeSection?.labelKey ? t(activeSection.labelKey) : '' })}
         confirmLabel={t('delete')}
         variant="destructive"
         onConfirm={handleCleanup}

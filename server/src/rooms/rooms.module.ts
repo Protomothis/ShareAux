@@ -14,6 +14,7 @@ import { RoomsController } from './rooms.controller.js';
 import { RoomsGateway } from './rooms.gateway.js';
 import { RoomsService } from './rooms.service.js';
 import { StreamController } from './stream.controller.js';
+import { WsAuthService } from './ws-auth.service.js';
 import { WsBroadcaster } from './ws-broadcaster.service.js';
 import { WsMessageRouter } from './ws-message-router.service.js';
 
@@ -23,7 +24,7 @@ import { WsMessageRouter } from './ws-message-router.service.js';
     forwardRef(() => AuthModule),
   ],
   controllers: [RoomsController, AutoDjController, StreamController],
-  providers: [MemberService, RoomsService, RoomsGateway, WsBroadcaster, WsMessageRouter],
+  providers: [MemberService, RoomsService, RoomsGateway, WsAuthService, WsBroadcaster, WsMessageRouter],
   exports: [MemberService, RoomsService, RoomsGateway, WsBroadcaster],
 })
 export class RoomsModule {}

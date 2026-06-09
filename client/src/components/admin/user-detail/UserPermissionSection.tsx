@@ -92,9 +92,9 @@ export function UserPermissionSection({ user }: UserPermissionSectionProps) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {['user', 'admin'].map((r) => (
+              {(['user', 'admin'] as const).map((r) => (
                 <SelectItem key={r} value={r}>
-                  {t(`roles.${r}`)}
+                  {{ user: t('roles.user'), admin: t('roles.admin') }[r]}
                 </SelectItem>
               ))}
             </SelectContent>

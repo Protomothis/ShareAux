@@ -15,6 +15,7 @@ import { UserFavorite } from '../entities/user-favorite.entity.js';
 import { AiDjGeminiService } from './ai-dj-gemini.service.js';
 import { AudioService } from './audio.service.js';
 import { AuditService } from './audit.service.js';
+import { AutoDjCandidateService } from './auto-dj-candidates.service.js';
 import { AutoDjService } from './auto-dj.service.js';
 import { ChartService } from './chart.service.js';
 import { ChatMuteService } from './chat-mute.service.js';
@@ -24,6 +25,7 @@ import { MetricsService } from './metrics.service.js';
 import { MusicBrainzService } from './musicbrainz.service.js';
 import { PreloadService } from './preload.service.js';
 import { SettingsService } from './settings.service.js';
+import { TranslationGeminiService } from './translation-gemini.service.js';
 import { TranslationService } from './translation.service.js';
 import { YtdlpService } from './ytdlp.service.js';
 
@@ -49,6 +51,7 @@ import { YtdlpService } from './ytdlp.service.js';
     AudioService,
     YtdlpService,
     PreloadService,
+    AutoDjCandidateService,
     AutoDjService,
     ChartService,
     ChatMuteService,
@@ -57,6 +60,7 @@ import { YtdlpService } from './ytdlp.service.js';
     MetricsService,
     ErrorLogService,
     IpBanService,
+    TranslationGeminiService,
     TranslationService,
     MusicBrainzService,
   ],
@@ -65,6 +69,7 @@ import { YtdlpService } from './ytdlp.service.js';
     AudioService,
     YtdlpService,
     PreloadService,
+    AutoDjCandidateService,
     AutoDjService,
     ChartService,
     ChatMuteService,
@@ -73,6 +78,7 @@ import { YtdlpService } from './ytdlp.service.js';
     MetricsService,
     ErrorLogService,
     IpBanService,
+    TranslationGeminiService,
     TranslationService,
     MusicBrainzService,
   ],

@@ -146,6 +146,10 @@ export class AudioService {
   }
 
   // --- Internal ---
+  // 분리 불가 — 사유: spawnFfmpeg + attach*Handler 메서드들은 RoomAudio 상태(initSegment, playing,
+  // listeners, recentChunks)를 직접 변이하며, broadcastChunk와 close 재시도 로직이 rooms Map과
+  // 강하게 결합되어 있음. 별도 파일로 추출 시 room 참조를 외부에서 주입해야 하나, 생명주기 관리가
+  // 불가분하게 얽혀 있어 오히려 복잡도만 증가함.
 
   private spawnFfmpeg(
     roomId: string,

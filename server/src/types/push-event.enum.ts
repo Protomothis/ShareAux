@@ -5,4 +5,5 @@ export enum PushEvent {
   HostChanged = 'hostChanged',
   Kicked = 'kicked',
   Mention = 'mention',
+  Test = 'test',
 }

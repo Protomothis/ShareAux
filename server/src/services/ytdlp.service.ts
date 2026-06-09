@@ -14,6 +14,7 @@ import {
 import { AppException } from '../exceptions/app.exception.js';
 import { ErrorCode } from '../types/error-code.enum.js';
 import type { AudioInfo } from '../types/index.js';
+import type { YtdlpPlaylistEntry, YtdlpVideoMeta } from '../types/ytdlp.types.js';
 import * as innertube from './innertube-parser.js';
 
 const execFileAsync = promisify(execFile);
@@ -115,15 +116,15 @@ export class YtdlpService {
         .trim()
         .split('\n')
         .map((line) => {
-          const entry = JSON.parse(line) as Record<string, unknown>;
-          const title = (entry.title as string) ?? '';
+          const entry = JSON.parse(line) as YtdlpPlaylistEntry;
+          const title = entry.title ?? '';
           if (!entry.id || title === '[Deleted video]' || title === '[Private video]') return null;
           return {
-            id: entry.id as string,
+            id: entry.id,
             title,
-            artist: (entry.uploader as string) ?? (entry.channel as string) ?? '',
-            thumbnail: `https://i.ytimg.com/vi/${entry.id as string}/mqdefault.jpg`,
-            duration: (entry.duration as number) ?? 0,
+            artist: entry.uploader ?? entry.channel ?? '',
+            thumbnail: `https://i.ytimg.com/vi/${entry.id}/mqdefault.jpg`,
+            duration: entry.duration ?? 0,
           };
         })
         .filter(
@@ -144,13 +145,13 @@ export class YtdlpService {
         ['--dump-json', '--skip-download', `https://youtube.com/watch?v=${videoId}`],
         { timeout: YTDLP_TIMEOUT_MS },
       );
-      const entry = JSON.parse(stdout) as Record<string, unknown>;
-      const duration = (entry.duration as number) ?? 0;
+      const entry = JSON.parse(stdout) as YtdlpVideoMeta;
+      const duration = entry.duration ?? 0;
       const available = duration >= TRACK_MIN_DURATION_SEC && duration <= TRACK_MAX_DURATION_SEC;
       return {
         id: videoId,
-        title: (entry.title as string) ?? '',
-        artist: (entry.uploader as string) ?? (entry.channel as string) ?? '',
+        title: entry.title ?? '',
+        artist: entry.uploader ?? entry.channel ?? '',
         thumbnail: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
         duration,
         available,
@@ -173,16 +174,16 @@ export class YtdlpService {
         .trim()
         .split('\n')
         .map((line) => {
-          const entry = JSON.parse(line) as Record<string, unknown>;
-          const title = (entry.title as string) ?? '';
-          const id = entry.id as string | undefined;
+          const entry = JSON.parse(line) as YtdlpPlaylistEntry;
+          const title = entry.title ?? '';
+          const id = entry.id;
           const isUnavailable = !id || title === '[Deleted video]' || title === '[Private video]';
-          const duration = (entry.duration as number) ?? 0;
+          const duration = entry.duration ?? 0;
           const available = !isUnavailable && duration >= TRACK_MIN_DURATION_SEC && duration <= TRACK_MAX_DURATION_SEC;
           return {
             id: id ?? '',
             title: isUnavailable ? title || '[비공개 동영상]' : title,
-            artist: (entry.uploader as string) ?? (entry.channel as string) ?? '',
+            artist: entry.uploader ?? entry.channel ?? '',
             thumbnail: id ? `https://i.ytimg.com/vi/${id}/mqdefault.jpg` : '',
             duration,
             available,
@@ -216,10 +217,10 @@ export class YtdlpService {
         ['-f', YTDLP_FORMAT, '--dump-json', `https://youtube.com/watch?v=${videoId}`],
         { timeout: YTDLP_TIMEOUT_MS },
       );
-      const info = JSON.parse(stdout) as Record<string, unknown>;
+      const info = JSON.parse(stdout) as YtdlpVideoMeta;
       return {
-        codec: (info.acodec as string) ?? 'unknown',
-        bitrateKbps: Math.round((info.abr as number) ?? 0),
+        codec: info.acodec ?? 'unknown',
+        bitrateKbps: Math.round(info.abr ?? 0),
       };
     } catch (e) {
       this.logger.warn(`Failed to get audio info for ${videoId}`, e instanceof Error ? e.message : e);
